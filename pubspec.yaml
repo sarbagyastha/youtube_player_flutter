@@ -1,0 +1,20 @@
+name: youtube_player_flutter
+description: A new Flutter plugin.
+version: 1.0.0
+author: Sarbagya Dhaubanjar <sarbagyastha@gmail.com>
+homepage: https://github.com/sarbagyastha/youtube_player_flutter
+
+environment:
+  sdk: ">=2.1.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  ytview: ^0.0.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+
+
