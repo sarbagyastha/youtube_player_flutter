@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:youtube_player_flutter_example/video_list.dart';
 
-void main() {
-  runApp(MyApp());
-}
+void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
   @override
@@ -49,6 +47,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void deactivate() {
+    // This pauses video while navigating to next page.
     _controller.pause();
     super.deactivate();
   }

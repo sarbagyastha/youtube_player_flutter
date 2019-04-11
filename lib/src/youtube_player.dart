@@ -9,6 +9,7 @@ import 'package:ytview/ytview.dart';
 
 bool _justSwitchedToFullScreen = false;
 
+/// Current state of the player. Find more about it [here](https://developers.google.com/youtube/iframe_api_reference#Playback_status)
 enum PlayerState {
   UN_STARTED,
   ENDED,
@@ -21,16 +22,42 @@ enum PlayerState {
 typedef YoutubePlayerControllerCallback(YoutubePlayerController controller);
 
 class YoutubePlayer extends StatefulWidget {
+  /// Current context of the player.
   final BuildContext context;
+
+  /// The required videoId property specifies the YouTube Video ID of the video to be played.
   final String videoId;
+
+  /// Defines the width of the player.
+  /// Default = Devices's Width
   final double width;
+
+  /// Defines the aspect ratio to be assigned to the player. This property along with [width] calculates the player size.
+  /// Default = 16/9
   final double aspectRatio;
+
+  /// The duration for which controls in the player will be visible.
+  /// Default = 3 seconds
   final Duration controlsTimeOut;
+
+  /// Define whether to auto play the video after initialization or not.
+  /// Default = true
   final bool autoPlay;
+
+  /// Overrides the default buffering indicator for the player.
   final Widget bufferIndicator;
+
+  /// Defines whether to show or hide progress indicator below the player.
+  /// Default = false
   final bool showVideoProgressIndicator;
+
+  /// Overrides default colors of the progress bar, takes [ProgressColors].
   final ProgressColors progressColors;
+
+  /// Overrides default color of progress indicator shown below the player(if enabled).
   final Color videoProgressIndicatorColor;
+
+  /// Returns [YoutubePlayerController] after being initialized.
   final YoutubePlayerControllerCallback controllerCallback;
 
   YoutubePlayer({
@@ -49,6 +76,7 @@ class YoutubePlayer extends StatefulWidget {
   })  : assert(videoId.length == 11, "Invalid YouTube Video Id"),
         super(key: key);
 
+  /// Converts fully qualified YouTube Url to video id.
   static String convertUrlToId(String url, [bool trimWhitespaces = true]) {
     if (!url.contains("http") && (url.length == 11)) return url;
     if (url == null || url.length == 0) return null;
@@ -434,6 +462,7 @@ class __PlayerState extends State<_Player> with AutomaticKeepAliveClientMixin {
   bool get wantKeepAlive => true;
 }
 
+/// [ValueNotifier] for [YoutubePlayerController].
 class YoutubePlayerValue {
   YoutubePlayerValue({
     @required this.isReady,
@@ -450,24 +479,48 @@ class YoutubePlayerValue {
     this.webViewController,
   });
 
+  /// This is true when underlying web player reports ready.
   final bool isReady;
+
+  /// This is true once video loads.
   final bool isLoaded;
+
+  /// This is true once the video start playing for the first time.
   final bool hasPlayed;
+
+  /// The total length of the video.
   final Duration duration;
+
+  /// The current position of the video.
   final Duration position;
+
+  /// The position up to which the video is buffered.
   final double buffered;
+
+  /// Reports true if video is playing.
   final bool isPlaying;
+
+  /// Reports true if video is fullscreen.
   final bool isFullScreen;
+
+  /// The current volume assigned for the player.
   final int volume;
+
+  /// The current state of the player defined as [PlayerState].
   final PlayerState playerState;
+
+  /// Reports the error code as described [here](https://developers.google.com/youtube/iframe_api_reference#Events).
+  /// See the onError Section.
   final int errorCode;
+
+  /// Reports the [WebViewController].
   final WebViewController webViewController;
 
+  /// Returns true is player has errors.
   bool get hasError => errorCode != 0;
 
   YoutubePlayerValue copyWith({
     bool isReady,
-    bool isBuilt,
     bool isLoaded,
     bool hasPlayed,
     Duration duration,
@@ -518,20 +571,26 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
     this.initialSource = "",
   ]) : super(YoutubePlayerValue(isReady: false));
 
+  /// Plays the video.
   void play() =>
       value.webViewController.evaluateJavascript('player.playVideo()');
 
+  /// Pauses the video.
   void pause() =>
       value.webViewController.evaluateJavascript('player.pauseVideo()');
 
+  /// Loads the video as per the [videoId] provided.
   void load({int startAt = 0}) => value.webViewController
       .evaluateJavascript('player.loadVideoById("$initialSource", $startAt)');
 
+  /// Cues the video as per the [videoId] provided.
   void cue({int startAt = 0}) => value.webViewController
       .evaluateJavascript('player.cueVideoById("$initialSource", $startAt)');
 
+  /// Mutes the player.
   void mute() => value.webViewController.evaluateJavascript('player.mute()');
 
+  /// Un mutes the player.
   void unMute() =>
       value.webViewController.evaluateJavascript('player.unMute()');
 
@@ -541,6 +600,10 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
       ? value.webViewController.evaluateJavascript('player.setVolume($volume)')
       : throw Exception("Volume should be between 0 and 100");
 
+  /// Seek to any position. Video auto plays after seeking.
+  /// The optional allowSeekAhead parameter determines whether the player will make a new request to the server
+  /// if the seconds parameter specifies a time outside of the currently buffered video data.
+  /// Default allowSeekAhead = true
   void seekTo(Duration position, {bool allowSeekAhead = true}) {
     value.webViewController.evaluateJavascript(
         'player.seekTo(${position.inSeconds},$allowSeekAhead)');
@@ -548,5 +611,6 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
     value = value.copyWith(position: position);
   }
 
+  /// Forces to enter fullScreen.
   void enterFullScreen() => value = value.copyWith(isFullScreen: true);
 }
