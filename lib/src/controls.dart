@@ -17,38 +17,51 @@ class PlayPauseButton extends StatefulWidget {
 class _PlayPauseButtonState extends State<PlayPauseButton> {
   bool _isPlaying = false;
 
+  YoutubePlayerController ytController;
+
+  YoutubePlayerController get controller => ytController;
+
+  set controller(YoutubePlayerController c) => ytController = c;
+
   @override
   void initState() {
     super.initState();
-    widget.controller.addListener(
-      () {
-        if (mounted) {
-          setState(() {
-            _isPlaying = widget.controller.value.isPlaying;
-          });
-        }
-      },
-    );
+    controller = widget.controller;
+    _attachListenerToController();
     widget.showControls.addListener(() {
       if (mounted) setState(() {});
     });
   }
 
+  _attachListenerToController() {
+    controller.addListener(
+      () {
+        if (mounted) {
+          setState(() {
+            _isPlaying = controller.value.isPlaying;
+          });
+        }
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return widget.controller.value.playerState == PlayerState.BUFFERING
+    if (controller.hashCode != widget.controller.hashCode) {
+      controller = widget.controller;
+      _attachListenerToController();
+    }
+    return controller.value.playerState == PlayerState.BUFFERING
         ? widget.bufferIndicator
         : Visibility(
             visible: widget.showControls.value ||
-                widget.controller.value.playerState == PlayerState.CUED,
+                controller.value.playerState == PlayerState.CUED,
             child: Material(
               color: Colors.transparent,
               child: InkWell(
                 borderRadius: BorderRadius.circular(50.0),
                 onTap: () {
-                  _isPlaying
-                      ? widget.controller.pause()
-                      : widget.controller.play();
+                  _isPlaying ? controller.pause() : controller.play();
                 },
                 child: Icon(
                   _isPlaying ? Icons.pause : Icons.play_arrow,
@@ -78,21 +91,17 @@ class _BottomBarState extends State<BottomBar> {
   int _currentPosition = 0;
   int _remainingDuration = 0;
 
+  YoutubePlayerController ytController;
+
+  YoutubePlayerController get controller => ytController;
+
+  set controller(YoutubePlayerController c) => ytController = c;
+
   @override
   void initState() {
     super.initState();
-    widget.controller.addListener(
-      () {
-        if (mounted) {
-          setState(() {
-            _currentPosition = widget.controller.value.position.inMilliseconds;
-            _remainingDuration =
-                widget.controller.value.duration.inMilliseconds -
-                    _currentPosition;
-          });
-        }
-      },
-    );
+    controller = widget.controller;
+    _attachListenerToController();
     widget.showControls.addListener(
       () {
         if (mounted) setState(() {});
@@ -100,8 +109,26 @@ class _BottomBarState extends State<BottomBar> {
     );
   }
 
+  _attachListenerToController() {
+    controller.addListener(
+      () {
+        if (mounted) {
+          setState(() {
+            _currentPosition = controller.value.position.inMilliseconds;
+            _remainingDuration =
+                controller.value.duration.inMilliseconds - _currentPosition;
+          });
+        }
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (controller.hashCode != widget.controller.hashCode) {
+      controller = widget.controller;
+      _attachListenerToController();
+    }
     return Visibility(
       visible: widget.showControls.value,
       child: Row(
@@ -120,7 +147,7 @@ class _BottomBarState extends State<BottomBar> {
           Expanded(
             child: Padding(
               child: ProgressBar(
-                widget.controller,
+                controller,
                 colors: widget.progressColors,
               ),
               padding: EdgeInsets.symmetric(
@@ -137,14 +164,14 @@ class _BottomBarState extends State<BottomBar> {
           ),
           IconButton(
             icon: Icon(
-              widget.controller.value.isFullScreen
+              controller.value.isFullScreen
                   ? Icons.fullscreen_exit
                   : Icons.fullscreen,
               color: Colors.white,
             ),
             onPressed: () {
-              widget.controller.value = widget.controller.value.copyWith(
-                  isFullScreen: !widget.controller.value.isFullScreen);
+              controller.value = controller.value
+                  .copyWith(isFullScreen: !controller.value.isFullScreen);
             },
           ),
         ],

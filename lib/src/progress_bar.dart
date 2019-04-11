@@ -58,7 +58,7 @@ class _ProgressBarState extends State<ProgressBar> {
 
     return GestureDetector(
       child: (controller.value.hasError)
-          ? Text("Error ${controller.value.errorCode}")
+          ? Container()
           : Center(
               child: Container(
                 height: 60.0,

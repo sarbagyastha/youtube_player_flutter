@@ -18,9 +18,11 @@ enum PlayerState {
   CUED,
 }
 
+typedef YoutubePlayerControllerCallback(YoutubePlayerController controller);
+
 class YoutubePlayer extends StatefulWidget {
   final BuildContext context;
-  final YoutubePlayerController controller;
+  final String videoId;
   final double width;
   final double aspectRatio;
   final Duration controlsTimeOut;
@@ -29,11 +31,12 @@ class YoutubePlayer extends StatefulWidget {
   final bool showVideoProgressIndicator;
   final ProgressColors progressColors;
   final Color videoProgressIndicatorColor;
+  final YoutubePlayerControllerCallback controllerCallback;
 
   YoutubePlayer({
     Key key,
     @required this.context,
-    @required this.controller,
+    @required this.videoId,
     this.width,
     this.aspectRatio = 16 / 9,
     this.autoPlay = true,
@@ -42,7 +45,9 @@ class YoutubePlayer extends StatefulWidget {
     this.showVideoProgressIndicator = false,
     this.videoProgressIndicatorColor = Colors.red,
     this.progressColors,
-  }) : super(key: key);
+    this.controllerCallback,
+  })  : assert(videoId.length == 11, "Invalid YouTube Video Id"),
+        super(key: key);
 
   static String convertUrlToId(String url, [bool trimWhitespaces = true]) {
     if (!url.contains("http") && (url.length == 11)) return url;
@@ -71,6 +76,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
   YoutubePlayerController ytController;
 
   YoutubePlayerController get controller => ytController;
+
   set controller(YoutubePlayerController c) => ytController = c;
 
   final _showControls = ValueNotifier<bool>(false);
@@ -80,17 +86,17 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
   double loadedFraction = 0;
   Timer _timer;
   bool _isFullScreen = false;
-  String _newSource;
 
   WebViewController _oldWebController;
-  WebViewController _currentWebController;
   Duration _oldPosition;
+
+  String _currentVideoId;
 
   @override
   void initState() {
     super.initState();
-    ytController = widget.controller;
-    controller.addListener(listener);
+    _loadController();
+    _currentVideoId = widget.videoId;
     _showControls.addListener(() {
       _timer?.cancel();
       if (_showControls.value)
@@ -99,15 +105,17 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
     });
   }
 
+  _loadController({WebViewController webController}) {
+    controller = YoutubePlayerController(widget.videoId);
+    if (webController != null)
+      controller.value =
+          controller.value.copyWith(webViewController: webController);
+    controller.addListener(listener);
+    if (widget.controllerCallback != null)
+      widget.controllerCallback(controller);
+  }
+
   void listener() async {
-    if (controller.value.newSource != null) {
-      _newSource = controller.value.newSource;
-      _currentWebController = controller.value.webViewController;
-      controller = YoutubePlayerController(initialSource: _newSource);
-      controller.value = controller.value.copyWith(webViewController: _currentWebController);
-      controller.load(source: _newSource);
-      controller.value = controller.value.copyWith(newSource: null);
-    }
     if (_oldWebController != null &&
         _oldWebController.hashCode !=
             controller.value.webViewController.hashCode) {
@@ -125,12 +133,12 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
         if (loadedFraction > 1) loadedFraction = 1;
       });
     }
-    if (widget.controller.value.isFullScreen && !_isFullScreen) {
+    if (controller.value.isFullScreen && !_isFullScreen) {
       _isFullScreen = true;
       await _pushFullScreenWidget(context);
     }
-    if (!widget.controller.value.isFullScreen && _isFullScreen) {
-      Navigator.of(context).pop();
+    if (!controller.value.isFullScreen && _isFullScreen) {
+      Navigator.of(context).pop("");
       _isFullScreen = false;
       Future.delayed(
         Duration(milliseconds: 500),
@@ -148,6 +156,13 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
 
   @override
   Widget build(BuildContext context) {
+    if (_currentVideoId != widget.videoId) {
+      _currentVideoId = widget.videoId;
+      _loadController(webController: controller.value.webViewController);
+      controller.load();
+      Future.delayed(Duration(milliseconds: 500),
+          () => controller.seekTo(Duration(seconds: 0)));
+    }
     return Container(
       width: widget.width ?? MediaQuery.of(widget.context).size.width,
       child: _buildPlayer(widget.aspectRatio),
@@ -222,14 +237,14 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
     );
   }
 
-  Future<dynamic> _pushFullScreenWidget(BuildContext context) async {
+  Future<void> _pushFullScreenWidget(BuildContext context) async {
     _oldWebController = controller.value.webViewController;
     _justSwitchedToFullScreen = false;
     _oldPosition = controller.value.position;
     controller.pause();
 
     final isAndroid = Theme.of(context).platform == TargetPlatform.android;
-    final TransitionRoute<Null> route = PageRouteBuilder<Null>(
+    final TransitionRoute<String> route = PageRouteBuilder<String>(
       maintainState: true,
       settings: RouteSettings(isInitialRoute: false),
       pageBuilder: (context, animation, secondAnimation) => AnimatedBuilder(
@@ -255,7 +270,8 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
       ]);
     }
 
-    await Navigator.of(context).push(route);
+    String popValue = await Navigator.of(context).push(route);
+    if (popValue == null) _isFullScreen = false;
 
     controller.value = controller.value
         .copyWith(isFullScreen: false, webViewController: _oldWebController);
@@ -274,6 +290,13 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
         );
       },
     );
+
+    if (popValue == null)
+      Future.delayed(
+        Duration(milliseconds: 500),
+        () => controller
+            .seekTo(Duration(milliseconds: _oldPosition.inMilliseconds + 500)),
+      );
   }
 }
 
@@ -425,7 +448,6 @@ class YoutubePlayerValue {
     this.playerState,
     this.errorCode,
     this.webViewController,
-    this.newSource,
   });
 
   final bool isReady;
@@ -440,7 +462,6 @@ class YoutubePlayerValue {
   final PlayerState playerState;
   final int errorCode;
   final WebViewController webViewController;
-  final String newSource;
 
   bool get hasError => errorCode != 0;
 
@@ -458,7 +479,6 @@ class YoutubePlayerValue {
     PlayerState playerState,
     int errorCode,
     WebViewController webViewController,
-    String newSource,
   }) {
     return YoutubePlayerValue(
       isReady: isReady ?? this.isReady,
@@ -473,7 +493,6 @@ class YoutubePlayerValue {
       playerState: playerState ?? this.playerState,
       errorCode: errorCode ?? this.errorCode,
       webViewController: webViewController ?? this.webViewController,
-      newSource: newSource ?? this.newSource,
     );
   }
 
@@ -495,9 +514,9 @@ class YoutubePlayerValue {
 class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
   final String initialSource;
 
-  YoutubePlayerController({
-    this.initialSource,
-  }) : super(YoutubePlayerValue(isReady: false));
+  YoutubePlayerController([
+    this.initialSource = "",
+  ]) : super(YoutubePlayerValue(isReady: false));
 
   void play() =>
       value.webViewController.evaluateJavascript('player.playVideo()');
@@ -505,13 +524,11 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
   void pause() =>
       value.webViewController.evaluateJavascript('player.pauseVideo()');
 
-  void load({String source, int startAt = 0}) =>
-      value.webViewController.evaluateJavascript(
-          'player.loadVideoById("${source ?? initialSource}", $startAt)');
+  void load({int startAt = 0}) => value.webViewController
+      .evaluateJavascript('player.loadVideoById("$initialSource", $startAt)');
 
-  void cue({String source, int startAt = 0}) =>
-      value.webViewController.evaluateJavascript(
-          'player.cueVideoById("${source ?? initialSource}", $startAt)');
+  void cue({int startAt = 0}) => value.webViewController
+      .evaluateJavascript('player.cueVideoById("$initialSource", $startAt)');
 
   void mute() => value.webViewController.evaluateJavascript('player.mute()');
 
@@ -532,6 +549,4 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
   }
 
   void enterFullScreen() => value = value.copyWith(isFullScreen: true);
-
-  void changeSource(String source) => value = value.copyWith(newSource: source);
 }

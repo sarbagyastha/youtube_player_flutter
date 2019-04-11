@@ -29,33 +29,27 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  YoutubePlayerController controller;
+  YoutubePlayerController _controller = YoutubePlayerController();
   var _idController = TextEditingController();
   var _seekToController = TextEditingController();
   double _volume = 100;
   bool _muted = false;
   String _playerStatus = "";
 
-  @override
-  void initState() {
-    super.initState();
-    controller = YoutubePlayerController(
-      initialSource: 'iLnmTe5Q2Qw',
-    )..addListener(listener);
-  }
+  String _videoId = "iLnmTe5Q2Qw";
 
   void listener() {
-    if (controller.value.playerState == PlayerState.ENDED) {
+    if (_controller.value.playerState == PlayerState.ENDED) {
       _showThankYouDialog();
     }
     setState(() {
-      _playerStatus = controller.value.playerState.toString();
+      _playerStatus = _controller.value.playerState.toString();
     });
   }
 
   @override
   void deactivate() {
-    controller.pause();
+    _controller.pause();
     super.deactivate();
   }
 
@@ -87,7 +81,7 @@ class _MyHomePageState extends State<MyHomePage> {
           children: <Widget>[
             YoutubePlayer(
               context: context,
-              controller: controller,
+              videoId: _videoId,
               autoPlay: true,
               showVideoProgressIndicator: true,
               videoProgressIndicatorColor: Colors.amber,
@@ -95,6 +89,10 @@ class _MyHomePageState extends State<MyHomePage> {
                 playedColor: Colors.amber,
                 handleColor: Colors.amberAccent,
               ),
+              controllerCallback: (controller) {
+                _controller = controller;
+                _controller.addListener(listener);
+              },
             ),
             SizedBox(
               height: 10.0,
@@ -115,8 +113,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                   InkWell(
                     onTap: () {
-                      controller.changeSource(_idController.text);
-                      setState(() {});
+                      setState(() {
+                        _videoId = _idController.text;
+                      });
                     },
                     child: Container(
                       padding: EdgeInsets.symmetric(
@@ -138,21 +137,21 @@ class _MyHomePageState extends State<MyHomePage> {
                     children: <Widget>[
                       IconButton(
                         icon: Icon(
-                          controller.value.isPlaying
+                          _controller.value.isPlaying
                               ? Icons.play_arrow
                               : Icons.pause,
                         ),
                         onPressed: () {
-                          controller.value.isPlaying
-                              ? controller.pause()
-                              : controller.play();
+                          _controller.value.isPlaying
+                              ? _controller.pause()
+                              : _controller.play();
                           setState(() {});
                         },
                       ),
                       IconButton(
                         icon: Icon(_muted ? Icons.volume_off : Icons.volume_up),
                         onPressed: () {
-                          _muted ? controller.unMute() : controller.mute();
+                          _muted ? _controller.unMute() : _controller.mute();
                           setState(() {
                             _muted = !_muted;
                           });
@@ -160,7 +159,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                       IconButton(
                           icon: Icon(Icons.fullscreen),
-                          onPressed: () => controller.enterFullScreen()),
+                          onPressed: () => _controller.enterFullScreen()),
                     ],
                   ),
                   SizedBox(
@@ -176,7 +175,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         padding: EdgeInsets.all(5.0),
                         child: OutlineButton(
                           child: Text("Seek"),
-                          onPressed: () => controller.seekTo(
+                          onPressed: () => _controller.seekTo(
                                 Duration(
                                   seconds: int.parse(_seekToController.text),
                                 ),
@@ -206,7 +205,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             setState(() {
                               _volume = value;
                             });
-                            controller.setVolume(_volume.round());
+                            _controller.setVolume(_volume.round());
                           },
                         ),
                       ),

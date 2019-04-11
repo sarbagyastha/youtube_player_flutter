@@ -19,11 +19,6 @@ class _VideoListState extends State<VideoList> {
   @override
   void initState() {
     super.initState();
-    videoIds.forEach(
-      (videoId) => controllers.add(
-            YoutubePlayerController(initialSource: videoId),
-          ),
-    );
   }
 
   @override
@@ -33,20 +28,17 @@ class _VideoListState extends State<VideoList> {
         title: Text("Video List"),
       ),
       body: ListView.separated(
-        itemBuilder: (context, index) => _player(context, controllers[index]),
+        itemBuilder: (context, index) => YoutubePlayer(
+              context: context,
+              videoId: videoIds[index],
+              autoPlay: false,
+              showVideoProgressIndicator: true,
+            ),
         separatorBuilder: (_, i) => SizedBox(
               height: 10.0,
             ),
-        itemCount: controllers.length,
+        itemCount: videoIds.length,
       ),
     );
   }
-
-  Widget _player(BuildContext context, YoutubePlayerController controller) =>
-      YoutubePlayer(
-        context: context,
-        autoPlay: false,
-        showVideoProgressIndicator: true,
-        controller: controller,
-      );
 }
