@@ -180,6 +180,129 @@ class _BottomBarState extends State<BottomBar> {
   }
 }
 
+class LiveBottomBar extends StatefulWidget {
+  final YoutubePlayerController controller;
+  final ValueNotifier<bool> showControls;
+  final double aspectRatio;
+  final Color liveUIColor;
+
+  LiveBottomBar(
+      this.controller, this.showControls, this.aspectRatio, this.liveUIColor);
+
+  @override
+  _LiveBottomBarState createState() => _LiveBottomBarState();
+}
+
+class _LiveBottomBarState extends State<LiveBottomBar> {
+  int _currentPosition = 0;
+  double _currentSliderPosition = 0.0;
+
+  YoutubePlayerController ytController;
+
+  YoutubePlayerController get controller => ytController;
+
+  set controller(YoutubePlayerController c) => ytController = c;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = widget.controller;
+    _attachListenerToController();
+    widget.showControls.addListener(
+      () {
+        if (mounted) setState(() {});
+      },
+    );
+  }
+
+  _attachListenerToController() {
+    controller.addListener(
+      () {
+        if (mounted) {
+          setState(() {
+            _currentPosition = controller.value.position.inMilliseconds;
+            _currentSliderPosition = controller.value.position.inMilliseconds /
+                controller.value.duration.inMilliseconds;
+          });
+        }
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (controller.hashCode != widget.controller.hashCode) {
+      controller = widget.controller;
+      _attachListenerToController();
+    }
+    return Visibility(
+      visible: widget.showControls.value,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          SizedBox(
+            width: 14.0,
+          ),
+          Text(
+            durationFormatter(_currentPosition),
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 12.0,
+            ),
+          ),
+          Expanded(
+            child: Padding(
+              child: Slider(
+                value: _currentSliderPosition,
+                onChanged: (value) {
+                  controller.seekTo(
+                    Duration(
+                      milliseconds:
+                          (controller.value.duration.inMilliseconds * value)
+                              .round(),
+                    ),
+                  );
+                },
+                activeColor: widget.liveUIColor,
+                inactiveColor: Colors.transparent,
+              ),
+              padding: EdgeInsets.symmetric(
+                horizontal: 8.0,
+              ),
+            ),
+          ),
+          InkWell(
+            onTap: () => controller.seekTo(controller.value.duration),
+            child: Material(
+              color: Colors.red,
+              child: Text(
+                " LIVE ",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 12.0,
+                  fontWeight: FontWeight.w300,
+                ),
+              ),
+            ),
+          ),
+          IconButton(
+            icon: Icon(
+              controller.value.isFullScreen
+                  ? Icons.fullscreen_exit
+                  : Icons.fullscreen,
+              color: Colors.white,
+            ),
+            onPressed: () {
+              controller.value = controller.value
+                  .copyWith(isFullScreen: !controller.value.isFullScreen);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class TouchShutter extends StatefulWidget {
   final ValueNotifier<bool> showControls;
 

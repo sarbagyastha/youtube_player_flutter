@@ -34,7 +34,7 @@ class _MyHomePageState extends State<MyHomePage> {
   bool _muted = false;
   String _playerStatus = "";
 
-  String _videoId = "iLnmTe5Q2Qw";
+  String _videoId = "ADYUYAz55bE"; //"iLnmTe5Q2Qw";
 
   void listener() {
     if (_controller.value.playerState == PlayerState.ENDED) {
@@ -82,6 +82,7 @@ class _MyHomePageState extends State<MyHomePage> {
               context: context,
               videoId: _videoId,
               autoPlay: true,
+              isLive: true,
               showVideoProgressIndicator: true,
               videoProgressIndicatorColor: Colors.amber,
               progressColors: ProgressColors(

@@ -176,6 +176,7 @@ class _ProgressBarPainter extends CustomPainter {
   }
 }
 
+/// Colors to be assigned to [ProgressBar].
 class ProgressColors {
   ProgressColors({
     Color playedColor: const Color.fromRGBO(255, 0, 0, 0.9),

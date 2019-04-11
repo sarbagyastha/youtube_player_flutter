@@ -60,6 +60,13 @@ class YoutubePlayer extends StatefulWidget {
   /// Returns [YoutubePlayerController] after being initialized.
   final YoutubePlayerControllerCallback controllerCallback;
 
+  /// if true, Live Playback controls will be shown instead of default one.
+  /// Default = false
+  final bool isLive;
+
+  /// Overrides color of Live UI when enabled.
+  final Color liveUIColor;
+
   YoutubePlayer({
     Key key,
     @required this.context,
@@ -73,6 +80,8 @@ class YoutubePlayer extends StatefulWidget {
     this.videoProgressIndicatorColor = Colors.red,
     this.progressColors,
     this.controllerCallback,
+    this.isLive = false,
+    this.liveUIColor = Colors.red,
   })  : assert(videoId.length == 11, "Invalid YouTube Video Id"),
         super(key: key);
 
@@ -239,12 +248,19 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
             bottom: 0,
             left: 0,
             right: 0,
-            child: BottomBar(
-              controller,
-              _showControls,
-              widget.aspectRatio,
-              widget.progressColors,
-            ),
+            child: widget.isLive
+                ? LiveBottomBar(
+                    controller,
+                    _showControls,
+                    widget.aspectRatio,
+                    widget.liveUIColor,
+                  )
+                : BottomBar(
+                    controller,
+                    _showControls,
+                    widget.aspectRatio,
+                    widget.progressColors,
+                  ),
           ),
           Center(
             child: PlayPauseButton(
