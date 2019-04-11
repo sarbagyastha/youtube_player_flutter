@@ -227,6 +227,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
           controller.value.position > Duration(milliseconds: 100) &&
                   !_showControls.value &&
                   widget.showVideoProgressIndicator &&
+                  !widget.isLive &&
                   !controller.value.isFullScreen
               ? Positioned(
                   bottom: -27.9,

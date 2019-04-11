@@ -274,7 +274,7 @@ class _LiveBottomBarState extends State<LiveBottomBar> {
           InkWell(
             onTap: () => controller.seekTo(controller.value.duration),
             child: Material(
-              color: Colors.red,
+              color: widget.liveUIColor,
               child: Text(
                 " LIVE ",
                 style: TextStyle(
