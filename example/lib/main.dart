@@ -114,6 +114,9 @@ class _MyHomePageState extends State<MyHomePage> {
                     onTap: () {
                       setState(() {
                         _videoId = _idController.text;
+                        // If text is link then converting to corresponding id.
+                        if (_videoId.contains("http"))
+                          _videoId = YoutubePlayer.convertUrlToId(_videoId);
                       });
                     },
                     child: Container(
