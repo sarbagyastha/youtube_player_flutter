@@ -36,6 +36,10 @@ class YoutubePlayer extends StatefulWidget {
   /// Default = 16/9
   final double aspectRatio;
 
+  /// if set to true, hides the controls.
+  /// Default = false
+  final bool hideControls;
+
   /// The duration for which controls in the player will be visible.
   /// Default = 3 seconds
   final Duration controlsTimeOut;
@@ -74,6 +78,7 @@ class YoutubePlayer extends StatefulWidget {
     this.width,
     this.aspectRatio = 16 / 9,
     this.autoPlay = true,
+    this.hideControls = false,
     this.controlsTimeOut = const Duration(seconds: 3),
     this.bufferIndicator,
     this.showVideoProgressIndicator = false,
@@ -223,60 +228,66 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                   "https://i3.ytimg.com/vi/${controller.initialSource}/sddefault.jpg",
                   fit: BoxFit.cover,
                 ),
-          TouchShutter(_showControls),
-          controller.value.position > Duration(milliseconds: 100) &&
-                  !_showControls.value &&
-                  widget.showVideoProgressIndicator &&
-                  !widget.isLive &&
-                  !controller.value.isFullScreen
-              ? Positioned(
-                  bottom: -27.9,
+          widget.hideControls ? Container() : TouchShutter(_showControls),
+          widget.hideControls
+              ? Container()
+              : controller.value.position > Duration(milliseconds: 100) &&
+                      !_showControls.value &&
+                      widget.showVideoProgressIndicator &&
+                      !widget.isLive &&
+                      !controller.value.isFullScreen
+                  ? Positioned(
+                      bottom: -27.9,
+                      left: 0,
+                      right: 0,
+                      child: IgnorePointer(
+                        ignoring: true,
+                        child: ProgressBar(
+                          controller,
+                          colors: ProgressColors(
+                            handleColor: Colors.transparent,
+                            playedColor: widget.videoProgressIndicatorColor,
+                          ),
+                        ),
+                      ),
+                    )
+                  : Container(),
+          widget.hideControls
+              ? Container()
+              : Positioned(
+                  bottom: 0,
                   left: 0,
                   right: 0,
-                  child: IgnorePointer(
-                    ignoring: true,
-                    child: ProgressBar(
-                      controller,
-                      colors: ProgressColors(
-                        handleColor: Colors.transparent,
-                        playedColor: widget.videoProgressIndicatorColor,
-                      ),
-                    ),
-                  ),
-                )
-              : Container(),
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: widget.isLive
-                ? LiveBottomBar(
+                  child: widget.isLive
+                      ? LiveBottomBar(
+                          controller,
+                          _showControls,
+                          widget.aspectRatio,
+                          widget.liveUIColor,
+                        )
+                      : BottomBar(
+                          controller,
+                          _showControls,
+                          widget.aspectRatio,
+                          widget.progressColors,
+                        ),
+                ),
+          widget.hideControls
+              ? Container()
+              : Center(
+                  child: PlayPauseButton(
                     controller,
                     _showControls,
-                    widget.aspectRatio,
-                    widget.liveUIColor,
-                  )
-                : BottomBar(
-                    controller,
-                    _showControls,
-                    widget.aspectRatio,
-                    widget.progressColors,
+                    widget.bufferIndicator ??
+                        Container(
+                          width: 70.0,
+                          height: 70.0,
+                          child: CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation(Colors.white),
+                          ),
+                        ),
                   ),
-          ),
-          Center(
-            child: PlayPauseButton(
-              controller,
-              _showControls,
-              widget.bufferIndicator ??
-                  Container(
-                    width: 70.0,
-                    height: 70.0,
-                    child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation(Colors.white),
-                    ),
-                  ),
-            ),
-          ),
+                ),
         ],
       ),
     );

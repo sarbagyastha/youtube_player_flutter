@@ -82,7 +82,6 @@ class _MyHomePageState extends State<MyHomePage> {
               context: context,
               videoId: _videoId,
               autoPlay: true,
-              isLive: true,
               showVideoProgressIndicator: true,
               videoProgressIndicatorColor: Colors.amber,
               progressColors: ProgressColors(

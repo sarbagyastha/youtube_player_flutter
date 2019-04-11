@@ -1,3 +1,5 @@
-## 0.0.1
+## 1.0.0
 
-* TODO: Describe initial release.
+* Initial Release.
+* Includes Dart Documentation.
+* Includes support for Live Videos.
