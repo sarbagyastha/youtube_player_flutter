@@ -304,15 +304,23 @@ class _LiveBottomBarState extends State<LiveBottomBar> {
 }
 
 class TouchShutter extends StatefulWidget {
+  final YoutubePlayerController controller;
   final ValueNotifier<bool> showControls;
 
-  TouchShutter(this.showControls);
+  TouchShutter(this.controller, this.showControls);
 
   @override
   _TouchShutterState createState() => _TouchShutterState();
 }
 
 class _TouchShutterState extends State<TouchShutter> {
+  double dragStartPos = 0.0;
+  double delta = 0.0;
+  int seekToPosition = 0;
+  String seekDuration = "";
+  String seekPosition = "";
+  bool _dragging = false;
+
   @override
   void initState() {
     super.initState();
@@ -325,12 +333,53 @@ class _TouchShutterState extends State<TouchShutter> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => widget.showControls.value = !widget.showControls.value,
+      onHorizontalDragStart: (details) {
+        setState(() {
+          _dragging = true;
+        });
+        dragStartPos = details.globalPosition.dx;
+      },
+      onHorizontalDragUpdate: (details) {
+        delta = details.globalPosition.dx - dragStartPos;
+        seekDuration = (delta < 0 ? "- " : "+ ") +
+            durationFormatter((delta < 0 ? -1 : 1) * (delta * 1000).round());
+        seekToPosition =
+            (widget.controller.value.position.inMilliseconds + delta * 1000)
+                .round();
+        if (seekToPosition < 0) seekToPosition = 0;
+        seekPosition = durationFormatter(seekToPosition);
+      },
+      onHorizontalDragEnd: (_) {
+        widget.controller.seekTo(Duration(milliseconds: seekToPosition));
+        setState(() {
+          _dragging = false;
+        });
+      },
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: widget.showControls.value
               ? Colors.black.withAlpha(120)
               : Colors.transparent,
         ),
+        child: _dragging
+            ? Center(
+                child: Container(
+                  padding: EdgeInsets.all(4.0),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                    color: Colors.black.withAlpha(150),
+                  ),
+                  child: Text(
+                    "$seekDuration ($seekPosition)",
+                    style: TextStyle(
+                      fontSize: 26.0,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              )
+            : Container(),
       ),
     );
   }

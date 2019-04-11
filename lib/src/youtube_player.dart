@@ -228,7 +228,12 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                   "https://i3.ytimg.com/vi/${controller.initialSource}/sddefault.jpg",
                   fit: BoxFit.cover,
                 ),
-          widget.hideControls ? Container() : TouchShutter(_showControls),
+          widget.hideControls
+              ? Container()
+              : TouchShutter(
+                  controller,
+                  _showControls,
+                ),
           widget.hideControls
               ? Container()
               : controller.value.position > Duration(milliseconds: 100) &&
