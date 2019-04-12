@@ -1,3 +1,6 @@
+## 1.0.1+1
+* Added Travis CI.
+
 ## 1.0.1
 * **FIXED** Error while building for iOS.
 
