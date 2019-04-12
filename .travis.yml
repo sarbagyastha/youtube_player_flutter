@@ -84,8 +84,13 @@ matrix:
       osx_image: xcode10.2
 
       before_script:
-        - pip install six
+        - pip3 install six
         - brew update
+        - brew uninstall --ignore-dependencies libimobiledevice
+        - brew uninstall --ignore-dependencies usbmuxd
+        - brew install --HEAD usbmuxd
+        - brew unlink usbmuxd
+        - brew link usbmuxd
         - brew install --HEAD libimobiledevice
         - brew install ideviceinstaller
         - brew install ios-deploy
