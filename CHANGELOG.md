@@ -1,3 +1,6 @@
+## 1.0.1
+* **FIXED** Error while building for iOS.
+
 ## 1.0.0+2
 * **FIXED** Video pausing on tapped, when controls were hidden.
 
