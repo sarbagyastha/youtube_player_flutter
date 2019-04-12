@@ -148,14 +148,14 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "1.0.0"
+    version: "1.0.0+2"
   ytview:
     dependency: transitive
     description:
       name: ytview
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.0.5"
+    version: "0.0.6"
 sdks:
   dart: ">=2.1.0 <3.0.0"
   flutter: ">=0.11.9 <2.0.0"

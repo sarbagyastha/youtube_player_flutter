@@ -1,3 +1,6 @@
+## 1.0.0+2
+* **FIXED** Video pausing on tapped, when controls were hidden.
+
 ## 1.0.0+1
 * Added Download APK badge.
 

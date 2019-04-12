@@ -377,117 +377,120 @@ class _Player extends StatefulWidget {
 class __PlayerState extends State<_Player> with AutomaticKeepAliveClientMixin {
   @override
   Widget build(BuildContext context) {
-    return WebView(
-      initialUrl: "https://sarbagyadhaubanjar.github.io/youtube_player",
-      javascriptMode: JavascriptMode.unrestricted,
-      javascriptChannels: <JavascriptChannel>[
-        JavascriptChannel(
-          name: 'Ready',
-          onMessageReceived: (JavascriptMessage message) {
-            widget.controller.value =
-                widget.controller.value.copyWith(isReady: true);
-            if (widget.autoPlay)
-              widget.controller.load();
-            else
-              widget.controller.cue();
-          },
-        ),
-        JavascriptChannel(
-          name: 'StateChange',
-          onMessageReceived: (JavascriptMessage message) {
-            switch (message.message) {
-              case '-1':
-                widget.controller.value = widget.controller.value.copyWith(
-                    playerState: PlayerState.UN_STARTED, isLoaded: true);
-                _justSwitchedToFullScreen = true;
-                break;
-              case '0':
-                widget.controller.value = widget.controller.value
-                    .copyWith(playerState: PlayerState.ENDED);
-                break;
-              case '1':
-                widget.controller.value = widget.controller.value.copyWith(
-                  playerState: PlayerState.PLAYING,
-                  isPlaying: true,
-                  hasPlayed: true,
-                  errorCode: 0,
-                );
-                break;
-              case '2':
-                widget.controller.value = widget.controller.value.copyWith(
-                  playerState: PlayerState.PAUSED,
-                  isPlaying: false,
-                );
-                break;
-              case '3':
-                widget.controller.value = widget.controller.value
-                    .copyWith(playerState: PlayerState.BUFFERING);
-                break;
-              case '5':
-                widget.controller.value = widget.controller.value
-                    .copyWith(playerState: PlayerState.CUED);
-                break;
-              default:
-                throw Exception("Invalid player state obtained.");
-            }
-          },
-        ),
-        JavascriptChannel(
-          name: 'PlaybackQualityChange',
-          onMessageReceived: (JavascriptMessage message) {
-            print("PlaybackQualityChange ${message.message}");
-          },
-        ),
-        JavascriptChannel(
-          name: 'PlaybackRateChange',
-          onMessageReceived: (JavascriptMessage message) {
-            print("PlaybackRateChange ${message.message}");
-          },
-        ),
-        JavascriptChannel(
-          name: 'Errors',
-          onMessageReceived: (JavascriptMessage message) {
-            widget.controller.value = widget.controller.value
-                .copyWith(errorCode: int.parse(message.message ?? 0));
-          },
-        ),
-        JavascriptChannel(
-          name: 'VideoData',
-          onMessageReceived: (JavascriptMessage message) {
-            var videoData = jsonDecode(message.message);
-            double duration = videoData['duration'] * 1000;
-            print("VideoData ${message.message}");
-            widget.controller.value = widget.controller.value.copyWith(
-              duration: Duration(
-                milliseconds: duration.floor(),
-              ),
-            );
-          },
-        ),
-        JavascriptChannel(
-          name: 'CurrentTime',
-          onMessageReceived: (JavascriptMessage message) {
-            double position = double.parse(message.message) * 1000;
-            widget.controller.value = widget.controller.value.copyWith(
-              position: Duration(
-                milliseconds: position.floor(),
-              ),
-            );
-          },
-        ),
-        JavascriptChannel(
-          name: 'LoadedFraction',
-          onMessageReceived: (JavascriptMessage message) {
-            widget.controller.value = widget.controller.value.copyWith(
-              buffered: double.parse(message.message),
-            );
-          },
-        ),
-      ].toSet(),
-      onWebViewCreated: (webController) {
-        widget.controller.value =
-            widget.controller.value.copyWith(webViewController: webController);
-      },
+    return IgnorePointer(
+      ignoring: true,
+      child: WebView(
+        initialUrl: "https://sarbagyadhaubanjar.github.io/youtube_player",
+        javascriptMode: JavascriptMode.unrestricted,
+        javascriptChannels: <JavascriptChannel>[
+          JavascriptChannel(
+            name: 'Ready',
+            onMessageReceived: (JavascriptMessage message) {
+              widget.controller.value =
+                  widget.controller.value.copyWith(isReady: true);
+              if (widget.autoPlay)
+                widget.controller.load();
+              else
+                widget.controller.cue();
+            },
+          ),
+          JavascriptChannel(
+            name: 'StateChange',
+            onMessageReceived: (JavascriptMessage message) {
+              switch (message.message) {
+                case '-1':
+                  widget.controller.value = widget.controller.value.copyWith(
+                      playerState: PlayerState.UN_STARTED, isLoaded: true);
+                  _justSwitchedToFullScreen = true;
+                  break;
+                case '0':
+                  widget.controller.value = widget.controller.value
+                      .copyWith(playerState: PlayerState.ENDED);
+                  break;
+                case '1':
+                  widget.controller.value = widget.controller.value.copyWith(
+                    playerState: PlayerState.PLAYING,
+                    isPlaying: true,
+                    hasPlayed: true,
+                    errorCode: 0,
+                  );
+                  break;
+                case '2':
+                  widget.controller.value = widget.controller.value.copyWith(
+                    playerState: PlayerState.PAUSED,
+                    isPlaying: false,
+                  );
+                  break;
+                case '3':
+                  widget.controller.value = widget.controller.value
+                      .copyWith(playerState: PlayerState.BUFFERING);
+                  break;
+                case '5':
+                  widget.controller.value = widget.controller.value
+                      .copyWith(playerState: PlayerState.CUED);
+                  break;
+                default:
+                  throw Exception("Invalid player state obtained.");
+              }
+            },
+          ),
+          JavascriptChannel(
+            name: 'PlaybackQualityChange',
+            onMessageReceived: (JavascriptMessage message) {
+              print("PlaybackQualityChange ${message.message}");
+            },
+          ),
+          JavascriptChannel(
+            name: 'PlaybackRateChange',
+            onMessageReceived: (JavascriptMessage message) {
+              print("PlaybackRateChange ${message.message}");
+            },
+          ),
+          JavascriptChannel(
+            name: 'Errors',
+            onMessageReceived: (JavascriptMessage message) {
+              widget.controller.value = widget.controller.value
+                  .copyWith(errorCode: int.parse(message.message ?? 0));
+            },
+          ),
+          JavascriptChannel(
+            name: 'VideoData',
+            onMessageReceived: (JavascriptMessage message) {
+              var videoData = jsonDecode(message.message);
+              double duration = videoData['duration'] * 1000;
+              print("VideoData ${message.message}");
+              widget.controller.value = widget.controller.value.copyWith(
+                duration: Duration(
+                  milliseconds: duration.floor(),
+                ),
+              );
+            },
+          ),
+          JavascriptChannel(
+            name: 'CurrentTime',
+            onMessageReceived: (JavascriptMessage message) {
+              double position = double.parse(message.message) * 1000;
+              widget.controller.value = widget.controller.value.copyWith(
+                position: Duration(
+                  milliseconds: position.floor(),
+                ),
+              );
+            },
+          ),
+          JavascriptChannel(
+            name: 'LoadedFraction',
+            onMessageReceived: (JavascriptMessage message) {
+              widget.controller.value = widget.controller.value.copyWith(
+                buffered: double.parse(message.message),
+              );
+            },
+          ),
+        ].toSet(),
+        onWebViewCreated: (webController) {
+          widget.controller.value = widget.controller.value
+              .copyWith(webViewController: webController);
+        },
+      ),
     );
   }
 
