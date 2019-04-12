@@ -86,8 +86,6 @@ matrix:
       before_script:
         - pip3 install six
         - brew update
-        - brew uninstall --ignore-dependencies libimobiledevice
-        - brew uninstall --ignore-dependencies usbmuxd
         - brew install --HEAD usbmuxd
         - brew unlink usbmuxd
         - brew link usbmuxd
