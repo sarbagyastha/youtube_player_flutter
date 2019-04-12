@@ -79,6 +79,8 @@ YoutubePlayer(
 #### 5\. Playing live stream videos
 Set the isLive property to true in order to change the UI to match Live Video.
 
+![Live UI Demo](live_ui.png) 
+
 ```dart
 YoutubePlayer(
     context: context,
