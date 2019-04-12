@@ -88,7 +88,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 playedColor: Colors.amber,
                 handleColor: Colors.amberAccent,
               ),
-              controllerCallback: (controller) {
+              onPlayerInitialized: (controller) {
                 _controller = controller;
                 _controller.addListener(listener);
               },

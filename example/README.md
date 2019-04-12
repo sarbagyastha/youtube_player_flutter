@@ -1,16 +1,21 @@
-# youtube_player_flutter_example
+# Youtube Player for Flutter Example
 
-Demonstrates how to use the youtube_player_flutter plugin.
+[More Detailed Example](https://github.com/sarbagyastha/youtube_player_flutter/blob/master/example/lib/main.dart)
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.io/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.io/docs/cookbook)
-
-For help getting started with Flutter, view our 
-[online documentation](https://flutter.io/docs), which offers tutorials, 
-samples, guidance on mobile development, and a full API reference.
+```dart
+YoutubePlayer(
+    context: context,
+    videoId: "iLnmTe5Q2Qw",
+    autoPlay: true,
+    showVideoProgressIndicator: true,
+    videoProgressIndicatorColor: Colors.amber,
+    progressColors: ProgressColors(
+      playedColor: Colors.amber,
+      handleColor: Colors.amberAccent,
+    ),
+    onPlayerInitialized: (controller) {
+      _controller = controller;
+      _controller.addListener(listener);
+    },
+),
+```

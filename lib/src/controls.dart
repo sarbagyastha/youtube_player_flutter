@@ -341,13 +341,15 @@ class _TouchShutterState extends State<TouchShutter> {
       },
       onHorizontalDragUpdate: (details) {
         delta = details.globalPosition.dx - dragStartPos;
-        seekDuration = (delta < 0 ? "- " : "+ ") +
-            durationFormatter((delta < 0 ? -1 : 1) * (delta * 1000).round());
         seekToPosition =
             (widget.controller.value.position.inMilliseconds + delta * 1000)
                 .round();
-        if (seekToPosition < 0) seekToPosition = 0;
-        seekPosition = durationFormatter(seekToPosition);
+        setState(() {
+          seekDuration = (delta < 0 ? "- " : "+ ") +
+              durationFormatter((delta < 0 ? -1 : 1) * (delta * 1000).round());
+          if (seekToPosition < 0) seekToPosition = 0;
+          seekPosition = durationFormatter(seekToPosition);
+        });
       },
       onHorizontalDragEnd: (_) {
         widget.controller.seekTo(Duration(milliseconds: seekToPosition));

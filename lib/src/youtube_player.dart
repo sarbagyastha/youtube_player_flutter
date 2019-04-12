@@ -62,7 +62,7 @@ class YoutubePlayer extends StatefulWidget {
   final Color videoProgressIndicatorColor;
 
   /// Returns [YoutubePlayerController] after being initialized.
-  final YoutubePlayerControllerCallback controllerCallback;
+  final YoutubePlayerControllerCallback onPlayerInitialized;
 
   /// if true, Live Playback controls will be shown instead of default one.
   /// Default = false
@@ -84,7 +84,7 @@ class YoutubePlayer extends StatefulWidget {
     this.showVideoProgressIndicator = false,
     this.videoProgressIndicatorColor = Colors.red,
     this.progressColors,
-    this.controllerCallback,
+    this.onPlayerInitialized,
     this.isLive = false,
     this.liveUIColor = Colors.red,
   })  : assert(videoId.length == 11, "Invalid YouTube Video Id"),
@@ -153,8 +153,8 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
       controller.value =
           controller.value.copyWith(webViewController: webController);
     controller.addListener(listener);
-    if (widget.controllerCallback != null)
-      widget.controllerCallback(controller);
+    if (widget.onPlayerInitialized != null)
+      widget.onPlayerInitialized(controller);
   }
 
   void listener() async {
