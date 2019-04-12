@@ -25,7 +25,8 @@ matrix:
     - export PATH=`pwd`/flutter/bin:`pwd`/flutter/bin/cache/dart-sdk/bin:$PATH
     - flutter doctor -v
 
-    #script:
+    script:
+    - flutter doctor -v
     #- flutter test --coverage --coverage-path=lcov.info
 
     #after_success:
@@ -77,7 +78,7 @@ matrix:
     - flutter -v build apk
 
 
-  # Builds an IPA.
+  # Building an IPA.
   - env: JOB=IPA
     os: osx
     language: generic
