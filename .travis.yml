@@ -25,11 +25,11 @@ matrix:
     - export PATH=`pwd`/flutter/bin:`pwd`/flutter/bin/cache/dart-sdk/bin:$PATH
     - flutter doctor -v
 
-    script:
-    - flutter test --coverage --coverage-path=lcov.info
+    #script:
+    #- flutter test --coverage --coverage-path=lcov.info
 
-    after_success:
-    - bash <(curl -s https://codecov.io/bash)
+    #after_success:
+    #- bash <(curl -s https://codecov.io/bash)
 
   # Building an APK.
   - env: JOB=APK
