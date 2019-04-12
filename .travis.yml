@@ -24,7 +24,6 @@ matrix:
         - git clone https://github.com/flutter/flutter.git -b beta --depth 1
         - export PATH=`pwd`/flutter/bin:`pwd`/flutter/bin/cache/dart-sdk/bin:$PATH
 
-
       script:
         - flutter doctor -v
         #- flutter test --coverage --coverage-path=lcov.info
@@ -65,9 +64,9 @@ matrix:
             - fonts-droid
 
       before_script:
-        - wget http://services.gradle.org/distributions/gradle-5.3.1-bin.zip
-        - unzip -qq gradle-5.3.1-bin.zip
-        - export GRADLE_HOME=$PWD/gradle-5.3.1
+        - wget http://services.gradle.org/distributions/gradle-5.2.1-bin.zip
+        - unzip -qq gradle-5.2.1-bin.zip
+        - export GRADLE_HOME=$PWD/gradle-5.2.1
         - export PATH=$GRADLE_HOME/bin:$PATH
         - git clone https://github.com/flutter/flutter.git -b beta --depth 1
         - export PATH=`pwd`/flutter/bin:`pwd`/flutter/bin/cache/dart-sdk/bin:$PATH
@@ -82,7 +81,7 @@ matrix:
     - env: JOB=IPA
       os: osx
       language: generic
-      osx_image: xcode10.2
+      osx_image: xcode8.3
 
       before_script:
         - pip install six
