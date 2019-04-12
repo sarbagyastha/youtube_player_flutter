@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
-import 'package:youtube_player_flutter_example/video_list.dart';
+
+import 'video_list.dart';
 
 void main() => runApp(MyApp());
 
