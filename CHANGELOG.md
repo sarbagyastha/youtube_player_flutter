@@ -1,4 +1,4 @@
-## 1.0.2
+## 1.1.0
 * Minor Improvements.
 * Built and tested on iOS device.
 * Migrated to AndroidX.
