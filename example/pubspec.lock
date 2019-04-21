@@ -29,13 +29,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.14.11"
-  cupertino_icons:
-    dependency: "direct main"
-    description:
-      name: cupertino_icons
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.1.2"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -143,19 +136,19 @@ packages:
     source: hosted
     version: "2.0.8"
   youtube_player_flutter:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       path: ".."
       relative: true
     source: path
-    version: "1.0.1"
+    version: "1.0.2"
   ytview:
     dependency: transitive
     description:
       name: ytview
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.0.7"
+    version: "0.0.7+1"
 sdks:
   dart: ">=2.1.0 <3.0.0"
   flutter: ">=0.11.9 <2.0.0"

@@ -382,6 +382,12 @@ class __PlayerState extends State<_Player> with AutomaticKeepAliveClientMixin {
       child: WebView(
         initialUrl: "https://sarbagyadhaubanjar.github.io/youtube_player",
         javascriptMode: JavascriptMode.unrestricted,
+        iOSWebViewConfiguration: IOSWebViewConfiguration(
+          allowsInlineMediaPlayback: true,
+          allowsPictureInPictureMediaPlayback: true,
+          mediaTypesRequiringUserActionForPlayback: {},
+          allowsAirPlayForMediaPlayback: true,
+        ),
         javascriptChannels: <JavascriptChannel>[
           JavascriptChannel(
             name: 'Ready',
