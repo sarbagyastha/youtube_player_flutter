@@ -1,3 +1,9 @@
+## 1.0.2
+* Minor Improvements.
+* Built and tested on iOS device.
+* Migrated to AndroidX.
+* Removed warnings on iOS builds.
+
 ## 1.0.1+1
 * Added Travis CI.
 

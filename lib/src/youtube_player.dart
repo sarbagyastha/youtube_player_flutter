@@ -394,10 +394,6 @@ class __PlayerState extends State<_Player> with AutomaticKeepAliveClientMixin {
             onMessageReceived: (JavascriptMessage message) {
               widget.controller.value =
                   widget.controller.value.copyWith(isReady: true);
-              if (widget.autoPlay)
-                widget.controller.load();
-              else
-                widget.controller.cue();
             },
           ),
           JavascriptChannel(
@@ -495,6 +491,13 @@ class __PlayerState extends State<_Player> with AutomaticKeepAliveClientMixin {
         onWebViewCreated: (webController) {
           widget.controller.value = widget.controller.value
               .copyWith(webViewController: webController);
+        },
+        onPageFinished: (_) {
+          print("finished");
+          if (widget.controller.value.isReady)
+            widget.autoPlay
+                ? widget.controller.load()
+                : widget.controller.cue();
         },
       ),
     );
