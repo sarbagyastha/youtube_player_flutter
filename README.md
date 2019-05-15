@@ -1,9 +1,15 @@
 # Youtube Player for Flutter
 
-[![pub package](https://img.shields.io/badge/pub-v1.1.0-green.svg)](https://pub.dartlang.org/packages/youtube_player_flutter) [![Build Status](https://travis-ci.org/sarbagyastha/youtube_player_flutter.svg?branch=master)](https://travis-ci.org/sarbagyastha/youtube_player_flutter) [![licence](https://img.shields.io/badge/Licence-MIT-orange.svg)](https://github.com/sarbagyastha/youtube_player_flutter/blob/master/LICENSE) [![Download APK](https://img.shields.io/badge/Download-APK-informational.svg)](https://github.com/sarbagyastha/youtube_player_flutter/raw/master/youtube_player_example.apk)
+[![pub package](https://img.shields.io/badge/pub-v1.1.1-green.svg)](https://pub.dartlang.org/packages/youtube_player_flutter)
+[![Build Status](https://travis-ci.org/sarbagyastha/youtube_player_flutter.svg?branch=master)](https://travis-ci.org/sarbagyastha/youtube_player_flutter)
+[![licence](https://img.shields.io/badge/Licence-MIT-orange.svg)](https://github.com/sarbagyastha/youtube_player_flutter/blob/master/LICENSE)
+[![Download APK](https://img.shields.io/badge/Download-APK-informational.svg)](https://github.com/sarbagyastha/youtube_player_flutter/raw/master/youtube_player_example.apk)
 
-Flutter plugin for playing or streaming YouTube videos inline using the official [**iFrame Player API**](https://developers.google.com/youtube/iframe_api_reference).
-Supports both **Android** and **iOS** platforms.
+Flutter plugin for playing or streaming YouTube videos inline using the
+official
+[**iFrame Player API**](https://developers.google.com/youtube/iframe_api_reference).
+Supports both **Android** and **iOS** platforms(currently has some in
+iOS, will be fixed soon).
 
 ![DEMO](youtube_player_demo.gif) 
 
@@ -37,7 +43,7 @@ Add this to you package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  youtube_player_flutter: ^1.1.0
+  youtube_player_flutter: ^1.1.1
 ```
 
 #### 2\. Install
@@ -121,6 +127,11 @@ print(videoId); // BBAyRBTfsOU
 
 ## Note
 Know more about the configuration options [here](https://pub.dartlang.org/documentation/youtube_player_flutter/latest/youtube_player_flutter/youtube_player_flutter-library.html).
+
+The plugin causes conflict with webview_flutter plugin as this plugin
+already contains webview as its dependency. So there is no need of
+separately adding webview_flutter. You can use WebView from the plugin
+itself.
 
 ## Download
 Download apk from above(in badges) and try the plugin.

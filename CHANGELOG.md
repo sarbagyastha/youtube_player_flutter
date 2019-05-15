@@ -1,3 +1,8 @@
+## 1.1.1
+* Fix for issue
+  [#12](https://github.com/sarbagyastha/youtube_player_flutter/issues/12).
+* WebView is now exported alongside YoutubePlayer.
+
 ## 1.1.0
 * Minor Improvements.
 * Built and tested on iOS device.
