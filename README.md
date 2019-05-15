@@ -1,6 +1,6 @@
 # Youtube Player for Flutter
 
-[![pub package](https://img.shields.io/badge/pub-v1.1.1-green.svg)](https://pub.dartlang.org/packages/youtube_player_flutter)
+[![pub package](https://img.shields.io/badge/pub-v1.1.1+1-green.svg)](https://pub.dartlang.org/packages/youtube_player_flutter)
 [![Build Status](https://travis-ci.org/sarbagyastha/youtube_player_flutter.svg?branch=master)](https://travis-ci.org/sarbagyastha/youtube_player_flutter)
 [![licence](https://img.shields.io/badge/Licence-MIT-orange.svg)](https://github.com/sarbagyastha/youtube_player_flutter/blob/master/LICENSE)
 [![Download APK](https://img.shields.io/badge/Download-APK-informational.svg)](https://github.com/sarbagyastha/youtube_player_flutter/raw/master/youtube_player_example.apk)
@@ -43,7 +43,7 @@ Add this to you package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  youtube_player_flutter: ^1.1.1
+  youtube_player_flutter: ^1.1.1+1
 ```
 
 #### 2\. Install

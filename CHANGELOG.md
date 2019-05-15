@@ -1,3 +1,7 @@
+## 1.1.1+1
+* Updated dart constraint to `>=2.2.0 <3.0.0`*. 
+* **FIXED** Parsing Exceptions.
+
 ## 1.1.1
 * Fix for issue
   [#12](https://github.com/sarbagyastha/youtube_player_flutter/issues/12).
