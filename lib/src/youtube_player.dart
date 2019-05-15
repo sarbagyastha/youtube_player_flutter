@@ -377,6 +377,7 @@ class _Player extends StatefulWidget {
 class __PlayerState extends State<_Player> with AutomaticKeepAliveClientMixin {
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return IgnorePointer(
       ignoring: true,
       child: WebView(
@@ -452,7 +453,7 @@ class __PlayerState extends State<_Player> with AutomaticKeepAliveClientMixin {
             name: 'Errors',
             onMessageReceived: (JavascriptMessage message) {
               widget.controller.value = widget.controller.value
-                  .copyWith(errorCode: int.parse(message.message ?? 0));
+                  .copyWith(errorCode: int.tryParse(message.message) ?? 0);
             },
           ),
           JavascriptChannel(
@@ -471,7 +472,7 @@ class __PlayerState extends State<_Player> with AutomaticKeepAliveClientMixin {
           JavascriptChannel(
             name: 'CurrentTime',
             onMessageReceived: (JavascriptMessage message) {
-              double position = double.parse(message.message) * 1000;
+              double position = double.tryParse(message.message) ?? 0 * 1000;
               widget.controller.value = widget.controller.value.copyWith(
                 position: Duration(
                   milliseconds: position.floor(),
@@ -483,7 +484,7 @@ class __PlayerState extends State<_Player> with AutomaticKeepAliveClientMixin {
             name: 'LoadedFraction',
             onMessageReceived: (JavascriptMessage message) {
               widget.controller.value = widget.controller.value.copyWith(
-                buffered: double.parse(message.message),
+                buffered: double.tryParse(message.message) ?? 0,
               );
             },
           ),
