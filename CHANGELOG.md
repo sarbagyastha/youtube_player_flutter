@@ -1,3 +1,8 @@
+## 1.2.0
+* Added `actions` property, which can be used to add menus in top bar of video. See example for details.
+* Added option to hide fullscreen button. 
+* **FIXED** Current position always showing 00:00 [Issue #17](https://github.com/sarbagyastha/youtube_player_flutter/issues/17)
+
 ## 1.1.1+1
 * Updated dart constraint to `>=2.2.0 <3.0.0`*. 
 * **FIXED** Parsing Exceptions.

@@ -79,9 +79,15 @@ class BottomBar extends StatefulWidget {
   final ValueNotifier<bool> showControls;
   final double aspectRatio;
   final ProgressColors progressColors;
+  final bool hideFullScreenButton;
 
-  BottomBar(this.controller, this.showControls, this.aspectRatio,
-      this.progressColors);
+  BottomBar(
+    this.controller,
+    this.showControls,
+    this.aspectRatio,
+    this.progressColors,
+    this.hideFullScreenButton,
+  );
 
   @override
   _BottomBarState createState() => _BottomBarState();
@@ -162,18 +168,20 @@ class _BottomBarState extends State<BottomBar> {
               fontSize: 12.0,
             ),
           ),
-          IconButton(
-            icon: Icon(
-              controller.value.isFullScreen
-                  ? Icons.fullscreen_exit
-                  : Icons.fullscreen,
-              color: Colors.white,
-            ),
-            onPressed: () {
-              controller.value = controller.value
-                  .copyWith(isFullScreen: !controller.value.isFullScreen);
-            },
-          ),
+          widget.hideFullScreenButton
+              ? SizedBox(width: 10)
+              : IconButton(
+                  icon: Icon(
+                    controller.value.isFullScreen
+                        ? Icons.fullscreen_exit
+                        : Icons.fullscreen,
+                    color: Colors.white,
+                  ),
+                  onPressed: () {
+                    controller.value = controller.value
+                        .copyWith(isFullScreen: !controller.value.isFullScreen);
+                  },
+                ),
         ],
       ),
     );
@@ -185,9 +193,15 @@ class LiveBottomBar extends StatefulWidget {
   final ValueNotifier<bool> showControls;
   final double aspectRatio;
   final Color liveUIColor;
+  final bool hideFullScreenButton;
 
   LiveBottomBar(
-      this.controller, this.showControls, this.aspectRatio, this.liveUIColor);
+    this.controller,
+    this.showControls,
+    this.aspectRatio,
+    this.liveUIColor,
+    this.hideFullScreenButton,
+  );
 
   @override
   _LiveBottomBarState createState() => _LiveBottomBarState();
@@ -285,18 +299,20 @@ class _LiveBottomBarState extends State<LiveBottomBar> {
               ),
             ),
           ),
-          IconButton(
-            icon: Icon(
-              controller.value.isFullScreen
-                  ? Icons.fullscreen_exit
-                  : Icons.fullscreen,
-              color: Colors.white,
-            ),
-            onPressed: () {
-              controller.value = controller.value
-                  .copyWith(isFullScreen: !controller.value.isFullScreen);
-            },
-          ),
+          widget.hideFullScreenButton
+              ? SizedBox(width: 10)
+              : IconButton(
+                  icon: Icon(
+                    controller.value.isFullScreen
+                        ? Icons.fullscreen_exit
+                        : Icons.fullscreen,
+                    color: Colors.white,
+                  ),
+                  onPressed: () {
+                    controller.value = controller.value
+                        .copyWith(isFullScreen: !controller.value.isFullScreen);
+                  },
+                ),
         ],
       ),
     );

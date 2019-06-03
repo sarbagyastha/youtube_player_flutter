@@ -85,6 +85,33 @@ class _MyHomePageState extends State<MyHomePage> {
               autoPlay: true,
               showVideoProgressIndicator: true,
               videoProgressIndicatorColor: Colors.amber,
+              actions: <Widget>[
+                IconButton(
+                  icon: Icon(
+                    Icons.arrow_back_ios,
+                    color: Colors.white,
+                    size: 14.0,
+                  ),
+                  onPressed: () {},
+                ),
+                Text(
+                  'Hello! This is a test title.',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16.0,
+                    fontWeight: FontWeight.w200,
+                  ),
+                ),
+                Spacer(),
+                IconButton(
+                  icon: Icon(
+                    Icons.settings,
+                    color: Colors.white,
+                    size: 18.0,
+                  ),
+                  onPressed: () {},
+                ),
+              ],
               progressColors: ProgressColors(
                 playedColor: Colors.amber,
                 handleColor: Colors.amberAccent,

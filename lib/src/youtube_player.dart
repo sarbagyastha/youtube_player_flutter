@@ -71,6 +71,12 @@ class YoutubePlayer extends StatefulWidget {
   /// Overrides color of Live UI when enabled.
   final Color liveUIColor;
 
+  /// Hides the fullscreen button.
+  final bool hideFullScreenButton;
+
+  /// Adds custom top bar widgets
+  final List<Widget> actions;
+
   YoutubePlayer({
     Key key,
     @required this.context,
@@ -87,6 +93,8 @@ class YoutubePlayer extends StatefulWidget {
     this.onPlayerInitialized,
     this.isLive = false,
     this.liveUIColor = Colors.red,
+    this.hideFullScreenButton = false,
+    this.actions,
   })  : assert(videoId.length == 11, "Invalid YouTube Video Id"),
         super(key: key);
 
@@ -149,9 +157,6 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
 
   _loadController({WebViewController webController}) {
     controller = YoutubePlayerController(widget.videoId);
-    if (webController != null)
-      controller.value =
-          controller.value.copyWith(webViewController: webController);
     controller.addListener(listener);
     if (widget.onPlayerInitialized != null)
       widget.onPlayerInitialized(controller);
@@ -184,8 +189,9 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
       _isFullScreen = false;
       Future.delayed(
         Duration(milliseconds: 500),
-        () => controller
-            .seekTo(Duration(milliseconds: _oldPosition.inMilliseconds + 500)),
+        () => controller.seekTo(
+              Duration(milliseconds: _oldPosition.inMilliseconds + 500),
+            ),
       );
     }
   }
@@ -200,7 +206,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
   Widget build(BuildContext context) {
     if (_currentVideoId != widget.videoId) {
       _currentVideoId = widget.videoId;
-      _loadController(webController: controller.value.webViewController);
+      _loadController();
       controller.load();
       Future.delayed(Duration(milliseconds: 500),
           () => controller.seekTo(Duration(seconds: 0)));
@@ -228,78 +234,85 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                   "https://i3.ytimg.com/vi/${controller.initialSource}/sddefault.jpg",
                   fit: BoxFit.cover,
                 ),
-          widget.hideControls
-              ? Container()
-              : TouchShutter(
-                  controller,
-                  _showControls,
-                ),
-          widget.hideControls
-              ? Container()
-              : controller.value.position > Duration(milliseconds: 100) &&
-                      !_showControls.value &&
-                      widget.showVideoProgressIndicator &&
-                      !widget.isLive &&
-                      !controller.value.isFullScreen
-                  ? Positioned(
-                      bottom: -27.9,
-                      left: 0,
-                      right: 0,
-                      child: IgnorePointer(
-                        ignoring: true,
-                        child: ProgressBar(
-                          controller,
-                          colors: ProgressColors(
-                            handleColor: Colors.transparent,
-                            playedColor: widget.videoProgressIndicatorColor,
-                          ),
+          if (!widget.hideControls)
+            TouchShutter(
+              controller,
+              _showControls,
+            ),
+          if (!widget.hideControls)
+            (controller.value.position > Duration(milliseconds: 100) &&
+                    !_showControls.value &&
+                    widget.showVideoProgressIndicator &&
+                    !widget.isLive &&
+                    !controller.value.isFullScreen)
+                ? Positioned(
+                    bottom: -27.9,
+                    left: 0,
+                    right: 0,
+                    child: IgnorePointer(
+                      ignoring: true,
+                      child: ProgressBar(
+                        controller,
+                        colors: ProgressColors(
+                          handleColor: Colors.transparent,
+                          playedColor: widget.videoProgressIndicatorColor,
                         ),
                       ),
+                    ),
+                  )
+                : Container(),
+          if (!widget.hideControls)
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: widget.isLive
+                  ? LiveBottomBar(
+                      controller,
+                      _showControls,
+                      widget.aspectRatio,
+                      widget.liveUIColor,
+                      widget.hideFullScreenButton,
                     )
-                  : Container(),
-          widget.hideControls
-              ? Container()
-              : Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: widget.isLive
-                      ? LiveBottomBar(
-                          controller,
-                          _showControls,
-                          widget.aspectRatio,
-                          widget.liveUIColor,
-                        )
-                      : BottomBar(
-                          controller,
-                          _showControls,
-                          widget.aspectRatio,
-                          widget.progressColors,
-                        ),
-                ),
-          widget.hideControls
-              ? Container()
-              : Center(
-                  child: PlayPauseButton(
-                    controller,
-                    _showControls,
-                    widget.bufferIndicator ??
-                        Container(
-                          width: 70.0,
-                          height: 70.0,
-                          child: CircularProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation(Colors.white),
-                          ),
-                        ),
-                  ),
-                ),
+                  : BottomBar(
+                      controller,
+                      _showControls,
+                      widget.aspectRatio,
+                      widget.progressColors,
+                      widget.hideFullScreenButton,
+                    ),
+            ),
+          if (!widget.hideControls && _showControls.value)
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: Row(
+                children: widget.actions ?? [Container()],
+              ),
+            ),
+          if (!widget.hideControls)
+            Center(
+              child: PlayPauseButton(
+                controller,
+                _showControls,
+                widget.bufferIndicator ??
+                    Container(
+                      width: 70.0,
+                      height: 70.0,
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation(Colors.white),
+                      ),
+                    ),
+              ),
+            ),
         ],
       ),
     );
   }
 
   Future<void> _pushFullScreenWidget(BuildContext context) async {
-    _oldWebController = controller.value.webViewController;
+    _oldWebController = controller._currentWebController;
     _justSwitchedToFullScreen = false;
     _oldPosition = controller.value.position;
     controller.pause();
@@ -334,8 +347,8 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
     String popValue = await Navigator.of(context).push(route);
     if (popValue == null) _isFullScreen = false;
 
-    controller.value = controller.value
-        .copyWith(isFullScreen: false, webViewController: _oldWebController);
+    controller.value = controller.value.copyWith(isFullScreen: false);
+    controller._currentWebController = _oldWebController;
 
     Future.delayed(
       Duration(milliseconds: 500),
@@ -374,10 +387,11 @@ class _Player extends StatefulWidget {
   __PlayerState createState() => __PlayerState();
 }
 
-class __PlayerState extends State<_Player> with AutomaticKeepAliveClientMixin {
+class __PlayerState extends State<_Player> {
+  WebViewController _temp;
+
   @override
   Widget build(BuildContext context) {
-    super.build(context);
     return IgnorePointer(
       ignoring: true,
       child: WebView(
@@ -472,7 +486,7 @@ class __PlayerState extends State<_Player> with AutomaticKeepAliveClientMixin {
           JavascriptChannel(
             name: 'CurrentTime',
             onMessageReceived: (JavascriptMessage message) {
-              double position = double.tryParse(message.message) ?? 0 * 1000;
+              double position = (double.tryParse(message.message) ?? 0) * 1000;
               widget.controller.value = widget.controller.value.copyWith(
                 position: Duration(
                   milliseconds: position.floor(),
@@ -490,11 +504,14 @@ class __PlayerState extends State<_Player> with AutomaticKeepAliveClientMixin {
           ),
         ].toSet(),
         onWebViewCreated: (webController) {
-          widget.controller.value = widget.controller.value
-              .copyWith(webViewController: webController);
+          _temp = webController;
         },
         onPageFinished: (_) {
-          print("finished");
+          if (widget.controller.value.isFullScreen) {
+            widget.controller._currentWebController = _temp;
+          } else {
+            widget.controller.value.webViewController.complete(_temp);
+          }
           if (widget.controller.value.isReady)
             widget.autoPlay
                 ? widget.controller.load()
@@ -503,9 +520,6 @@ class __PlayerState extends State<_Player> with AutomaticKeepAliveClientMixin {
       ),
     );
   }
-
-  @override
-  bool get wantKeepAlive => true;
 }
 
 /// [ValueNotifier] for [YoutubePlayerController].
@@ -522,8 +536,7 @@ class YoutubePlayerValue {
     this.volume = 100,
     this.playerState,
     this.errorCode,
-    this.webViewController,
-  });
+  }) : webViewController = Completer<WebViewController>();
 
   /// This is true when underlying web player reports ready.
   final bool isReady;
@@ -560,7 +573,7 @@ class YoutubePlayerValue {
   final int errorCode;
 
   /// Reports the [WebViewController].
-  final WebViewController webViewController;
+  final Completer<WebViewController> webViewController;
 
   /// Returns true is player has errors.
   bool get hasError => errorCode != 0;
@@ -577,7 +590,6 @@ class YoutubePlayerValue {
     double volume,
     PlayerState playerState,
     int errorCode,
-    WebViewController webViewController,
   }) {
     return YoutubePlayerValue(
       isReady: isReady ?? this.isReady,
@@ -591,7 +603,6 @@ class YoutubePlayerValue {
       volume: volume ?? this.volume,
       playerState: playerState ?? this.playerState,
       errorCode: errorCode ?? this.errorCode,
-      webViewController: webViewController ?? this.webViewController,
     );
   }
 
@@ -612,38 +623,48 @@ class YoutubePlayerValue {
 
 class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
   final String initialSource;
+  WebViewController _currentWebController;
 
   YoutubePlayerController([
     this.initialSource = "",
   ]) : super(YoutubePlayerValue(isReady: false));
 
+  _evaluateJS(String javascriptString) {
+    if (_currentWebController != null) {
+      _currentWebController.evaluateJavascript(javascriptString);
+    }
+    value.webViewController.future.then(
+      (controller) {
+        _currentWebController = controller;
+        controller.evaluateJavascript(javascriptString);
+      },
+    );
+  }
+
   /// Plays the video.
-  void play() =>
-      value.webViewController.evaluateJavascript('player.playVideo()');
+  void play() => _evaluateJS('player.playVideo()');
 
   /// Pauses the video.
-  void pause() =>
-      value.webViewController.evaluateJavascript('player.pauseVideo()');
+  void pause() => _evaluateJS('player.pauseVideo()');
 
   /// Loads the video as per the [videoId] provided.
-  void load({int startAt = 0}) => value.webViewController
-      .evaluateJavascript('player.loadVideoById("$initialSource", $startAt)');
+  void load({int startAt = 0}) =>
+      _evaluateJS('player.loadVideoById("$initialSource", $startAt)');
 
   /// Cues the video as per the [videoId] provided.
-  void cue({int startAt = 0}) => value.webViewController
-      .evaluateJavascript('player.cueVideoById("$initialSource", $startAt)');
+  void cue({int startAt = 0}) =>
+      _evaluateJS('player.cueVideoById("$initialSource", $startAt)');
 
   /// Mutes the player.
-  void mute() => value.webViewController.evaluateJavascript('player.mute()');
+  void mute() => _evaluateJS('player.mute()');
 
   /// Un mutes the player.
-  void unMute() =>
-      value.webViewController.evaluateJavascript('player.unMute()');
+  void unMute() => _evaluateJS('player.unMute()');
 
   /// Sets the volume of player.
   /// Max = 100 , Min = 0
   void setVolume(int volume) => volume >= 0 && volume <= 100
-      ? value.webViewController.evaluateJavascript('player.setVolume($volume)')
+      ? _evaluateJS('player.setVolume($volume)')
       : throw Exception("Volume should be between 0 and 100");
 
   /// Seek to any position. Video auto plays after seeking.
@@ -651,8 +672,7 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
   /// if the seconds parameter specifies a time outside of the currently buffered video data.
   /// Default allowSeekAhead = true
   void seekTo(Duration position, {bool allowSeekAhead = true}) {
-    value.webViewController.evaluateJavascript(
-        'player.seekTo(${position.inSeconds},$allowSeekAhead)');
+    _evaluateJS('player.seekTo(${position.inSeconds},$allowSeekAhead)');
     play();
     value = value.copyWith(position: position);
   }
