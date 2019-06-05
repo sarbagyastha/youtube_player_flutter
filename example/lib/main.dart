@@ -82,7 +82,9 @@ class _MyHomePageState extends State<MyHomePage> {
             YoutubePlayer(
               context: context,
               videoId: _videoId,
+              mute: false,
               autoPlay: true,
+              forceHideAnnotation: true,
               showVideoProgressIndicator: true,
               videoProgressIndicatorColor: Colors.amber,
               actions: <Widget>[

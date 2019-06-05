@@ -1,3 +1,8 @@
+## 2.0.0
+* **FIXED** iOS playback is fully functional. [Issue #2](https://github.com/sarbagyastha/youtube_player_flutter/issues/2)
+* Added `forceHideAnnotation` property which hides the default YouTube annotation. [Read Issue #17 for detail](https://github.com/sarbagyastha/youtube_player_flutter/issues/14)
+* Added option to `mute` player.
+
 ## 1.2.0
 * Added `actions` property, which can be used to add menus in top bar of video. See example for details.
 * Added option to hide fullscreen button. 

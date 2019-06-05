@@ -1,6 +1,6 @@
 # Youtube Player for Flutter
 
-[![pub package](https://img.shields.io/badge/pub-v1.2.0+1-green.svg)](https://pub.dartlang.org/packages/youtube_player_flutter)
+[![pub package](https://img.shields.io/badge/pub-v2.0.0-green.svg)](https://pub.dartlang.org/packages/youtube_player_flutter)
 [![Build Status](https://travis-ci.org/sarbagyastha/youtube_player_flutter.svg?branch=master)](https://travis-ci.org/sarbagyastha/youtube_player_flutter)
 [![licence](https://img.shields.io/badge/Licence-MIT-orange.svg)](https://github.com/sarbagyastha/youtube_player_flutter/blob/master/LICENSE)
 [![Download APK](https://img.shields.io/badge/Download-APK-informational.svg)](https://github.com/sarbagyastha/youtube_player_flutter/raw/master/youtube_player_example.apk)
@@ -8,9 +8,7 @@
 Flutter plugin for playing or streaming YouTube videos inline using the
 official
 [**iFrame Player API**](https://developers.google.com/youtube/iframe_api_reference).
-Supports both **Android** and **iOS** platforms(currently has some in
-iOS, will be fixed soon).
-
+Supports both **Android** and **iOS** platforms.
 ![DEMO](youtube_player_demo.gif) 
 
 ## Salient Features
@@ -43,7 +41,7 @@ Add this to you package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  youtube_player_flutter: ^1.2.0
+  youtube_player_flutter: ^2.0.0
 ```
 
 #### 2\. Install

@@ -11,6 +11,7 @@ bool _justSwitchedToFullScreen = false;
 
 /// Current state of the player. Find more about it [here](https://developers.google.com/youtube/iframe_api_reference#Playback_status)
 enum PlayerState {
+  UNKNOWN,
   UN_STARTED,
   ENDED,
   PLAYING,
@@ -48,6 +49,10 @@ class YoutubePlayer extends StatefulWidget {
   /// Default = true
   final bool autoPlay;
 
+  /// Mutes the player initially
+  /// Default = false
+  final bool mute;
+
   /// Overrides the default buffering indicator for the player.
   final Widget bufferIndicator;
 
@@ -77,6 +82,12 @@ class YoutubePlayer extends StatefulWidget {
   /// Adds custom top bar widgets
   final List<Widget> actions;
 
+  /// If true, hides the YouTube player annotation. Default = false
+  ///
+  /// Forcing annotation to hide is a hacky way. Although this shouldn't be against Youtube TOS, the author doesn't guarantee
+  /// and won't be responsible for any casualties regarding the YouTube TOS violation.
+  final bool forceHideAnnotation;
+
   YoutubePlayer({
     Key key,
     @required this.context,
@@ -84,6 +95,7 @@ class YoutubePlayer extends StatefulWidget {
     this.width,
     this.aspectRatio = 16 / 9,
     this.autoPlay = true,
+    this.mute = false,
     this.hideControls = false,
     this.controlsTimeOut = const Duration(seconds: 3),
     this.bufferIndicator,
@@ -95,6 +107,7 @@ class YoutubePlayer extends StatefulWidget {
     this.liveUIColor = Colors.red,
     this.hideFullScreenButton = false,
     this.actions,
+    this.forceHideAnnotation = false,
   })  : assert(videoId.length == 11, "Invalid YouTube Video Id"),
         super(key: key);
 
@@ -227,6 +240,8 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
           _Player(
             controller: controller,
             autoPlay: widget.autoPlay,
+            forceHideAnnotation: widget.forceHideAnnotation,
+            mute: widget.mute,
           ),
           controller.value.hasPlayed
               ? Container()
@@ -368,8 +383,11 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
     if (popValue == null)
       Future.delayed(
         Duration(milliseconds: 500),
-        () => controller
-            .seekTo(Duration(milliseconds: _oldPosition.inMilliseconds + 500)),
+        () => controller.seekTo(
+              Duration(
+                milliseconds: _oldPosition.inMilliseconds + 500,
+              ),
+            ),
       );
   }
 }
@@ -377,10 +395,14 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
 class _Player extends StatefulWidget {
   final YoutubePlayerController controller;
   final bool autoPlay;
+  final bool forceHideAnnotation;
+  final bool mute;
 
   _Player({
     this.controller,
     this.autoPlay,
+    this.forceHideAnnotation,
+    this.mute,
   });
 
   @override
@@ -395,7 +417,8 @@ class __PlayerState extends State<_Player> {
     return IgnorePointer(
       ignoring: true,
       child: WebView(
-        initialUrl: "https://sarbagyadhaubanjar.github.io/youtube_player",
+        initialUrl:
+            "https://sarbagyadhaubanjar.github.io/youtube_player/youtube.html",
         javascriptMode: JavascriptMode.unrestricted,
         iOSWebViewConfiguration: IOSWebViewConfiguration(
           allowsInlineMediaPlayback: true,
@@ -512,6 +535,9 @@ class __PlayerState extends State<_Player> {
           } else {
             widget.controller.value.webViewController.complete(_temp);
           }
+          if (widget.forceHideAnnotation)
+            widget.controller.forceHideAnnotation();
+          if (widget.mute) widget.controller.mute();
           if (widget.controller.value.isReady)
             widget.autoPlay
                 ? widget.controller.load()
@@ -534,7 +560,7 @@ class YoutubePlayerValue {
     this.isPlaying = false,
     this.isFullScreen = false,
     this.volume = 100,
-    this.playerState,
+    this.playerState = PlayerState.UNKNOWN,
     this.errorCode,
   }) : webViewController = Completer<WebViewController>();
 
@@ -641,30 +667,33 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
     );
   }
 
+  /// Hide YouTube Player annotations like title, share button and youtube logo.
+  void forceHideAnnotation() => _evaluateJS('hideAnnotations()');
+
   /// Plays the video.
-  void play() => _evaluateJS('player.playVideo()');
+  void play() => _evaluateJS('play()');
 
   /// Pauses the video.
-  void pause() => _evaluateJS('player.pauseVideo()');
+  void pause() => _evaluateJS('pause()');
 
   /// Loads the video as per the [videoId] provided.
   void load({int startAt = 0}) =>
-      _evaluateJS('player.loadVideoById("$initialSource", $startAt)');
+      _evaluateJS('loadById("$initialSource", $startAt)');
 
   /// Cues the video as per the [videoId] provided.
   void cue({int startAt = 0}) =>
-      _evaluateJS('player.cueVideoById("$initialSource", $startAt)');
+      _evaluateJS('cueById("$initialSource", $startAt)');
 
   /// Mutes the player.
-  void mute() => _evaluateJS('player.mute()');
+  void mute() => _evaluateJS('mute()');
 
   /// Un mutes the player.
-  void unMute() => _evaluateJS('player.unMute()');
+  void unMute() => _evaluateJS('unMute()');
 
   /// Sets the volume of player.
   /// Max = 100 , Min = 0
   void setVolume(int volume) => volume >= 0 && volume <= 100
-      ? _evaluateJS('player.setVolume($volume)')
+      ? _evaluateJS('setVolume($volume)')
       : throw Exception("Volume should be between 0 and 100");
 
   /// Seek to any position. Video auto plays after seeking.
@@ -672,7 +701,7 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
   /// if the seconds parameter specifies a time outside of the currently buffered video data.
   /// Default allowSeekAhead = true
   void seekTo(Duration position, {bool allowSeekAhead = true}) {
-    _evaluateJS('player.seekTo(${position.inSeconds},$allowSeekAhead)');
+    _evaluateJS('seekTo(${position.inSeconds},$allowSeekAhead)');
     play();
     value = value.copyWith(position: position);
   }
