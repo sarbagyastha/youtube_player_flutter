@@ -561,7 +561,7 @@ class YoutubePlayerValue {
     this.isFullScreen = false,
     this.volume = 100,
     this.playerState = PlayerState.UNKNOWN,
-    this.errorCode,
+    this.errorCode = 0,
   }) : webViewController = Completer<WebViewController>();
 
   /// This is true when underlying web player reports ready.

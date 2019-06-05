@@ -34,6 +34,7 @@ class _MyHomePageState extends State<MyHomePage> {
   double _volume = 100;
   bool _muted = false;
   String _playerStatus = "";
+  String _errorCode = '0';
 
   String _videoId = "iLnmTe5Q2Qw";
 
@@ -43,6 +44,8 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     setState(() {
       _playerStatus = _controller.value.playerState.toString();
+      _errorCode = _controller.value.errorCode.toString();
+      print(_controller.value.toString());
     });
   }
 
@@ -84,7 +87,7 @@ class _MyHomePageState extends State<MyHomePage> {
               videoId: _videoId,
               mute: false,
               autoPlay: true,
-              forceHideAnnotation: true,
+              forceHideAnnotation: false,
               showVideoProgressIndicator: true,
               videoProgressIndicatorColor: Colors.amber,
               actions: <Widget>[
@@ -252,7 +255,17 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                       textAlign: TextAlign.center,
                     ),
-                  )
+                  ),
+                  Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Text(
+                      "Error Code: $_errorCode",
+                      style: TextStyle(
+                        fontWeight: FontWeight.w300,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
                 ],
               ),
             ),
