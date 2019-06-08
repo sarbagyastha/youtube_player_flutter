@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:youtube_player_flutter/src/duration_formatter.dart';
 import 'package:youtube_player_flutter/src/progress_bar.dart';
 import 'package:youtube_player_flutter/src/youtube_player.dart';

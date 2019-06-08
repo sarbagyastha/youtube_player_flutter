@@ -1,7 +1,6 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'youtube_player.dart';
 
 class YoutubeScaffold extends StatefulWidget {
