@@ -10,7 +10,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  ytview: ">=0.0.7+4 <1.0.0"
+  ytview: 0.0.8-beta.1
 
 dev_dependencies:
   flutter_test:

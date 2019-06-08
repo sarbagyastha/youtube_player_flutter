@@ -170,6 +170,9 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
 
   _loadController({WebViewController webController}) {
     controller = YoutubePlayerController(widget.videoId);
+    if (webController != null)
+      controller.value =
+          controller.value.copyWith(webViewController: webController);
     controller.addListener(listener);
     if (widget.onPlayerInitialized != null)
       widget.onPlayerInitialized(controller);
@@ -219,7 +222,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
   Widget build(BuildContext context) {
     if (_currentVideoId != widget.videoId) {
       _currentVideoId = widget.videoId;
-      _loadController();
+      _loadController(webController: controller.value.webViewController);
       controller.load();
       Future.delayed(Duration(milliseconds: 500),
           () => controller.seekTo(Duration(seconds: 0)));
@@ -327,7 +330,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
   }
 
   Future<void> _pushFullScreenWidget(BuildContext context) async {
-    _oldWebController = controller._currentWebController;
+    _oldWebController = controller.value.webViewController;
     _justSwitchedToFullScreen = false;
     _oldPosition = controller.value.position;
     controller.pause();
@@ -362,9 +365,8 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
     String popValue = await Navigator.of(context).push(route);
     if (popValue == null) _isFullScreen = false;
 
-    controller.value = controller.value.copyWith(isFullScreen: false);
-    controller._currentWebController = _oldWebController;
-
+    controller.value = controller.value
+        .copyWith(isFullScreen: false, webViewController: _oldWebController);
     Future.delayed(
       Duration(milliseconds: 500),
       () {
@@ -410,8 +412,6 @@ class _Player extends StatefulWidget {
 }
 
 class __PlayerState extends State<_Player> {
-  WebViewController _temp;
-
   @override
   Widget build(BuildContext context) {
     return IgnorePointer(
@@ -527,14 +527,10 @@ class __PlayerState extends State<_Player> {
           ),
         ].toSet(),
         onWebViewCreated: (webController) {
-          _temp = webController;
+          widget.controller.value = widget.controller.value
+              .copyWith(webViewController: webController);
         },
         onPageFinished: (_) {
-          if (widget.controller.value.isFullScreen) {
-            widget.controller._currentWebController = _temp;
-          } else {
-            widget.controller.value.webViewController.complete(_temp);
-          }
           if (widget.forceHideAnnotation)
             widget.controller.forceHideAnnotation();
           if (widget.mute) widget.controller.mute();
@@ -562,7 +558,8 @@ class YoutubePlayerValue {
     this.volume = 100,
     this.playerState = PlayerState.UNKNOWN,
     this.errorCode = 0,
-  }) : webViewController = Completer<WebViewController>();
+    this.webViewController,
+  });
 
   /// This is true when underlying web player reports ready.
   final bool isReady;
@@ -599,7 +596,7 @@ class YoutubePlayerValue {
   final int errorCode;
 
   /// Reports the [WebViewController].
-  final Completer<WebViewController> webViewController;
+  final WebViewController webViewController;
 
   /// Returns true is player has errors.
   bool get hasError => errorCode != 0;
@@ -616,6 +613,7 @@ class YoutubePlayerValue {
     double volume,
     PlayerState playerState,
     int errorCode,
+    WebViewController webViewController,
   }) {
     return YoutubePlayerValue(
       isReady: isReady ?? this.isReady,
@@ -629,6 +627,7 @@ class YoutubePlayerValue {
       volume: volume ?? this.volume,
       playerState: playerState ?? this.playerState,
       errorCode: errorCode ?? this.errorCode,
+      webViewController: webViewController ?? this.webViewController,
     );
   }
 
@@ -649,22 +648,13 @@ class YoutubePlayerValue {
 
 class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
   final String initialSource;
-  WebViewController _currentWebController;
 
   YoutubePlayerController([
     this.initialSource = "",
   ]) : super(YoutubePlayerValue(isReady: false));
 
   _evaluateJS(String javascriptString) {
-    if (_currentWebController != null) {
-      _currentWebController.evaluateJavascript(javascriptString);
-    }
-    value.webViewController.future.then(
-      (controller) {
-        _currentWebController = controller;
-        controller.evaluateJavascript(javascriptString);
-      },
-    );
+    value.webViewController?.evaluateJavascript(javascriptString);
   }
 
   /// Hide YouTube Player annotations like title, share button and youtube logo.

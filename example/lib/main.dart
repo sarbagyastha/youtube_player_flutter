@@ -45,7 +45,6 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       _playerStatus = _controller.value.playerState.toString();
       _errorCode = _controller.value.errorCode.toString();
-      print(_controller.value.toString());
     });
   }
 
