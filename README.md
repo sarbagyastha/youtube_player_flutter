@@ -1,6 +1,6 @@
 # Youtube Player for Flutter
 
-[![pub package](https://img.shields.io/badge/pub-v2.0.0-green.svg)](https://pub.dartlang.org/packages/youtube_player_flutter)
+[![pub package](https://img.shields.io/badge/pub-v3.0.0-green.svg)](https://pub.dartlang.org/packages/youtube_player_flutter)
 [![Build Status](https://travis-ci.org/sarbagyastha/youtube_player_flutter.svg?branch=master)](https://travis-ci.org/sarbagyastha/youtube_player_flutter)
 [![licence](https://img.shields.io/badge/Licence-MIT-orange.svg)](https://github.com/sarbagyastha/youtube_player_flutter/blob/master/LICENSE)
 [![Download APK](https://img.shields.io/badge/Download-APK-informational.svg)](https://github.com/sarbagyastha/youtube_player_flutter/raw/master/youtube_player_example.apk)
@@ -24,6 +24,12 @@ The plugin uses forked version of [webview_flutter](https://pub.dartlang.org/pac
 
 Since *webview_flutter* relies on Flutter's new mechanism for embedding Android and iOS views, this plugin might share some known issues tagged with the [platform-views](https://github.com/flutter/flutter/labels/a%3A%20platform-views) and/or [webview](https://github.com/flutter/flutter/labels/p%3A%20webview) labels.
 
+
+## Improvements in Version 3.x.x
+* Faster fullscreen toggling.
+* Toggles fullscreen on orientation change.
+* Option to add own custom thumbnail.
+
 ## Setup
 
 ### iOS
@@ -41,7 +47,7 @@ Add this to you package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  youtube_player_flutter: ^2.0.0
+  youtube_player_flutter: ^3.0.0-beta.1
 ```
 
 #### 2\. Install

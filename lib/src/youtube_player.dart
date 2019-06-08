@@ -7,7 +7,16 @@ import 'package:youtube_player_flutter/src/controls.dart';
 import 'package:youtube_player_flutter/src/progress_bar.dart';
 import 'package:ytview/ytview.dart';
 
-bool _justSwitchedToFullScreen = false;
+final youtubePlayerKey = GlobalKey<_YoutubePlayerState>();
+
+/// Quality of Thumbnail
+enum ThumbnailQuality {
+  DEFAULT,
+  HIGH,
+  MEDIUM,
+  STANDARD,
+  MAX,
+}
 
 /// Current state of the player. Find more about it [here](https://developers.google.com/youtube/iframe_api_reference#Playback_status)
 enum PlayerState {
@@ -88,6 +97,9 @@ class YoutubePlayer extends StatefulWidget {
   /// and won't be responsible for any casualties regarding the YouTube TOS violation.
   final bool forceHideAnnotation;
 
+  /// Thumbnail to show when player is loading
+  final String thumbnailUrl;
+
   YoutubePlayer({
     Key key,
     @required this.context,
@@ -108,8 +120,9 @@ class YoutubePlayer extends StatefulWidget {
     this.hideFullScreenButton = false,
     this.actions,
     this.forceHideAnnotation = false,
+    this.thumbnailUrl,
   })  : assert(videoId.length == 11, "Invalid YouTube Video Id"),
-        super(key: key);
+        super(key: youtubePlayerKey);
 
   /// Converts fully qualified YouTube Url to video id.
   static String convertUrlToId(String url, [bool trimWhitespaces = true]) {
@@ -131,6 +144,31 @@ class YoutubePlayer extends StatefulWidget {
     return null;
   }
 
+  /// Grabs YouTube video's thumbnail for provided video id.
+  static String getThumbnail(
+      {@required String videoId,
+      ThumbnailQuality quality = ThumbnailQuality.STANDARD}) {
+    String _thumbnailUrl = 'https://i3.ytimg.com/vi/$videoId/';
+    switch (quality) {
+      case ThumbnailQuality.DEFAULT:
+        _thumbnailUrl += 'default.jpg';
+        break;
+      case ThumbnailQuality.HIGH:
+        _thumbnailUrl += 'hqdefault.jpg';
+        break;
+      case ThumbnailQuality.MEDIUM:
+        _thumbnailUrl += 'mqdefault.jpg';
+        break;
+      case ThumbnailQuality.STANDARD:
+        _thumbnailUrl += 'sddefault.jpg';
+        break;
+      case ThumbnailQuality.MAX:
+        _thumbnailUrl += 'maxresdefault.jpg';
+        break;
+    }
+    return _thumbnailUrl;
+  }
+
   @override
   _YoutubePlayerState createState() => _YoutubePlayerState();
 }
@@ -148,10 +186,6 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
   int totalDuration = 0;
   double loadedFraction = 0;
   Timer _timer;
-  bool _isFullScreen = false;
-
-  WebViewController _oldWebController;
-  Duration _oldPosition;
 
   String _currentVideoId;
 
@@ -179,15 +213,6 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
   }
 
   void listener() async {
-    if (_oldWebController != null &&
-        _oldWebController.hashCode !=
-            controller.value.webViewController.hashCode) {
-      _oldPosition = controller.value.position;
-    }
-    if ((_oldWebController != null) && _justSwitchedToFullScreen) {
-      _justSwitchedToFullScreen = false;
-      controller.seekTo(_oldPosition);
-    }
     if (controller.value.isLoaded && mounted) {
       setState(() {
         currentPosition = controller.value.position.inMilliseconds;
@@ -195,20 +220,6 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
         loadedFraction = currentPosition / totalDuration;
         if (loadedFraction > 1) loadedFraction = 1;
       });
-    }
-    if (controller.value.isFullScreen && !_isFullScreen) {
-      _isFullScreen = true;
-      await _pushFullScreenWidget(context);
-    }
-    if (!controller.value.isFullScreen && _isFullScreen) {
-      Navigator.of(context).pop("");
-      _isFullScreen = false;
-      Future.delayed(
-        Duration(milliseconds: 500),
-        () => controller.seekTo(
-              Duration(milliseconds: _oldPosition.inMilliseconds + 500),
-            ),
-      );
     }
   }
 
@@ -246,12 +257,17 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
             forceHideAnnotation: widget.forceHideAnnotation,
             mute: widget.mute,
           ),
-          controller.value.hasPlayed
-              ? Container()
-              : Image.network(
-                  "https://i3.ytimg.com/vi/${controller.initialSource}/sddefault.jpg",
-                  fit: BoxFit.cover,
-                ),
+          if (!controller.value.hasPlayed &&
+              controller.value.playerState == PlayerState.BUFFERING)
+            Container(
+              color: Colors.black,
+            ),
+          if (!controller.value.hasPlayed)
+            Image.network(
+              widget.thumbnailUrl ??
+                  YoutubePlayer.getThumbnail(videoId: controller.initialSource),
+              fit: BoxFit.cover,
+            ),
           if (!widget.hideControls)
             TouchShutter(
               controller,
@@ -328,70 +344,6 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
       ),
     );
   }
-
-  Future<void> _pushFullScreenWidget(BuildContext context) async {
-    _oldWebController = controller.value.webViewController;
-    _justSwitchedToFullScreen = false;
-    _oldPosition = controller.value.position;
-    controller.pause();
-
-    final isAndroid = Theme.of(context).platform == TargetPlatform.android;
-    final TransitionRoute<String> route = PageRouteBuilder<String>(
-      maintainState: true,
-      settings: RouteSettings(isInitialRoute: false),
-      pageBuilder: (context, animation, secondAnimation) => AnimatedBuilder(
-            animation: animation,
-            builder: (BuildContext context, Widget child) {
-              return Scaffold(
-                resizeToAvoidBottomPadding: false,
-                body: Container(
-                  alignment: Alignment.center,
-                  color: Colors.black,
-                  child: _buildPlayer(MediaQuery.of(context).size.aspectRatio),
-                ),
-              );
-            },
-          ),
-    );
-
-    SystemChrome.setEnabledSystemUIOverlays([]);
-    if (isAndroid) {
-      SystemChrome.setPreferredOrientations([
-        DeviceOrientation.landscapeLeft,
-        DeviceOrientation.landscapeRight,
-      ]);
-    }
-
-    String popValue = await Navigator.of(context).push(route);
-    if (popValue == null) _isFullScreen = false;
-
-    controller.value = controller.value
-        .copyWith(isFullScreen: false, webViewController: _oldWebController);
-    Future.delayed(
-      Duration(milliseconds: 500),
-      () {
-        SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
-        SystemChrome.setPreferredOrientations(
-          [
-            DeviceOrientation.portraitUp,
-            DeviceOrientation.portraitDown,
-            DeviceOrientation.landscapeLeft,
-            DeviceOrientation.landscapeRight,
-          ],
-        );
-      },
-    );
-
-    if (popValue == null)
-      Future.delayed(
-        Duration(milliseconds: 500),
-        () => controller.seekTo(
-              Duration(
-                milliseconds: _oldPosition.inMilliseconds + 500,
-              ),
-            ),
-      );
-  }
 }
 
 class _Player extends StatefulWidget {
@@ -418,7 +370,7 @@ class __PlayerState extends State<_Player> {
       ignoring: true,
       child: WebView(
         initialUrl:
-            "https://sarbagyadhaubanjar.github.io/youtube_player/youtube.html",
+            'https://sarbagyadhaubanjar.github.io/youtube_player/youtube.html',
         javascriptMode: JavascriptMode.unrestricted,
         iOSWebViewConfiguration: IOSWebViewConfiguration(
           allowsInlineMediaPlayback: true,
@@ -441,7 +393,6 @@ class __PlayerState extends State<_Player> {
                 case '-1':
                   widget.controller.value = widget.controller.value.copyWith(
                       playerState: PlayerState.UN_STARTED, isLoaded: true);
-                  _justSwitchedToFullScreen = true;
                   break;
                 case '0':
                   widget.controller.value = widget.controller.value
@@ -697,5 +648,36 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
   }
 
   /// Forces to enter fullScreen.
-  void enterFullScreen() => value = value.copyWith(isFullScreen: true);
+  void enterFullScreen([bool autoRotationEnabled = false]) {
+    pause();
+    value = value.copyWith(isFullScreen: true);
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeRight,
+      DeviceOrientation.landscapeLeft,
+      if (autoRotationEnabled) ...[
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+      ],
+    ]);
+    SystemChrome.setEnabledSystemUIOverlays([]);
+    Future.delayed(Duration(seconds: 2), () {
+      play();
+    });
+  }
+
+  /// Forces to exit fullScreen.
+  void exitFullScreen() {
+    pause();
+    value = value.copyWith(isFullScreen: false);
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+      DeviceOrientation.landscapeRight,
+      DeviceOrientation.landscapeLeft,
+    ]);
+    SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
+    Future.delayed(Duration(seconds: 2), () {
+      play();
+    });
+  }
 }

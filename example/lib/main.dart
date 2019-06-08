@@ -57,218 +57,219 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          widget.title,
-          style: TextStyle(color: Colors.white),
-        ),
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(
-              Icons.video_library,
-              color: Colors.white,
-            ),
-            onPressed: () async {
-              await Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => VideoList()),
-              );
-            },
+    return YoutubeScaffold(
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(
+            widget.title,
+            style: TextStyle(color: Colors.white),
           ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: <Widget>[
-            YoutubePlayer(
-              context: context,
-              videoId: _videoId,
-              mute: false,
-              autoPlay: true,
-              forceHideAnnotation: false,
-              showVideoProgressIndicator: true,
-              videoProgressIndicatorColor: Colors.amber,
-              actions: <Widget>[
-                IconButton(
-                  icon: Icon(
-                    Icons.arrow_back_ios,
-                    color: Colors.white,
-                    size: 14.0,
-                  ),
-                  onPressed: () {},
-                ),
-                Text(
-                  'Hello! This is a test title.',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16.0,
-                    fontWeight: FontWeight.w200,
-                  ),
-                ),
-                Spacer(),
-                IconButton(
-                  icon: Icon(
-                    Icons.settings,
-                    color: Colors.white,
-                    size: 18.0,
-                  ),
-                  onPressed: () {},
-                ),
-              ],
-              progressColors: ProgressColors(
-                playedColor: Colors.amber,
-                handleColor: Colors.amberAccent,
+          actions: <Widget>[
+            IconButton(
+              icon: Icon(
+                Icons.video_library,
+                color: Colors.white,
               ),
-              onPlayerInitialized: (controller) {
-                _controller = controller;
-                _controller.addListener(listener);
+              onPressed: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => VideoList()),
+                );
               },
             ),
-            SizedBox(
-              height: 10.0,
-            ),
-            Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-                  TextFormField(
-                    controller: _idController,
-                    decoration: InputDecoration(
-                        border: OutlineInputBorder(),
-                        hintText: "Enter youtube \<video id\> or \<link\>"),
+          ],
+        ),
+        body: SingleChildScrollView(
+          child: Column(
+            children: <Widget>[
+              YoutubePlayer(
+                context: context,
+                videoId: _videoId,
+                mute: false,
+                autoPlay: true,
+                forceHideAnnotation: false,
+                showVideoProgressIndicator: true,
+                videoProgressIndicatorColor: Colors.amber,
+                actions: <Widget>[
+                  IconButton(
+                    icon: Icon(
+                      Icons.arrow_back_ios,
+                      color: Colors.white,
+                      size: 20.0,
+                    ),
+                    onPressed: () {},
                   ),
-                  SizedBox(
-                    height: 10.0,
+                  Text(
+                    'Hello! This is a test title.',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18.0,
+                    ),
                   ),
-                  InkWell(
-                    onTap: () {
-                      setState(() {
-                        _videoId = _idController.text;
-                        // If text is link then converting to corresponding id.
-                        if (_videoId.contains("http"))
-                          _videoId = YoutubePlayer.convertUrlToId(_videoId);
-                      });
-                    },
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                        vertical: 16.0,
+                  Spacer(),
+                  IconButton(
+                    icon: Icon(
+                      Icons.settings,
+                      color: Colors.white,
+                      size: 25.0,
+                    ),
+                    onPressed: () {},
+                  ),
+                ],
+                progressColors: ProgressColors(
+                  playedColor: Colors.amber,
+                  handleColor: Colors.amberAccent,
+                ),
+                onPlayerInitialized: (controller) {
+                  _controller = controller;
+                  _controller.addListener(listener);
+                },
+              ),
+              SizedBox(
+                height: 10.0,
+              ),
+              Padding(
+                padding: EdgeInsets.all(8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    TextFormField(
+                      controller: _idController,
+                      decoration: InputDecoration(
+                          border: OutlineInputBorder(),
+                          hintText: "Enter youtube \<video id\> or \<link\>"),
+                    ),
+                    SizedBox(
+                      height: 10.0,
+                    ),
+                    InkWell(
+                      onTap: () {
+                        setState(() {
+                          _videoId = _idController.text;
+                          // If text is link then converting to corresponding id.
+                          if (_videoId.contains("http"))
+                            _videoId = YoutubePlayer.convertUrlToId(_videoId);
+                        });
+                      },
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          vertical: 16.0,
+                        ),
+                        color: Colors.amber,
+                        child: Text(
+                          "PLAY",
+                          style: TextStyle(fontSize: 18.0, color: Colors.white),
+                          textAlign: TextAlign.center,
+                        ),
                       ),
-                      color: Colors.amber,
+                    ),
+                    SizedBox(
+                      height: 10.0,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: <Widget>[
+                        IconButton(
+                          icon: Icon(
+                            _controller.value.isPlaying
+                                ? Icons.play_arrow
+                                : Icons.pause,
+                          ),
+                          onPressed: () {
+                            _controller.value.isPlaying
+                                ? _controller.pause()
+                                : _controller.play();
+                            setState(() {});
+                          },
+                        ),
+                        IconButton(
+                          icon:
+                              Icon(_muted ? Icons.volume_off : Icons.volume_up),
+                          onPressed: () {
+                            _muted ? _controller.unMute() : _controller.mute();
+                            setState(() {
+                              _muted = !_muted;
+                            });
+                          },
+                        ),
+                        IconButton(
+                            icon: Icon(Icons.fullscreen), onPressed: () {}),
+                      ],
+                    ),
+                    SizedBox(
+                      height: 10.0,
+                    ),
+                    TextField(
+                      controller: _seekToController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                        hintText: "Seek to seconds",
+                        suffixIcon: Padding(
+                          padding: EdgeInsets.all(5.0),
+                          child: OutlineButton(
+                            child: Text("Seek"),
+                            onPressed: () => _controller.seekTo(
+                                  Duration(
+                                    seconds: int.parse(_seekToController.text),
+                                  ),
+                                ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 10.0,
+                    ),
+                    Row(
+                      children: <Widget>[
+                        Text(
+                          "Volume",
+                          style: TextStyle(fontWeight: FontWeight.w300),
+                        ),
+                        Expanded(
+                          child: Slider(
+                            inactiveColor: Colors.transparent,
+                            value: _volume,
+                            min: 0.0,
+                            max: 100.0,
+                            divisions: 10,
+                            label: '${(_volume).round()}',
+                            onChanged: (value) {
+                              setState(() {
+                                _volume = value;
+                              });
+                              _controller.setVolume(_volume.round());
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    Padding(
+                      padding: EdgeInsets.all(8.0),
                       child: Text(
-                        "PLAY",
-                        style: TextStyle(fontSize: 18.0, color: Colors.white),
+                        "Status: $_playerStatus",
+                        style: TextStyle(
+                          fontWeight: FontWeight.w300,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                     ),
-                  ),
-                  SizedBox(
-                    height: 10.0,
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: <Widget>[
-                      IconButton(
-                        icon: Icon(
-                          _controller.value.isPlaying
-                              ? Icons.play_arrow
-                              : Icons.pause,
+                    Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Text(
+                        "Error Code: $_errorCode",
+                        style: TextStyle(
+                          fontWeight: FontWeight.w300,
                         ),
-                        onPressed: () {
-                          _controller.value.isPlaying
-                              ? _controller.pause()
-                              : _controller.play();
-                          setState(() {});
-                        },
-                      ),
-                      IconButton(
-                        icon: Icon(_muted ? Icons.volume_off : Icons.volume_up),
-                        onPressed: () {
-                          _muted ? _controller.unMute() : _controller.mute();
-                          setState(() {
-                            _muted = !_muted;
-                          });
-                        },
-                      ),
-                      IconButton(
-                          icon: Icon(Icons.fullscreen),
-                          onPressed: () => _controller.enterFullScreen()),
-                    ],
-                  ),
-                  SizedBox(
-                    height: 10.0,
-                  ),
-                  TextField(
-                    controller: _seekToController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      hintText: "Seek to seconds",
-                      suffixIcon: Padding(
-                        padding: EdgeInsets.all(5.0),
-                        child: OutlineButton(
-                          child: Text("Seek"),
-                          onPressed: () => _controller.seekTo(
-                                Duration(
-                                  seconds: int.parse(_seekToController.text),
-                                ),
-                              ),
-                        ),
+                        textAlign: TextAlign.center,
                       ),
                     ),
-                  ),
-                  SizedBox(
-                    height: 10.0,
-                  ),
-                  Row(
-                    children: <Widget>[
-                      Text(
-                        "Volume",
-                        style: TextStyle(fontWeight: FontWeight.w300),
-                      ),
-                      Expanded(
-                        child: Slider(
-                          inactiveColor: Colors.transparent,
-                          value: _volume,
-                          min: 0.0,
-                          max: 100.0,
-                          divisions: 10,
-                          label: '${(_volume).round()}',
-                          onChanged: (value) {
-                            setState(() {
-                              _volume = value;
-                            });
-                            _controller.setVolume(_volume.round());
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                  Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Text(
-                      "Status: $_playerStatus",
-                      style: TextStyle(
-                        fontWeight: FontWeight.w300,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Text(
-                      "Error Code: $_errorCode",
-                      style: TextStyle(
-                        fontWeight: FontWeight.w300,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

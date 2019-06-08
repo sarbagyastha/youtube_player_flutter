@@ -1,3 +1,8 @@
+## 3.0.0-beta.1
+* Faster fullscreen toggling.
+* Toggles fullscreen on orientation change.
+* Option to add own custom thumbnail.
+
 ## 2.0.0
 * **FIXED** iOS playback is fully functional. [Issue #2](https://github.com/sarbagyastha/youtube_player_flutter/issues/2)
 * Added `forceHideAnnotation` property which hides the default YouTube annotation. [Read Issue #17 for detail](https://github.com/sarbagyastha/youtube_player_flutter/issues/14)
