@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 import 'video_list.dart';
 
-void main() => runApp(MyApp());
+void main() {
+  SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+    statusBarColor: Color(0xFFFF0000),
+  ));
+  runApp(MyApp());
+}
 
 class MyApp extends StatelessWidget {
   @override
@@ -12,7 +18,10 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Youtube Player Demo',
       theme: ThemeData(
-        primarySwatch: Colors.amber,
+        brightness: Brightness.dark,
+        primarySwatch: Colors.red,
+        appBarTheme: AppBarTheme(color: Color(0xFFFF0000)),
+        scaffoldBackgroundColor: Colors.black,
       ),
       home: MyHomePage(title: 'Youtube Player Demo'),
     );
@@ -58,6 +67,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return YoutubeScaffold(
+      fullScreenOnOrientationChange: true,
       child: Scaffold(
         appBar: AppBar(
           title: Text(
@@ -87,9 +97,9 @@ class _MyHomePageState extends State<MyHomePage> {
                 videoId: _videoId,
                 mute: false,
                 autoPlay: true,
-                forceHideAnnotation: false,
+                forceHideAnnotation: true,
                 showVideoProgressIndicator: true,
-                videoProgressIndicatorColor: Colors.amber,
+                videoProgressIndicatorColor: Color(0xFFFF0000),
                 actions: <Widget>[
                   IconButton(
                     icon: Icon(
@@ -117,8 +127,8 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 ],
                 progressColors: ProgressColors(
-                  playedColor: Colors.amber,
-                  handleColor: Colors.amberAccent,
+                  playedColor: Color(0xFFFF0000),
+                  handleColor: Color(0xFFFF4433),
                 ),
                 onPlayerInitialized: (controller) {
                   _controller = controller;
@@ -155,7 +165,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         padding: EdgeInsets.symmetric(
                           vertical: 16.0,
                         ),
-                        color: Colors.amber,
+                        color: Color(0xFFFF0000),
                         child: Text(
                           "PLAY",
                           style: TextStyle(fontSize: 18.0, color: Colors.white),

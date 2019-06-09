@@ -23,9 +23,11 @@ class _VideoListState extends State<VideoList> {
       ),
       body: ListView.separated(
         itemBuilder: (context, index) => YoutubePlayer(
+              key: UniqueKey(),
               context: context,
               videoId: videoIds[index],
               autoPlay: false,
+              hideFullScreenButton: true,
               showVideoProgressIndicator: true,
             ),
         separatorBuilder: (_, i) => SizedBox(

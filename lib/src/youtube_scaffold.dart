@@ -6,7 +6,13 @@ import 'youtube_player.dart';
 class YoutubeScaffold extends StatefulWidget {
   final Widget child;
 
-  YoutubeScaffold({@required this.child});
+  /// Rotating the device to landscape will switch to fullscreen.
+  final bool fullScreenOnOrientationChange;
+
+  YoutubeScaffold({
+    @required this.child,
+    this.fullScreenOnOrientationChange = true,
+  });
 
   @override
   _YoutubeScaffoldState createState() => _YoutubeScaffoldState();
@@ -14,10 +20,18 @@ class YoutubeScaffold extends StatefulWidget {
 
 class _YoutubeScaffoldState extends State<YoutubeScaffold>
     with WidgetsBindingObserver {
+  YoutubePlayerController _controller;
+
   @override
   void initState() {
     super.initState();
+    _controller = youtubePlayerKey?.currentState?.controller;
     WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
   }
 
   @override
@@ -27,28 +41,34 @@ class _YoutubeScaffoldState extends State<YoutubeScaffold>
   }
 
   @override
+  void deactivate() {
+    youtubePlayerKey.currentState.deactivate();
+    super.deactivate();
+  }
+
+  @override
   void didChangeMetrics() {
-    if (window.physicalSize.width > window.physicalSize.height) {
-      youtubePlayerKey.currentState.controller.enterFullScreen(true);
-    } else {
-      youtubePlayerKey.currentState.controller.exitFullScreen();
+    if (widget.fullScreenOnOrientationChange && !triggeredFullScreenByButton) {
+      if (window.physicalSize.width > window.physicalSize.height) {
+        _controller?.enterFullScreen(true);
+      } else {
+        _controller?.exitFullScreen();
+      }
     }
+    super.didChangeMetrics();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (youtubePlayerKey == null) {
-      return widget.child;
-    }
-    if (youtubePlayerKey.currentState == null) {
-      return widget.child;
-    }
-    if (youtubePlayerKey.currentState.controller == null) {
-      return widget.child;
-    } else if (youtubePlayerKey.currentState.controller.value.isFullScreen) {
-      return Scaffold(
-        body: youtubePlayerKey.currentState.widget,
-      );
+    _controller = youtubePlayerKey?.currentState?.controller;
+    if (_controller != null) {
+      if (_controller.value.isFullScreen) {
+        return Scaffold(
+          body: youtubePlayerKey.currentState.widget,
+          backgroundColor: Colors.black,
+          resizeToAvoidBottomInset: false,
+        );
+      }
     }
     return widget.child;
   }

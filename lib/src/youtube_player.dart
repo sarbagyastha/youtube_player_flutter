@@ -8,6 +8,7 @@ import 'package:youtube_player_flutter/src/progress_bar.dart';
 import 'package:ytview/ytview.dart';
 
 final youtubePlayerKey = GlobalKey<_YoutubePlayerState>();
+bool triggeredFullScreenByButton = false;
 
 /// Quality of Thumbnail
 enum ThumbnailQuality {
@@ -122,7 +123,7 @@ class YoutubePlayer extends StatefulWidget {
     this.forceHideAnnotation = false,
     this.thumbnailUrl,
   })  : assert(videoId.length == 11, "Invalid YouTube Video Id"),
-        super(key: youtubePlayerKey);
+        super(key: key ?? youtubePlayerKey);
 
   /// Converts fully qualified YouTube Url to video id.
   static String convertUrlToId(String url, [bool trimWhitespaces = true]) {
@@ -651,15 +652,17 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
   void enterFullScreen([bool autoRotationEnabled = false]) {
     pause();
     value = value.copyWith(isFullScreen: true);
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.landscapeRight,
-      DeviceOrientation.landscapeLeft,
-      if (autoRotationEnabled) ...[
-        DeviceOrientation.portraitUp,
-        DeviceOrientation.portraitDown,
-      ],
-    ]);
-    SystemChrome.setEnabledSystemUIOverlays([]);
+    Future.delayed(Duration(milliseconds: 500), () {
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.landscapeRight,
+        DeviceOrientation.landscapeLeft,
+        if (autoRotationEnabled) ...[
+          DeviceOrientation.portraitUp,
+          DeviceOrientation.portraitDown,
+        ]
+      ]);
+      SystemChrome.setEnabledSystemUIOverlays([]);
+    });
     Future.delayed(Duration(seconds: 2), () {
       play();
     });
@@ -669,13 +672,15 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
   void exitFullScreen() {
     pause();
     value = value.copyWith(isFullScreen: false);
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-      DeviceOrientation.landscapeRight,
-      DeviceOrientation.landscapeLeft,
-    ]);
-    SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
+    Future.delayed(Duration(milliseconds: 500), () {
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+        DeviceOrientation.landscapeRight,
+        DeviceOrientation.landscapeLeft,
+      ]);
+      SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
+    });
     Future.delayed(Duration(seconds: 2), () {
       play();
     });

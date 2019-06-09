@@ -30,6 +30,13 @@ Since *webview_flutter* relies on Flutter's new mechanism for embedding Android 
 * Toggles fullscreen on orientation change.
 * Option to add own custom thumbnail.
 
+
+## Migrating to v 3.x.x
+This version requires YoutubeScaffold as parent of the player in order to switch to full screen.
+[See example for detail](https://github.com/sarbagyastha/youtube_player_flutter/tree/master/example/lib/main.dart).
+
+Note: *YoutubeScaffold cannot have more than one YoutubePlayer as its descendants.* 
+
 ## Setup
 
 ### iOS
@@ -47,7 +54,7 @@ Add this to you package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  youtube_player_flutter: ^3.0.0-beta.1
+  youtube_player_flutter: ^3.0.0-beta.2
 ```
 
 #### 2\. Install
