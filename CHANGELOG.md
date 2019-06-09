@@ -1,4 +1,4 @@
-## 3.0.0-beta.3
+## 3.0.0-beta.4
 * **BREAKING CHANGES** See Migrating to 3.x.x for detail.
 * Faster fullscreen toggling. 
 * Toggles fullscreen on orientation change. [Issue #3](https://github.com/sarbagyastha/youtube_player_flutter/issues/3).
