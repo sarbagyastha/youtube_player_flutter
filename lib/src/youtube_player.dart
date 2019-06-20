@@ -51,6 +51,10 @@ class YoutubePlayer extends StatefulWidget {
   /// Default = false
   final bool hideControls;
 
+  /// if set to true, horizontal drag will rewind the video. Works only if [hideControls] == false
+  /// Default = true
+  final bool useHorizontalSeek;
+
   /// The duration for which controls in the player will be visible.
   /// Default = 3 seconds
   final Duration controlsTimeOut;
@@ -110,6 +114,7 @@ class YoutubePlayer extends StatefulWidget {
     this.autoPlay = true,
     this.mute = false,
     this.hideControls = false,
+    this.useHorizontalSeek = true,
     this.controlsTimeOut = const Duration(seconds: 3),
     this.bufferIndicator,
     this.showVideoProgressIndicator = false,
@@ -271,8 +276,9 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
             ),
           if (!widget.hideControls)
             TouchShutter(
-              controller,
-              _showControls,
+              controller: controller,
+              showControls: _showControls,
+              useHorizontalSeek: widget.useHorizontalSeek
             ),
           if (!widget.hideControls)
             (controller.value.position > Duration(milliseconds: 100) &&

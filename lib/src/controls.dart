@@ -327,8 +327,9 @@ class _LiveBottomBarState extends State<LiveBottomBar> {
 class TouchShutter extends StatefulWidget {
   final YoutubePlayerController controller;
   final ValueNotifier<bool> showControls;
+  final bool useHorizontalSeek;
 
-  TouchShutter(this.controller, this.showControls);
+  TouchShutter({this.controller, this.showControls, this.useHorizontalSeek});
 
   @override
   _TouchShutterState createState() => _TouchShutterState();
@@ -354,13 +355,17 @@ class _TouchShutterState extends State<TouchShutter> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => widget.showControls.value = !widget.showControls.value,
-      onHorizontalDragStart: (details) {
+      onHorizontalDragStart: widget.useHorizontalSeek == false
+          ? null
+          : (details) {
         setState(() {
           _dragging = true;
         });
         dragStartPos = details.globalPosition.dx;
       },
-      onHorizontalDragUpdate: (details) {
+      onHorizontalDragUpdate: widget.useHorizontalSeek == false
+          ? null
+          : (details) {
         delta = details.globalPosition.dx - dragStartPos;
         seekToPosition =
             (widget.controller.value.position.inMilliseconds + delta * 1000)
@@ -372,7 +377,9 @@ class _TouchShutterState extends State<TouchShutter> {
           seekPosition = durationFormatter(seekToPosition);
         });
       },
-      onHorizontalDragEnd: (_) {
+      onHorizontalDragEnd: widget.useHorizontalSeek == false
+          ? null
+          : (_) {
         widget.controller.seekTo(Duration(milliseconds: seekToPosition));
         setState(() {
           _dragging = false;
