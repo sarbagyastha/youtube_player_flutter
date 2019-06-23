@@ -1,3 +1,6 @@
+## 3.0.0+1
+* Orientation Issue Fixed.
+
 ## 3.0.0
 * **BREAKING CHANGES** See Migrating to 3.x.x for detail.
 * Faster fullscreen toggling. 
