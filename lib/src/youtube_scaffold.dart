@@ -21,17 +21,13 @@ class YoutubeScaffold extends StatefulWidget {
 class _YoutubeScaffoldState extends State<YoutubeScaffold>
     with WidgetsBindingObserver {
   YoutubePlayerController _controller;
+  bool _justChanged = false;
 
   @override
   void initState() {
     super.initState();
     _controller = youtubePlayerKey?.currentState?.controller;
     WidgetsBinding.instance.addObserver(this);
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
   }
 
   @override
@@ -50,10 +46,12 @@ class _YoutubeScaffoldState extends State<YoutubeScaffold>
   void didChangeMetrics() {
     if (widget.fullScreenOnOrientationChange && !triggeredFullScreenByButton) {
       if (window.physicalSize.width > window.physicalSize.height &&
-          !(_controller?.value?.isFullScreen ?? true)) {
-        _controller?.enterFullScreen(true);
-      } else if (_controller?.value?.isFullScreen ?? false) {
-        _controller?.exitFullScreen();
+          !_controller.value.isFullScreen) {
+        _controller.enterFullScreen(true);
+      }
+      if (window.physicalSize.width < window.physicalSize.height &&
+          _controller.value.isFullScreen) {
+        _controller.exitFullScreen();
       }
     }
     super.didChangeMetrics();

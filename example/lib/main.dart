@@ -206,7 +206,9 @@ class _MyHomePageState extends State<MyHomePage> {
                           },
                         ),
                         IconButton(
-                            icon: Icon(Icons.fullscreen), onPressed: () {}),
+                          icon: Icon(Icons.fullscreen),
+                          onPressed: () => _controller.enterFullScreen(),
+                        ),
                       ],
                     ),
                     SizedBox(
