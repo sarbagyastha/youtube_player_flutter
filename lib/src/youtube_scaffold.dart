@@ -49,9 +49,10 @@ class _YoutubeScaffoldState extends State<YoutubeScaffold>
   @override
   void didChangeMetrics() {
     if (widget.fullScreenOnOrientationChange && !triggeredFullScreenByButton) {
-      if (window.physicalSize.width > window.physicalSize.height) {
+      if (window.physicalSize.width > window.physicalSize.height &&
+          !(_controller?.value?.isFullScreen ?? true)) {
         _controller?.enterFullScreen(true);
-      } else {
+      } else if (_controller?.value?.isFullScreen ?? false) {
         _controller?.exitFullScreen();
       }
     }

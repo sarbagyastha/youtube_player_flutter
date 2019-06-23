@@ -26,9 +26,11 @@ class _VideoListState extends State<VideoList> {
               key: UniqueKey(),
               context: context,
               videoId: videoIds[index],
-              autoPlay: false,
-              hideFullScreenButton: true,
-              showVideoProgressIndicator: true,
+              flags: YoutubePlayerFlags(
+                autoPlay: false,
+                showVideoProgressIndicator: true,
+                hideFullScreenButton: true,
+              ),
             ),
         separatorBuilder: (_, i) => SizedBox(
               height: 10.0,

@@ -14,7 +14,8 @@ class PlayPauseButton extends StatefulWidget {
   _PlayPauseButtonState createState() => _PlayPauseButtonState();
 }
 
-class _PlayPauseButtonState extends State<PlayPauseButton> {
+class _PlayPauseButtonState extends State<PlayPauseButton>
+    with SingleTickerProviderStateMixin {
   bool _isPlaying = false;
 
   YoutubePlayerController ytController;
@@ -23,10 +24,17 @@ class _PlayPauseButtonState extends State<PlayPauseButton> {
 
   set controller(YoutubePlayerController c) => ytController = c;
 
+  AnimationController _animController;
+
   @override
   void initState() {
     super.initState();
     controller = widget.controller;
+    _animController = AnimationController(
+      vsync: this,
+      value: 0,
+      duration: Duration(milliseconds: 300),
+    );
     _attachListenerToController();
     widget.showControls.addListener(() {
       if (mounted) setState(() {});
@@ -41,9 +49,16 @@ class _PlayPauseButtonState extends State<PlayPauseButton> {
             _isPlaying = controller.value.isPlaying;
           });
         }
+        if (controller.value.isPlaying) {
+          _animController.forward();
+        } else {
+          _animController.reverse();
+        }
       },
     );
   }
+
+  _animate() {}
 
   @override
   Widget build(BuildContext context) {
@@ -55,16 +70,19 @@ class _PlayPauseButtonState extends State<PlayPauseButton> {
         ? widget.bufferIndicator
         : Visibility(
             visible: widget.showControls.value ||
-                controller.value.playerState == PlayerState.CUED,
+                controller.value.playerState == PlayerState.CUED ||
+                !controller.value.isPlaying,
             child: Material(
               color: Colors.transparent,
               child: InkWell(
                 borderRadius: BorderRadius.circular(50.0),
                 onTap: () {
                   _isPlaying ? controller.pause() : controller.play();
+                  _animate();
                 },
-                child: Icon(
-                  _isPlaying ? Icons.pause : Icons.play_arrow,
+                child: AnimatedIcon(
+                  icon: AnimatedIcons.play_pause,
+                  progress: _animController.view,
                   color: Colors.white,
                   size: 60.0,
                 ),
@@ -327,8 +345,13 @@ class _LiveBottomBarState extends State<LiveBottomBar> {
 class TouchShutter extends StatefulWidget {
   final YoutubePlayerController controller;
   final ValueNotifier<bool> showControls;
+  final bool disableDragSeek;
 
-  TouchShutter(this.controller, this.showControls);
+  TouchShutter(
+    this.controller,
+    this.showControls,
+    this.disableDragSeek,
+  );
 
   @override
   _TouchShutterState createState() => _TouchShutterState();
@@ -352,58 +375,65 @@ class _TouchShutterState extends State<TouchShutter> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => widget.showControls.value = !widget.showControls.value,
-      onHorizontalDragStart: (details) {
-        setState(() {
-          _dragging = true;
-        });
-        dragStartPos = details.globalPosition.dx;
-      },
-      onHorizontalDragUpdate: (details) {
-        delta = details.globalPosition.dx - dragStartPos;
-        seekToPosition =
-            (widget.controller.value.position.inMilliseconds + delta * 1000)
-                .round();
-        setState(() {
-          seekDuration = (delta < 0 ? "- " : "+ ") +
-              durationFormatter((delta < 0 ? -1 : 1) * (delta * 1000).round());
-          if (seekToPosition < 0) seekToPosition = 0;
-          seekPosition = durationFormatter(seekToPosition);
-        });
-      },
-      onHorizontalDragEnd: (_) {
-        widget.controller.seekTo(Duration(milliseconds: seekToPosition));
-        setState(() {
-          _dragging = false;
-        });
-      },
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: widget.showControls.value
-              ? Colors.black.withAlpha(120)
-              : Colors.transparent,
-        ),
-        child: _dragging
-            ? Center(
-                child: Container(
-                  padding: EdgeInsets.all(4.0),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                    color: Colors.black.withAlpha(150),
-                  ),
-                  child: Text(
-                    "$seekDuration ($seekPosition)",
-                    style: TextStyle(
-                      fontSize: 26.0,
-                      fontWeight: FontWeight.w400,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              )
-            : Container(),
-      ),
-    );
+    return widget.disableDragSeek
+        ? GestureDetector(
+            onTap: () => widget.showControls.value = !widget.showControls.value,
+          )
+        : GestureDetector(
+            onTap: () => widget.showControls.value = !widget.showControls.value,
+            onHorizontalDragStart: (details) {
+              setState(() {
+                _dragging = true;
+              });
+              dragStartPos = details.globalPosition.dx;
+            },
+            onHorizontalDragUpdate: (details) {
+              delta = details.globalPosition.dx - dragStartPos;
+              seekToPosition =
+                  (widget.controller.value.position.inMilliseconds +
+                          delta * 1000)
+                      .round();
+              setState(() {
+                seekDuration = (delta < 0 ? "- " : "+ ") +
+                    durationFormatter(
+                        (delta < 0 ? -1 : 1) * (delta * 1000).round());
+                if (seekToPosition < 0) seekToPosition = 0;
+                seekPosition = durationFormatter(seekToPosition);
+              });
+            },
+            onHorizontalDragEnd: (_) {
+              widget.controller.seekTo(Duration(milliseconds: seekToPosition));
+              setState(() {
+                _dragging = false;
+              });
+            },
+            child: AnimatedContainer(
+              duration: Duration(milliseconds: 300),
+              decoration: BoxDecoration(
+                color: widget.showControls.value
+                    ? Colors.black.withAlpha(150)
+                    : Colors.transparent,
+              ),
+              child: _dragging
+                  ? Center(
+                      child: Container(
+                        padding: EdgeInsets.all(4.0),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                          color: Colors.black.withAlpha(150),
+                        ),
+                        child: Text(
+                          "$seekDuration ($seekPosition)",
+                          style: TextStyle(
+                            fontSize: 26.0,
+                            fontWeight: FontWeight.w400,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    )
+                  : Container(),
+            ),
+          );
   }
 }

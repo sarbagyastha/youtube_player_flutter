@@ -1,9 +1,13 @@
-## 3.0.0-beta.4
+## 3.0.0
 * **BREAKING CHANGES** See Migrating to 3.x.x for detail.
 * Faster fullscreen toggling. 
 * Toggles fullscreen on orientation change. [Issue #3](https://github.com/sarbagyastha/youtube_player_flutter/issues/3).
 * Option to add own custom thumbnail.
 * **FIXED** Video stuck at unknown state [Issue #24](https://github.com/sarbagyastha/youtube_player_flutter/issues/24).
+* Added `hideThumbnail` and `disableDragSeek` flags. [#27](https://github.com/sarbagyastha/youtube_player_flutter/issues/27), [#29](https://github.com/sarbagyastha/youtube_player_flutter/issues/29).
+* **FIXED** Fullscreen toggle in iOS.
+* Minor UI improvements here and there.
+
 
 ## 2.0.0
 * **FIXED** iOS playback is fully functional. [Issue #2](https://github.com/sarbagyastha/youtube_player_flutter/issues/2)

@@ -3,7 +3,7 @@
 [![pub package](https://img.shields.io/badge/pub-v3.0.0-green.svg)](https://pub.dartlang.org/packages/youtube_player_flutter)
 [![Build Status](https://travis-ci.org/sarbagyastha/youtube_player_flutter.svg?branch=master)](https://travis-ci.org/sarbagyastha/youtube_player_flutter)
 [![licence](https://img.shields.io/badge/Licence-MIT-orange.svg)](https://github.com/sarbagyastha/youtube_player_flutter/blob/master/LICENSE)
-[![Download APK](https://img.shields.io/badge/Download-APK-informational.svg)](https://github.com/sarbagyastha/youtube_player_flutter/raw/beta/youtube_player_demo.apk)
+[![Download APK](https://img.shields.io/badge/Download-APK-informational.svg)](https://github.com/sarbagyastha/youtube_player_flutter/raw/master/youtube_player_demo.apk)
 
 Flutter plugin for playing or streaming YouTube videos inline using the
 official
@@ -37,6 +37,32 @@ This version requires YoutubeScaffold as parent of the player in order to switch
 
 Note: *YoutubeScaffold cannot have more than one YoutubePlayer as its descendants.* 
 
+Also, all the player flags are now moved into `YoutubePlayerFlags` class.
+
+**Before v3.x.x**
+```dart
+YoutubePlayer(
+    context: context,
+    videoId: "iLnmTe5Q2Qw",
+    autoPlay: true,
+    showVideoProgressIndicator: true,
+    videoProgressIndicatorColor: Colors.amber,
+),
+```
+
+**Now in v3.x.x**
+```dart
+YoutubePlayer(
+    context: context,
+    videoId: "iLnmTe5Q2Qw",
+    flags: YoutubePlayerFlags(
+      autoPlay: true,
+      showVideoProgressIndicator: true,
+    ),
+    videoProgressIndicatorColor: Colors.amber,
+),
+```
+
 ## Setup
 
 ### iOS
@@ -54,7 +80,7 @@ Add this to you package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  youtube_player_flutter: ^3.0.0-beta.4
+  youtube_player_flutter: ^3.0.0
 ```
 
 #### 2\. Install
@@ -79,8 +105,10 @@ import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 YoutubePlayer(
     context: context,
     videoId: "iLnmTe5Q2Qw",
-    autoPlay: true,
-    showVideoProgressIndicator: true,
+    flags: YoutubePlayerFlags(
+      autoPlay: true,
+      showVideoProgressIndicator: true,
+    ),
     videoProgressIndicatorColor: Colors.amber,
     progressColors: ProgressColors(
       playedColor: Colors.amber,
@@ -102,7 +130,9 @@ Set the isLive property to true in order to change the UI to match Live Video.
 YoutubePlayer(
     context: context,
     videoId: "iLnmTe5Q2Qw",
-    isLive: true,
+    flags: YoutubePLayerFlags(
+      isLive: true,
+    ),
     liveUIColor: Colors.amber,
 ),
 ```
@@ -116,7 +146,9 @@ Set the hideControls property to true, then you can create your own custom contr
 YoutubePlayer(
     context: context,
     videoId: "iLnmTe5Q2Qw",
-    hideControls: true,
+    flags: YoutubePlayerFlags(
+      hideControls: true,
+    ),
     onPlayerInitialized: (controller) {
       //Create your own UI using this controller
       //on top of the player.
@@ -139,10 +171,13 @@ print(videoId); // BBAyRBTfsOU
 ## Note
 Know more about the configuration options [here](https://pub.dartlang.org/documentation/youtube_player_flutter/latest/youtube_player_flutter/youtube_player_flutter-library.html).
 
-The plugin causes conflict with webview_flutter plugin as this plugin
-already contains webview as its dependency. So there is no need of
-separately adding webview_flutter. You can use WebView from the plugin
-itself.
+## Resolving Conflict with webview_flutter
+Since this plugin already includes webview_flutter, there's no need to add `webview_flutter` separately as dependency.
+
+Just remove it from dependencies in `pubspec.yaml` and use `WebView` widget by importing 
+```dart
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+```
 
 ## Download
 Download apk from above(in badges) and try the plugin.

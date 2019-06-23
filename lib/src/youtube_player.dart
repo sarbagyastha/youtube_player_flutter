@@ -3,9 +3,10 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:youtube_player_flutter/src/controls.dart';
-import 'package:youtube_player_flutter/src/progress_bar.dart';
+import 'controls.dart';
+import 'progress_bar.dart';
 import 'package:ytview/ytview.dart';
+import 'youtube_player_flags.dart';
 
 final youtubePlayerKey = GlobalKey<_YoutubePlayerState>();
 bool triggeredFullScreenByButton = false;
@@ -47,28 +48,12 @@ class YoutubePlayer extends StatefulWidget {
   /// Default = 16/9
   final double aspectRatio;
 
-  /// if set to true, hides the controls.
-  /// Default = false
-  final bool hideControls;
-
   /// The duration for which controls in the player will be visible.
   /// Default = 3 seconds
   final Duration controlsTimeOut;
 
-  /// Define whether to auto play the video after initialization or not.
-  /// Default = true
-  final bool autoPlay;
-
-  /// Mutes the player initially
-  /// Default = false
-  final bool mute;
-
   /// Overrides the default buffering indicator for the player.
   final Widget bufferIndicator;
-
-  /// Defines whether to show or hide progress indicator below the player.
-  /// Default = false
-  final bool showVideoProgressIndicator;
 
   /// Overrides default colors of the progress bar, takes [ProgressColors].
   final ProgressColors progressColors;
@@ -79,27 +64,17 @@ class YoutubePlayer extends StatefulWidget {
   /// Returns [YoutubePlayerController] after being initialized.
   final YoutubePlayerControllerCallback onPlayerInitialized;
 
-  /// if true, Live Playback controls will be shown instead of default one.
-  /// Default = false
-  final bool isLive;
-
   /// Overrides color of Live UI when enabled.
   final Color liveUIColor;
-
-  /// Hides the fullscreen button.
-  final bool hideFullScreenButton;
 
   /// Adds custom top bar widgets
   final List<Widget> actions;
 
-  /// If true, hides the YouTube player annotation. Default = false
-  ///
-  /// Forcing annotation to hide is a hacky way. Although this shouldn't be against Youtube TOS, the author doesn't guarantee
-  /// and won't be responsible for any casualties regarding the YouTube TOS violation.
-  final bool forceHideAnnotation;
-
   /// Thumbnail to show when player is loading
   final String thumbnailUrl;
+
+  /// [YoutubePlayerFlags] composes all the flags required to control the player.
+  final YoutubePlayerFlags flags;
 
   YoutubePlayer({
     Key key,
@@ -107,21 +82,15 @@ class YoutubePlayer extends StatefulWidget {
     @required this.videoId,
     this.width,
     this.aspectRatio = 16 / 9,
-    this.autoPlay = true,
-    this.mute = false,
-    this.hideControls = false,
     this.controlsTimeOut = const Duration(seconds: 3),
     this.bufferIndicator,
-    this.showVideoProgressIndicator = false,
     this.videoProgressIndicatorColor = Colors.red,
     this.progressColors,
     this.onPlayerInitialized,
-    this.isLive = false,
     this.liveUIColor = Colors.red,
-    this.hideFullScreenButton = false,
     this.actions,
-    this.forceHideAnnotation = false,
     this.thumbnailUrl,
+    this.flags = const YoutubePlayerFlags(),
   })  : assert(videoId.length == 11, "Invalid YouTube Video Id"),
         super(key: key ?? youtubePlayerKey);
 
@@ -254,31 +223,32 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
         children: <Widget>[
           _Player(
             controller: controller,
-            autoPlay: widget.autoPlay,
-            forceHideAnnotation: widget.forceHideAnnotation,
-            mute: widget.mute,
+            flags: widget.flags,
           ),
           if (!controller.value.hasPlayed &&
               controller.value.playerState == PlayerState.BUFFERING)
             Container(
               color: Colors.black,
             ),
-          if (!controller.value.hasPlayed)
+          if (!controller.value.hasPlayed && !widget.flags.hideThumbnail)
             Image.network(
               widget.thumbnailUrl ??
-                  YoutubePlayer.getThumbnail(videoId: controller.initialSource),
+                  YoutubePlayer.getThumbnail(
+                    videoId: controller.initialSource,
+                  ),
               fit: BoxFit.cover,
             ),
-          if (!widget.hideControls)
+          if (!widget.flags.hideControls)
             TouchShutter(
               controller,
               _showControls,
+              widget.flags.disableDragSeek,
             ),
-          if (!widget.hideControls)
+          if (!widget.flags.hideControls)
             (controller.value.position > Duration(milliseconds: 100) &&
                     !_showControls.value &&
-                    widget.showVideoProgressIndicator &&
-                    !widget.isLive &&
+                    widget.flags.showVideoProgressIndicator &&
+                    !widget.flags.isLive &&
                     !controller.value.isFullScreen)
                 ? Positioned(
                     bottom: -27.9,
@@ -296,37 +266,42 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                     ),
                   )
                 : Container(),
-          if (!widget.hideControls)
+          if (!widget.flags.hideControls)
             Positioned(
               bottom: 0,
               left: 0,
               right: 0,
-              child: widget.isLive
+              child: widget.flags.isLive
                   ? LiveBottomBar(
                       controller,
                       _showControls,
                       widget.aspectRatio,
                       widget.liveUIColor,
-                      widget.hideFullScreenButton,
+                      widget.flags.hideFullScreenButton,
                     )
                   : BottomBar(
                       controller,
                       _showControls,
                       widget.aspectRatio,
                       widget.progressColors,
-                      widget.hideFullScreenButton,
+                      widget.flags.hideFullScreenButton,
                     ),
             ),
-          if (!widget.hideControls && _showControls.value)
+          if (!widget.flags.hideControls && _showControls.value)
             Positioned(
               top: 0,
               left: 0,
               right: 0,
-              child: Row(
-                children: widget.actions ?? [Container()],
+              child: AnimatedOpacity(
+                opacity:
+                    (!widget.flags.hideControls && _showControls.value) ? 1 : 0,
+                duration: Duration(milliseconds: 300),
+                child: Row(
+                  children: widget.actions ?? [Container()],
+                ),
               ),
             ),
-          if (!widget.hideControls)
+          if (!widget.flags.hideControls)
             Center(
               child: PlayPauseButton(
                 controller,
@@ -349,15 +324,11 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
 
 class _Player extends StatefulWidget {
   final YoutubePlayerController controller;
-  final bool autoPlay;
-  final bool forceHideAnnotation;
-  final bool mute;
+  final YoutubePlayerFlags flags;
 
   _Player({
     this.controller,
-    this.autoPlay,
-    this.forceHideAnnotation,
-    this.mute,
+    this.flags,
   });
 
   @override
@@ -483,11 +454,11 @@ class __PlayerState extends State<_Player> {
               .copyWith(webViewController: webController);
         },
         onPageFinished: (_) {
-          if (widget.forceHideAnnotation)
+          if (widget.flags.forceHideAnnotation)
             widget.controller.forceHideAnnotation();
-          if (widget.mute) widget.controller.mute();
+          if (widget.flags.mute) widget.controller.mute();
           if (widget.controller.value.isReady)
-            widget.autoPlay
+            widget.flags.autoPlay
                 ? widget.controller.load()
                 : widget.controller.cue();
         },

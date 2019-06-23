@@ -6,8 +6,12 @@
 YoutubePlayer(
     context: context,
     videoId: "iLnmTe5Q2Qw",
-    autoPlay: true,
-    showVideoProgressIndicator: true,
+    flags: YoutubePlayerFlags(
+         mute: false,
+         autoPlay: true,
+         forceHideAnnotation: true,
+         showVideoProgressIndicator: true,
+    ),
     videoProgressIndicatorColor: Colors.amber,
     progressColors: ProgressColors(
       playedColor: Colors.amber,
