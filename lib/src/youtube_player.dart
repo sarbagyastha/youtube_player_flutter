@@ -583,6 +583,14 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
   /// Hide YouTube Player annotations like title, share button and youtube logo.
   void forceHideAnnotation() => _evaluateJS('hideAnnotations()');
 
+  /// Set the playback rate.
+  /// Playback rates may include values like 0.25, 0.5, 1, 1.5, and 2.
+  void setPlaybackRate(double playbackRate) {
+    if (playbackRate > 0.0 && playbackRate <= 2.0) {
+      _evaluateJS('player.setPlaybackRate($playbackRate)');
+    }
+  }
+
   /// Plays the video.
   void play() => _evaluateJS('play()');
 
