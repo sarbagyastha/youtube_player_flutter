@@ -1,5 +1,9 @@
-## 3.0.0+1
-* Orientation Issue Fixed.
+## 4.0.0
+**BREAKING CHANGES** 
+* `YoutubePLayerScaffold` has been removed.
+* Improved Orientations
+* Uses `webview_flutter` instead of `ytview`
+
 
 ## 3.0.0
 * **BREAKING CHANGES** See Migrating to 3.x.x for detail.

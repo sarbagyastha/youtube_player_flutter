@@ -41,6 +41,12 @@ class _PlayPauseButtonState extends State<PlayPauseButton>
     });
   }
 
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
+
   _attachListenerToController() {
     controller.addListener(
       () {
@@ -48,11 +54,11 @@ class _PlayPauseButtonState extends State<PlayPauseButton>
           setState(() {
             _isPlaying = controller.value.isPlaying;
           });
-        }
-        if (controller.value.isPlaying) {
-          _animController.forward();
-        } else {
-          _animController.reverse();
+          if (controller.value.isPlaying) {
+            _animController.forward();
+          } else {
+            _animController.reverse();
+          }
         }
       },
     );

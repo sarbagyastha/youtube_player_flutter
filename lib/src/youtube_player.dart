@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:youtube_player_flutter/src/fullscreen_youtube_player.dart';
@@ -261,6 +262,45 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
     );
   }
 
+  Widget _thumbWidget() {
+    return CachedNetworkImage(
+      imageUrl: widget.thumbnailUrl ??
+          YoutubePlayer.getThumbnail(
+            videoId: controller.initialSource,
+          ),
+      fit: BoxFit.cover,
+      errorWidget: (context, url, _) {
+        return Container(
+          color: Colors.black,
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                Text(
+                  'Oops! Something went wrong!',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w400,
+                    color: Colors.white,
+                  ),
+                ),
+                Text(
+                  'Might be an internet issue',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w300,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+      placeholder: (context, _) => Container(
+        color: Colors.black,
+      ),
+    );
+  }
+
   Widget _buildPlayer(double _aspectRatio) {
     return AspectRatio(
       aspectRatio: _aspectRatio,
@@ -279,13 +319,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
               color: Colors.black,
             ),
           if (!controller.value.hasPlayed && !widget.flags.hideThumbnail)
-            Image.network(
-              widget.thumbnailUrl ??
-                  YoutubePlayer.getThumbnail(
-                    videoId: controller.initialSource,
-                  ),
-              fit: BoxFit.cover,
-            ),
+            _thumbWidget(),
           if (!widget.flags.hideControls)
             TouchShutter(
               controller,
@@ -522,43 +556,12 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
     value = value.copyWith(position: position);
   }
 
-  /// Forces to enter fullScreen.
-  void enterFullScreen() {
-    value = value.copyWith(isFullScreen: true);
-    /*pause();
-    value = value.copyWith(isFullScreen: true);
-    Future.delayed(Duration(milliseconds: 500), () {
-      SystemChrome.setPreferredOrientations([
-        DeviceOrientation.landscapeRight,
-        DeviceOrientation.landscapeLeft,
-        if (autoRotationEnabled) ...[
-          DeviceOrientation.portraitUp,
-          DeviceOrientation.portraitDown,
-        ]
-      ]);
-      SystemChrome.setEnabledSystemUIOverlays([]);
-    });
-    Future.delayed(Duration(seconds: 2), () {
-      play();
-    });*/
+  /// Sets the size in pixels of the player.
+  void setSize(Size size) {
+    _evaluateJS('setSize(${size.width * 100},${size.height * 100})');
   }
 
-  /// Forces to exit fullScreen.
-  void exitFullScreen() {
-    value = value.copyWith(isFullScreen: false);
-    /*pause();
-    value = value.copyWith(isFullScreen: false);
-    Future.delayed(Duration(milliseconds: 500), () {
-      SystemChrome.setPreferredOrientations([
-        DeviceOrientation.portraitUp,
-        DeviceOrientation.portraitDown,
-        DeviceOrientation.landscapeRight,
-        DeviceOrientation.landscapeLeft,
-      ]);
-      SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
-    });
-    Future.delayed(Duration(seconds: 2), () {
-      play();
-    });*/
-  }
+  void enterFullScreen() => value = value.copyWith(isFullScreen: true);
+
+  void exitFullScreen() => value = value.copyWith(isFullScreen: false);
 }
