@@ -18,7 +18,7 @@ matrix:
           packages:
             - libstdc++6
             - lib32stdc++6
-            - fonts-droid
+            #- fonts-droid
 
       before_script:
         - git clone https://github.com/flutter/flutter.git -b beta --depth 1
@@ -61,7 +61,7 @@ matrix:
           packages:
             - libstdc++6
             - lib32stdc++6
-            - fonts-droid
+            #- fonts-droid
 
       before_script:
         - wget http://services.gradle.org/distributions/gradle-5.3.1-bin.zip
