@@ -10,7 +10,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  ytview: ">=1.0.0 <1.1.0"
+  webview_flutter: ^0.3.11+2
 
 dev_dependencies:
   flutter_test:

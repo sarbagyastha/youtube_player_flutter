@@ -138,7 +138,9 @@ class _BottomBarState extends State<BottomBar> {
       () {
         if (mounted) {
           setState(() {
-            _currentPosition = controller.value.position.inMilliseconds;
+            _currentPosition = controller.value.duration.inMilliseconds == 0
+                ? 0
+                : controller.value.position.inMilliseconds;
             _remainingDuration =
                 controller.value.duration.inMilliseconds - _currentPosition;
           });
@@ -198,9 +200,7 @@ class _BottomBarState extends State<BottomBar> {
                   onPressed: () {
                     if (controller.value.isFullScreen) {
                       controller.exitFullScreen();
-                      triggeredFullScreenByButton = false;
                     } else {
-                      triggeredFullScreenByButton = true;
                       controller.enterFullScreen();
                     }
                   },
