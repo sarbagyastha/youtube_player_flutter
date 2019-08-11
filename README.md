@@ -25,12 +25,6 @@ The plugin uses [webview_flutter](https://pub.dartlang.org/packages/webview_flut
 Since *webview_flutter* relies on Flutter's new mechanism for embedding Android and iOS views, this plugin might share some known issues tagged with the [platform-views](https://github.com/flutter/flutter/labels/a%3A%20platform-views) and/or [webview](https://github.com/flutter/flutter/labels/p%3A%20webview) labels.
 
 
-## Improvements in Version 3.x.x
-* Faster fullscreen toggling.
-* Toggles fullscreen on orientation change.
-* Option to add own custom thumbnail.
-
-
 ## Setup
 
 ### iOS
@@ -112,14 +106,6 @@ print(videoId); // BBAyRBTfsOU
 
 ## Note
 Know more about the configuration options [here](https://pub.dartlang.org/documentation/youtube_player_flutter/latest/youtube_player_flutter/youtube_player_flutter-library.html).
-
-## Resolving Conflict with webview_flutter
-Since this plugin already includes webview_flutter, there's no need to add `webview_flutter` separately as dependency.
-
-Just remove it from dependencies in `pubspec.yaml` and use `WebView` widget by importing 
-```dart
-import 'package:youtube_player_flutter/youtube_player_flutter.dart';
-```
 
 ## Download
 Download apk from above(in badges) and try the plugin.
