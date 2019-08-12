@@ -21,7 +21,7 @@ Future<Duration> showFullScreenYoutubePlayer({
   Duration startAt = const Duration(seconds: 0),
   bool inFullScreen = true,
 }) {
-  return Navigator.push(
+  return Navigator.push<Duration>(
     context,
     CupertinoPageRoute(
       builder: (context) => _FullScreenYoutubePlayer(
