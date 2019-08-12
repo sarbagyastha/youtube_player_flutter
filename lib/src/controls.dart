@@ -264,8 +264,8 @@ class _LiveBottomBarState extends State<LiveBottomBar> {
         if (mounted) {
           setState(() {
             _currentPosition = controller.value.position.inMilliseconds;
-            _currentSliderPosition = controller.value.position.inMilliseconds /
-                controller.value.duration.inMilliseconds;
+            _currentSliderPosition = controller.value.duration.inMilliseconds == 0 ? 
+              0 : controller.value.position.inMilliseconds / controller.value.duration.inMilliseconds;
           });
         }
       },
