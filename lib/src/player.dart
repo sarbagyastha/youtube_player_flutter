@@ -23,8 +23,7 @@ class __PlayerState extends State<_Player> {
     return IgnorePointer(
       ignoring: true,
       child: WebView(
-        initialUrl:
-            'https://sarbagyadhaubanjar.github.io/youtube_player/youtube.html',
+        initialUrl: player,
         javascriptMode: JavascriptMode.unrestricted,
         initialMediaPlaybackPolicy: AutoMediaPlaybackPolicy.always_allow,
         javascriptChannels: {
@@ -148,5 +147,16 @@ class __PlayerState extends State<_Player> {
         },
       ),
     );
+  }
+
+  String get player {
+    String baseUrl = 'https://sarbagyadhaubanjar.github.io/youtube_player';
+    if (Platform.isAndroid) {
+      return '$baseUrl/android';
+    } else if (Platform.isIOS) {
+      return '$baseUrl/ios';
+    } else {
+      return 'https://flutter.io';
+    }
   }
 }

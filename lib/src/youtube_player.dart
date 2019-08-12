@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -518,7 +519,12 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
   }
 
   /// Hide YouTube Player annotations like title, share button and youtube logo.
-  void forceHideAnnotation() => _evaluateJS('hideAnnotations()');
+  /// It's hidden by default for iOS.
+  void forceHideAnnotation() {
+    if (Platform.isAndroid) {
+      _evaluateJS('hideAnnotations()');
+    }
+  }
 
   /// Plays the video.
   void play() => _evaluateJS('play()');

@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -20,9 +21,9 @@ Future<Duration> showFullScreenYoutubePlayer({
   Duration startAt = const Duration(seconds: 0),
   bool inFullScreen = true,
 }) {
-  return Navigator.push<Duration>(
+  return Navigator.push(
     context,
-    MaterialPageRoute(
+    CupertinoPageRoute(
       builder: (context) => _FullScreenYoutubePlayer(
         context: context,
         videoId: videoId,

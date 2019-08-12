@@ -1,3 +1,8 @@
+## 4.0.0+2
+* Finally working on iOS.
+* Fix error reports in LiveUI. [PR#44](https://github.com/sarbagyastha/youtube_player_flutter/pull/44)
+* Added `startAt` property.
+
 ## 4.0.0+1
 **BREAKING CHANGES** 
 * `YoutubePLayerScaffold` has been removed.
