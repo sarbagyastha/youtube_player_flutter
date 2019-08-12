@@ -41,6 +41,12 @@ class _PlayPauseButtonState extends State<PlayPauseButton>
     });
   }
 
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
+
   _attachListenerToController() {
     controller.addListener(
       () {
@@ -48,11 +54,11 @@ class _PlayPauseButtonState extends State<PlayPauseButton>
           setState(() {
             _isPlaying = controller.value.isPlaying;
           });
-        }
-        if (controller.value.isPlaying) {
-          _animController.forward();
-        } else {
-          _animController.reverse();
+          if (controller.value.isPlaying) {
+            _animController.forward();
+          } else {
+            _animController.reverse();
+          }
         }
       },
     );
@@ -138,7 +144,9 @@ class _BottomBarState extends State<BottomBar> {
       () {
         if (mounted) {
           setState(() {
-            _currentPosition = controller.value.position.inMilliseconds;
+            _currentPosition = controller.value.duration.inMilliseconds == 0
+                ? 0
+                : controller.value.position.inMilliseconds;
             _remainingDuration =
                 controller.value.duration.inMilliseconds - _currentPosition;
           });
@@ -198,9 +206,7 @@ class _BottomBarState extends State<BottomBar> {
                   onPressed: () {
                     if (controller.value.isFullScreen) {
                       controller.exitFullScreen();
-                      triggeredFullScreenByButton = false;
                     } else {
-                      triggeredFullScreenByButton = true;
                       controller.enterFullScreen();
                     }
                   },
@@ -258,8 +264,8 @@ class _LiveBottomBarState extends State<LiveBottomBar> {
         if (mounted) {
           setState(() {
             _currentPosition = controller.value.position.inMilliseconds;
-            _currentSliderPosition = controller.value.position.inMilliseconds /
-                controller.value.duration.inMilliseconds;
+            _currentSliderPosition = controller.value.duration.inMilliseconds == 0 ? 
+              0 : controller.value.position.inMilliseconds / controller.value.duration.inMilliseconds;
           });
         }
       },

@@ -1,15 +1,17 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:youtube_player_flutter/src/fullscreen_youtube_player.dart';
 import 'controls.dart';
 import 'progress_bar.dart';
-import 'package:ytview/ytview.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 import 'youtube_player_flags.dart';
 
-final youtubePlayerKey = GlobalKey<_YoutubePlayerState>();
-bool triggeredFullScreenByButton = false;
+part 'player.dart';
 
 /// Quality of Thumbnail
 enum ThumbnailQuality {
@@ -76,6 +78,11 @@ class YoutubePlayer extends StatefulWidget {
   /// [YoutubePlayerFlags] composes all the flags required to control the player.
   final YoutubePlayerFlags flags;
 
+  /// Video starts playing from the duration provided.
+  final Duration startAt;
+
+  final bool inFullScreen;
+
   YoutubePlayer({
     Key key,
     @required this.context,
@@ -91,8 +98,10 @@ class YoutubePlayer extends StatefulWidget {
     this.actions,
     this.thumbnailUrl,
     this.flags = const YoutubePlayerFlags(),
+    this.startAt = const Duration(seconds: 0),
+    this.inFullScreen = false,
   })  : assert(videoId.length == 11, "Invalid YouTube Video Id"),
-        super(key: key ?? youtubePlayerKey);
+        super(key: key);
 
   /// Converts fully qualified YouTube Url to video id.
   static String convertUrlToId(String url, [bool trimWhitespaces = true]) {
@@ -152,50 +161,92 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
 
   final _showControls = ValueNotifier<bool>(false);
 
-  int currentPosition = 0;
-  int totalDuration = 0;
-  double loadedFraction = 0;
   Timer _timer;
 
   String _currentVideoId;
+
+  var _inFullScreen = false;
 
   @override
   void initState() {
     super.initState();
     _loadController();
     _currentVideoId = widget.videoId;
-    _showControls.addListener(() {
-      _timer?.cancel();
-      if (_showControls.value)
-        _timer =
-            Timer(widget.controlsTimeOut, () => _showControls.value = false);
+    _showControls.addListener(
+      () {
+        _timer?.cancel();
+        if (_showControls.value)
+          _timer = Timer(
+            widget.controlsTimeOut,
+            () => _showControls.value = false,
+          );
+      },
+    );
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      _inFullScreen = widget.inFullScreen;
+      controller.value = controller.value.copyWith(
+        isFullScreen: widget.inFullScreen ?? false,
+      );
     });
   }
 
   _loadController({WebViewController webController}) {
     controller = YoutubePlayerController(widget.videoId);
-    if (webController != null)
+    if (webController != null) {
       controller.value =
           controller.value.copyWith(webViewController: webController);
-    controller.addListener(listener);
-    if (widget.onPlayerInitialized != null)
+    }
+    if (widget.onPlayerInitialized != null) {
       widget.onPlayerInitialized(controller);
+    }
+    controller.addListener(listener);
   }
 
   void listener() async {
-    if (controller.value.isLoaded && mounted) {
-      setState(() {
-        currentPosition = controller.value.position.inMilliseconds;
-        totalDuration = controller.value.duration.inMilliseconds;
-        loadedFraction = currentPosition / totalDuration;
-        if (loadedFraction > 1) loadedFraction = 1;
-      });
+    if (controller.value.isFullScreen && !_inFullScreen) {
+      _inFullScreen = true;
+      Duration pos = await showFullScreenYoutubePlayer(
+        context: context,
+        videoId: widget.videoId,
+        startAt: controller.value.position,
+        width: widget.width,
+        actions: widget.actions,
+        aspectRatio: widget.aspectRatio,
+        bufferIndicator: widget.bufferIndicator,
+        controlsTimeOut: widget.controlsTimeOut,
+        flags: YoutubePlayerFlags(
+          disableDragSeek: widget.flags.disableDragSeek,
+          hideFullScreenButton: widget.flags.hideFullScreenButton,
+          showVideoProgressIndicator: false,
+          autoPlay: widget.flags.autoPlay,
+          forceHideAnnotation: widget.flags.forceHideAnnotation,
+          mute: widget.flags.mute,
+          hideControls: widget.flags.hideControls,
+          hideThumbnail: widget.flags.hideThumbnail,
+          isLive: widget.flags.isLive,
+        ),
+        liveUIColor: widget.liveUIColor,
+        progressColors: widget.progressColors,
+        thumbnailUrl: widget.thumbnailUrl,
+        videoProgressIndicatorColor: widget.videoProgressIndicatorColor,
+      );
+      controller.seekTo(pos ?? Duration(seconds: 1));
+      _inFullScreen = false;
+      controller.exitFullScreen();
+    }
+    if (!controller.value.isFullScreen && _inFullScreen) {
+      _inFullScreen = false;
+      Navigator.pop<Duration>(context, controller.value.position);
+    }
+    if (mounted) {
+      setState(() {});
     }
   }
 
   @override
   void dispose() {
     _timer?.cancel();
+    controller.removeListener(listener);
     super.dispose();
   }
 
@@ -204,13 +255,50 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
     if (_currentVideoId != widget.videoId) {
       _currentVideoId = widget.videoId;
       _loadController(webController: controller.value.webViewController);
-      controller.load();
-      Future.delayed(Duration(milliseconds: 500),
-          () => controller.seekTo(Duration(seconds: 0)));
+      controller.load(startAt: widget.startAt.inSeconds);
     }
     return Container(
       width: widget.width ?? MediaQuery.of(widget.context).size.width,
       child: _buildPlayer(widget.aspectRatio),
+    );
+  }
+
+  Widget _thumbWidget() {
+    return CachedNetworkImage(
+      imageUrl: widget.thumbnailUrl ??
+          YoutubePlayer.getThumbnail(
+            videoId: controller.initialSource,
+          ),
+      fit: BoxFit.cover,
+      errorWidget: (context, url, _) {
+        return Container(
+          color: Colors.black,
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                Text(
+                  'Oops! Something went wrong!',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w400,
+                    color: Colors.white,
+                  ),
+                ),
+                Text(
+                  'Might be an internet issue',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w300,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+      placeholder: (context, _) => Container(
+        color: Colors.black,
+      ),
     );
   }
 
@@ -224,6 +312,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
           _Player(
             controller: controller,
             flags: widget.flags,
+            startAt: widget.startAt,
           ),
           if (!controller.value.hasPlayed &&
               controller.value.playerState == PlayerState.BUFFERING)
@@ -231,13 +320,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
               color: Colors.black,
             ),
           if (!controller.value.hasPlayed && !widget.flags.hideThumbnail)
-            Image.network(
-              widget.thumbnailUrl ??
-                  YoutubePlayer.getThumbnail(
-                    videoId: controller.initialSource,
-                  ),
-              fit: BoxFit.cover,
-            ),
+            _thumbWidget(),
           if (!widget.flags.hideControls)
             TouchShutter(
               controller,
@@ -317,151 +400,6 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
               ),
             ),
         ],
-      ),
-    );
-  }
-}
-
-class _Player extends StatefulWidget {
-  final YoutubePlayerController controller;
-  final YoutubePlayerFlags flags;
-
-  _Player({
-    this.controller,
-    this.flags,
-  });
-
-  @override
-  __PlayerState createState() => __PlayerState();
-}
-
-class __PlayerState extends State<_Player> {
-  @override
-  Widget build(BuildContext context) {
-    return IgnorePointer(
-      ignoring: true,
-      child: WebView(
-        initialUrl:
-            'https://sarbagyadhaubanjar.github.io/youtube_player/youtube.html',
-        javascriptMode: JavascriptMode.unrestricted,
-        iOSWebViewConfiguration: IOSWebViewConfiguration(
-          allowsInlineMediaPlayback: true,
-          allowsPictureInPictureMediaPlayback: true,
-          mediaTypesRequiringUserActionForPlayback: {},
-          allowsAirPlayForMediaPlayback: true,
-        ),
-        javascriptChannels: <JavascriptChannel>[
-          JavascriptChannel(
-            name: 'Ready',
-            onMessageReceived: (JavascriptMessage message) {
-              widget.controller.value =
-                  widget.controller.value.copyWith(isReady: true);
-            },
-          ),
-          JavascriptChannel(
-            name: 'StateChange',
-            onMessageReceived: (JavascriptMessage message) {
-              switch (message.message) {
-                case '-1':
-                  widget.controller.value = widget.controller.value.copyWith(
-                      playerState: PlayerState.UN_STARTED, isLoaded: true);
-                  break;
-                case '0':
-                  widget.controller.value = widget.controller.value
-                      .copyWith(playerState: PlayerState.ENDED);
-                  break;
-                case '1':
-                  widget.controller.value = widget.controller.value.copyWith(
-                    playerState: PlayerState.PLAYING,
-                    isPlaying: true,
-                    hasPlayed: true,
-                    errorCode: 0,
-                  );
-                  break;
-                case '2':
-                  widget.controller.value = widget.controller.value.copyWith(
-                    playerState: PlayerState.PAUSED,
-                    isPlaying: false,
-                  );
-                  break;
-                case '3':
-                  widget.controller.value = widget.controller.value
-                      .copyWith(playerState: PlayerState.BUFFERING);
-                  break;
-                case '5':
-                  widget.controller.value = widget.controller.value
-                      .copyWith(playerState: PlayerState.CUED);
-                  break;
-                default:
-                  throw Exception("Invalid player state obtained.");
-              }
-            },
-          ),
-          JavascriptChannel(
-            name: 'PlaybackQualityChange',
-            onMessageReceived: (JavascriptMessage message) {
-              print("PlaybackQualityChange ${message.message}");
-            },
-          ),
-          JavascriptChannel(
-            name: 'PlaybackRateChange',
-            onMessageReceived: (JavascriptMessage message) {
-              print("PlaybackRateChange ${message.message}");
-            },
-          ),
-          JavascriptChannel(
-            name: 'Errors',
-            onMessageReceived: (JavascriptMessage message) {
-              widget.controller.value = widget.controller.value
-                  .copyWith(errorCode: int.tryParse(message.message) ?? 0);
-            },
-          ),
-          JavascriptChannel(
-            name: 'VideoData',
-            onMessageReceived: (JavascriptMessage message) {
-              var videoData = jsonDecode(message.message);
-              double duration = videoData['duration'] * 1000;
-              print("VideoData ${message.message}");
-              widget.controller.value = widget.controller.value.copyWith(
-                duration: Duration(
-                  milliseconds: duration.floor(),
-                ),
-              );
-            },
-          ),
-          JavascriptChannel(
-            name: 'CurrentTime',
-            onMessageReceived: (JavascriptMessage message) {
-              double position = (double.tryParse(message.message) ?? 0) * 1000;
-              widget.controller.value = widget.controller.value.copyWith(
-                position: Duration(
-                  milliseconds: position.floor(),
-                ),
-              );
-            },
-          ),
-          JavascriptChannel(
-            name: 'LoadedFraction',
-            onMessageReceived: (JavascriptMessage message) {
-              widget.controller.value = widget.controller.value.copyWith(
-                buffered: double.tryParse(message.message) ?? 0,
-              );
-            },
-          ),
-        ].toSet(),
-        onWebViewCreated: (webController) {
-          widget.controller.value = widget.controller.value
-              .copyWith(webViewController: webController);
-        },
-        onPageFinished: (_) {
-          if (widget.flags.forceHideAnnotation)
-            widget.controller.forceHideAnnotation();
-          if (widget.flags.mute) widget.controller.mute();
-          if (widget.controller.value.isReady)
-            widget.flags.autoPlay
-                ? widget.controller.load()
-                : widget.controller.cue();
-        },
       ),
     );
   }
@@ -581,7 +519,12 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
   }
 
   /// Hide YouTube Player annotations like title, share button and youtube logo.
-  void forceHideAnnotation() => _evaluateJS('hideAnnotations()');
+  /// It's hidden by default for iOS.
+  void forceHideAnnotation() {
+    if (Platform.isAndroid) {
+      _evaluateJS('hideAnnotations()');
+    }
+  }
 
   /// Set the playback rate.
   /// Playback rates may include values like 0.25, 0.5, 1, 1.5, and 2.
@@ -627,41 +570,12 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
     value = value.copyWith(position: position);
   }
 
-  /// Forces to enter fullScreen.
-  void enterFullScreen([bool autoRotationEnabled = false]) {
-    pause();
-    value = value.copyWith(isFullScreen: true);
-    Future.delayed(Duration(milliseconds: 500), () {
-      SystemChrome.setPreferredOrientations([
-        DeviceOrientation.landscapeRight,
-        DeviceOrientation.landscapeLeft,
-        if (autoRotationEnabled) ...[
-          DeviceOrientation.portraitUp,
-          DeviceOrientation.portraitDown,
-        ]
-      ]);
-      SystemChrome.setEnabledSystemUIOverlays([]);
-    });
-    Future.delayed(Duration(seconds: 2), () {
-      play();
-    });
+  /// Sets the size in pixels of the player.
+  void setSize(Size size) {
+    _evaluateJS('setSize(${size.width * 100},${size.height * 100})');
   }
 
-  /// Forces to exit fullScreen.
-  void exitFullScreen() {
-    pause();
-    value = value.copyWith(isFullScreen: false);
-    Future.delayed(Duration(milliseconds: 500), () {
-      SystemChrome.setPreferredOrientations([
-        DeviceOrientation.portraitUp,
-        DeviceOrientation.portraitDown,
-        DeviceOrientation.landscapeRight,
-        DeviceOrientation.landscapeLeft,
-      ]);
-      SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
-    });
-    Future.delayed(Duration(seconds: 2), () {
-      play();
-    });
-  }
+  void enterFullScreen() => value = value.copyWith(isFullScreen: true);
+
+  void exitFullScreen() => value = value.copyWith(isFullScreen: false);
 }
