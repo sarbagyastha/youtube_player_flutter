@@ -3,20 +3,44 @@ part of 'youtube_player.dart';
 class _Player extends StatefulWidget {
   final YoutubePlayerController controller;
   final YoutubePlayerFlags flags;
-  final Duration startAt;
 
   _Player({
     this.controller,
     this.flags,
-    this.startAt,
   });
 
   @override
   __PlayerState createState() => __PlayerState();
 }
 
-class __PlayerState extends State<_Player> {
+class __PlayerState extends State<_Player> with WidgetsBindingObserver {
   Completer<WebViewController> _webController = Completer<WebViewController>();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    switch (state) {
+      case AppLifecycleState.resumed:
+        widget.controller?.play();
+        break;
+      case AppLifecycleState.inactive:
+      case AppLifecycleState.paused:
+      case AppLifecycleState.suspending:
+        widget.controller?.pause();
+        break;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,9 +56,6 @@ class __PlayerState extends State<_Player> {
             onMessageReceived: (JavascriptMessage message) {
               widget.controller.value =
                   widget.controller.value.copyWith(isReady: true);
-              widget.flags.autoPlay
-                  ? widget.controller.load(startAt: widget.startAt.inSeconds)
-                  : widget.controller.cue();
             },
           ),
           JavascriptChannel(
@@ -85,7 +106,31 @@ class __PlayerState extends State<_Player> {
           JavascriptChannel(
             name: 'PlaybackRateChange',
             onMessageReceived: (JavascriptMessage message) {
-              print("PlaybackRateChange ${message.message}");
+              switch (message.message) {
+                case '2':
+                  widget.controller.value = widget.controller.value
+                      .copyWith(playbackRate: PlaybackRate.DOUBLE);
+                  break;
+                case '1.5':
+                  widget.controller.value = widget.controller.value
+                      .copyWith(playbackRate: PlaybackRate.ONE_AND_A_HALF);
+                  break;
+                case '1':
+                  widget.controller.value = widget.controller.value
+                      .copyWith(playbackRate: PlaybackRate.NORMAL);
+                  break;
+                case '0.5':
+                  widget.controller.value = widget.controller.value
+                      .copyWith(playbackRate: PlaybackRate.HALF);
+                  break;
+                case '0.25':
+                  widget.controller.value = widget.controller.value
+                      .copyWith(playbackRate: PlaybackRate.QUARTER);
+                  break;
+                default:
+                  widget.controller.value = widget.controller.value
+                      .copyWith(playbackRate: PlaybackRate.NORMAL);
+              }
             },
           ),
           JavascriptChannel(
@@ -134,13 +179,13 @@ class __PlayerState extends State<_Player> {
             (controller) {
               widget.controller.value = widget.controller.value
                   .copyWith(webViewController: webController);
-              if (widget.flags.mute) {
-                widget.controller.mute();
-              }
             },
           );
         },
         onPageFinished: (_) {
+          widget.controller.value = widget.controller.value.copyWith(
+            isEvaluationReady: true,
+          );
           if (widget.flags.forceHideAnnotation) {
             widget.controller.forceHideAnnotation();
           }

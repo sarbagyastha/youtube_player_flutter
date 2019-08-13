@@ -3,8 +3,8 @@
 [![pub package](https://img.shields.io/pub/vpre/youtube_player_flutter.svg)](https://pub.dartlang.org/packages/youtube_player_flutter)
 [![Build Status](https://travis-ci.org/sarbagyastha/youtube_player_flutter.svg?branch=master)](https://travis-ci.org/sarbagyastha/youtube_player_flutter)
 [![licence](https://img.shields.io/badge/licence-MIT-orange.svg)](https://github.com/sarbagyastha/youtube_player_flutter/blob/master/LICENSE)
-[![Download apk-32](https://img.shields.io/badge/download-arm-informational.svg)](https://github.com/sarbagyastha/youtube_player_flutter/raw/master/yt_demo32.apk)
-[![Download apk-64](https://img.shields.io/badge/download-arm64-informational.svg)](https://github.com/sarbagyastha/youtube_player_flutter/raw/master/yt_demo64.apk)
+[![Download apk-32](https://img.shields.io/badge/download-arm-informational.svg)](https://github.com/sarbagyastha/youtube_player_flutter/raw/master/ytpf_demo32.apk)
+[![Download apk-64](https://img.shields.io/badge/download-arm64-informational.svg)](https://github.com/sarbagyastha/youtube_player_flutter/raw/master/ytpf_demo64.apk)
 
 Flutter plugin for playing or streaming YouTube videos inline using the
 official
@@ -18,6 +18,7 @@ Supports both **Android** and **iOS** platforms.
 * No need for API Key
 * Supports custom controls
 * Supports Live Stream videos
+* Supports changing playback rate
 * Support for both Android and iOS
 * Adapts to quality as per the bandwidth
 * Fast Forward and Rewind on horizontal drag
@@ -110,7 +111,7 @@ print(videoId); // BBAyRBTfsOU
 Know more about the configuration options [here](https://pub.dartlang.org/documentation/youtube_player_flutter/latest/youtube_player_flutter/youtube_player_flutter-library.html).
 
 ## Download
-Download apk from above(in badges) and try the plugin.
+Download apks from above(in badges) and try the plugin.
 
 ## Limitation 
 Since the plugin is based on platform views. This plugin requires Android API level 20 or greater.

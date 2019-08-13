@@ -33,6 +33,15 @@ enum PlayerState {
   CUED,
 }
 
+/// Playback Rate or Speed for the video.
+enum PlaybackRate {
+  QUARTER,
+  HALF,
+  NORMAL,
+  ONE_AND_A_HALF,
+  DOUBLE,
+}
+
 typedef YoutubePlayerControllerCallback(YoutubePlayerController controller);
 
 class YoutubePlayer extends StatefulWidget {
@@ -165,7 +174,9 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
 
   String _currentVideoId;
 
-  var _inFullScreen = false;
+  bool _inFullScreen = false;
+
+  bool _firstLoad = true;
 
   @override
   void initState() {
@@ -203,6 +214,17 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
   }
 
   void listener() async {
+    if (controller.value.isReady &&
+        controller.value.isEvaluationReady &&
+        _firstLoad) {
+      _firstLoad = false;
+      widget.flags.autoPlay
+          ? controller.load(startAt: widget.startAt.inSeconds)
+          : controller.cue(startAt: widget.startAt.inSeconds);
+      if (widget.flags.mute) {
+        controller.mute();
+      }
+    }
     if (controller.value.isFullScreen && !_inFullScreen) {
       _inFullScreen = true;
       Duration pos = await showFullScreenYoutubePlayer(
@@ -312,7 +334,6 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
           _Player(
             controller: controller,
             flags: widget.flags,
-            startAt: widget.startAt,
           ),
           if (!controller.value.hasPlayed &&
               controller.value.playerState == PlayerState.BUFFERING)
@@ -408,7 +429,8 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
 /// [ValueNotifier] for [YoutubePlayerController].
 class YoutubePlayerValue {
   YoutubePlayerValue({
-    @required this.isReady,
+    this.isReady = false,
+    this.isEvaluationReady = false,
     this.isLoaded = false,
     this.hasPlayed = false,
     this.duration = const Duration(),
@@ -418,12 +440,16 @@ class YoutubePlayerValue {
     this.isFullScreen = false,
     this.volume = 100,
     this.playerState = PlayerState.UNKNOWN,
+    this.playbackRate = PlaybackRate.NORMAL,
     this.errorCode = 0,
     this.webViewController,
   });
 
   /// This is true when underlying web player reports ready.
   final bool isReady;
+
+  /// This is true when JavaScript evaluation can be triggered.
+  final bool isEvaluationReady;
 
   /// This is true once video loads.
   final bool isLoaded;
@@ -452,6 +478,9 @@ class YoutubePlayerValue {
   /// The current state of the player defined as [PlayerState].
   final PlayerState playerState;
 
+  /// The current video playback rate defined as [PlaybackRate].
+  final PlaybackRate playbackRate;
+
   /// Reports the error code as described [here](https://developers.google.com/youtube/iframe_api_reference#Events).
   /// See the onError Section.
   final int errorCode;
@@ -464,6 +493,7 @@ class YoutubePlayerValue {
 
   YoutubePlayerValue copyWith({
     bool isReady,
+    bool isEvaluationReady,
     bool isLoaded,
     bool hasPlayed,
     Duration duration,
@@ -473,11 +503,13 @@ class YoutubePlayerValue {
     bool isFullScreen,
     double volume,
     PlayerState playerState,
+    PlaybackRate playbackRate,
     int errorCode,
     WebViewController webViewController,
   }) {
     return YoutubePlayerValue(
       isReady: isReady ?? this.isReady,
+      isEvaluationReady: isEvaluationReady ?? this.isEvaluationReady,
       isLoaded: isLoaded ?? this.isLoaded,
       duration: duration ?? this.duration,
       hasPlayed: hasPlayed ?? this.hasPlayed,
@@ -487,6 +519,7 @@ class YoutubePlayerValue {
       isFullScreen: isFullScreen ?? this.isFullScreen,
       volume: volume ?? this.volume,
       playerState: playerState ?? this.playerState,
+      playbackRate: playbackRate ?? this.playbackRate,
       errorCode: errorCode ?? this.errorCode,
       webViewController: webViewController ?? this.webViewController,
     );
@@ -496,6 +529,7 @@ class YoutubePlayerValue {
   String toString() {
     return '$runtimeType('
         'isReady: $isReady, '
+        'isEvaluationReady: $isEvaluationReady, '
         'isLoaded: $isLoaded, '
         'duration: $duration, '
         'position: $position, '
@@ -503,6 +537,7 @@ class YoutubePlayerValue {
         'isPlaying: $isPlaying, '
         'volume: $volume, '
         'playerState: $playerState, '
+        'playbackRate: $playbackRate, '
         'errorCode: $errorCode)';
   }
 }
@@ -563,8 +598,27 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
   }
 
   /// Sets the size in pixels of the player.
-  void setSize(Size size) {
-    _evaluateJS('setSize(${size.width * 100},${size.height * 100})');
+  void setSize(Size size) =>
+      _evaluateJS('setSize(${size.width * 100},${size.height * 100})');
+
+  void setPlaybackRate(PlaybackRate rate) {
+    switch (rate) {
+      case PlaybackRate.QUARTER:
+        _evaluateJS('setPlaybackRate(0.25)');
+        break;
+      case PlaybackRate.HALF:
+        _evaluateJS('setPlaybackRate(0.5)');
+        break;
+      case PlaybackRate.NORMAL:
+        _evaluateJS('setPlaybackRate(1)');
+        break;
+      case PlaybackRate.ONE_AND_A_HALF:
+        _evaluateJS('setPlaybackRate(1.5)');
+        break;
+      case PlaybackRate.DOUBLE:
+        _evaluateJS('setPlaybackRate(2)');
+        break;
+    }
   }
 
   void enterFullScreen() => value = value.copyWith(isFullScreen: true);
