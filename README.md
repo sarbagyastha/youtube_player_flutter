@@ -11,7 +11,7 @@ official
 [**iFrame Player API**](https://developers.google.com/youtube/iframe_api_reference).
 Supports both **Android** and **iOS** platforms.
 
-![DEMO](youtube_player_demo.gif) 
+![DEMO](ytpf_demo.gif) 
 
 ## Salient Features
 * Inline Playback
