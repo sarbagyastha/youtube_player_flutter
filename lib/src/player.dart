@@ -16,6 +16,9 @@ class _Player extends StatefulWidget {
 class __PlayerState extends State<_Player> with WidgetsBindingObserver {
   Completer<WebViewController> _webController = Completer<WebViewController>();
 
+  // is paused by suspending
+  bool isSuspendingPaused = false;
+
   @override
   void initState() {
     super.initState();
@@ -32,15 +35,19 @@ class __PlayerState extends State<_Player> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.resumed:
-        if (widget.controller.value.isPlaying)
+        if (isSuspendingPaused) {
           widget.controller?.play();
-        else
+          isSuspendingPaused = false;
+        } else
           widget.controller?.pause();
         break;
       case AppLifecycleState.inactive:
       case AppLifecycleState.paused:
       case AppLifecycleState.suspending:
-        widget.controller?.pause();
+        if (widget.controller.value.isPlaying) {
+          widget.controller?.pause();
+          isSuspendingPaused = true;
+        }
         break;
     }
   }
