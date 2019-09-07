@@ -197,9 +197,7 @@ class _BottomBarState extends State<BottomBar> {
             ),
           ),
           Theme(
-            data: Theme.of(context).copyWith(
-              cardColor: Colors.black,
-            ),
+            data: Theme.of(context),
             child: PopupMenuButton<PlaybackRate>(
               onSelected: controller.setPlaybackRate,
               child: Padding(
