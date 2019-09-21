@@ -16,10 +16,11 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Youtube Player Demo',
       theme: ThemeData(
-        brightness: Brightness.dark,
         primarySwatch: Colors.red,
         appBarTheme: AppBarTheme(color: Color(0xFFFF0000)),
-        scaffoldBackgroundColor: Colors.black,
+        iconTheme: IconThemeData(
+          color: Colors.red,
+        ),
       ),
       home: MyHomePage(title: 'Youtube Player Demo'),
     );
@@ -46,7 +47,7 @@ class _MyHomePageState extends State<MyHomePage> {
   String _videoId = "iLnmTe5Q2Qw";
 
   void listener() {
-    if (_controller.value.playerState == PlayerState.ENDED) {
+    if (_controller.value.playerState == PlayerState.ended) {
       _showThankYouDialog();
     }
     if (mounted) {
@@ -86,8 +87,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 showVideoProgressIndicator: true,
                 disableDragSeek: false,
               ),
-              videoProgressIndicatorColor: Color(0xFFFF0000),
-              actions: <Widget>[
+              progressIndicatorColor: Color(0xFFFF0000),
+              topActions: <Widget>[
                 IconButton(
                   icon: Icon(
                     Icons.arrow_back_ios,
@@ -113,10 +114,6 @@ class _MyHomePageState extends State<MyHomePage> {
                   onPressed: () {},
                 ),
               ],
-              progressColors: ProgressColors(
-                playedColor: Color(0xFFFF0000),
-                handleColor: Color(0xFFFF4433),
-              ),
               onPlayerInitialized: (controller) {
                 _controller = controller;
                 _controller.addListener(listener);

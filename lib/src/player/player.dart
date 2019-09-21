@@ -64,15 +64,15 @@ class __PlayerState extends State<_Player> with WidgetsBindingObserver {
               switch (message.message) {
                 case '-1':
                   widget.controller.value = widget.controller.value.copyWith(
-                      playerState: PlayerState.UN_STARTED, isLoaded: true);
+                      playerState: PlayerState.unStarted, isLoaded: true);
                   break;
                 case '0':
                   widget.controller.value = widget.controller.value
-                      .copyWith(playerState: PlayerState.ENDED);
+                      .copyWith(playerState: PlayerState.ended);
                   break;
                 case '1':
                   widget.controller.value = widget.controller.value.copyWith(
-                    playerState: PlayerState.PLAYING,
+                    playerState: PlayerState.playing,
                     isPlaying: true,
                     hasPlayed: true,
                     errorCode: 0,
@@ -80,17 +80,17 @@ class __PlayerState extends State<_Player> with WidgetsBindingObserver {
                   break;
                 case '2':
                   widget.controller.value = widget.controller.value.copyWith(
-                    playerState: PlayerState.PAUSED,
+                    playerState: PlayerState.paused,
                     isPlaying: false,
                   );
                   break;
                 case '3':
                   widget.controller.value = widget.controller.value
-                      .copyWith(playerState: PlayerState.BUFFERING);
+                      .copyWith(playerState: PlayerState.buffering);
                   break;
                 case '5':
                   widget.controller.value = widget.controller.value
-                      .copyWith(playerState: PlayerState.CUED);
+                      .copyWith(playerState: PlayerState.cued);
                   break;
                 default:
                   throw Exception("Invalid player state obtained.");
@@ -106,31 +106,11 @@ class __PlayerState extends State<_Player> with WidgetsBindingObserver {
           JavascriptChannel(
             name: 'PlaybackRateChange',
             onMessageReceived: (JavascriptMessage message) {
-              switch (message.message) {
-                case '2':
-                  widget.controller.value = widget.controller.value
-                      .copyWith(playbackRate: PlaybackRate.DOUBLE);
-                  break;
-                case '1.5':
-                  widget.controller.value = widget.controller.value
-                      .copyWith(playbackRate: PlaybackRate.ONE_AND_A_HALF);
-                  break;
-                case '1':
-                  widget.controller.value = widget.controller.value
-                      .copyWith(playbackRate: PlaybackRate.NORMAL);
-                  break;
-                case '0.5':
-                  widget.controller.value = widget.controller.value
-                      .copyWith(playbackRate: PlaybackRate.HALF);
-                  break;
-                case '0.25':
-                  widget.controller.value = widget.controller.value
-                      .copyWith(playbackRate: PlaybackRate.QUARTER);
-                  break;
-                default:
-                  widget.controller.value = widget.controller.value
-                      .copyWith(playbackRate: PlaybackRate.NORMAL);
-              }
+              widget.controller.value = widget.controller.value.copyWith(
+                playbackRate: playbackRateMap.map<double, PlaybackRate>((k,
+                        v) =>
+                    MapEntry(v, k))[double.tryParse(message.message) ?? 1.0],
+              );
             },
           ),
           JavascriptChannel(

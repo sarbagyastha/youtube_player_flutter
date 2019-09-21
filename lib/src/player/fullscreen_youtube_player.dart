@@ -1,8 +1,7 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../youtube_player_flutter.dart';
+import '../../youtube_player_flutter.dart';
 
 Future<Duration> showFullScreenYoutubePlayer({
   @required BuildContext context,
@@ -11,11 +10,12 @@ Future<Duration> showFullScreenYoutubePlayer({
   double aspectRatio = 16 / 9,
   Duration controlsTimeOut = const Duration(seconds: 3),
   Widget bufferIndicator,
-  Color videoProgressIndicatorColor = Colors.red,
-  ProgressColors progressColors,
-  YoutubePlayerControllerCallback onPlayerInitialized,
+  Color progressIndicatorColor = Colors.red,
+  ProgressBarColors progressColors,
+  void Function(YoutubePlayerController) onPlayerInitialized,
   Color liveUIColor = Colors.red,
-  List<Widget> actions,
+  List<Widget> topActions,
+  List<Widget> bottomActions,
   String thumbnailUrl,
   YoutubePlayerFlags flags = const YoutubePlayerFlags(),
   Duration startAt = const Duration(seconds: 0),
@@ -23,12 +23,12 @@ Future<Duration> showFullScreenYoutubePlayer({
 }) {
   return Navigator.push<Duration>(
     context,
-    CupertinoPageRoute(
+    MaterialPageRoute(
       builder: (context) => _FullScreenYoutubePlayer(
         context: context,
         videoId: videoId,
         startAt: startAt,
-        videoProgressIndicatorColor: videoProgressIndicatorColor,
+        progressIndicatorColor: progressIndicatorColor,
         progressColors: progressColors,
         liveUIColor: liveUIColor,
         controlsTimeOut: controlsTimeOut,
@@ -38,7 +38,8 @@ Future<Duration> showFullScreenYoutubePlayer({
         flags: flags,
         width: width,
         aspectRatio: aspectRatio,
-        actions: actions,
+        topActions: topActions,
+        bottomActions: bottomActions,
         inFullScreen: inFullScreen,
       ),
     ),
@@ -68,19 +69,22 @@ class _FullScreenYoutubePlayer extends StatefulWidget {
   final Widget bufferIndicator;
 
   /// Overrides default colors of the progress bar, takes [ProgressColors].
-  final ProgressColors progressColors;
+  final ProgressBarColors progressColors;
 
   /// Overrides default color of progress indicator shown below the player(if enabled).
-  final Color videoProgressIndicatorColor;
+  final Color progressIndicatorColor;
 
   /// Returns [YoutubePlayerController] after being initialized.
-  final YoutubePlayerControllerCallback onPlayerInitialized;
+  final void Function(YoutubePlayerController) onPlayerInitialized;
 
   /// Overrides color of Live UI when enabled.
   final Color liveUIColor;
 
   /// Adds custom top bar widgets
-  final List<Widget> actions;
+  final List<Widget> topActions;
+
+  /// Adds custom bottom bar widgets
+  final List<Widget> bottomActions;
 
   /// Thumbnail to show when player is loading
   final String thumbnailUrl;
@@ -101,11 +105,12 @@ class _FullScreenYoutubePlayer extends StatefulWidget {
     this.aspectRatio = 16 / 9,
     this.controlsTimeOut = const Duration(seconds: 3),
     this.bufferIndicator,
-    this.videoProgressIndicatorColor = Colors.red,
+    this.progressIndicatorColor = Colors.red,
     this.progressColors,
     this.onPlayerInitialized,
     this.liveUIColor = Colors.red,
-    this.actions,
+    this.topActions,
+    this.bottomActions,
     this.thumbnailUrl,
     this.flags = const YoutubePlayerFlags(),
     this.startAt = const Duration(seconds: 0),
@@ -129,14 +134,15 @@ class __FullScreenYoutubePlayerState extends State<_FullScreenYoutubePlayer> {
           aspectRatio: widget.aspectRatio,
           width: widget.width,
           flags: widget.flags,
-          actions: widget.actions,
+          topActions: widget.topActions,
+          bottomActions: widget.bottomActions,
           thumbnailUrl: widget.thumbnailUrl,
           onPlayerInitialized: widget.onPlayerInitialized,
           bufferIndicator: widget.bufferIndicator,
           controlsTimeOut: widget.controlsTimeOut,
           liveUIColor: widget.liveUIColor,
           progressColors: widget.progressColors,
-          videoProgressIndicatorColor: widget.videoProgressIndicatorColor,
+          progressIndicatorColor: widget.progressIndicatorColor,
           startAt: widget.startAt,
           inFullScreen: widget.inFullScreen,
         ),
