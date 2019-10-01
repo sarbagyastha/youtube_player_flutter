@@ -32,7 +32,9 @@ class __PlayerState extends State<_Player> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.resumed:
-        widget.controller?.play();
+        if(widget.flags.autoPlay){
+          widget.controller?.play();
+        }
         break;
       case AppLifecycleState.inactive:
       case AppLifecycleState.paused:
