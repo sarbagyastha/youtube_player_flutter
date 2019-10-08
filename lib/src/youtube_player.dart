@@ -136,6 +136,10 @@ class YoutubePlayer extends StatefulWidget {
   static String getThumbnail(
       {@required String videoId,
       ThumbnailQuality quality = ThumbnailQuality.STANDARD}) {
+    if (videoId.isEmpty) {
+      return '';
+    }
+
     String _thumbnailUrl = 'https://i3.ytimg.com/vi/$videoId/';
     switch (quality) {
       case ThumbnailQuality.DEFAULT:
@@ -152,6 +156,9 @@ class YoutubePlayer extends StatefulWidget {
         break;
       case ThumbnailQuality.MAX:
         _thumbnailUrl += 'maxresdefault.jpg';
+        break;
+      default:
+        _thumbnailUrl += 'default.jpg';
         break;
     }
     return _thumbnailUrl;
@@ -286,36 +293,43 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
   }
 
   Widget _thumbWidget() {
+    final thumbnailUrl = widget.thumbnailUrl ??
+        YoutubePlayer.getThumbnail(
+          videoId: controller.initialSource,
+        );
     return CachedNetworkImage(
-      imageUrl: widget.thumbnailUrl ??
-          YoutubePlayer.getThumbnail(
-            videoId: controller.initialSource,
-          ),
+      imageUrl: thumbnailUrl,
       fit: BoxFit.cover,
       errorWidget: (context, url, _) {
+        if (thumbnailUrl.isNotEmpty) {
+          return Container(
+            color: Colors.black,
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  Text(
+                    'Oops! Something went wrong!',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w400,
+                      color: Colors.white,
+                    ),
+                  ),
+                  Text(
+                    'Might be an internet issue',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w300,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
         return Container(
           color: Colors.black,
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                Text(
-                  'Oops! Something went wrong!',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w400,
-                    color: Colors.white,
-                  ),
-                ),
-                Text(
-                  'Might be an internet issue',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w300,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
-            ),
-          ),
         );
       },
       placeholder: (context, _) => Container(
