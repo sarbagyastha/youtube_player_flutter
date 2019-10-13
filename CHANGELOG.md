@@ -1,4 +1,4 @@
-## 5.0.0
+## 5.0.0+1
 **BREAKING CHANGES**
 * Everything is modular now. See the docs for details.
 * Automatically switches to landscape on fullscreen mode.
