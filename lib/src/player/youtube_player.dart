@@ -3,9 +3,11 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:data_connection_checker/data_connection_checker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:webview_flutter/webview_flutter.dart';
+import 'package:youtube_player_flutter/src/utils/errors.dart';
+import 'package:ytview/ytview.dart';
 import 'package:youtube_player_flutter/src/widgets/touch_shutter.dart';
 
 import '../../youtube_player_flutter.dart';
@@ -129,6 +131,8 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
 
   bool _firstLoad = true;
 
+  StreamSubscription _connectionChecker;
+
   @override
   void initState() {
     super.initState();
@@ -149,6 +153,16 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
       controller.value = controller.value.copyWith(
         isFullScreen: widget.inFullScreen ?? false,
       );
+    });
+    _connectionChecker =
+        DataConnectionChecker().onStatusChange.listen((status) {
+      if (status == DataConnectionStatus.connected) {
+        if (controller.value.errorCode == 400) {
+          controller.value = controller.value.copyWith(errorCode: 0);
+        }
+      } else {
+        controller.value = controller.value.copyWith(errorCode: 400);
+      }
     });
   }
 
@@ -190,7 +204,6 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
         controlsTimeOut: widget.controlsTimeOut,
         flags: YoutubePlayerFlags(
           disableDragSeek: widget.flags.disableDragSeek,
-          hideFullScreenButton: widget.flags.hideFullScreenButton,
           showVideoProgressIndicator: false,
           autoPlay: widget.flags.autoPlay,
           forceHideAnnotation: widget.flags.forceHideAnnotation,
@@ -220,6 +233,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
   @override
   void dispose() {
     _timer?.cancel();
+    _connectionChecker?.cancel();
     controller.removeListener(listener);
     super.dispose();
   }
@@ -235,146 +249,158 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
       controller: controller,
       child: Container(
         width: widget.width ?? MediaQuery.of(widget.context).size.width,
-        child: _buildPlayer(widget.aspectRatio),
-      ),
-    );
-  }
-
-  Widget _thumbWidget() {
-    return CachedNetworkImage(
-      imageUrl: widget.thumbnailUrl ??
-          YoutubePlayer.getThumbnail(
-            videoId: controller.initialSource,
-          ),
-      fit: BoxFit.cover,
-      errorWidget: (context, url, _) {
-        return Container(
-          color: Colors.black,
-          child: Center(
+        child: _buildPlayer(
+          errorWidget: Container(
+            color: Colors.black,
+            padding: EdgeInsets.symmetric(horizontal: 40.0, vertical: 20.0),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  'Oops! Something went wrong!',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w400,
-                    color: Colors.white,
-                  ),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.error_outline,
+                      color: Colors.white,
+                    ),
+                    SizedBox(width: 5.0),
+                    Expanded(
+                      child: Text(
+                        errorString(controller.value.errorCode),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w300,
+                          fontSize: 15.0,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
+                SizedBox(height: 16.0),
                 Text(
-                  'Might be an internet issue',
+                  'Error Code: ${controller.value.errorCode}',
                   style: TextStyle(
+                    color: Colors.grey,
                     fontWeight: FontWeight.w300,
-                    color: Colors.white,
                   ),
                 ),
               ],
             ),
           ),
-        );
-      },
-      placeholder: (context, _) => Container(
-        color: Colors.black,
+        ),
       ),
     );
   }
 
-  Widget _buildPlayer(double _aspectRatio) {
+  Widget _buildPlayer({Widget errorWidget}) {
     return AspectRatio(
-      aspectRatio: _aspectRatio,
-      child: Stack(
-        fit: StackFit.expand,
-        overflow: Overflow.visible,
-        children: [
-          _Player(
-            controller: controller,
-            flags: widget.flags,
-          ),
-          if (!controller.value.hasPlayed &&
-              controller.value.playerState == PlayerState.buffering)
-            Container(
-              color: Colors.black,
-            ),
-          if (!controller.value.hasPlayed && !widget.flags.hideThumbnail)
-            _thumbWidget(),
-          if (!widget.flags.hideControls)
-            TouchShutter(
-              disableDragSeek: widget.flags.disableDragSeek,
-              timeOut: widget.controlsTimeOut,
-            ),
-          if (!widget.flags.hideControls &&
-              controller.value.position > Duration(milliseconds: 100) &&
-              !controller.value.showControls &&
-              widget.flags.showVideoProgressIndicator &&
-              !widget.flags.isLive &&
-              !controller.value.isFullScreen)
-            Positioned(
-              bottom: -7.0,
-              left: -7.0,
-              right: -7.0,
-              child: IgnorePointer(
-                ignoring: true,
-                child: ProgressBar(
-                  colors: ProgressBarColors(
-                    handleColor: Colors.transparent,
-                    bufferedColor: Colors.white,
-                    backgroundColor: Colors.black,
+      aspectRatio: widget.aspectRatio,
+      child: controller.value.hasError
+          ? errorWidget
+          : Stack(
+              fit: StackFit.expand,
+              overflow: Overflow.visible,
+              children: [
+                _Player(
+                  controller: controller,
+                  flags: widget.flags,
+                ),
+                if (!controller.value.hasPlayed &&
+                    controller.value.playerState == PlayerState.buffering)
+                  Container(
+                    color: Colors.black,
                   ),
-                ),
-              ),
-            ),
-          if (!widget.flags.hideControls)
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: AnimatedOpacity(
-                opacity: (!widget.flags.hideControls &&
-                        controller.value.showControls)
-                    ? 1
-                    : 0,
-                duration: Duration(milliseconds: 300),
-                child: widget.flags.isLive
-                    ? LiveBottomBar(
-                        aspectRatio: widget.aspectRatio,
-                        liveUIColor: widget.liveUIColor,
-                        hideFullScreenButton: widget.flags.hideFullScreenButton,
-                      )
-                    : Row(
-                        children: widget.bottomActions ??
-                            [
-                              SizedBox(width: 14.0),
-                              CurrentPosition(),
-                              ProgressBar(isExpanded: true),
-                              TotalDuration(),
-                              PlaybackSpeedButton(),
-                              FullScreenButton(),
-                            ],
+                if (!controller.value.hasPlayed && !widget.flags.hideThumbnail)
+                  CachedNetworkImage(
+                    imageUrl: widget.thumbnailUrl ??
+                        YoutubePlayer.getThumbnail(
+                          videoId: controller.initialSource,
+                        ),
+                    fit: BoxFit.cover,
+                    placeholder: (context, _) {
+                      return Container(
+                        color: Colors.black,
+                      );
+                    },
+                  ),
+                if (!widget.flags.hideControls)
+                  TouchShutter(
+                    disableDragSeek: widget.flags.disableDragSeek,
+                    timeOut: widget.controlsTimeOut,
+                  ),
+                if (!widget.flags.hideControls &&
+                    controller.value.position > Duration(milliseconds: 100) &&
+                    !controller.value.showControls &&
+                    widget.flags.showVideoProgressIndicator &&
+                    !widget.flags.isLive &&
+                    !controller.value.isFullScreen)
+                  Positioned(
+                    bottom: -7.0,
+                    left: -7.0,
+                    right: -7.0,
+                    child: IgnorePointer(
+                      ignoring: true,
+                      child: ProgressBar(
+                        colors: ProgressBarColors(
+                          handleColor: Colors.transparent,
+                          bufferedColor: Colors.white,
+                          backgroundColor: Colors.black,
+                        ),
                       ),
-              ),
+                    ),
+                  ),
+                if (!widget.flags.hideControls)
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    child: AnimatedOpacity(
+                      opacity: (!widget.flags.hideControls &&
+                              controller.value.showControls)
+                          ? 1
+                          : 0,
+                      duration: Duration(milliseconds: 300),
+                      child: widget.flags.isLive
+                          ? LiveBottomBar(
+                              aspectRatio: widget.aspectRatio,
+                              liveUIColor: widget.liveUIColor,
+                            )
+                          : Row(
+                              children: widget.bottomActions ??
+                                  [
+                                    SizedBox(width: 14.0),
+                                    CurrentPosition(),
+                                    SizedBox(width: 8.0),
+                                    ProgressBar(isExpanded: true),
+                                    TotalDuration(),
+                                    PlaybackSpeedButton(),
+                                    FullScreenButton(),
+                                  ],
+                            ),
+                    ),
+                  ),
+                if (!widget.flags.hideControls && controller.value.showControls)
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    child: AnimatedOpacity(
+                      opacity: (!widget.flags.hideControls &&
+                              controller.value.showControls)
+                          ? 1
+                          : 0,
+                      duration: Duration(milliseconds: 300),
+                      child: Row(
+                        children: widget.topActions ?? [Container()],
+                      ),
+                    ),
+                  ),
+                if (!widget.flags.hideControls)
+                  Center(
+                    child: PlayButton(),
+                  ),
+              ],
             ),
-          if (!widget.flags.hideControls && controller.value.showControls)
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: AnimatedOpacity(
-                opacity: (!widget.flags.hideControls &&
-                        controller.value.showControls)
-                    ? 1
-                    : 0,
-                duration: Duration(milliseconds: 300),
-                child: Row(
-                  children: widget.topActions ?? [Container()],
-                ),
-              ),
-            ),
-          if (!widget.flags.hideControls)
-            Center(
-              child: PlayButton(),
-            ),
-        ],
-      ),
     );
   }
 }

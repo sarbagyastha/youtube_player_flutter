@@ -1,10 +1,17 @@
+## 5.0.0
+**BREAKING CHANGES**
+* Everything is modular now. See the docs for details.
+* Automatically switches to landscape on fullscreen mode.
+* Added proper display of errors and detects internet connection status.
+* Workarounds for iOS.
+* `webview_flutter` is swapped with `ytview`. If you've been using `WebView` widget, then consider changing import paths to ytview instead.
+
 ## 4.1.0
 * **Feature Added** Button to change playback rate in player.
 * Added `setPlaybackRate` method to `YoutubePlayerController`. [Issue #48](https://github.com/sarbagyastha/youtube_player_flutter/issues/48) 
 * **Improvement** Playback behaviour synced with `AppLifeCycle` [Issue #41](https://github.com/sarbagyastha/youtube_player_flutter/issues/41) 
 
 ## 4.0.0+2
-* Finally working on iOS.
 * Fix error reports in LiveUI. [PR#44](https://github.com/sarbagyastha/youtube_player_flutter/pull/44)
 * Added `startAt` property.
 

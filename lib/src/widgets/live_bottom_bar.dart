@@ -5,12 +5,10 @@ import '../../youtube_player_flutter.dart';
 class LiveBottomBar extends StatefulWidget {
   final double aspectRatio;
   final Color liveUIColor;
-  final bool hideFullScreenButton;
 
   LiveBottomBar({
     @required this.aspectRatio,
     @required this.liveUIColor,
-    @required this.hideFullScreenButton,
   });
 
   @override

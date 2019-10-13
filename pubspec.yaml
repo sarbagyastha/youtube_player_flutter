@@ -11,8 +11,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  webview_flutter: ">=0.3.14 <4.0.0"
-  cached_network_image: ">=1.1.1 <2.0.0"
+  ytview: ">=1.0.0 <2.0.0"
+  data_connection_checker: ">=0.3.0 <1.0.0"
+  cached_network_image: ">=1.0.0 <2.0.0"
 
 dev_dependencies:
   flutter_test:

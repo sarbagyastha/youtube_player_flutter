@@ -76,7 +76,30 @@ YoutubePlayer(
 ),
 ```
 
-## Didn't like the controls?
+## Want to customize the player?
+ With v5.x.x and up, use the `topActions` and `bottomActions` properties to customize the player.
+
+ Some of the widgets bundled with the plugin are:
+ * FullScreenButton
+ * TotalDuration
+ * CurrentPosition
+ * PlayButton
+ * PlaybackSpeedButton
+ * ProgressBar
+
+```dart
+YoutubePlayer(
+    context: context,
+    videoId: "iLnmTe5Q2Qw",
+    bottomActions: [
+      CurrentPosition(),
+      ProgressBar(isExpanded: true),
+      TotalDuration(),
+    ],
+),
+```
+
+## Didn't like the controls at all?
 Don't worry, Got a solution for you. :wink:
 
 Set the hideControls property to true, then you can create your own custom controls using the controller obtained from onPlayerInitialized property.

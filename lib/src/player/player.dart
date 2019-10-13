@@ -32,7 +32,9 @@ class __PlayerState extends State<_Player> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.resumed:
-        widget.controller?.play();
+        if(widget.flags.autoPlay){
+          widget.controller?.play();
+        }
         break;
       case AppLifecycleState.inactive:
       case AppLifecycleState.paused:
@@ -166,22 +168,168 @@ class __PlayerState extends State<_Player> with WidgetsBindingObserver {
           widget.controller.value = widget.controller.value.copyWith(
             isEvaluationReady: true,
           );
-          if (widget.flags.forceHideAnnotation) {
-            widget.controller.forceHideAnnotation();
-          }
         },
       ),
     );
   }
 
   String get player {
-    String baseUrl = 'https://sarbagyadhaubanjar.github.io/youtube_player';
-    if (Platform.isAndroid) {
-      return '$baseUrl/android';
-    } else if (Platform.isIOS) {
-      return '$baseUrl/ios';
+    String _player = '''
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            html,
+            body {
+                margin: 0;
+                padding: 0;
+                background-color: #000000;
+                overflow: hidden;
+                position: fixed;
+    ''';
+    if (widget.flags.forceHideAnnotation) {
+      _player += '''
+      height: 1000%;
+      width: 1000%;
+      transform: scale(0.1);
+      transform-origin: left top;
+      ''';
     } else {
-      return 'https://flutter.io';
+      _player += '''
+      height: 100%;
+      width: 100%;
+      ''';
     }
+    _player += '''
+            }
+        </style>
+        <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
+    </head>
+    <body>
+        <div id="player"></div>
+        <script>
+            var tag = document.createElement('script');
+            tag.src = "https://www.youtube.com/iframe_api";
+            var firstScriptTag = document.getElementsByTagName('script')[0];
+            firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+            var player;
+            var timerId;
+            function onYouTubeIframeAPIReady() {
+                player = new YT.Player('player', {
+                    height: '100%',
+                    width: '100%',
+                    videoId: '50kklGefAcs',
+                    playerVars: {
+                        'controls': 0,
+                        'playsinline': 1,
+                        'enablejsapi': 1,
+                        'fs': 0,
+                        'rel': 0,
+                        'showinfo': 0,
+                        'iv_load_policy': 3,
+                        'modestbranding': 1,
+    ''';
+    if (widget.flags.start != null)
+      _player += "'start': ${widget.flags.start.inSeconds},";
+    if (widget.flags.end != null)
+      _player += "'end': ${widget.flags.end.inSeconds},";
+    _player += '''
+                        'cc_load_policy': ${boolean(widget.flags.enableCaption)},
+                        'cc_lang_pref': '${widget.flags.captionLanguage}',
+                        'autoplay': ${boolean(widget.flags.autoPlay)},
+                        'loop': ${boolean(widget.flags.loop)},
+                    },
+                    events: {
+                        onReady: (event) => Ready.postMessage("Ready"),
+                        onStateChange: (event) => sendPlayerStateChange(event.data),
+                        onPlaybackQualityChange: (event) => PlaybackQualityChange.postMessage(event.data),
+                        onPlaybackRateChange: (event) => PlaybackRateChange.postMessage(event.data),
+                        onError: (error) => Errors.postMessage(error.data)
+                    },
+                });
+            }
+
+            function sendPlayerStateChange(playerState) {
+                clearTimeout(timerId);
+                StateChange.postMessage(playerState);
+                if (playerState == 1) {
+                    startSendCurrentTimeInterval();
+                    sendVideoData(player);
+                }
+            }
+
+            function sendVideoData(player) {
+                var videoData = {
+                    'duration': player.getDuration(),
+                    'videoUrl': player.getVideoUrl(),
+                    'availableQualityLevels': player.getAvailableQualityLevels(),
+                    'videoEmbedCode': player.getVideoEmbedCode(),
+                };
+                VideoData.postMessage(JSON.stringify(videoData));
+            }
+
+            function startSendCurrentTimeInterval() {
+                timerId = setInterval(function () {
+                    CurrentTime.postMessage(player.getCurrentTime());
+                    LoadedFraction.postMessage(player.getVideoLoadedFraction());
+                }, 100);
+            }
+
+            function play() {
+                player.playVideo();
+                return '';
+            }
+
+            function pause() {
+                player.pauseVideo();
+                return '';
+            }
+
+            function loadById(id, startAt) {
+                player.loadVideoById(id, startAt);
+                return '';
+            }
+
+            function cueById(id, startAt) {
+                player.cueVideoById(id, startAt);
+                return '';
+            }
+
+            function mute() {
+                player.mute();
+                return '';
+            }
+
+            function unMute() {
+                player.unMute();
+                return '';
+            }
+
+            function setVolume(volume) {
+                player.setVolume(volume);
+                return '';
+            }
+
+            function seekTo(position, seekAhead) {
+                player.seekTo(position, seekAhead);
+                return '';
+            }
+
+            function setSize(width, height) {
+                player.setSize(width, height);
+                return '';
+            }
+
+            function setPlaybackRate(rate) {
+                player.setPlaybackRate(rate);
+                return '';
+            }
+        </script>
+    </body>
+    </html>
+    ''';
+    return 'data:text/html;base64,${base64Encode(const Utf8Encoder().convert(_player))}';
   }
+
+  String boolean(bool value) => value ? "'1'" : "'0'";
 }

@@ -133,7 +133,9 @@ class __FullScreenYoutubePlayerState extends State<_FullScreenYoutubePlayer> {
           videoId: widget.videoId,
           aspectRatio: widget.aspectRatio,
           width: widget.width,
-          flags: widget.flags,
+          flags: widget.flags.copyWith(
+            autoPlay: true,
+          ),
           topActions: widget.topActions,
           bottomActions: widget.bottomActions,
           thumbnailUrl: widget.thumbnailUrl,
@@ -154,11 +156,16 @@ class __FullScreenYoutubePlayerState extends State<_FullScreenYoutubePlayer> {
   void initState() {
     super.initState();
     SystemChrome.setEnabledSystemUIOverlays([]);
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
   }
 
   @override
   void dispose() {
     SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
+    SystemChrome.setPreferredOrientations(DeviceOrientation.values);
     super.dispose();
   }
 }

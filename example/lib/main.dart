@@ -42,9 +42,8 @@ class _MyHomePageState extends State<MyHomePage> {
   double _volume = 100;
   bool _muted = false;
   String _playerStatus = "";
-  String _errorCode = '0';
 
-  String _videoId = "iLnmTe5Q2Qw";
+  String _videoId = "50kklGefAcs";
 
   void listener() {
     if (_controller.value.playerState == PlayerState.ended) {
@@ -53,7 +52,6 @@ class _MyHomePageState extends State<MyHomePage> {
     if (mounted) {
       setState(() {
         _playerStatus = _controller.value.playerState.toString();
-        _errorCode = _controller.value.errorCode.toString();
       });
     }
   }
@@ -86,6 +84,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 forceHideAnnotation: true,
                 showVideoProgressIndicator: true,
                 disableDragSeek: false,
+                loop: true,
               ),
               progressIndicatorColor: Color(0xFFFF0000),
               topActions: <Widget>[
@@ -95,16 +94,21 @@ class _MyHomePageState extends State<MyHomePage> {
                     color: Colors.white,
                     size: 20.0,
                   ),
-                  onPressed: () {},
+                  onPressed: () {
+                    _controller.exitFullScreen();
+                  },
                 ),
-                Text(
-                  'Hello! This is a test title.',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18.0,
+                Expanded(
+                  child: Text(
+                    'Bhanchu Aaja || Ma Yesto Geet Gaunchu',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18.0,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
                 ),
-                Spacer(),
                 IconButton(
                   icon: Icon(
                     Icons.settings,
@@ -151,7 +155,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                       color: Color(0xFFFF0000),
                       child: Text(
-                        "PLAY",
+                        "LOAD",
                         style: TextStyle(fontSize: 18.0, color: Colors.white),
                         textAlign: TextAlign.center,
                       ),
@@ -244,16 +248,6 @@ class _MyHomePageState extends State<MyHomePage> {
                     padding: EdgeInsets.all(8.0),
                     child: Text(
                       "Status: $_playerStatus",
-                      style: TextStyle(
-                        fontWeight: FontWeight.w300,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Text(
-                      "Error Code: $_errorCode",
                       style: TextStyle(
                         fontWeight: FontWeight.w300,
                       ),

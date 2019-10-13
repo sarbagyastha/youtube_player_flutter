@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 import '../../youtube_player_flutter.dart';
 
 class PlaybackSpeedButton extends StatefulWidget {
+  final Widget child;
+
+  const PlaybackSpeedButton({this.child});
+
   @override
   _PlaybackSpeedButtonState createState() => _PlaybackSpeedButtonState();
 }
@@ -14,7 +18,7 @@ class _PlaybackSpeedButtonState extends State<PlaybackSpeedButton> {
       onSelected: YoutubePlayerController.of(context).setPlaybackRate,
       child: Padding(
         padding: EdgeInsets.fromLTRB(8.0, 8.0, 0.0, 8.0),
-        child: Image.asset(
+        child: widget.child ?? Image.asset(
           'assets/speedometer.webp',
           package: 'youtube_player_flutter',
           width: 20.0,

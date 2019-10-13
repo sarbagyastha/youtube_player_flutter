@@ -46,11 +46,23 @@ class _ProgressBarState extends State<ProgressBar> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _controller = YoutubePlayerController.of(context);
+    _controller = YoutubePlayerController.of(context)..addListener(positionListener);
+  }
+
+  @override
+  void dispose() {
+    _controller?.removeListener(positionListener);
+    super.dispose();
+  }
+
+  void positionListener() {
     int _totalDuration = _controller.value.duration?.inMilliseconds;
-    if (_totalDuration != null && _totalDuration != 0) {
-      _playedValue = _controller.value.position.inMilliseconds / _totalDuration;
-      _bufferedValue = _controller.value.buffered;
+    if (mounted && _totalDuration != null && _totalDuration != 0) {
+      setState(() {
+        _playedValue =
+            _controller.value.position.inMilliseconds / _totalDuration;
+        _bufferedValue = _controller.value.buffered;
+      });
     }
   }
 
