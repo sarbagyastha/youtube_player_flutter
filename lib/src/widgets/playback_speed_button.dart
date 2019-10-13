@@ -18,13 +18,14 @@ class _PlaybackSpeedButtonState extends State<PlaybackSpeedButton> {
       onSelected: YoutubePlayerController.of(context).setPlaybackRate,
       child: Padding(
         padding: EdgeInsets.fromLTRB(8.0, 8.0, 0.0, 8.0),
-        child: widget.child ?? Image.asset(
-          'assets/speedometer.webp',
-          package: 'youtube_player_flutter',
-          width: 20.0,
-          height: 20.0,
-          color: Colors.white,
-        ),
+        child: widget.child ??
+            Image.asset(
+              'assets/speedometer.webp',
+              package: 'youtube_player_flutter',
+              width: 20.0,
+              height: 20.0,
+              color: Colors.white,
+            ),
       ),
       tooltip: 'PlayBack Rate',
       itemBuilder: (context) => [

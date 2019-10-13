@@ -46,7 +46,8 @@ class _ProgressBarState extends State<ProgressBar> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _controller = YoutubePlayerController.of(context)..addListener(positionListener);
+    _controller = YoutubePlayerController.of(context)
+      ..addListener(positionListener);
   }
 
   @override

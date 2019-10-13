@@ -7,12 +7,13 @@ import 'package:data_connection_checker/data_connection_checker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:youtube_player_flutter/src/utils/errors.dart';
-import 'package:ytview/ytview.dart';
 import 'package:youtube_player_flutter/src/widgets/touch_shutter.dart';
+import 'package:ytview/ytview.dart';
 
 import '../../youtube_player_flutter.dart';
 
 part 'package:youtube_player_flutter/src/utils/youtube_player_controller.dart';
+
 part 'player.dart';
 
 class YoutubePlayer extends StatefulWidget {

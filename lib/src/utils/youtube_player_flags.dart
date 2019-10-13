@@ -42,14 +42,28 @@ class YoutubePlayerFlags {
   /// Default = false
   final bool disableDragSeek;
 
+  /// Enabling this causes the player to play the video again and again.
+  ///
+  /// Default = false
   final bool loop;
 
+  /// Enabling causes closed captions to be shown by default.
+  ///
+  /// Default = true
   final bool enableCaption;
 
+  /// Specifies the default language that the player will use to display captions. Set the parameter's value to an [ISO 639-1 two-letter language code](http://www.loc.gov/standards/iso639-2/php/code_list.php).
+  ///
+  /// Default = 'en'
   final String captionLanguage;
 
+  /// Causes the player to begin playing the video at the given number of seconds from the start of the video.
   final Duration start;
 
+  /// Specifies the time, measured in seconds from the start of the video,
+  /// when the player should stop playing the video.
+  ///
+  /// Note: the time is measured from the beginning of the video.
   final Duration end;
 
   const YoutubePlayerFlags({
