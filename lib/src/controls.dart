@@ -41,6 +41,12 @@ class _PlayPauseButtonState extends State<PlayPauseButton>
     });
   }
 
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
+
   _attachListenerToController() {
     controller.addListener(
       () {
@@ -48,11 +54,11 @@ class _PlayPauseButtonState extends State<PlayPauseButton>
           setState(() {
             _isPlaying = controller.value.isPlaying;
           });
-        }
-        if (controller.value.isPlaying) {
-          _animController.forward();
-        } else {
-          _animController.reverse();
+          if (controller.value.isPlaying) {
+            _animController.forward();
+          } else {
+            _animController.reverse();
+          }
         }
       },
     );
@@ -128,7 +134,9 @@ class _BottomBarState extends State<BottomBar> {
     _attachListenerToController();
     widget.showControls.addListener(
       () {
-        if (mounted) setState(() {});
+        if (mounted) {
+          setState(() {});
+        }
       },
     );
   }
@@ -159,7 +167,7 @@ class _BottomBarState extends State<BottomBar> {
       visible: widget.showControls.value,
       child: Row(
         mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
+        children: [
           SizedBox(
             width: 14.0,
           ),
@@ -188,6 +196,32 @@ class _BottomBarState extends State<BottomBar> {
               fontSize: 12.0,
             ),
           ),
+          Theme(
+            data: Theme.of(context).copyWith(
+              cardColor: Colors.black,
+            ),
+            child: PopupMenuButton<PlaybackRate>(
+              onSelected: controller.setPlaybackRate,
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(8.0, 8.0, 0.0, 8.0),
+                child: Image.asset(
+                  'assets/speedometer.png',
+                  package: 'youtube_player_flutter',
+                  width: 20.0,
+                  height: 20.0,
+                  color: Colors.white,
+                ),
+              ),
+              tooltip: 'PlayBack Rate',
+              itemBuilder: (context) => [
+                _popUpItem('2.0', PlaybackRate.DOUBLE),
+                _popUpItem('1.5', PlaybackRate.ONE_AND_A_HALF),
+                _popUpItem('1.0', PlaybackRate.NORMAL),
+                _popUpItem('0.5', PlaybackRate.HALF),
+                _popUpItem('0.25', PlaybackRate.QUARTER),
+              ],
+            ),
+          ),
           widget.hideFullScreenButton
               ? SizedBox(width: 10)
               : IconButton(
@@ -207,6 +241,14 @@ class _BottomBarState extends State<BottomBar> {
                 ),
         ],
       ),
+    );
+  }
+
+  Widget _popUpItem(String text, PlaybackRate rate) {
+    return CheckedPopupMenuItem(
+      checked: controller.value.playbackRate == rate,
+      child: Text(text),
+      value: rate,
     );
   }
 }
@@ -258,8 +300,11 @@ class _LiveBottomBarState extends State<LiveBottomBar> {
         if (mounted) {
           setState(() {
             _currentPosition = controller.value.position.inMilliseconds;
-            _currentSliderPosition = controller.value.position.inMilliseconds /
-                controller.value.duration.inMilliseconds;
+            _currentSliderPosition =
+                controller.value.duration.inMilliseconds == 0
+                    ? 0
+                    : controller.value.position.inMilliseconds /
+                        controller.value.duration.inMilliseconds;
           });
         }
       },

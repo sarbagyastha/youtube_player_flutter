@@ -1,67 +1,34 @@
-# Youtube Player for Flutter
+![YOUTUBE PLAYER FLUTTER](ypf_banner.png)
 
-[![pub package](https://img.shields.io/badge/pub-v3.0.0+1-green.svg)](https://pub.dartlang.org/packages/youtube_player_flutter)
+[![pub package](https://img.shields.io/pub/vpre/youtube_player_flutter.svg)](https://pub.dartlang.org/packages/youtube_player_flutter)
 [![Build Status](https://travis-ci.org/sarbagyastha/youtube_player_flutter.svg?branch=master)](https://travis-ci.org/sarbagyastha/youtube_player_flutter)
-[![licence](https://img.shields.io/badge/Licence-MIT-orange.svg)](https://github.com/sarbagyastha/youtube_player_flutter/blob/master/LICENSE)
-[![Download APK](https://img.shields.io/badge/Download-APK-informational.svg)](https://github.com/sarbagyastha/youtube_player_flutter/raw/master/yt_demo.apk)
+[![licence](https://img.shields.io/badge/licence-MIT-orange.svg)](https://github.com/sarbagyastha/youtube_player_flutter/blob/master/LICENSE)
+[![Download apk-32](https://img.shields.io/badge/download-arm-informational.svg)](https://github.com/sarbagyastha/youtube_player_flutter/raw/master/ytpf_demo32.apk)
+[![Download apk-64](https://img.shields.io/badge/download-arm64-informational.svg)](https://github.com/sarbagyastha/youtube_player_flutter/raw/master/ytpf_demo64.apk)
+[![Stars](https://img.shields.io/github/stars/sarbagyastha/youtube_player_flutter?color=deeppink)](https://github.com/sarbagyastha/youtube_player_flutter)
+[![Top Language](https://img.shields.io/github/languages/top/sarbagyastha/youtube_player_flutter?color=9cf)](https://github.com/sarbagyastha/youtube_player_flutter)
 
-Flutter plugin for playing or streaming YouTube videos inline using the
-official
-[**iFrame Player API**](https://developers.google.com/youtube/iframe_api_reference).
+
+
+Flutter plugin for playing or streaming YouTube videos inline using the official [**iFrame Player API**](https://developers.google.com/youtube/iframe_api_reference).
 Supports both **Android** and **iOS** platforms.
-![DEMO](youtube_player_demo.gif) 
+
+![DEMO](ytpf_demo.gif) 
 
 ## Salient Features
 * Inline Playback
 * No need for API Key
 * Supports custom controls
 * Supports Live Stream videos
+* Supports changing playback rate
 * Support for both Android and iOS
 * Adapts to quality as per the bandwidth
 * Fast Forward and Rewind on horizontal drag
 
-The plugin uses forked version of [webview_flutter](https://pub.dartlang.org/packages/webview_flutter) under-the-hood to play videos. 
+The plugin uses [webview_flutter](https://pub.dartlang.org/packages/webview_flutter) under-the-hood to play videos. 
 
 Since *webview_flutter* relies on Flutter's new mechanism for embedding Android and iOS views, this plugin might share some known issues tagged with the [platform-views](https://github.com/flutter/flutter/labels/a%3A%20platform-views) and/or [webview](https://github.com/flutter/flutter/labels/p%3A%20webview) labels.
 
-
-## Improvements in Version 3.x.x
-* Faster fullscreen toggling.
-* Toggles fullscreen on orientation change.
-* Option to add own custom thumbnail.
-
-
-## Migrating to v 3.x.x
-This version requires YoutubeScaffold as parent of the player in order to switch to full screen.
-[See example for detail](https://github.com/sarbagyastha/youtube_player_flutter/tree/master/example/lib/main.dart).
-
-Note: *YoutubeScaffold cannot have more than one YoutubePlayer as its descendants.* 
-
-Also, all the player flags are now moved into `YoutubePlayerFlags` class.
-
-**Before v3.x.x**
-```dart
-YoutubePlayer(
-    context: context,
-    videoId: "iLnmTe5Q2Qw",
-    autoPlay: true,
-    showVideoProgressIndicator: true,
-    videoProgressIndicatorColor: Colors.amber,
-),
-```
-
-**Now in v3.x.x**
-```dart
-YoutubePlayer(
-    context: context,
-    videoId: "iLnmTe5Q2Qw",
-    flags: YoutubePlayerFlags(
-      autoPlay: true,
-      showVideoProgressIndicator: true,
-    ),
-    videoProgressIndicatorColor: Colors.amber,
-),
-```
 
 ## Setup
 
@@ -72,34 +39,8 @@ with the key `io.flutter.embedded_views_preview` and the value `YES`.
 ### Android
 No configuration required - the plugin should work out of the box.
 
-## Usage
 
-#### 1\. Depend
-
-Add this to you package's `pubspec.yaml` file:
-
-```yaml
-dependencies:
-  youtube_player_flutter: ^3.0.0+1
-```
-
-#### 2\. Install
-
-Run command:
-
-```bash
-$ flutter packages get
-```
-
-#### 3\. Import
-
-Import in Dart code:
-
-```dart
-import 'package:youtube_player_flutter/youtube_player_flutter.dart';
-```
-
-#### 4\. Using Youtube Player
+#### Using Youtube Player
          
 ```dart
 YoutubePlayer(
@@ -121,7 +62,7 @@ YoutubePlayer(
 ),
 ```
          
-#### 5\. Playing live stream videos
+#### Playing live stream videos
 Set the isLive property to true in order to change the UI to match Live Video.
 
 ![Live UI Demo](live_ui.png) 
@@ -171,16 +112,8 @@ print(videoId); // BBAyRBTfsOU
 ## Note
 Know more about the configuration options [here](https://pub.dartlang.org/documentation/youtube_player_flutter/latest/youtube_player_flutter/youtube_player_flutter-library.html).
 
-## Resolving Conflict with webview_flutter
-Since this plugin already includes webview_flutter, there's no need to add `webview_flutter` separately as dependency.
-
-Just remove it from dependencies in `pubspec.yaml` and use `WebView` widget by importing 
-```dart
-import 'package:youtube_player_flutter/youtube_player_flutter.dart';
-```
-
 ## Download
-Download apk from above(in badges) and try the plugin.
+Download apks from above(in badges) and try the plugin.
 
 ## Limitation 
 Since the plugin is based on platform views. This plugin requires Android API level 20 or greater.
