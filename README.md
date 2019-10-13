@@ -17,6 +17,7 @@ Supports both **Android** and **iOS** platforms.
 
 ## Salient Features
 * Inline Playback
+* Supports captions
 * No need for API Key
 * Supports custom controls
 * Supports Live Stream videos

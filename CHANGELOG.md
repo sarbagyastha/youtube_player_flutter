@@ -5,6 +5,8 @@
 * Added proper display of errors and detects internet connection status.
 * Workarounds for iOS.
 * `webview_flutter` is swapped with `ytview`. If you've been using `WebView` widget, then consider changing import paths to ytview instead.
+* Added flags to enable/disable caption and looping.
+* Added flags to change caption language, start and end time of video.
 
 ## 4.1.0
 * **Feature Added** Button to change playback rate in player.
