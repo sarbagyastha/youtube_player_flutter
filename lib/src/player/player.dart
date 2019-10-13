@@ -187,7 +187,7 @@ class __PlayerState extends State<_Player> with WidgetsBindingObserver {
                 overflow: hidden;
                 position: fixed;
     ''';
-    if (widget.flags.forceHideAnnotation) {
+    if (!Platform.isIOS && widget.flags.forceHideAnnotation) {
       _player += '''
       height: 1000%;
       width: 1000%;
