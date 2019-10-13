@@ -89,8 +89,8 @@ class YoutubePlayer extends StatefulWidget {
 
   /// Converts fully qualified YouTube Url to video id.
   static String convertUrlToId(String url, [bool trimWhitespaces = true]) {
+    assert(url != null || url.isNotEmpty, 'url cannot be empty');
     if (!url.contains("http") && (url.length == 11)) return url;
-    if (url == null || url.length == 0) return null;
     if (trimWhitespaces) url = url.trim();
 
     for (var exp in [

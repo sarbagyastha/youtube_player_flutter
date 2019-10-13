@@ -3,8 +3,8 @@
 [![pub package](https://img.shields.io/pub/vpre/youtube_player_flutter.svg)](https://pub.dartlang.org/packages/youtube_player_flutter)
 [![Build Status](https://travis-ci.org/sarbagyastha/youtube_player_flutter.svg?branch=master)](https://travis-ci.org/sarbagyastha/youtube_player_flutter)
 [![licence](https://img.shields.io/badge/licence-MIT-orange.svg)](https://github.com/sarbagyastha/youtube_player_flutter/blob/master/LICENSE)
-[![Download apk-32](https://img.shields.io/badge/download-arm-informational.svg)](https://github.com/sarbagyastha/youtube_player_flutter/raw/master/ytpf_demo32.apk)
-[![Download apk-64](https://img.shields.io/badge/download-arm64-informational.svg)](https://github.com/sarbagyastha/youtube_player_flutter/raw/master/ytpf_demo64.apk)
+[![Download apk-32](https://img.shields.io/badge/download-arm-informational.svg)](https://github.com/sarbagyastha/youtube_player_flutter/raw/master/ytpf32.apk)
+[![Download apk-64](https://img.shields.io/badge/download-arm64-informational.svg)](https://github.com/sarbagyastha/youtube_player_flutter/raw/master/ytpf64.apk)
 [![Stars](https://img.shields.io/github/stars/sarbagyastha/youtube_player_flutter?color=deeppink)](https://github.com/sarbagyastha/youtube_player_flutter)
 [![Top Language](https://img.shields.io/github/languages/top/sarbagyastha/youtube_player_flutter?color=9cf)](https://github.com/sarbagyastha/youtube_player_flutter)
 
