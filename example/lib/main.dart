@@ -16,10 +16,11 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Youtube Player Demo',
       theme: ThemeData(
-        brightness: Brightness.dark,
         primarySwatch: Colors.red,
         appBarTheme: AppBarTheme(color: Color(0xFFFF0000)),
-        scaffoldBackgroundColor: Colors.black,
+        iconTheme: IconThemeData(
+          color: Colors.red,
+        ),
       ),
       home: MyHomePage(title: 'Youtube Player Demo'),
     );
@@ -41,18 +42,16 @@ class _MyHomePageState extends State<MyHomePage> {
   double _volume = 100;
   bool _muted = false;
   String _playerStatus = "";
-  String _errorCode = '0';
 
-  String _videoId = "iLnmTe5Q2Qw";
+  String _videoId = "50kklGefAcs";
 
   void listener() {
-    if (_controller.value.playerState == PlayerState.ENDED) {
+    if (_controller.value.playerState == PlayerState.ended) {
       _showThankYouDialog();
     }
     if (mounted) {
       setState(() {
         _playerStatus = _controller.value.playerState.toString();
-        _errorCode = _controller.value.errorCode.toString();
       });
     }
   }
@@ -85,25 +84,31 @@ class _MyHomePageState extends State<MyHomePage> {
                 forceHideAnnotation: true,
                 showVideoProgressIndicator: true,
                 disableDragSeek: false,
+                loop: true,
               ),
-              videoProgressIndicatorColor: Color(0xFFFF0000),
-              actions: <Widget>[
+              progressIndicatorColor: Color(0xFFFF0000),
+              topActions: <Widget>[
                 IconButton(
                   icon: Icon(
                     Icons.arrow_back_ios,
                     color: Colors.white,
                     size: 20.0,
                   ),
-                  onPressed: () {},
+                  onPressed: () {
+                    _controller.exitFullScreen();
+                  },
                 ),
-                Text(
-                  'Hello! This is a test title.',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18.0,
+                Expanded(
+                  child: Text(
+                    'Bhanchu Aaja || Ma Yesto Geet Gaunchu',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18.0,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
                 ),
-                Spacer(),
                 IconButton(
                   icon: Icon(
                     Icons.settings,
@@ -113,10 +118,6 @@ class _MyHomePageState extends State<MyHomePage> {
                   onPressed: () {},
                 ),
               ],
-              progressColors: ProgressColors(
-                playedColor: Color(0xFFFF0000),
-                handleColor: Color(0xFFFF4433),
-              ),
               onPlayerInitialized: (controller) {
                 _controller = controller;
                 _controller.addListener(listener);
@@ -154,7 +155,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                       color: Color(0xFFFF0000),
                       child: Text(
-                        "PLAY",
+                        "LOAD",
                         style: TextStyle(fontSize: 18.0, color: Colors.white),
                         textAlign: TextAlign.center,
                       ),
@@ -247,16 +248,6 @@ class _MyHomePageState extends State<MyHomePage> {
                     padding: EdgeInsets.all(8.0),
                     child: Text(
                       "Status: $_playerStatus",
-                      style: TextStyle(
-                        fontWeight: FontWeight.w300,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Text(
-                      "Error Code: $_errorCode",
                       style: TextStyle(
                         fontWeight: FontWeight.w300,
                       ),
