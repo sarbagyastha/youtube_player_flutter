@@ -1,10 +1,10 @@
-![YOUTUBE PLAYER FLUTTER](ypf_banner.png)
+![YOUTUBE PLAYER FLUTTER](misc/ypf_banner.png)
 
 [![pub package](https://img.shields.io/pub/vpre/youtube_player_flutter.svg)](https://pub.dartlang.org/packages/youtube_player_flutter)
 [![Build Status](https://travis-ci.org/sarbagyastha/youtube_player_flutter.svg?branch=master)](https://travis-ci.org/sarbagyastha/youtube_player_flutter)
 [![licence](https://img.shields.io/badge/licence-MIT-orange.svg)](https://github.com/sarbagyastha/youtube_player_flutter/blob/master/LICENSE)
-[![Download apk-32](https://img.shields.io/badge/download-arm-informational.svg)](https://github.com/sarbagyastha/youtube_player_flutter/raw/master/ytpf32.apk)
-[![Download apk-64](https://img.shields.io/badge/download-arm64-informational.svg)](https://github.com/sarbagyastha/youtube_player_flutter/raw/master/ytpf64.apk)
+[![Download apk-32](https://img.shields.io/badge/download-arm-informational.svg)](https://github.com/sarbagyastha/youtube_player_flutter/raw/master/misc/ytpf32.apk)
+[![Download apk-64](https://img.shields.io/badge/download-arm64-informational.svg)](https://github.com/sarbagyastha/youtube_player_flutter/raw/master/misc/ytpf64.apk)
 [![Stars](https://img.shields.io/github/stars/sarbagyastha/youtube_player_flutter?color=deeppink)](https://github.com/sarbagyastha/youtube_player_flutter)
 [![Top Language](https://img.shields.io/github/languages/top/sarbagyastha/youtube_player_flutter?color=9cf)](https://github.com/sarbagyastha/youtube_player_flutter)
 
@@ -13,7 +13,7 @@
 Flutter plugin for playing or streaming YouTube videos inline using the official [**iFrame Player API**](https://developers.google.com/youtube/iframe_api_reference).
 Supports both **Android** and **iOS** platforms.
 
-![DEMO](ytpf_demo.gif) 
+![DEMO](misc/ytpf_demo.gif) 
 
 ## Salient Features
 * Inline Playback
@@ -66,7 +66,7 @@ YoutubePlayer(
 #### Playing live stream videos
 Set the isLive property to true in order to change the UI to match Live Video.
 
-![Live UI Demo](live_ui.png) 
+![Live UI Demo](misc/live_ui.png) 
 
 ```dart
 YoutubePlayer(
