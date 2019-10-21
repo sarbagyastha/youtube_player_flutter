@@ -100,7 +100,6 @@ class _ProgressBarState extends State<ProgressBar> {
           _setValue();
           _touchDown = true;
         });
-        _controller.pause();
       },
       onHorizontalDragUpdate: (details) {
         _seekToRelativePosition(details.globalPosition);

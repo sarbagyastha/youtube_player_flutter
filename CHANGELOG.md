@@ -1,6 +1,8 @@
 ## 5.0.1
 * Renamed `TotalDuration` widget to `RemainingDuration`.
 * Renamed `PlayButton` widget to `PlayPauseButton`.
+* **Improvment** Better handling of invalid video id.
+* **FIXED** Video pausing after jumping to certain position using progress bar.
 
 ## 5.0.0+1
 **BREAKING CHANGES**

@@ -6,6 +6,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:data_connection_checker/data_connection_checker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
 import 'package:ytview/ytview.dart';
 
 import '../../youtube_player_flutter.dart';
@@ -65,8 +66,6 @@ class YoutubePlayer extends StatefulWidget {
   /// Video starts playing from the duration provided.
   final Duration startAt;
 
-  final bool inFullScreen;
-
   YoutubePlayer({
     Key key,
     @required this.context,
@@ -84,7 +83,6 @@ class YoutubePlayer extends StatefulWidget {
     this.thumbnailUrl,
     this.flags = const YoutubePlayerFlags(),
     this.startAt = const Duration(seconds: 0),
-    this.inFullScreen = false,
   }) : super(key: key);
 
   /// Converts fully qualified YouTube Url to video id.
@@ -128,7 +126,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
   String _currentVideoId;
 
   bool _inFullScreen = false;
-
+  double _aspectRatio;
   bool _firstLoad = true;
 
   StreamSubscription _connectionChecker;
@@ -137,6 +135,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
   void initState() {
     super.initState();
     _loadController();
+    _aspectRatio = widget.aspectRatio;
     _currentVideoId = widget.videoId;
     _showControls.addListener(
       () {
@@ -149,10 +148,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
       },
     );
     SchedulerBinding.instance.addPostFrameCallback((_) {
-      _inFullScreen = widget.inFullScreen;
-      controller.value = controller.value.copyWith(
-        isFullScreen: widget.inFullScreen ?? false,
-      );
+      controller.value = controller.value.copyWith(isFullScreen: false);
     });
     _connectionChecker =
         DataConnectionChecker().onStatusChange.listen((status) {
@@ -191,44 +187,32 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
       }
     }
     if (controller.value.isFullScreen && !_inFullScreen) {
+      controller.pause();
       _inFullScreen = true;
-      Duration pos = await showFullScreenYoutubePlayer(
-        context: context,
-        videoId: widget.videoId,
-        startAt: controller.value.position,
-        width: widget.width,
-        topActions: widget.topActions,
-        bottomActions: widget.bottomActions,
-        aspectRatio: widget.aspectRatio,
-        bufferIndicator: widget.bufferIndicator,
-        controlsTimeOut: widget.controlsTimeOut,
-        flags: YoutubePlayerFlags(
-          disableDragSeek: widget.flags.disableDragSeek,
-          showVideoProgressIndicator: false,
-          autoPlay: widget.flags.autoPlay,
-          forceHideAnnotation: widget.flags.forceHideAnnotation,
-          mute: widget.flags.mute,
-          hideControls: widget.flags.hideControls,
-          hideThumbnail: widget.flags.hideThumbnail,
-          isLive: widget.flags.isLive,
-        ),
-        liveUIColor: widget.liveUIColor,
-        progressColors: widget.progressColors,
-        thumbnailUrl: widget.thumbnailUrl,
-        progressIndicatorColor: widget.progressIndicatorColor,
-      );
-      controller.seekTo(pos ?? Duration(seconds: 1));
-      _inFullScreen = false;
-      controller.exitFullScreen();
+      SystemChrome.setEnabledSystemUIOverlays([]);
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+      ]);
+      Future.delayed(Duration(seconds: 1), () => controller.play());
+      //toggleAspectRatio();
     }
     if (!controller.value.isFullScreen && _inFullScreen) {
+      controller.pause();
+      SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
+      SystemChrome.setPreferredOrientations(DeviceOrientation.values);
       _inFullScreen = false;
-      Navigator.pop<Duration>(context, controller.value.position);
+      Future.delayed(Duration(seconds: 1), () => controller.play());
+      //toggleAspectRatio();
     }
     if (mounted) {
       setState(() {});
     }
   }
+
+  void toggleAspectRatio() => _aspectRatio = controller.value.isFullScreen
+      ? 1 / MediaQuery.of(context).size.aspectRatio
+      : widget.aspectRatio;
 
   @override
   void dispose() {
@@ -294,7 +278,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
 
   Widget _buildPlayer({Widget errorWidget}) {
     return AspectRatio(
-      aspectRatio: widget.aspectRatio,
+      aspectRatio: _aspectRatio,
       child: controller.value.hasError
           ? errorWidget
           : Stack(
