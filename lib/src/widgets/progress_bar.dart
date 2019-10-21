@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:youtube_player_flutter/src/player/youtube_player.dart';
 
+import '../player/youtube_player.dart';
+
+/// Defines different colors for [ProgressBar].
 class ProgressBarColors {
   final Color backgroundColor;
 
@@ -18,6 +20,7 @@ class ProgressBarColors {
   });
 }
 
+/// A widget to display video progress bar.
 class ProgressBar extends StatefulWidget {
   final ProgressBarColors colors;
   final bool isExpanded;

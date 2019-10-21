@@ -1,3 +1,7 @@
+## 5.0.1
+* Renamed `TotalDuration` widget to `RemainingDuration`.
+* Renamed `PlayButton` widget to `PlayPauseButton`.
+
 ## 5.0.0+1
 **BREAKING CHANGES**
 * Everything is modular now. See the docs for details.

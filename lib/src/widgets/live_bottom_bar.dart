@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../youtube_player_flutter.dart';
 
+/// A widget to display bottom controls bar on Live Video Mode.
 class LiveBottomBar extends StatefulWidget {
   final double aspectRatio;
   final Color liveUIColor;

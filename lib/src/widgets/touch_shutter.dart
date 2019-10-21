@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../youtube_player_flutter.dart';
 import '../utils/duration_formatter.dart';
 
+/// A widget to display darkened translucent overlay, when video area is touched.
 class TouchShutter extends StatefulWidget {
   final bool disableDragSeek;
   final Duration timeOut;

@@ -1,4 +1,4 @@
-part of 'package:youtube_player_flutter/src/player/youtube_player.dart';
+part of '../player/youtube_player.dart';
 
 /// [ValueNotifier] for [YoutubePlayerController].
 class YoutubePlayerValue {

@@ -1,3 +1,4 @@
+/// Converts error code into pre-defined error messages.
 String errorString(int errorCode) {
   switch (errorCode) {
     case 2:

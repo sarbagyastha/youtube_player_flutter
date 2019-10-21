@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:youtube_player_flutter/src/player/youtube_player.dart';
 
+import '../player/youtube_player.dart';
 import '../utils/duration_formatter.dart';
 
+/// A widget which displays the current position of the video.
 class CurrentPosition extends StatefulWidget {
   @override
   _CurrentPositionState createState() => _CurrentPositionState();
@@ -23,7 +24,8 @@ class _CurrentPositionState extends State<CurrentPosition> {
   }
 }
 
-class TotalDuration extends StatelessWidget {
+/// A widget which displays the remaining duration of the video.
+class RemainingDuration extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     YoutubePlayerController controller = YoutubePlayerController.of(context);

@@ -1,3 +1,6 @@
+import '../player/youtube_player.dart';
+
+/// Defines player flags for [YoutubePlayer].
 class YoutubePlayerFlags {
   /// if set to true, hides the controls.
   ///

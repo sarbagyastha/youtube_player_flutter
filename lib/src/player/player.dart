@@ -218,7 +218,6 @@ class __PlayerState extends State<_Player> with WidgetsBindingObserver {
                 player = new YT.Player('player', {
                     height: '100%',
                     width: '100%',
-                    videoId: '50kklGefAcs',
                     playerVars: {
                         'controls': 0,
                         'playsinline': 1,

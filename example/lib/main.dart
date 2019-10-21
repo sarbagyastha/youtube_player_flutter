@@ -42,7 +42,6 @@ class _MyHomePageState extends State<MyHomePage> {
   double _volume = 100;
   bool _muted = false;
   String _playerStatus = "";
-
   String _videoId = "50kklGefAcs";
 
   void listener() {

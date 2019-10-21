@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 
 import '../../youtube_player_flutter.dart';
 
-class PlayButton extends StatefulWidget {
+/// A widget to display play/pause button.
+class PlayPauseButton extends StatefulWidget {
   final Widget bufferIndicator;
 
-  PlayButton({
+  PlayPauseButton({
     this.bufferIndicator,
   });
 
@@ -13,7 +14,7 @@ class PlayButton extends StatefulWidget {
   _PlayPauseButtonState createState() => _PlayPauseButtonState();
 }
 
-class _PlayPauseButtonState extends State<PlayButton>
+class _PlayPauseButtonState extends State<PlayPauseButton>
     with SingleTickerProviderStateMixin {
   YoutubePlayerController _controller;
   AnimationController _animController;

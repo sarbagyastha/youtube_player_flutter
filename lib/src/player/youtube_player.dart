@@ -6,13 +6,13 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:data_connection_checker/data_connection_checker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:youtube_player_flutter/src/utils/errors.dart';
-import 'package:youtube_player_flutter/src/widgets/touch_shutter.dart';
 import 'package:ytview/ytview.dart';
 
 import '../../youtube_player_flutter.dart';
+import '../utils/errors.dart';
+import '../widgets/touch_shutter.dart';
 
-part 'package:youtube_player_flutter/src/utils/youtube_player_controller.dart';
+part '../utils/youtube_player_controller.dart';
 
 part 'player.dart';
 
@@ -85,12 +85,11 @@ class YoutubePlayer extends StatefulWidget {
     this.flags = const YoutubePlayerFlags(),
     this.startAt = const Duration(seconds: 0),
     this.inFullScreen = false,
-  })  : assert(videoId.length == 11, "Invalid YouTube Video Id"),
-        super(key: key);
+  }) : super(key: key);
 
   /// Converts fully qualified YouTube Url to video id.
   static String convertUrlToId(String url, [bool trimWhitespaces = true]) {
-    assert(url != null || url.isNotEmpty, 'url cannot be empty');
+    assert(url?.isNotEmpty ?? false, 'Url cannot be empty');
     if (!url.contains("http") && (url.length == 11)) return url;
     if (trimWhitespaces) url = url.trim();
 
@@ -373,7 +372,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                                     CurrentPosition(),
                                     SizedBox(width: 8.0),
                                     ProgressBar(isExpanded: true),
-                                    TotalDuration(),
+                                    RemainingDuration(),
                                     PlaybackSpeedButton(),
                                     FullScreenButton(),
                                   ],
@@ -398,7 +397,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                   ),
                 if (!widget.flags.hideControls)
                   Center(
-                    child: PlayButton(),
+                    child: PlayPauseButton(),
                   ),
               ],
             ),

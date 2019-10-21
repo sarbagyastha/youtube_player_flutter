@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../youtube_player_flutter.dart';
 
+/// A widget to display playback speed changing button.
 class PlaybackSpeedButton extends StatefulWidget {
   final Widget child;
 

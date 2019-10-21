@@ -1,3 +1,4 @@
+/// Formats duration in milliseconds to xx:xx:xx format.
 String durationFormatter(int milliSeconds) {
   int seconds = milliSeconds ~/ 1000;
   final int hours = seconds ~/ 3600;
