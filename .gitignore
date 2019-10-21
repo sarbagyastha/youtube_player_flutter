@@ -7,4 +7,9 @@
 .packages
 .pub/
 
+.metadata
+.gitignore
+pubspec.lock
+youtube_player_flutter.iml
+
 build/
