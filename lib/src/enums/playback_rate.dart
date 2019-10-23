@@ -1,7 +1,7 @@
 /// Playback rate or speed for the video.
 ///
 /// Find more about it [here](https://developers.google.com/youtube/iframe_api_reference#getPlaybackRate).
-class PlaybackRate{
+class PlaybackRate {
   static const double twice = 2.0;
   static const double one_and_a_three_quarter = 1.75;
   static const double one_and_a_half = 1.5;

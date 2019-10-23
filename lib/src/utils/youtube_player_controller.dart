@@ -143,7 +143,8 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
   ]) : super(YoutubePlayerValue(isReady: false));
 
   static YoutubePlayerController of(BuildContext context) {
-    InheritedYoutubePlayer _player = context.inheritFromWidgetOfExactType(InheritedYoutubePlayer);
+    InheritedYoutubePlayer _player =
+        context.inheritFromWidgetOfExactType(InheritedYoutubePlayer);
     return _player.controller;
   }
 
@@ -161,10 +162,12 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
   void pause() => _evaluateJS('pause()');
 
   /// Loads the video as per the [videoId] provided.
-  void load({int startAt = 0}) => _evaluateJS('loadById("$initialSource", $startAt)');
+  void load({int startAt = 0}) =>
+      _evaluateJS('loadById("$initialSource", $startAt)');
 
   /// Cues the video as per the [videoId] provided.
-  void cue({int startAt = 0}) => _evaluateJS('cueById("$initialSource", $startAt)');
+  void cue({int startAt = 0}) =>
+      _evaluateJS('cueById("$initialSource", $startAt)');
 
   /// Mutes the player.
   void mute() => _evaluateJS('mute()');
@@ -189,7 +192,8 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
   }
 
   /// Sets the size in pixels of the player.
-  void setSize(Size size) => _evaluateJS('setSize(${size.width * 100},${size.height * 100})');
+  void setSize(Size size) =>
+      _evaluateJS('setSize(${size.width * 100},${size.height * 100})');
 
   /// Sets the playback speed for the video.
   void setPlaybackRate(double rate) => _evaluateJS('setPlaybackRate($rate)');
