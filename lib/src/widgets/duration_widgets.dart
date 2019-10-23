@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../player/youtube_player.dart';
+import '../utils/youtube_player_controller.dart';
 import '../utils/duration_formatter.dart';
 
 /// A widget which displays the current position of the video.

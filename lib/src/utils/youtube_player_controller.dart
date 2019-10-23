@@ -1,4 +1,8 @@
-part of '../player/youtube_player.dart';
+import 'package:flutter/widgets.dart';
+import 'package:webview_flutter/webview_flutter.dart';
+
+import '../enums/playback_rate.dart';
+import '../enums/player_state.dart';
 
 /// [ValueNotifier] for [YoutubePlayerController].
 class YoutubePlayerValue {
@@ -16,22 +20,24 @@ class YoutubePlayerValue {
     this.volume = 100,
     this.playerState = PlayerState.unknown,
     this.playbackRate = PlaybackRate.normal,
+    this.playbackQuality,
     this.errorCode = 0,
     this.webViewController,
   });
 
-  /// This is true when underlying web player reports ready.
+  /// Returns true when underlying web player reports ready.
   final bool isReady;
 
-  /// This is true when JavaScript evaluation can be triggered.
+  /// Returns true when JavaScript evaluation can be triggered.
   final bool isEvaluationReady;
 
+  /// Whether to show controls or not.
   final bool showControls;
 
-  /// This is true once video loads.
+  /// Returns true once video loads.
   final bool isLoaded;
 
-  /// This is true once the video start playing for the first time.
+  /// Returns true once the video start playing for the first time.
   final bool hasPlayed;
 
   /// The total length of the video.
@@ -56,9 +62,10 @@ class YoutubePlayerValue {
   final PlayerState playerState;
 
   /// The current video playback rate defined as [PlaybackRate].
-  final PlaybackRate playbackRate;
+  final double playbackRate;
 
   /// Reports the error code as described [here](https://developers.google.com/youtube/iframe_api_reference#Events).
+  ///
   /// See the onError Section.
   final int errorCode;
 
@@ -67,6 +74,9 @@ class YoutubePlayerValue {
 
   /// Returns true is player has errors.
   bool get hasError => errorCode != 0;
+
+  /// Returns the current playback quality.
+  final String playbackQuality;
 
   YoutubePlayerValue copyWith({
     bool isReady,
@@ -81,7 +91,8 @@ class YoutubePlayerValue {
     bool isFullScreen,
     double volume,
     PlayerState playerState,
-    PlaybackRate playbackRate,
+    double playbackRate,
+    String playbackQuality,
     int errorCode,
     WebViewController webViewController,
   }) {
@@ -99,6 +110,7 @@ class YoutubePlayerValue {
       volume: volume ?? this.volume,
       playerState: playerState ?? this.playerState,
       playbackRate: playbackRate ?? this.playbackRate,
+      playbackQuality: playbackQuality ?? this.playbackQuality,
       errorCode: errorCode ?? this.errorCode,
       webViewController: webViewController ?? this.webViewController,
     );
@@ -118,6 +130,7 @@ class YoutubePlayerValue {
         'volume: $volume, '
         'playerState: $playerState, '
         'playbackRate: $playbackRate, '
+        'playbackQuality: $playbackQuality'
         'errorCode: $errorCode)';
   }
 }
@@ -126,12 +139,11 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
   final String initialSource;
 
   YoutubePlayerController([
-    this.initialSource = "",
+    this.initialSource = '',
   ]) : super(YoutubePlayerValue(isReady: false));
 
   static YoutubePlayerController of(BuildContext context) {
-    _InheritedYoutubePlayer _player =
-        context.inheritFromWidgetOfExactType(_InheritedYoutubePlayer);
+    InheritedYoutubePlayer _player = context.inheritFromWidgetOfExactType(InheritedYoutubePlayer);
     return _player.controller;
   }
 
@@ -139,13 +151,8 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
     value.webViewController?.evaluateJavascript(javascriptString);
   }
 
-  /// Hide YouTube Player annotations like title, share button and youtube logo.
-  /// It's hidden by default for iOS.
-  void forceHideAnnotation() {
-    if (Platform.isAndroid) {
-      _evaluateJS('hideAnnotations()');
-    }
-  }
+  /// Updates the old [YoutubePlayerValue] with new one provided.
+  void updateValue(YoutubePlayerValue newValue) => value = newValue;
 
   /// Plays the video.
   void play() => _evaluateJS('play()');
@@ -154,12 +161,10 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
   void pause() => _evaluateJS('pause()');
 
   /// Loads the video as per the [videoId] provided.
-  void load({int startAt = 0}) =>
-      _evaluateJS('loadById("$initialSource", $startAt)');
+  void load({int startAt = 0}) => _evaluateJS('loadById("$initialSource", $startAt)');
 
   /// Cues the video as per the [videoId] provided.
-  void cue({int startAt = 0}) =>
-      _evaluateJS('cueById("$initialSource", $startAt)');
+  void cue({int startAt = 0}) => _evaluateJS('cueById("$initialSource", $startAt)');
 
   /// Mutes the player.
   void mute() => _evaluateJS('mute()');
@@ -180,35 +185,34 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
   void seekTo(Duration position, {bool allowSeekAhead = true}) {
     _evaluateJS('seekTo(${position.inSeconds},$allowSeekAhead)');
     play();
-    value = value.copyWith(position: position);
+    updateValue(value.copyWith(position: position));
   }
 
   /// Sets the size in pixels of the player.
-  void setSize(Size size) =>
-      _evaluateJS('setSize(${size.width * 100},${size.height * 100})');
+  void setSize(Size size) => _evaluateJS('setSize(${size.width * 100},${size.height * 100})');
 
-  void setPlaybackRate(PlaybackRate rate) =>
-      _evaluateJS('setPlaybackRate(${playbackRateMap[rate]})');
+  /// Sets the playback speed for the video.
+  void setPlaybackRate(double rate) => _evaluateJS('setPlaybackRate($rate)');
 
-  void enterFullScreen() => value = value.copyWith(isFullScreen: true);
+  /// Switches the player to full screen mode.
+  void enterFullScreenMode() => updateValue(value.copyWith(isFullScreen: true));
 
-  void exitFullScreen() => value = value.copyWith(isFullScreen: false);
+  /// Switches the player to normal mode.
+  void exitFullScreenMode() => updateValue(value.copyWith(isFullScreen: false));
 }
 
-class _InheritedYoutubePlayer extends InheritedWidget {
-  const _InheritedYoutubePlayer({
+/// An inherited widget to provide [YoutubePlayerController] to it's descendants.
+class InheritedYoutubePlayer extends InheritedWidget {
+  const InheritedYoutubePlayer({
     Key key,
     @required this.controller,
     @required Widget child,
   })  : assert(controller != null),
-        super(
-          key: key,
-          child: child,
-        );
+        super(key: key, child: child);
 
   final YoutubePlayerController controller;
 
   @override
-  bool updateShouldNotify(_InheritedYoutubePlayer oldPlayer) =>
+  bool updateShouldNotify(InheritedYoutubePlayer oldPlayer) =>
       oldPlayer.controller.hashCode != controller.hashCode;
 }

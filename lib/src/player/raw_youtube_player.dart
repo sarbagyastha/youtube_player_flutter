@@ -1,25 +1,40 @@
-part of 'youtube_player.dart';
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 
-class _Player extends StatefulWidget {
-  final YoutubePlayerController controller;
+import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:webview_flutter/webview_flutter.dart';
+
+import '../enums/player_state.dart';
+import '../utils/youtube_player_controller.dart';
+import '../utils/youtube_player_flags.dart';
+
+/// A raw youtube player widget which interacts with the underlying webview inorder to play YouTube videos.
+///
+/// Use [YoutubePlayer] instead.
+class RawYoutubePlayer extends StatefulWidget {
   final YoutubePlayerFlags flags;
 
-  _Player({
-    this.controller,
-    this.flags,
-  });
+  RawYoutubePlayer({Key key, this.flags}) : super(key: key);
 
   @override
-  __PlayerState createState() => __PlayerState();
+  _RawYoutubePlayerState createState() => _RawYoutubePlayerState();
 }
 
-class __PlayerState extends State<_Player> with WidgetsBindingObserver {
+class _RawYoutubePlayerState extends State<RawYoutubePlayer>
+    with WidgetsBindingObserver {
   Completer<WebViewController> _webController = Completer<WebViewController>();
+  YoutubePlayerController controller;
+  PlayerState _cachedPlayerState;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    SchedulerBinding.instance.addPostFrameCallback(
+      (_) => controller = YoutubePlayerController.of(context),
+    );
   }
 
   @override
@@ -32,14 +47,17 @@ class __PlayerState extends State<_Player> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.resumed:
-        if (widget.flags.autoPlay) {
-          widget.controller?.play();
+        if (_cachedPlayerState != null &&
+            _cachedPlayerState == PlayerState.playing) {
+          controller?.play();
         }
         break;
       case AppLifecycleState.inactive:
+        break;
       case AppLifecycleState.paused:
       case AppLifecycleState.suspending:
-        widget.controller?.pause();
+        _cachedPlayerState = controller.value.playerState;
+        controller?.pause();
         break;
     }
   }
@@ -56,8 +74,7 @@ class __PlayerState extends State<_Player> with WidgetsBindingObserver {
           JavascriptChannel(
             name: 'Ready',
             onMessageReceived: (JavascriptMessage message) {
-              widget.controller.value =
-                  widget.controller.value.copyWith(isReady: true);
+              controller.updateValue(controller.value.copyWith(isReady: true));
             },
           ),
           JavascriptChannel(
@@ -65,34 +82,46 @@ class __PlayerState extends State<_Player> with WidgetsBindingObserver {
             onMessageReceived: (JavascriptMessage message) {
               switch (message.message) {
                 case '-1':
-                  widget.controller.value = widget.controller.value.copyWith(
-                      playerState: PlayerState.unStarted, isLoaded: true);
+                  controller.updateValue(
+                    controller.value.copyWith(
+                      playerState: PlayerState.unStarted,
+                      isLoaded: true,
+                    ),
+                  );
                   break;
                 case '0':
-                  widget.controller.value = widget.controller.value
-                      .copyWith(playerState: PlayerState.ended);
+                  controller.updateValue(
+                    controller.value.copyWith(playerState: PlayerState.ended),
+                  );
                   break;
                 case '1':
-                  widget.controller.value = widget.controller.value.copyWith(
-                    playerState: PlayerState.playing,
-                    isPlaying: true,
-                    hasPlayed: true,
-                    errorCode: 0,
+                  controller.updateValue(
+                    controller.value.copyWith(
+                      playerState: PlayerState.playing,
+                      isPlaying: true,
+                      hasPlayed: true,
+                      errorCode: 0,
+                    ),
                   );
                   break;
                 case '2':
-                  widget.controller.value = widget.controller.value.copyWith(
-                    playerState: PlayerState.paused,
-                    isPlaying: false,
+                  controller.updateValue(
+                    controller.value.copyWith(
+                      playerState: PlayerState.paused,
+                      isPlaying: false,
+                    ),
                   );
                   break;
                 case '3':
-                  widget.controller.value = widget.controller.value
-                      .copyWith(playerState: PlayerState.buffering);
+                  controller.updateValue(
+                    controller.value
+                        .copyWith(playerState: PlayerState.buffering),
+                  );
                   break;
                 case '5':
-                  widget.controller.value = widget.controller.value
-                      .copyWith(playerState: PlayerState.cued);
+                  controller.updateValue(
+                    controller.value.copyWith(playerState: PlayerState.cued),
+                  );
                   break;
                 default:
                   throw Exception("Invalid player state obtained.");
@@ -102,24 +131,30 @@ class __PlayerState extends State<_Player> with WidgetsBindingObserver {
           JavascriptChannel(
             name: 'PlaybackQualityChange',
             onMessageReceived: (JavascriptMessage message) {
-              print("PlaybackQualityChange ${message.message}");
+              controller.updateValue(
+                controller.value.copyWith(
+                  playbackQuality: message.message,
+                ),
+              );
             },
           ),
           JavascriptChannel(
             name: 'PlaybackRateChange',
             onMessageReceived: (JavascriptMessage message) {
-              widget.controller.value = widget.controller.value.copyWith(
-                playbackRate: playbackRateMap.map<double, PlaybackRate>((k,
-                        v) =>
-                    MapEntry(v, k))[double.tryParse(message.message) ?? 1.0],
+              controller.updateValue(
+                controller.value.copyWith(
+                  playbackRate: double.tryParse(message.message) ?? 1.0,
+                ),
               );
             },
           ),
           JavascriptChannel(
             name: 'Errors',
             onMessageReceived: (JavascriptMessage message) {
-              widget.controller.value = widget.controller.value
-                  .copyWith(errorCode: int.tryParse(message.message) ?? 0);
+              controller.updateValue(
+                controller.value
+                    .copyWith(errorCode: int.tryParse(message.message) ?? 0),
+              );
             },
           ),
           JavascriptChannel(
@@ -127,10 +162,9 @@ class __PlayerState extends State<_Player> with WidgetsBindingObserver {
             onMessageReceived: (JavascriptMessage message) {
               var videoData = jsonDecode(message.message);
               double duration = videoData['duration'] * 1000;
-              print("VideoData ${message.message}");
-              widget.controller.value = widget.controller.value.copyWith(
-                duration: Duration(
-                  milliseconds: duration.floor(),
+              controller.updateValue(
+                controller.value.copyWith(
+                  duration: Duration(milliseconds: duration.floor()),
                 ),
               );
             },
@@ -139,9 +173,9 @@ class __PlayerState extends State<_Player> with WidgetsBindingObserver {
             name: 'CurrentTime',
             onMessageReceived: (JavascriptMessage message) {
               double position = (double.tryParse(message.message) ?? 0) * 1000;
-              widget.controller.value = widget.controller.value.copyWith(
-                position: Duration(
-                  milliseconds: position.floor(),
+              controller.updateValue(
+                controller.value.copyWith(
+                  position: Duration(milliseconds: position.floor()),
                 ),
               );
             },
@@ -149,8 +183,10 @@ class __PlayerState extends State<_Player> with WidgetsBindingObserver {
           JavascriptChannel(
             name: 'LoadedFraction',
             onMessageReceived: (JavascriptMessage message) {
-              widget.controller.value = widget.controller.value.copyWith(
-                buffered: double.tryParse(message.message) ?? 0,
+              controller.updateValue(
+                controller.value.copyWith(
+                  buffered: double.tryParse(message.message) ?? 0,
+                ),
               );
             },
           ),
@@ -158,15 +194,16 @@ class __PlayerState extends State<_Player> with WidgetsBindingObserver {
         onWebViewCreated: (webController) {
           _webController.complete(webController);
           _webController.future.then(
-            (controller) {
-              widget.controller.value = widget.controller.value
-                  .copyWith(webViewController: webController);
+            (webViewController) {
+              controller.updateValue(
+                controller.value.copyWith(webViewController: webViewController),
+              );
             },
           );
         },
         onPageFinished: (_) {
-          widget.controller.value = widget.controller.value.copyWith(
-            isEvaluationReady: true,
+          controller.updateValue(
+            controller.value.copyWith(isEvaluationReady: true),
           );
         },
       ),

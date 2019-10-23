@@ -2,10 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../../youtube_player_flutter.dart';
+import '../utils/youtube_player_controller.dart';
 import '../utils/duration_formatter.dart';
 
 /// A widget to display darkened translucent overlay, when video area is touched.
+///
+/// Also provides ability to seek video by dragging horizontally.
 class TouchShutter extends StatefulWidget {
   final bool disableDragSeek;
   final Duration timeOut;
@@ -44,16 +46,18 @@ class _TouchShutterState extends State<TouchShutter> {
 
   void _toggleControls() {
     _timer?.cancel();
-    controller.value = controller.value.copyWith(
-      showControls: !controller.value.showControls,
+    controller.updateValue(
+      controller.value.copyWith(
+        showControls: !controller.value.showControls,
+      ),
     );
     _timer = Timer(
       widget.timeOut,
-      () {
-        controller.value = controller.value.copyWith(
+      () => controller.updateValue(
+        controller.value.copyWith(
           showControls: false,
-        );
-      },
+        ),
+      ),
     );
   }
 
@@ -70,6 +74,11 @@ class _TouchShutterState extends State<TouchShutter> {
               dragStartPos = details.globalPosition.dx;
             },
             onHorizontalDragUpdate: (details) {
+              controller.updateValue(
+                controller.value.copyWith(
+                  showControls: false,
+                ),
+              );
               delta = details.globalPosition.dx - dragStartPos;
               seekToPosition =
                   (controller.value.position.inMilliseconds + delta * 1000)

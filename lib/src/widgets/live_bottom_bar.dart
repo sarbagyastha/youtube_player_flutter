@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../youtube_player_flutter.dart';
+import '../utils/youtube_player_controller.dart';
+import 'duration_widgets.dart';
+import 'full_screen_button.dart';
 
 /// A widget to display bottom controls bar on Live Video Mode.
 class LiveBottomBar extends StatefulWidget {

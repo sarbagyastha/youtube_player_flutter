@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../player/youtube_player.dart';
+import '../utils/youtube_player_controller.dart';
 
 /// Defines different colors for [ProgressBar].
 class ProgressBarColors {

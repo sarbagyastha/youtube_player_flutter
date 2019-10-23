@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../player/youtube_player.dart';
+import '../utils/youtube_player_controller.dart';
 
 /// A widget to display the full screen toggle button.
 class FullScreenButton extends StatelessWidget {
@@ -16,9 +16,9 @@ class FullScreenButton extends StatelessWidget {
       ),
       onPressed: () {
         if (controller.value.isFullScreen) {
-          controller.exitFullScreen();
+          controller.exitFullScreenMode();
         } else {
-          controller.enterFullScreen();
+          controller.enterFullScreenMode();
         }
       },
     );

@@ -1,16 +1,8 @@
-/// Quality of Thumbnail
-enum ThumbnailQuality {
-  defaultQuality,
-  high,
-  medium,
-  standard,
-  max,
+/// Quality of YouTube video thumbnail.
+class ThumbnailQuality {
+  static const String defaultQuality = 'default.jpg';
+  static const String high = 'hqdefault.jpg';
+  static const String medium = 'mqdefault.jpg';
+  static const String standard = 'sddefault.jpg';
+  static const String max = 'maxresdefault.jpg';
 }
-
-Map<ThumbnailQuality, String> thumbnailQualityMap = {
-  ThumbnailQuality.defaultQuality: 'default.jpg',
-  ThumbnailQuality.high: 'hqdefault.jpg',
-  ThumbnailQuality.medium: 'mqdefault.jpg',
-  ThumbnailQuality.standard: 'sddefault.jpg',
-  ThumbnailQuality.max: 'maxresdefault.jpg',
-};

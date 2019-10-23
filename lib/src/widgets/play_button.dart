@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../youtube_player_flutter.dart';
+import '../enums/player_state.dart';
+import '../utils/youtube_player_controller.dart';
 
 /// A widget to display play/pause button.
 class PlayPauseButton extends StatefulWidget {
@@ -49,7 +50,8 @@ class _PlayPauseButtonState extends State<PlayPauseButton>
 
   @override
   Widget build(BuildContext context) {
-    if (_controller.value.playerState == PlayerState.buffering) {
+    if (_controller.value.playerState == PlayerState.buffering ||
+        _controller.value.playerState == PlayerState.unknown) {
       return widget.bufferIndicator ??
           Container(
             width: 70.0,

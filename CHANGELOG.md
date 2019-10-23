@@ -2,7 +2,11 @@
 * Renamed `TotalDuration` widget to `RemainingDuration`.
 * Renamed `PlayButton` widget to `PlayPauseButton`.
 * **Improvment** Better handling of invalid video id.
+* **Improvment** Better video orientation handling.
+* **Improvment** Better play/pause handling w/r/t app lifecycle.
 * **FIXED** Video pausing after jumping to certain position using progress bar.
+* **BREAKING** Switched back to `webview_flutter`.
+* Updated dart docs.
 
 ## 5.0.0+1
 **BREAKING CHANGES**
