@@ -23,6 +23,7 @@ class YoutubePlayerValue {
     this.playbackQuality,
     this.errorCode = 0,
     this.webViewController,
+    this.videoId,
   });
 
   /// Returns true when underlying web player reports ready.
@@ -75,8 +76,11 @@ class YoutubePlayerValue {
   /// Returns true is player has errors.
   bool get hasError => errorCode != 0;
 
-  /// Returns the current playback quality.
+  /// Reports the current playback quality.
   final String playbackQuality;
+
+  /// Reports currently loaded video Id.
+  final String videoId;
 
   YoutubePlayerValue copyWith({
     bool isReady,
@@ -95,6 +99,7 @@ class YoutubePlayerValue {
     String playbackQuality,
     int errorCode,
     WebViewController webViewController,
+    String videoId,
   }) {
     return YoutubePlayerValue(
       isReady: isReady ?? this.isReady,
@@ -113,12 +118,14 @@ class YoutubePlayerValue {
       playbackQuality: playbackQuality ?? this.playbackQuality,
       errorCode: errorCode ?? this.errorCode,
       webViewController: webViewController ?? this.webViewController,
+      videoId: videoId ?? this.videoId,
     );
   }
 
   @override
   String toString() {
     return '$runtimeType('
+        'videoId: $videoId'
         'isReady: $isReady, '
         'isEvaluationReady: $isEvaluationReady, '
         'showControls: $showControls, '
@@ -136,11 +143,7 @@ class YoutubePlayerValue {
 }
 
 class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
-  final String initialSource;
-
-  YoutubePlayerController([
-    this.initialSource = '',
-  ]) : super(YoutubePlayerValue(isReady: false));
+  YoutubePlayerController() : super(YoutubePlayerValue(isReady: false));
 
   static YoutubePlayerController of(BuildContext context) {
     InheritedYoutubePlayer _player =
@@ -162,12 +165,16 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
   void pause() => _evaluateJS('pause()');
 
   /// Loads the video as per the [videoId] provided.
-  void load({int startAt = 0}) =>
-      _evaluateJS('loadById("$initialSource", $startAt)');
+  void load(String videoId, {int startAt = 0}) {
+    updateValue(value.copyWith(hasPlayed: false, videoId: videoId));
+    _evaluateJS('loadById("$videoId", $startAt)');
+  }
 
   /// Cues the video as per the [videoId] provided.
-  void cue({int startAt = 0}) =>
-      _evaluateJS('cueById("$initialSource", $startAt)');
+  void cue(String videoId, {int startAt = 0}) {
+    updateValue(value.copyWith(hasPlayed: false, videoId: videoId));
+    _evaluateJS('cueById("$videoId", $startAt)');
+  }
 
   /// Mutes the player.
   void mute() => _evaluateJS('mute()');

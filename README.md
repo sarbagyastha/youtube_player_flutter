@@ -3,8 +3,7 @@
 [![pub package](https://img.shields.io/pub/vpre/youtube_player_flutter.svg)](https://pub.dartlang.org/packages/youtube_player_flutter)
 [![Build Status](https://travis-ci.org/sarbagyastha/youtube_player_flutter.svg?branch=master)](https://travis-ci.org/sarbagyastha/youtube_player_flutter)
 [![licence](https://img.shields.io/badge/licence-MIT-orange.svg)](https://github.com/sarbagyastha/youtube_player_flutter/blob/master/LICENSE)
-[![Download apk-32](https://img.shields.io/badge/download-arm-informational.svg)](https://github.com/sarbagyastha/youtube_player_flutter/raw/master/misc/ytpf32.apk)
-[![Download apk-64](https://img.shields.io/badge/download-arm64-informational.svg)](https://github.com/sarbagyastha/youtube_player_flutter/raw/master/misc/ytpf64.apk)
+[![Download](https://img.shields.io/badge/download-APK-informational.svg)](https://github.com/sarbagyastha/youtube_player_flutter/releases)
 [![Stars](https://img.shields.io/github/stars/sarbagyastha/youtube_player_flutter?color=deeppink)](https://github.com/sarbagyastha/youtube_player_flutter)
 [![Top Language](https://img.shields.io/github/languages/top/sarbagyastha/youtube_player_flutter?color=9cf)](https://github.com/sarbagyastha/youtube_player_flutter)
 
@@ -13,7 +12,7 @@
 Flutter plugin for playing or streaming YouTube videos inline using the official [**iFrame Player API**](https://developers.google.com/youtube/iframe_api_reference).
 Supports both **Android** and **iOS** platforms.
 
-![DEMO](misc/ytpf_demo.gif) 
+![DEMO](misc/ypf_demo.gif)
 
 ## Salient Features
 * Inline Playback
@@ -46,7 +45,7 @@ No configuration required - the plugin should work out of the box.
 ```dart
 YoutubePlayer(
     context: context,
-    videoId: "iLnmTe5Q2Qw",
+    initialVideoId: "iLnmTe5Q2Qw",
     flags: YoutubePlayerFlags(
       autoPlay: true,
       showVideoProgressIndicator: true,
@@ -71,7 +70,7 @@ Set the isLive property to true in order to change the UI to match Live Video.
 ```dart
 YoutubePlayer(
     context: context,
-    videoId: "iLnmTe5Q2Qw",
+    initialVideoId: "iLnmTe5Q2Qw",
     flags: YoutubePLayerFlags(
       isLive: true,
     ),
@@ -84,16 +83,16 @@ YoutubePlayer(
 
  Some of the widgets bundled with the plugin are:
  * FullScreenButton
- * TotalDuration
+ * RemainingDuration
  * CurrentPosition
- * PlayButton
+ * PlayPauseButton
  * PlaybackSpeedButton
  * ProgressBar
 
 ```dart
 YoutubePlayer(
     context: context,
-    videoId: "iLnmTe5Q2Qw",
+    initialVideoId: "iLnmTe5Q2Qw",
     bottomActions: [
       CurrentPosition(),
       ProgressBar(isExpanded: true),
@@ -110,7 +109,7 @@ Set the hideControls property to true, then you can create your own custom contr
 ```dart
 YoutubePlayer(
     context: context,
-    videoId: "iLnmTe5Q2Qw",
+    initialVideoId: "iLnmTe5Q2Qw",
     flags: YoutubePlayerFlags(
       hideControls: true,
     ),
@@ -137,7 +136,7 @@ print(videoId); // BBAyRBTfsOU
 Know more about the configuration options [here](https://pub.dartlang.org/documentation/youtube_player_flutter/latest/youtube_player_flutter/youtube_player_flutter-library.html).
 
 ## Download
-Download apks from above(in badges) and try the plugin.
+Download apk from above(in badges) and try the plugin.
 
 ## Limitation 
 Since the plugin is based on platform views. This plugin requires Android API level 20 or greater.
@@ -147,23 +146,29 @@ If you only want to target Android and need support for Android Kitkat or less, 
 ## License
 
 ```
-Copyright (c) 2019 Sarbagya Dhaubanjar
+Copyright 2019 Sarbagya Dhaubanjar. All rights reserved.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above
+      copyright notice, this list of conditions and the following
+      disclaimer in the documentation and/or other materials provided
+      with the distribution.
+    * Neither the name of Google Inc. nor the names of its
+      contributors may be used to endorse or promote products derived
+      from this software without specific prior written permission.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```

@@ -12,14 +12,19 @@ class CurrentPosition extends StatefulWidget {
 class _CurrentPositionState extends State<CurrentPosition> {
   @override
   Widget build(BuildContext context) {
-    return Text(
-      durationFormatter(
-        YoutubePlayerController.of(context).value.position?.inMilliseconds ?? 0,
-      ),
-      style: TextStyle(
-        color: Colors.white,
-        fontSize: 12.0,
-      ),
+    return ValueListenableBuilder(
+      valueListenable: YoutubePlayerController.of(context),
+      builder: (context, value, _) {
+        return Text(
+          durationFormatter(
+            value.position?.inMilliseconds ?? 0,
+          ),
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 12.0,
+          ),
+        );
+      },
     );
   }
 }
@@ -28,16 +33,20 @@ class _CurrentPositionState extends State<CurrentPosition> {
 class RemainingDuration extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    YoutubePlayerController controller = YoutubePlayerController.of(context);
-    return Text(
-      "- ${durationFormatter(
-        (controller.value.duration?.inMilliseconds ?? 0) -
-            (controller.value.position?.inMilliseconds ?? 0),
-      )}",
-      style: TextStyle(
-        color: Colors.white,
-        fontSize: 12.0,
-      ),
+    return ValueListenableBuilder(
+      valueListenable: YoutubePlayerController.of(context),
+      builder: (context, value, _) {
+        return Text(
+          "- ${durationFormatter(
+            (value.duration?.inMilliseconds ?? 0) -
+                (value.position?.inMilliseconds ?? 0),
+          )}",
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 12.0,
+          ),
+        );
+      },
     );
   }
 }

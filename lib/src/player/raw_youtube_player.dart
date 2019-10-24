@@ -32,9 +32,6 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    SchedulerBinding.instance.addPostFrameCallback(
-      (_) => controller = YoutubePlayerController.of(context),
-    );
   }
 
   @override
@@ -64,6 +61,7 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
 
   @override
   Widget build(BuildContext context) {
+    controller = YoutubePlayerController.of(context);
     return IgnorePointer(
       ignoring: true,
       child: WebView(
@@ -264,16 +262,9 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
                         'showinfo': 0,
                         'iv_load_policy': 3,
                         'modestbranding': 1,
-    ''';
-    if (widget.flags.start != null)
-      _player += "'start': ${widget.flags.start.inSeconds},";
-    if (widget.flags.end != null)
-      _player += "'end': ${widget.flags.end.inSeconds},";
-    _player += '''
                         'cc_load_policy': ${boolean(widget.flags.enableCaption)},
                         'cc_lang_pref': '${widget.flags.captionLanguage}',
                         'autoplay': ${boolean(widget.flags.autoPlay)},
-                        'loop': ${boolean(widget.flags.loop)},
                     },
                     events: {
                         onReady: (event) => Ready.postMessage("Ready"),

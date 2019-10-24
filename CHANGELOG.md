@@ -1,3 +1,13 @@
+## 5.2.0
+**BREAKING CHANGES**
+* Renamed `videoId` property in YoutubePlayer to `initialVideoId`. 
+* From now on changing video id must be done using either [load()](https://pub.dev/documentation/youtube_player_flutter/latest/youtube_player_flutter/YoutubePlayerController/load.html) or [cue()](https://pub.dev/documentation/youtube_player_flutter/latest/youtube_player_flutter/YoutubePlayerController/cue.html).
+* **FIXED** Video playing sound only, on videoId change. [Issue #99](https://github.com/sarbagyastha/youtube_player_flutter/issues/99)
+* **Improvement** Minor Optimizations.
+* Example updated with video list.
+* `PlayerState.ended` now calls only once. Added `PlayerState.stopped`.
+* Added `actionsPadding` property.
+
 ## 5.1.0
 * Renamed `TotalDuration` widget to `RemainingDuration`.
 * Renamed `PlayButton` widget to `PlayPauseButton`.

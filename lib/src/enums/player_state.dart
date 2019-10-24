@@ -9,4 +9,5 @@ enum PlayerState {
   paused,
   buffering,
   cued,
+  stopped,
 }
