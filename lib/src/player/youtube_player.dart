@@ -166,15 +166,23 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
       controller.updateValue(controller.value.copyWith(isFullScreen: false));
     });
     _connectionChecker =
-        DataConnectionChecker().onStatusChange.listen((status) {
-      if (status == DataConnectionStatus.connected) {
-        if (controller.value.errorCode == 400) {
-          controller.updateValue(controller.value.copyWith(errorCode: 0));
-        }
-      } else {
-        controller.updateValue(controller.value.copyWith(errorCode: 400));
+        DataConnectionChecker().onStatusChange.listen(_updateErrorCode);
+    DataConnectionChecker().connectionStatus.then(_updateErrorCode);
+  }
+
+  void _updateErrorCode(DataConnectionStatus status) {
+    if (status == DataConnectionStatus.connected) {
+      if (controller.value.errorCode == 400) {
+        controller.updateValue(controller.value.copyWith(errorCode: 0));
       }
-    });
+    } else {
+      controller.updateValue(
+        controller.value.copyWith(
+          errorCode: 400,
+          playerState: PlayerState.stopped,
+        ),
+      );
+    }
   }
 
   _loadController() {
@@ -202,14 +210,15 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
     if (controller.value.isFullScreen && !_inFullScreen) {
       controller.pause();
       _inFullScreen = true;
+      _aspectRatio = 1 / MediaQuery.of(context).size.aspectRatio;
 
+      await Future.delayed(Duration(seconds: 1));
       SystemChrome.setEnabledSystemUIOverlays([]);
       SystemChrome.setPreferredOrientations([
         DeviceOrientation.landscapeLeft,
         DeviceOrientation.landscapeRight,
       ]);
 
-      _aspectRatio = 1 / MediaQuery.of(context).size.aspectRatio;
       delayedPlay();
     }
     if (!controller.value.isFullScreen && _inFullScreen) {
@@ -223,9 +232,6 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
       delayedPlay();
     }
     if (controller.value.playerState == PlayerState.ended) {
-      controller.updateValue(
-        controller.value.copyWith(playerState: PlayerState.stopped),
-      );
       if (widget.flags.loop) {
         controller.load(controller.value.videoId);
       }
@@ -311,119 +317,122 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
   Widget _buildPlayer({Widget errorWidget}) {
     return AspectRatio(
       aspectRatio: _aspectRatio,
-      child: controller.value.hasError
-          ? errorWidget
-          : Stack(
-              fit: StackFit.expand,
-              overflow: Overflow.visible,
-              children: [
-                RawYoutubePlayer(
-                  flags: widget.flags,
+      child: Stack(
+        fit: StackFit.expand,
+        overflow: Overflow.visible,
+        children: [
+          RawYoutubePlayer(
+            flags: widget.flags,
+          ),
+          if (!controller.value.hasPlayed &&
+              controller.value.playerState == PlayerState.buffering)
+            Container(
+              color: Colors.black,
+            ),
+          if (!controller.value.hasPlayed && !widget.flags.hideThumbnail)
+            Image.network(
+              widget.thumbnailUrl ??
+                  YoutubePlayer.getThumbnail(
+                    videoId: controller.value.videoId ?? widget.initialVideoId,
+                  ),
+              fit: BoxFit.cover,
+              loadingBuilder: (_, child, progress) => progress == null
+                  ? child
+                  : Container(
+                      color: Colors.black,
+                    ),
+            ),
+          if (!widget.flags.hideControls)
+            TouchShutter(
+              disableDragSeek: widget.flags.disableDragSeek,
+              timeOut: widget.controlsTimeOut,
+            ),
+          if (!widget.flags.hideControls &&
+              controller.value.position > Duration(milliseconds: 100) &&
+              !controller.value.showControls &&
+              widget.flags.showVideoProgressIndicator &&
+              !widget.flags.isLive &&
+              !controller.value.isFullScreen)
+            Positioned(
+              bottom: -7.0,
+              left: -7.0,
+              right: -7.0,
+              child: IgnorePointer(
+                ignoring: true,
+                child: ProgressBar(
+                  colors: ProgressBarColors(
+                    handleColor: Colors.transparent,
+                    bufferedColor: Colors.white,
+                    backgroundColor: Colors.black,
+                  ),
                 ),
-                if (!controller.value.hasPlayed &&
-                    controller.value.playerState == PlayerState.buffering)
-                  Container(
-                    color: Colors.black,
-                  ),
-                if (!controller.value.hasPlayed && !widget.flags.hideThumbnail)
-                  Image.network(
-                    widget.thumbnailUrl ??
-                        YoutubePlayer.getThumbnail(
-                          videoId:
-                              controller.value.videoId ?? widget.initialVideoId,
-                        ),
-                    fit: BoxFit.cover,
-                    loadingBuilder: (_, child, progress) => progress == null
-                        ? child
-                        : Container(
-                            color: Colors.black,
-                          ),
-                  ),
-                if (!widget.flags.hideControls)
-                  TouchShutter(
-                    disableDragSeek: widget.flags.disableDragSeek,
-                    timeOut: widget.controlsTimeOut,
-                  ),
-                if (!widget.flags.hideControls &&
-                    controller.value.position > Duration(milliseconds: 100) &&
-                    !controller.value.showControls &&
-                    widget.flags.showVideoProgressIndicator &&
-                    !widget.flags.isLive &&
-                    !controller.value.isFullScreen)
-                  Positioned(
-                    bottom: -7.0,
-                    left: -7.0,
-                    right: -7.0,
-                    child: IgnorePointer(
-                      ignoring: true,
-                      child: ProgressBar(
-                        colors: ProgressBarColors(
-                          handleColor: Colors.transparent,
-                          bufferedColor: Colors.white,
-                          backgroundColor: Colors.black,
+              ),
+            ),
+          if (!widget.flags.hideControls)
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: AnimatedOpacity(
+                opacity:
+                    !widget.flags.hideControls && controller.value.showControls
+                        ? 1
+                        : 0,
+                duration: Duration(milliseconds: 300),
+                child: widget.flags.isLive
+                    ? LiveBottomBar(
+                        aspectRatio: widget.aspectRatio,
+                        liveUIColor: widget.liveUIColor,
+                      )
+                    : Padding(
+                        padding: widget.bottomActions == null
+                            ? EdgeInsets.all(0.0)
+                            : widget.actionsPadding,
+                        child: Row(
+                          children: widget.bottomActions ??
+                              [
+                                SizedBox(width: 14.0),
+                                CurrentPosition(),
+                                SizedBox(width: 8.0),
+                                ProgressBar(isExpanded: true),
+                                RemainingDuration(),
+                                PlaybackSpeedButton(),
+                                FullScreenButton(),
+                              ],
                         ),
                       ),
-                    ),
-                  ),
-                if (!widget.flags.hideControls)
-                  Positioned(
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    child: AnimatedOpacity(
-                      opacity: !widget.flags.hideControls &&
-                              controller.value.showControls
-                          ? 1
-                          : 0,
-                      duration: Duration(milliseconds: 300),
-                      child: widget.flags.isLive
-                          ? LiveBottomBar(
-                              aspectRatio: widget.aspectRatio,
-                              liveUIColor: widget.liveUIColor,
-                            )
-                          : Padding(
-                              padding: widget.bottomActions == null
-                                  ? EdgeInsets.all(0.0)
-                                  : widget.actionsPadding,
-                              child: Row(
-                                children: widget.bottomActions ??
-                                    [
-                                      SizedBox(width: 14.0),
-                                      CurrentPosition(),
-                                      SizedBox(width: 8.0),
-                                      ProgressBar(isExpanded: true),
-                                      RemainingDuration(),
-                                      PlaybackSpeedButton(),
-                                      FullScreenButton(),
-                                    ],
-                              ),
-                            ),
-                    ),
-                  ),
-                if (!widget.flags.hideControls && controller.value.showControls)
-                  Positioned(
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    child: AnimatedOpacity(
-                        opacity: !widget.flags.hideControls &&
-                                controller.value.showControls
-                            ? 1
-                            : 0,
-                        duration: Duration(milliseconds: 300),
-                        child: Padding(
-                          padding: widget.actionsPadding,
-                          child: Row(
-                            children: widget.topActions ?? [Container()],
-                          ),
-                        )),
-                  ),
-                if (!widget.flags.hideControls)
-                  Center(
-                    child: PlayPauseButton(),
-                  ),
-              ],
+              ),
             ),
+          if (!widget.flags.hideControls && controller.value.showControls)
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: AnimatedOpacity(
+                  opacity: !widget.flags.hideControls &&
+                          controller.value.showControls
+                      ? 1
+                      : 0,
+                  duration: Duration(milliseconds: 300),
+                  child: Padding(
+                    padding: widget.actionsPadding,
+                    child: Row(
+                      children: widget.topActions ?? [Container()],
+                    ),
+                  )),
+            ),
+          if (!widget.flags.hideControls)
+            Center(
+              child: PlayPauseButton(),
+            ),
+          if (controller.value.hasError &&
+              controller.value.buffered.compareTo(
+                      controller.value.position.inMilliseconds /
+                          controller.value.duration.inMilliseconds) <
+                  0)
+            errorWidget,
+        ],
+      ),
     );
   }
 }

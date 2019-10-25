@@ -307,8 +307,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Widget _loadCueButton(String action) {
     return Expanded(
-      child: InkWell(
-        onTap: () {
+      child: MaterialButton(
+        color: Colors.blueAccent,
+        onPressed: () {
           if (_idController.text.isNotEmpty) {
             String id = YoutubePlayer.convertUrlToId(
               _idController.text,
@@ -320,16 +321,14 @@ class _MyHomePageState extends State<MyHomePage> {
             _showSnackBar('Source can\'t be empty!');
           }
         },
-        child: Container(
-          padding: EdgeInsets.symmetric(
-            vertical: 16.0,
-          ),
-          color: Colors.blueAccent,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 14.0),
           child: Text(
             action,
             style: TextStyle(
               fontSize: 18.0,
               color: Colors.white,
+              fontWeight: FontWeight.w300,
             ),
             textAlign: TextAlign.center,
           ),
