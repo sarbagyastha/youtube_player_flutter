@@ -1,3 +1,7 @@
+## 5.2.0+1
+* **FIXED** aspect ratio in fullscreen mode.
+* **FIXED** sometimes showing up buffering indicator instead of error.
+
 ## 5.2.0
 **BREAKING CHANGES**
 * Renamed `videoId` property in YoutubePlayer to `initialVideoId`. 
