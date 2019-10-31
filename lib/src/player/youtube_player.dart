@@ -1,10 +1,9 @@
 import 'dart:async';
 
 import 'package:data_connection_checker/data_connection_checker.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:flutter/services.dart';
+import 'package:youtube_player_flutter/src/player/fullscreen_youtube_player.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 import '../enums/player_state.dart';
@@ -151,6 +150,7 @@ class YoutubePlayer extends StatefulWidget {
 
 class _YoutubePlayerState extends State<YoutubePlayer> {
   YoutubePlayerController controller;
+  YoutubePlayerController _cachedController;
 
   double _aspectRatio;
   bool _initialLoad = true;
@@ -210,7 +210,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
     if (controller.value.isFullScreen && !_inFullScreen) {
       controller.pause();
       _inFullScreen = true;
-      _aspectRatio = 1 / MediaQuery.of(context).size.aspectRatio;
+      /*_aspectRatio = 1 / MediaQuery.of(context).size.aspectRatio;
 
       await Future.delayed(Duration(seconds: 1));
       SystemChrome.setEnabledSystemUIOverlays([]);
@@ -219,17 +219,46 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
         DeviceOrientation.landscapeRight,
       ]);
 
-      delayedPlay();
+      delayedPlay();*/
+      Navigator.push(
+        context,
+        _YoutubePageRoute(
+          builder: (context) => FullScreenYoutubePlayer(
+            context: context,
+            initialVideoId: widget.initialVideoId,
+            flags: widget.flags,
+            actionsPadding: widget.actionsPadding,
+            bottomActions: widget.bottomActions,
+            bufferIndicator: widget.bufferIndicator,
+            controlsTimeOut: widget.controlsTimeOut,
+            liveUIColor: widget.liveUIColor,
+            onPlayerInitialized: (fullScreenVideoController) {
+              _cachedController = controller;
+              Duration _cachedPosition = _cachedController.value.position;
+              controller = fullScreenVideoController
+                ..value.copyWith(isFullScreen: true)
+                ..seekTo(_cachedPosition);
+              widget.onPlayerInitialized(controller);
+            },
+            progressColors: widget.progressColors,
+            thumbnailUrl: widget.thumbnailUrl,
+            topActions: widget.topActions,
+          ),
+        ),
+      );
     }
     if (!controller.value.isFullScreen && _inFullScreen) {
       controller.pause();
-      _aspectRatio = widget.aspectRatio;
+      /*_aspectRatio = widget.aspectRatio;
 
       SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
-      SystemChrome.setPreferredOrientations(DeviceOrientation.values);
+      SystemChrome.setPreferredOrientations(DeviceOrientation.values);*/
 
       _inFullScreen = false;
-      delayedPlay();
+      Navigator.pop(context);
+      controller = _cachedController..value.copyWith(isFullScreen: false);
+      widget.onPlayerInitialized(controller);
+      //delayedPlay();
     }
     if (controller.value.playerState == PlayerState.ended) {
       if (widget.flags.loop) {
@@ -258,13 +287,9 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        if (controller.value.isFullScreen) {
-          controller.exitFullScreenMode();
-        }
-        return true;
-      },
+    return Material(
+      elevation: 0,
+      color: Colors.black,
       child: InheritedYoutubePlayer(
         controller: controller,
         child: Container(
@@ -434,5 +459,17 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
         ],
       ),
     );
+  }
+}
+
+class _YoutubePageRoute<T> extends MaterialPageRoute<T> {
+  _YoutubePageRoute({
+    @required WidgetBuilder builder,
+  }) : super(builder: builder);
+
+  @override
+  Widget buildTransitions(BuildContext context, Animation<double> animation,
+      Animation<double> secondaryAnimation, Widget child) {
+    return child;
   }
 }

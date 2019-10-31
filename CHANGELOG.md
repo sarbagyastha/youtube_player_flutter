@@ -1,4 +1,8 @@
-## 5.2.0+1
+## 6.0-beta.1
+**Requires flutter `master` channel**
+* Android Embedding v2 in webview_flutter.
+
+5.2.0+1
 * **FIXED** aspect ratio in fullscreen mode.
 * **FIXED** sometimes showing up buffering indicator instead of error.
 
