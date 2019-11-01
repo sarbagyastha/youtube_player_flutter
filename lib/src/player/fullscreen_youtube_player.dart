@@ -1,5 +1,8 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 import '../player/youtube_player.dart';
 import '../utils/youtube_player_controller.dart';
@@ -7,13 +10,7 @@ import '../utils/youtube_player_flags.dart';
 import '../widgets/widgets.dart';
 
 class FullScreenYoutubePlayer extends StatefulWidget {
-  /// Current context of the player.
-  final BuildContext context;
-
-  /// Specifies the videoId of initial video to be played.
-  ///
-  /// For switching videos, use `load()` or `cue()` methods from [YoutubePlayerController].
-  final String initialVideoId;
+  final YoutubePlayerController controller;
 
   /// The duration for which controls in the player will be visible.
   ///
@@ -26,8 +23,7 @@ class FullScreenYoutubePlayer extends StatefulWidget {
   /// Overrides default colors of the progress bar, takes [ProgressColors].
   final ProgressBarColors progressColors;
 
-  /// Returns [YoutubePlayerController] after being initialized.
-  final void Function(YoutubePlayerController) onPlayerInitialized;
+  final VoidCallback onReady;
 
   /// Overrides color of Live UI when enabled.
   final Color liveUIColor;
@@ -51,12 +47,11 @@ class FullScreenYoutubePlayer extends StatefulWidget {
 
   FullScreenYoutubePlayer({
     Key key,
-    @required this.context,
-    @required this.initialVideoId,
+    @required this.controller,
     this.controlsTimeOut = const Duration(seconds: 3),
     this.bufferIndicator,
     this.progressColors,
-    this.onPlayerInitialized,
+    this.onReady,
     this.liveUIColor = Colors.red,
     this.topActions,
     this.bottomActions,
@@ -74,6 +69,9 @@ class _FullScreenYoutubePlayerState extends State<FullScreenYoutubePlayer> {
   @override
   void initState() {
     super.initState();
+    widget.controller.updateValue(
+      widget.controller.value.copyWith(isFullScreen: true),
+    );
     SystemChrome.setEnabledSystemUIOverlays([]);
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeLeft,
@@ -85,14 +83,16 @@ class _FullScreenYoutubePlayerState extends State<FullScreenYoutubePlayer> {
   void dispose() {
     SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
     SystemChrome.setPreferredOrientations(DeviceOrientation.values);
+    widget.controller.updateValue(
+      widget.controller.value.copyWith(isFullScreen: false),
+    );
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return YoutubePlayer(
-      context: context,
-      initialVideoId: widget.initialVideoId,
+      controller: widget.controller,
       flags: widget.flags.copyWith(
         showVideoProgressIndicator: false,
       ),
@@ -101,7 +101,7 @@ class _FullScreenYoutubePlayerState extends State<FullScreenYoutubePlayer> {
       bufferIndicator: widget.bufferIndicator,
       controlsTimeOut: widget.controlsTimeOut,
       liveUIColor: widget.liveUIColor,
-      onPlayerInitialized: widget.onPlayerInitialized,
+      onReady: widget.onReady,
       progressColors: widget.progressColors,
       thumbnailUrl: widget.thumbnailUrl,
       topActions: widget.topActions,

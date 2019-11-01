@@ -45,20 +45,21 @@ class _TouchShutterState extends State<TouchShutter> {
   }
 
   void _toggleControls() {
-    _timer?.cancel();
     controller.updateValue(
       controller.value.copyWith(
         showControls: !controller.value.showControls,
       ),
     );
-    _timer = Timer(
-      widget.timeOut,
-      () => controller.updateValue(
-        controller.value.copyWith(
-          showControls: false,
-        ),
-      ),
-    );
+    _timer?.cancel();
+    _timer = Timer(widget.timeOut, () {
+      if (!controller.value.isDragging) {
+        controller.updateValue(
+          controller.value.copyWith(
+            showControls: false,
+          ),
+        );
+      }
+    });
   }
 
   @override

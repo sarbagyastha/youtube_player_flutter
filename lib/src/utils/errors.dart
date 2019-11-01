@@ -1,6 +1,8 @@
 /// Converts error code into pre-defined error messages.
-String errorString(int errorCode) {
+String errorString(int errorCode, {String videoId = ''}) {
   switch (errorCode) {
+    case 1:
+      return 'Invalid Video ID = $videoId';
     case 2:
       return 'The request contains an invalid parameter value.';
     case 5:

@@ -50,27 +50,38 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
-  YoutubePlayerController _controller = YoutubePlayerController();
+  YoutubePlayerController _controller;
   var _idController = TextEditingController();
   var _seekToController = TextEditingController();
   double _volume = 100;
   bool _muted = false;
   String _playerStatus = "";
 
+  bool _isPlayerReady = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = YoutubePlayerController(initialVideoId: 'p2lYr3vM_1w')
+      ..addListener(listener);
+  }
+
   void listener() {
-    if (_controller.value.playerState == PlayerState.ended) {
-      _showSnackBar('Video Ended!');
-    }
-    if (mounted) {
-      setState(() {
-        _playerStatus = _controller.value.playerState.toString();
-      });
+    if (_isPlayerReady) {
+      if (_controller.value.playerState == PlayerState.ended) {
+        _showSnackBar('Video Ended!');
+      }
+      if (mounted && !_controller.value.isFullScreen) {
+        setState(() {
+          _playerStatus = _controller.value.playerState.toString();
+        });
+      }
     }
   }
 
   @override
   void deactivate() {
-    // This pauses video while navigating to next page.
+    // Pauses video while navigating to next page.
     _controller.pause();
     super.deactivate();
   }
@@ -83,223 +94,221 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return OrientationBuilder(
-      builder: (context, orientation) {
-        return Scaffold(
-          key: _scaffoldKey,
-          appBar: orientation == Orientation.landscape
-              ? null
-              : AppBar(
-                  leading: Padding(
-                    padding: const EdgeInsets.only(left: 12.0),
-                    child: Image.asset(
-                      'assets/ypf.png',
-                      fit: BoxFit.fitWidth,
-                    ),
+    return Scaffold(
+      key: _scaffoldKey,
+      appBar: AppBar(
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 12.0),
+          child: Image.asset(
+            'assets/ypf.png',
+            fit: BoxFit.fitWidth,
+          ),
+        ),
+        title: Text(
+          widget.title,
+          style: TextStyle(color: Colors.white),
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.video_library),
+            onPressed: () => Navigator.push(
+              context,
+              CupertinoPageRoute(
+                builder: (context) => VideoList(),
+              ),
+            ),
+          ),
+        ],
+      ),
+      body: ListView(
+        children: [
+          YoutubePlayer(
+            controller: _controller,
+            flags: YoutubePlayerFlags(
+              mute: false,
+              autoPlay: true,
+              forceHideAnnotation: true,
+              showVideoProgressIndicator: true,
+              disableDragSeek: false,
+              loop: true,
+              start: Duration(seconds: 20),
+            ),
+            progressIndicatorColor: Colors.blueAccent,
+            topActions: <Widget>[
+              IconButton(
+                icon: Icon(
+                  Icons.arrow_back_ios,
+                  color: Colors.white,
+                  size: 20.0,
+                ),
+                onPressed: () {
+                  _controller.toggleFullScreenMode();
+                },
+              ),
+              Expanded(
+                child: Text(
+                  'Youtube Player Title Demo',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18.0,
                   ),
-                  title: Text(
-                    widget.title,
-                    style: TextStyle(color: Colors.white),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+              ),
+              IconButton(
+                icon: Icon(
+                  Icons.settings,
+                  color: Colors.white,
+                  size: 25.0,
+                ),
+                onPressed: () {
+                  _showSnackBar('Settings Tapped!');
+                },
+              ),
+            ],
+            onReady: () {
+              _isPlayerReady = true;
+            },
+          ),
+          _space,
+          Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                TextField(
+                  enabled: _isPlayerReady,
+                  controller: _idController,
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                    hintText: "Enter youtube \<video id\> or \<link\>",
                   ),
-                  actions: [
+                ),
+                _space,
+                Row(
+                  children: [
+                    _loadCueButton('LOAD'),
+                    SizedBox(width: 10.0),
+                    _loadCueButton('CUE'),
+                  ],
+                ),
+                _space,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
                     IconButton(
-                      icon: Icon(Icons.video_library),
-                      onPressed: () => Navigator.push(
-                        context,
-                        CupertinoPageRoute(
-                          builder: (context) => VideoList(),
-                        ),
+                      icon: Icon(
+                        _controller.value.isPlaying
+                            ? Icons.pause
+                            : Icons.play_arrow,
                       ),
+                      onPressed: _isPlayerReady
+                          ? () {
+                              _controller.value.isPlaying
+                                  ? _controller.pause()
+                                  : _controller.play();
+                              setState(() {});
+                            }
+                          : null,
+                    ),
+                    IconButton(
+                      icon: Icon(_muted ? Icons.volume_off : Icons.volume_up),
+                      onPressed: _isPlayerReady
+                          ? () {
+                              _muted
+                                  ? _controller.unMute()
+                                  : _controller.mute();
+                              setState(() {
+                                _muted = !_muted;
+                              });
+                            }
+                          : null,
+                    ),
+                    IconButton(
+                      icon: Icon(
+                        _controller.value.isFullScreen
+                            ? Icons.fullscreen_exit
+                            : Icons.fullscreen,
+                      ),
+                      onPressed: _isPlayerReady
+                          ? () => _controller.toggleFullScreenMode()
+                          : null,
                     ),
                   ],
                 ),
-          body: SingleChildScrollView(
-            physics: orientation == Orientation.landscape
-                ? NeverScrollableScrollPhysics()
-                : AlwaysScrollableScrollPhysics(),
-            child: Column(
-              children: [
-                YoutubePlayer(
-                  context: context,
-                  initialVideoId: 'tcodrIK2P_I',
-                  flags: YoutubePlayerFlags(
-                    mute: false,
-                    autoPlay: true,
-                    forceHideAnnotation: true,
-                    showVideoProgressIndicator: true,
-                    disableDragSeek: false,
-                    loop: true,
-                    start: Duration(seconds: 95),
-                  ),
-                  progressIndicatorColor: Colors.blueAccent,
-                  topActions: <Widget>[
-                    IconButton(
-                      icon: Icon(
-                        Icons.arrow_back_ios,
-                        color: Colors.white,
-                        size: 20.0,
+                _space,
+                TextField(
+                  enabled: _isPlayerReady,
+                  controller: _seekToController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                    hintText: "Seek to seconds",
+                    suffixIcon: Padding(
+                      padding: EdgeInsets.all(5.0),
+                      child: OutlineButton(
+                        child: Text("Seek"),
+                        onPressed: () {
+                          _controller.seekTo(
+                            Duration(
+                              seconds: int.parse(_seekToController.text),
+                            ),
+                          );
+                        },
                       ),
-                      onPressed: () {
-                        _controller.exitFullScreenMode();
-                      },
+                    ),
+                  ),
+                ),
+                _space,
+                Row(
+                  children: <Widget>[
+                    Text(
+                      "Volume",
+                      style: TextStyle(fontWeight: FontWeight.w300),
                     ),
                     Expanded(
-                      child: Text(
-                        'Youtube Player Title Demo',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18.0,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
+                      child: Slider(
+                        inactiveColor: Colors.transparent,
+                        value: _volume,
+                        min: 0.0,
+                        max: 100.0,
+                        divisions: 10,
+                        label: '${(_volume).round()}',
+                        onChanged: _isPlayerReady
+                            ? (value) {
+                                setState(() {
+                                  _volume = value;
+                                });
+                                _controller.setVolume(_volume.round());
+                              }
+                            : null,
                       ),
-                    ),
-                    IconButton(
-                      icon: Icon(
-                        Icons.settings,
-                        color: Colors.white,
-                        size: 25.0,
-                      ),
-                      onPressed: () {
-                        _showSnackBar('Settings Tapped!');
-                      },
                     ),
                   ],
-                  onPlayerInitialized: (controller) =>
-                      _controller = controller..addListener(listener),
                 ),
-                if (orientation == Orientation.portrait) ...[
-                  _space,
-                  Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: <Widget>[
-                        TextField(
-                          controller: _idController,
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(),
-                            hintText: "Enter youtube \<video id\> or \<link\>",
-                          ),
-                        ),
-                        _space,
-                        Row(
-                          children: [
-                            _loadCueButton('LOAD'),
-                            SizedBox(width: 10.0),
-                            _loadCueButton('CUE'),
-                          ],
-                        ),
-                        _space,
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: <Widget>[
-                            IconButton(
-                              icon: Icon(
-                                _controller.value.isPlaying
-                                    ? Icons.pause
-                                    : Icons.play_arrow,
-                              ),
-                              onPressed: () {
-                                _controller.value.isPlaying
-                                    ? _controller.pause()
-                                    : _controller.play();
-                                setState(() {});
-                              },
-                            ),
-                            IconButton(
-                              icon: Icon(
-                                  _muted ? Icons.volume_off : Icons.volume_up),
-                              onPressed: () {
-                                _muted
-                                    ? _controller.unMute()
-                                    : _controller.mute();
-                                setState(() {
-                                  _muted = !_muted;
-                                });
-                              },
-                            ),
-                            IconButton(
-                              icon: Icon(Icons.fullscreen),
-                              onPressed: () =>
-                                  _controller.enterFullScreenMode(),
-                            ),
-                          ],
-                        ),
-                        _space,
-                        TextField(
-                          controller: _seekToController,
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(),
-                            hintText: "Seek to seconds",
-                            suffixIcon: Padding(
-                              padding: EdgeInsets.all(5.0),
-                              child: OutlineButton(
-                                child: Text("Seek"),
-                                onPressed: () {
-                                  _controller.seekTo(
-                                    Duration(
-                                      seconds:
-                                          int.parse(_seekToController.text),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                          ),
-                        ),
-                        _space,
-                        Row(
-                          children: <Widget>[
-                            Text(
-                              "Volume",
-                              style: TextStyle(fontWeight: FontWeight.w300),
-                            ),
-                            Expanded(
-                              child: Slider(
-                                inactiveColor: Colors.transparent,
-                                value: _volume,
-                                min: 0.0,
-                                max: 100.0,
-                                divisions: 10,
-                                label: '${(_volume).round()}',
-                                onChanged: (value) {
-                                  setState(() {
-                                    _volume = value;
-                                  });
-                                  _controller.setVolume(_volume.round());
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                        Chip(
-                          backgroundColor: Colors.blueAccent,
-                          padding: EdgeInsets.all(8.0),
-                          avatar: Icon(
-                            Icons.settings_input_antenna,
-                            color: Colors.white,
-                            size: 15.0,
-                          ),
-                          label: Text(
-                            _playerStatus,
-                            style: TextStyle(
-                              fontWeight: FontWeight.w300,
-                              color: Colors.white,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ],
-                    ),
+                Chip(
+                  backgroundColor: Colors.blueAccent,
+                  padding: EdgeInsets.all(8.0),
+                  avatar: Icon(
+                    Icons.settings_input_antenna,
+                    color: Colors.white,
+                    size: 15.0,
                   ),
-                ],
+                  label: Text(
+                    _playerStatus,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w300,
+                      color: Colors.white,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
               ],
             ),
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 
@@ -309,18 +318,22 @@ class _MyHomePageState extends State<MyHomePage> {
     return Expanded(
       child: MaterialButton(
         color: Colors.blueAccent,
-        onPressed: () {
-          if (_idController.text.isNotEmpty) {
-            String id = YoutubePlayer.convertUrlToId(
-              _idController.text,
-            );
-            if (action == 'LOAD') _controller.load(id);
-            if (action == 'CUE') _controller.cue(id);
-            FocusScope.of(context).requestFocus(FocusNode());
-          } else {
-            _showSnackBar('Source can\'t be empty!');
-          }
-        },
+        onPressed: _isPlayerReady
+            ? () {
+                if (_idController.text.isNotEmpty) {
+                  String id = YoutubePlayer.convertUrlToId(
+                    _idController.text,
+                  );
+                  if (action == 'LOAD') _controller.load(id);
+                  if (action == 'CUE') _controller.cue(id);
+                  FocusScope.of(context).requestFocus(FocusNode());
+                } else {
+                  _showSnackBar('Source can\'t be empty!');
+                }
+              }
+            : null,
+        disabledColor: Colors.grey,
+        disabledTextColor: Colors.black,
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 14.0),
           child: Text(

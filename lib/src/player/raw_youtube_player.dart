@@ -253,6 +253,7 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
                 player = new YT.Player('player', {
                     height: '100%',
                     width: '100%',
+                    videoId: '${controller.initialVideoId}',
                     playerVars: {
                         'controls': 0,
                         'playsinline': 1,

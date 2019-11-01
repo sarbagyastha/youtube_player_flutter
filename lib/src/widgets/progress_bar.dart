@@ -45,6 +45,7 @@ class _ProgressBarState extends State<ProgressBar> {
   double _bufferedValue = 0.0;
 
   bool _touchDown = false;
+  Duration _position;
 
   @override
   void didChangeDependencies() {
@@ -88,13 +89,27 @@ class _ProgressBarState extends State<ProgressBar> {
     _touchPoint = box.globalToLocal(globalPosition);
     _checkTouchPoint();
     final double relative = _touchPoint.dx / box.size.width;
-    final Duration position = _controller.value.duration * relative;
-    _controller.seekTo(position);
+    _position = _controller.value.duration * relative;
+    _controller.seekTo(_position, allowSeekAhead: false);
+  }
+
+  void _dragEndActions() {
+    _controller.updateValue(
+      _controller.value.copyWith(showControls: false, isDragging: false),
+    );
+    _controller.seekTo(_position, allowSeekAhead: true);
+    setState(() {
+      _touchDown = false;
+    });
+    _controller.play();
   }
 
   Widget _buildBar() {
     return GestureDetector(
       onHorizontalDragDown: (details) {
+        _controller.updateValue(
+          _controller.value.copyWith(showControls: true, isDragging: true),
+        );
         _seekToRelativePosition(details.globalPosition);
         setState(() {
           _setValue();
@@ -108,10 +123,10 @@ class _ProgressBarState extends State<ProgressBar> {
         });
       },
       onHorizontalDragEnd: (details) {
-        setState(() {
-          _touchDown = false;
-        });
-        _controller.play();
+        _dragEndActions();
+      },
+      onHorizontalDragCancel: () {
+        _dragEndActions();
       },
       child: Container(
         constraints: BoxConstraints.expand(height: 7.0 * 2),

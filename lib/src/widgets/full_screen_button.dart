@@ -15,13 +15,7 @@ class FullScreenButton extends StatelessWidget {
             value.isFullScreen ? Icons.fullscreen_exit : Icons.fullscreen,
             color: Colors.white,
           ),
-          onPressed: () {
-            if (value.isFullScreen) {
-              controller.exitFullScreenMode();
-            } else {
-              controller.enterFullScreenMode();
-            }
-          },
+          onPressed: () => controller.toggleFullScreenMode(),
         );
       },
     );
