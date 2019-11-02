@@ -1,3 +1,7 @@
+// Copyright 2019 Sarbagya Dhaubanjar. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 import 'package:flutter/material.dart';
 
 import '../utils/youtube_player_controller.dart';
@@ -6,11 +10,14 @@ import 'full_screen_button.dart';
 
 /// A widget to display bottom controls bar on Live Video Mode.
 class LiveBottomBar extends StatefulWidget {
-  final double aspectRatio;
+  /// Overrides the default [YoutubePlayerController].
+  final YoutubePlayerController controller;
+
+  /// Defines color for UI.
   final Color liveUIColor;
 
   LiveBottomBar({
-    @required this.aspectRatio,
+    this.controller,
     @required this.liveUIColor,
   });
 
@@ -21,27 +28,36 @@ class LiveBottomBar extends StatefulWidget {
 class _LiveBottomBarState extends State<LiveBottomBar> {
   double _currentSliderPosition = 0.0;
 
-  YoutubePlayerController controller;
+  YoutubePlayerController _controller;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    controller ??= YoutubePlayerController.of(context)..addListener(listener);
+    _controller = YoutubePlayerController.of(context);
+    if (_controller == null) {
+      assert(
+        widget.controller != null,
+        '\n\nNo controller could be found in the provided context.\n\n'
+        'Try passing the controller explicitly.',
+      );
+      _controller = widget.controller;
+    }
+    _controller.addListener(listener);
   }
 
   @override
   void dispose() {
-    controller?.dispose();
+    _controller?.dispose();
     super.dispose();
   }
 
   void listener() {
     if (mounted) {
       setState(() {
-        _currentSliderPosition = controller.value.duration.inMilliseconds == 0
+        _currentSliderPosition = _controller.value.duration.inMilliseconds == 0
             ? 0
-            : controller.value.position.inMilliseconds /
-                controller.value.duration.inMilliseconds;
+            : _controller.value.position.inMilliseconds /
+                _controller.value.duration.inMilliseconds;
       });
     }
   }
@@ -49,7 +65,7 @@ class _LiveBottomBarState extends State<LiveBottomBar> {
   @override
   Widget build(BuildContext context) {
     return Visibility(
-      visible: controller.value.showControls,
+      visible: _controller.value.showControls,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
@@ -62,10 +78,10 @@ class _LiveBottomBarState extends State<LiveBottomBar> {
               child: Slider(
                 value: _currentSliderPosition,
                 onChanged: (value) {
-                  controller.seekTo(
+                  _controller.seekTo(
                     Duration(
                       milliseconds:
-                          (controller.value.duration.inMilliseconds * value)
+                          (_controller.value.duration.inMilliseconds * value)
                               .round(),
                     ),
                   );
@@ -79,7 +95,7 @@ class _LiveBottomBarState extends State<LiveBottomBar> {
             ),
           ),
           InkWell(
-            onTap: () => controller.seekTo(controller.value.duration),
+            onTap: () => _controller.seekTo(_controller.value.duration),
             child: Material(
               color: widget.liveUIColor,
               child: Text(
@@ -92,7 +108,9 @@ class _LiveBottomBarState extends State<LiveBottomBar> {
               ),
             ),
           ),
-          FullScreenButton(),
+          FullScreenButton(
+            controller: _controller,
+          ),
         ],
       ),
     );

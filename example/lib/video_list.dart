@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
@@ -7,7 +8,7 @@ class VideoList extends StatefulWidget {
 }
 
 class _VideoListState extends State<VideoList> {
-  List<String> _videoIds = [
+  List<YoutubePlayerController> _controllers = [
     'gQDByCdjUXw',
     'iLnmTe5Q2Qw',
     '_WoCV4c6XOE',
@@ -16,7 +17,16 @@ class _VideoListState extends State<VideoList> {
     'p2lYr3vM_1w',
     '7QUtEmBT_-w',
     '34_PXCzGw1M',
-  ];
+  ]
+      .map<YoutubePlayerController>(
+        (videoId) => YoutubePlayerController(
+          initialVideoId: videoId,
+          flags: YoutubePlayerFlags(
+            autoPlay: false,
+          ),
+        ),
+      )
+      .toList();
 
   @override
   Widget build(BuildContext context) {
@@ -27,23 +37,20 @@ class _VideoListState extends State<VideoList> {
       body: ListView.separated(
         itemBuilder: (context, index) {
           return YoutubePlayer(
-            key: ValueKey(_videoIds[index]),
-            context: context,
-            initialVideoId: _videoIds[index],
-            flags: YoutubePlayerFlags(
-              autoPlay: false,
-              showVideoProgressIndicator: false,
-            ),
+            key: ValueKey(_controllers[index].hashCode),
+            controller: _controllers[index],
+            actionsPadding: EdgeInsets.only(left: 16.0),
             bottomActions: [
               CurrentPosition(),
               SizedBox(width: 10.0),
               ProgressBar(isExpanded: true),
               SizedBox(width: 10.0),
               RemainingDuration(),
+              FullScreenButton(),
             ],
           );
         },
-        itemCount: _videoIds.length,
+        itemCount: _controllers.length,
         separatorBuilder: (context, _) => SizedBox(height: 10.0),
       ),
     );

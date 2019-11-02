@@ -1,3 +1,7 @@
+// Copyright 2019 Sarbagya Dhaubanjar. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 /// Formats duration in milliseconds to xx:xx:xx format.
 String durationFormatter(int milliSeconds) {
   int seconds = milliSeconds ~/ 1000;

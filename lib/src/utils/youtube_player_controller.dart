@@ -1,8 +1,14 @@
+// Copyright 2019 Sarbagya Dhaubanjar. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 import 'package:flutter/widgets.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import '../enums/playback_rate.dart';
 import '../enums/player_state.dart';
+import '../widgets/progress_bar.dart';
+import 'youtube_player_flags.dart';
 
 /// [ValueNotifier] for [YoutubePlayerController].
 class YoutubePlayerValue {
@@ -24,6 +30,8 @@ class YoutubePlayerValue {
     this.errorCode = 0,
     this.webViewController,
     this.videoId,
+    this.toggleFullScreen = false,
+    this.isDragging = false,
   });
 
   /// Returns true when underlying web player reports ready.
@@ -82,6 +90,12 @@ class YoutubePlayerValue {
   /// Reports currently loaded video Id.
   final String videoId;
 
+  /// Returns true if fullscreen mode is just toggled.
+  final bool toggleFullScreen;
+
+  /// Returns true if [ProgressBar] is being dragged.
+  final bool isDragging;
+
   YoutubePlayerValue copyWith({
     bool isReady,
     bool isEvaluationReady,
@@ -100,6 +114,8 @@ class YoutubePlayerValue {
     int errorCode,
     WebViewController webViewController,
     String videoId,
+    bool toggleFullScreen,
+    bool isDragging,
   }) {
     return YoutubePlayerValue(
       isReady: isReady ?? this.isReady,
@@ -119,13 +135,15 @@ class YoutubePlayerValue {
       errorCode: errorCode ?? this.errorCode,
       webViewController: webViewController ?? this.webViewController,
       videoId: videoId ?? this.videoId,
+      toggleFullScreen: toggleFullScreen ?? this.toggleFullScreen,
+      isDragging: isDragging ?? this.isDragging,
     );
   }
 
   @override
   String toString() {
     return '$runtimeType('
-        'videoId: $videoId'
+        'videoId: $videoId, '
         'isReady: $isReady, '
         'isEvaluationReady: $isEvaluationReady, '
         'showControls: $showControls, '
@@ -137,22 +155,45 @@ class YoutubePlayerValue {
         'volume: $volume, '
         'playerState: $playerState, '
         'playbackRate: $playbackRate, '
-        'playbackQuality: $playbackQuality'
+        'playbackQuality: $playbackQuality, '
         'errorCode: $errorCode)';
   }
 }
 
+/// Controls a youtube player, and provides updates when the state is
+/// changing.
+///
+/// The video is displayed in a Flutter app by creating a [YoutubePlayer] widget.
+///
+/// To reclaim the resources used by the player call [dispose].
+///
+/// After [dispose] all further calls are ignored.
 class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
-  YoutubePlayerController() : super(YoutubePlayerValue(isReady: false));
+  /// The video id with which the player initializes.
+  final String initialVideoId;
+
+  /// Composes all the flags required to control the player.
+  final YoutubePlayerFlags flags;
+
+  YoutubePlayerController({
+    @required this.initialVideoId,
+    this.flags = const YoutubePlayerFlags(),
+  })  : assert(initialVideoId != null, 'initialVideoId can\'t be null.'),
+        assert(flags != null),
+        super(YoutubePlayerValue(isReady: false));
 
   static YoutubePlayerController of(BuildContext context) {
     InheritedYoutubePlayer _player =
         context.inheritFromWidgetOfExactType(InheritedYoutubePlayer);
-    return _player.controller;
+    return _player?.controller;
   }
 
   _evaluateJS(String javascriptString) {
-    value.webViewController?.evaluateJavascript(javascriptString);
+    if (value.isEvaluationReady) {
+      value.webViewController?.evaluateJavascript(javascriptString);
+    } else {
+      print('The controller is not ready for method calls.');
+    }
   }
 
   /// Updates the old [YoutubePlayerValue] with new one provided.
@@ -166,14 +207,28 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
 
   /// Loads the video as per the [videoId] provided.
   void load(String videoId, {int startAt = 0}) {
-    updateValue(value.copyWith(hasPlayed: false, videoId: videoId));
+    _updateValues(videoId);
     _evaluateJS('loadById("$videoId", $startAt)');
   }
 
   /// Cues the video as per the [videoId] provided.
   void cue(String videoId, {int startAt = 0}) {
-    updateValue(value.copyWith(hasPlayed: false, videoId: videoId));
+    _updateValues(videoId);
     _evaluateJS('cueById("$videoId", $startAt)');
+  }
+
+  void _updateValues(String id) {
+    if (id?.length != 11) {
+      updateValue(
+        value.copyWith(
+          errorCode: 1,
+        ),
+      );
+      return;
+    }
+    updateValue(
+      value.copyWith(errorCode: 0, hasPlayed: false, videoId: id),
+    );
   }
 
   /// Mutes the player.
@@ -205,11 +260,34 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
   /// Sets the playback speed for the video.
   void setPlaybackRate(double rate) => _evaluateJS('setPlaybackRate($rate)');
 
-  /// Switches the player to full screen mode.
-  void enterFullScreenMode() => updateValue(value.copyWith(isFullScreen: true));
+  /// Toggles the player's full screen mode.
+  void toggleFullScreenMode() =>
+      updateValue(value.copyWith(toggleFullScreen: true));
 
-  /// Switches the player to normal mode.
-  void exitFullScreenMode() => updateValue(value.copyWith(isFullScreen: false));
+  /// Reloads the player.
+  ///
+  /// The video id will reset to [initialVideoId] after reload.
+  void reload() => value.webViewController?.reload();
+
+  /// Resets the value of [YoutubePlayerController].
+  void reset() => updateValue(
+        value.copyWith(
+          isReady: false,
+          isEvaluationReady: false,
+          isFullScreen: false,
+          showControls: false,
+          playerState: PlayerState.unknown,
+          hasPlayed: false,
+          duration: Duration(),
+          position: Duration(),
+          buffered: 0.0,
+          errorCode: 0,
+          toggleFullScreen: false,
+          isLoaded: false,
+          isPlaying: false,
+          isDragging: false,
+        ),
+      );
 }
 
 /// An inherited widget to provide [YoutubePlayerController] to it's descendants.

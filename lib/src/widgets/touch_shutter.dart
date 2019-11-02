@@ -1,19 +1,32 @@
+// Copyright 2019 Sarbagya Dhaubanjar. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../utils/youtube_player_controller.dart';
 import '../utils/duration_formatter.dart';
+import '../utils/youtube_player_controller.dart';
 
 /// A widget to display darkened translucent overlay, when video area is touched.
 ///
 /// Also provides ability to seek video by dragging horizontally.
 class TouchShutter extends StatefulWidget {
+  /// Overrides the default [YoutubePlayerController].
+  final YoutubePlayerController controller;
+
+  /// If true, disables the drag to seek functionality.
+  ///
+  /// Default is false.
   final bool disableDragSeek;
+
+  /// Sets the timeout until when the controls hide.
   final Duration timeOut;
 
   TouchShutter({
-    this.disableDragSeek,
+    this.controller,
+    this.disableDragSeek = false,
     @required this.timeOut,
   });
 
@@ -30,12 +43,20 @@ class _TouchShutterState extends State<TouchShutter> {
   bool _dragging = false;
   Timer _timer;
 
-  YoutubePlayerController controller;
+  YoutubePlayerController _controller;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    controller ??= YoutubePlayerController.of(context);
+    _controller = YoutubePlayerController.of(context);
+    if (_controller == null) {
+      assert(
+        widget.controller != null,
+        '\n\nNo controller could be found in the provided context.\n\n'
+        'Try passing the controller explicitly.',
+      );
+      _controller = widget.controller;
+    }
   }
 
   @override
@@ -45,20 +66,21 @@ class _TouchShutterState extends State<TouchShutter> {
   }
 
   void _toggleControls() {
+    _controller.updateValue(
+      _controller.value.copyWith(
+        showControls: !_controller.value.showControls,
+      ),
+    );
     _timer?.cancel();
-    controller.updateValue(
-      controller.value.copyWith(
-        showControls: !controller.value.showControls,
-      ),
-    );
-    _timer = Timer(
-      widget.timeOut,
-      () => controller.updateValue(
-        controller.value.copyWith(
-          showControls: false,
-        ),
-      ),
-    );
+    _timer = Timer(widget.timeOut, () {
+      if (!_controller.value.isDragging) {
+        _controller.updateValue(
+          _controller.value.copyWith(
+            showControls: false,
+          ),
+        );
+      }
+    });
   }
 
   @override
@@ -74,14 +96,14 @@ class _TouchShutterState extends State<TouchShutter> {
               dragStartPos = details.globalPosition.dx;
             },
             onHorizontalDragUpdate: (details) {
-              controller.updateValue(
-                controller.value.copyWith(
+              _controller.updateValue(
+                _controller.value.copyWith(
                   showControls: false,
                 ),
               );
               delta = details.globalPosition.dx - dragStartPos;
               seekToPosition =
-                  (controller.value.position.inMilliseconds + delta * 1000)
+                  (_controller.value.position.inMilliseconds + delta * 1000)
                       .round();
               setState(() {
                 seekDuration = (delta < 0 ? "- " : "+ ") +
@@ -92,14 +114,14 @@ class _TouchShutterState extends State<TouchShutter> {
               });
             },
             onHorizontalDragEnd: (_) {
-              controller.seekTo(Duration(milliseconds: seekToPosition));
+              _controller.seekTo(Duration(milliseconds: seekToPosition));
               setState(() {
                 _dragging = false;
               });
             },
             child: AnimatedContainer(
               duration: Duration(milliseconds: 300),
-              color: controller.value.showControls
+              color: _controller.value.showControls
                   ? Colors.black.withAlpha(150)
                   : Colors.transparent,
               child: _dragging
