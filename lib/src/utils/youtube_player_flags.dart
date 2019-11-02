@@ -1,3 +1,7 @@
+// Copyright 2019 Sarbagya Dhaubanjar. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 /// Defines player flags for [YoutubePlayer].
 class YoutubePlayerFlags {
   /// if set to true, hides the controls.

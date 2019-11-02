@@ -10,7 +10,10 @@
 
 
 Flutter plugin for playing or streaming YouTube videos inline using the official [**iFrame Player API**](https://developers.google.com/youtube/iframe_api_reference).
-Supports both **Android** and **iOS** platforms.
+
+Supported Platforms:
+* **Android** 
+* **iOS**
 
 ![DEMO](misc/ypf_demo.gif)
 
@@ -43,21 +46,24 @@ No configuration required - the plugin should work out of the box.
 #### Using Youtube Player
          
 ```dart
-YoutubePlayer(
-    context: context,
-    initialVideoId: "iLnmTe5Q2Qw",
+YoutubePlayerController _controller = YoutubePlayerController(
+    initialVideoId: 'iLnmTe5Q2Qw',
     flags: YoutubePlayerFlags(
-      autoPlay: true,
-      showVideoProgressIndicator: true,
+        autoPlay: true,
+        mute: true,
     ),
+);
+
+YoutubePlayer(
+    controller: _controller,
+    showVideoProgressIndicator: true,
     videoProgressIndicatorColor: Colors.amber,
     progressColors: ProgressColors(
-      playedColor: Colors.amber,
-      handleColor: Colors.amberAccent,
+        playedColor: Colors.amber,
+        handleColor: Colors.amberAccent,
     ),
-    onPlayerInitialized: (controller) {
-      _controller = controller;
-      _controller.addListener(listener);
+    onReady () {
+        _controller.addListener(listener);
     },
 ),
 ```
@@ -68,12 +74,15 @@ Set the isLive property to true in order to change the UI to match Live Video.
 ![Live UI Demo](misc/live_ui.png) 
 
 ```dart
-YoutubePlayer(
-    context: context,
-    initialVideoId: "iLnmTe5Q2Qw",
+YoutubePlayerController _controller = YoutubePlayerController(
+    initialVideoId: 'iLnmTe5Q2Qw',
     flags: YoutubePLayerFlags(
       isLive: true,
     ),
+);
+
+YoutubePlayer(
+    controller: _controller,
     liveUIColor: Colors.amber,
 ),
 ```
@@ -91,32 +100,12 @@ YoutubePlayer(
 
 ```dart
 YoutubePlayer(
-    context: context,
-    initialVideoId: "iLnmTe5Q2Qw",
+    controller: _controller,
     bottomActions: [
       CurrentPosition(),
       ProgressBar(isExpanded: true),
       TotalDuration(),
     ],
-),
-```
-
-## Didn't like the controls at all?
-Don't worry, Got a solution for you. :wink:
-
-Set the hideControls property to true, then you can create your own custom controls using the controller obtained from onPlayerInitialized property.
-
-```dart
-YoutubePlayer(
-    context: context,
-    initialVideoId: "iLnmTe5Q2Qw",
-    flags: YoutubePlayerFlags(
-      hideControls: true,
-    ),
-    onPlayerInitialized: (controller) {
-      //Create your own UI using this controller
-      //on top of the player.
-    },
 ),
 ```
 
@@ -130,7 +119,7 @@ print(videoId); // BBAyRBTfsOU
 
 ## Example
 
-[More Detailed Example](https://github.com/sarbagyastha/youtube_player_flutter/tree/master/example)
+[Detailed Example](https://github.com/sarbagyastha/youtube_player_flutter/tree/master/example)
 
 ## Note
 Know more about the configuration options [here](https://pub.dartlang.org/documentation/youtube_player_flutter/latest/youtube_player_flutter/youtube_player_flutter-library.html).

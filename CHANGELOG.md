@@ -1,28 +1,39 @@
-## 6.0-beta.1
-**Requires flutter `master` channel**
-* Android Embedding v2 in webview_flutter.
+## 6.0.0
+* **(Improvement)** Smooth fullscreen toggle and crash fix. [Issue #46](https://github.com/sarbagyastha/youtube_player_flutter/issues/46) & [Issue #105](https://github.com/sarbagyastha/youtube_player_flutter/issues/105)
+* **(Fixed)** [Issue #93](https://github.com/sarbagyastha/youtube_player_flutter/issues/93).
+* **(Fixed)** `PlayerState.ended` being call multiple times. [Issue #108](https://github.com/sarbagyastha/youtube_player_flutter/issues/108)
+* **(Improvement)** Exposed `controller` parameter to all widgets. [Issue #109](https://github.com/sarbagyastha/youtube_player_flutter/issues/109). This comes handy when the widgets are to used outside the context of `YoutubePlayer` widget.
+* **(Improvement)** UI and performance optimizations.
+
+**BREAKING CHANGES**
+
+* From now on, `YoutubePlayerController` is to be passed to the player explicitly. *(See the updated readme)*
+* Removed `context` and `videoId` properties from `YoutubePlayer`.
+* `flags` property is moved to `YoutubePlayerController` from `YoutubePlayer`. 
+Since flags were only needed for the first time when player initializes.
+* `showVideoProgressIndicator` property moved to `YoutubePlayer`.
 
 5.2.0+1
-* **FIXED** aspect ratio in fullscreen mode.
-* **FIXED** sometimes showing up buffering indicator instead of error.
+* **(Fixed)** aspect ratio in fullscreen mode.
+* **(Fixed)** sometimes showing up buffering indicator instead of error.
 
 ## 5.2.0
 **BREAKING CHANGES**
 * Renamed `videoId` property in YoutubePlayer to `initialVideoId`. 
 * From now on changing video id must be done using either [load()](https://pub.dev/documentation/youtube_player_flutter/latest/youtube_player_flutter/YoutubePlayerController/load.html) or [cue()](https://pub.dev/documentation/youtube_player_flutter/latest/youtube_player_flutter/YoutubePlayerController/cue.html).
-* **FIXED** Video playing sound only, on videoId change. [Issue #99](https://github.com/sarbagyastha/youtube_player_flutter/issues/99)
-* **Improvement** Minor optimizations.
+* **(Fixed)** Video playing sound only, on videoId change. [Issue #99](https://github.com/sarbagyastha/youtube_player_flutter/issues/99)
+* **(Improvement)** Minor optimizations.
 * Example updated with video list.
-* `PlayerState.ended` now calls only once. Added `PlayerState.stopped`.
+* Added `PlayerState.stopped`.
 * Added `actionsPadding` property.
 
 ## 5.1.0
 * Renamed `TotalDuration` widget to `RemainingDuration`.
 * Renamed `PlayButton` widget to `PlayPauseButton`.
-* **Improvment** Better handling of invalid video id.
-* **Improvment** Better video orientation handling.
-* **Improvment** Better play/pause handling w/r/t app lifecycle.
-* **FIXED** Video pausing after jumping to certain position using progress bar.
+* **(Improvement)** Better handling of invalid video id.
+* **(Improvement)** Better video orientation handling.
+* **(Improvement)** Better play/pause handling w/r/t app lifecycle.
+* **(Fixed)** Video pausing after jumping to certain position using progress bar.
 * **BREAKING** Switched back to `webview_flutter`.
 * Updated dart docs.
 
@@ -39,7 +50,7 @@
 ## 4.1.0
 * **Feature Added** Button to change playback rate in player.
 * Added `setPlaybackRate` method to `YoutubePlayerController`. [Issue #48](https://github.com/sarbagyastha/youtube_player_flutter/issues/48) 
-* **Improvement** Playback behaviour synced with `AppLifeCycle` [Issue #41](https://github.com/sarbagyastha/youtube_player_flutter/issues/41) 
+* **(Improvement)** Playback behaviour synced with `AppLifeCycle` [Issue #41](https://github.com/sarbagyastha/youtube_player_flutter/issues/41) 
 
 ## 4.0.0+2
 * Fix error reports in LiveUI. [PR#44](https://github.com/sarbagyastha/youtube_player_flutter/pull/44)
@@ -57,25 +68,25 @@
 * Faster fullscreen toggling. 
 * Toggles fullscreen on orientation change. [Issue #3](https://github.com/sarbagyastha/youtube_player_flutter/issues/3).
 * Option to add own custom thumbnail.
-* **FIXED** Video stuck at unknown state [Issue #24](https://github.com/sarbagyastha/youtube_player_flutter/issues/24).
+* **(Fixed)** Video stuck at unknown state [Issue #24](https://github.com/sarbagyastha/youtube_player_flutter/issues/24).
 * Added `hideThumbnail` and `disableDragSeek` flags. [#27](https://github.com/sarbagyastha/youtube_player_flutter/issues/27), [#29](https://github.com/sarbagyastha/youtube_player_flutter/issues/29).
-* **FIXED** Fullscreen toggle in iOS.
+* **(Fixed)** Fullscreen toggle in iOS.
 * Minor UI improvements here and there.
 
 
 ## 2.0.0
-* **FIXED** iOS playback is fully functional. [Issue #2](https://github.com/sarbagyastha/youtube_player_flutter/issues/2)
+* **(Fixed)** iOS playback is fully functional. [Issue #2](https://github.com/sarbagyastha/youtube_player_flutter/issues/2)
 * Added `forceHideAnnotation` property which hides the default YouTube annotation. [Read Issue #17 for detail](https://github.com/sarbagyastha/youtube_player_flutter/issues/14)
 * Added option to `mute` player.
 
 ## 1.2.0
 * Added `actions` property, which can be used to add menus in top bar of video. See example for details.
 * Added option to hide fullscreen button. 
-* **FIXED** Current position always showing 00:00 [Issue #17](https://github.com/sarbagyastha/youtube_player_flutter/issues/17)
+* **(Fixed)** Current position always showing 00:00 [Issue #17](https://github.com/sarbagyastha/youtube_player_flutter/issues/17)
 
 ## 1.1.1+1
 * Updated dart constraint to `>=2.2.0 <3.0.0`*. 
-* **FIXED** Parsing Exceptions.
+* **(Fixed)** Parsing Exceptions.
 
 ## 1.1.1
 * Fix for issue
@@ -92,10 +103,10 @@
 * Added Travis CI.
 
 ## 1.0.1
-* **FIXED** Error while building for iOS.
+* **(Fixed)** Error while building for iOS.
 
 ## 1.0.0+2
-* **FIXED** Video pausing on tapped, when controls were hidden.
+* **(Fixed)** Video pausing on tapped, when controls were hidden.
 
 ## 1.0.0+1
 * Added Download APK badge.
