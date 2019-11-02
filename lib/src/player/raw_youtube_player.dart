@@ -8,15 +8,12 @@ import 'package:webview_flutter/webview_flutter.dart';
 
 import '../enums/player_state.dart';
 import '../utils/youtube_player_controller.dart';
-import '../utils/youtube_player_flags.dart';
 
 /// A raw youtube player widget which interacts with the underlying webview inorder to play YouTube videos.
 ///
 /// Use [YoutubePlayer] instead.
 class RawYoutubePlayer extends StatefulWidget {
-  final YoutubePlayerFlags flags;
-
-  RawYoutubePlayer({Key key, this.flags}) : super(key: key);
+  RawYoutubePlayer({Key key}) : super(key: key);
 
   @override
   _RawYoutubePlayerState createState() => _RawYoutubePlayerState();
@@ -222,7 +219,7 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
                 overflow: hidden;
                 position: fixed;
     ''';
-    if (!Platform.isIOS && widget.flags.forceHideAnnotation) {
+    if (!Platform.isIOS && controller.flags.forceHideAnnotation) {
       _player += '''
                 height: 1000%;
                 width: 1000%;
@@ -263,9 +260,9 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
                         'showinfo': 0,
                         'iv_load_policy': 3,
                         'modestbranding': 1,
-                        'cc_load_policy': ${boolean(widget.flags.enableCaption)},
-                        'cc_lang_pref': '${widget.flags.captionLanguage}',
-                        'autoplay': ${boolean(widget.flags.autoPlay)},
+                        'cc_load_policy': ${boolean(controller.flags.enableCaption)},
+                        'cc_lang_pref': '${controller.flags.captionLanguage}',
+                        'autoplay': ${boolean(controller.flags.autoPlay)},
                     },
                     events: {
                         onReady: (event) => Ready.postMessage("Ready"),

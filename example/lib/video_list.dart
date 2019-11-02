@@ -19,7 +19,12 @@ class _VideoListState extends State<VideoList> {
     '34_PXCzGw1M',
   ]
       .map<YoutubePlayerController>(
-        (videoId) => YoutubePlayerController(initialVideoId: videoId),
+        (videoId) => YoutubePlayerController(
+          initialVideoId: videoId,
+          flags: YoutubePlayerFlags(
+            autoPlay: false,
+          ),
+        ),
       )
       .toList();
 
@@ -32,19 +37,16 @@ class _VideoListState extends State<VideoList> {
       body: ListView.separated(
         itemBuilder: (context, index) {
           return YoutubePlayer(
-            key: ValueKey(_controllers[index].initialVideoId),
+            key: ValueKey(_controllers[index].hashCode),
             controller: _controllers[index],
-            flags: YoutubePlayerFlags(
-              autoPlay: false,
-              showVideoProgressIndicator: false,
-            ),
-            actionsPadding: EdgeInsets.all(12.0),
+            actionsPadding: EdgeInsets.only(left: 16.0),
             bottomActions: [
               CurrentPosition(),
               SizedBox(width: 10.0),
               ProgressBar(isExpanded: true),
               SizedBox(width: 10.0),
               RemainingDuration(),
+              FullScreenButton(),
             ],
           );
         },

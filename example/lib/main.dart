@@ -2,7 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
-import 'package:youtube_player_flutter_example/video_list.dart';
+
+import 'video_list.dart';
 
 void main() {
   SystemChrome.setSystemUIOverlayStyle(
@@ -62,8 +63,17 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    _controller = YoutubePlayerController(initialVideoId: 'p2lYr3vM_1w')
-      ..addListener(listener);
+    _controller = YoutubePlayerController(
+      initialVideoId: 'p2lYr3vM_1w',
+      flags: YoutubePlayerFlags(
+        mute: false,
+        autoPlay: true,
+        forceHideAnnotation: true,
+        disableDragSeek: false,
+        loop: true,
+        start: Duration(seconds: 20),
+      ),
+    )..addListener(listener);
   }
 
   void listener() {
@@ -124,15 +134,7 @@ class _MyHomePageState extends State<MyHomePage> {
         children: [
           YoutubePlayer(
             controller: _controller,
-            flags: YoutubePlayerFlags(
-              mute: false,
-              autoPlay: true,
-              forceHideAnnotation: true,
-              showVideoProgressIndicator: true,
-              disableDragSeek: false,
-              loop: true,
-              start: Duration(seconds: 20),
-            ),
+            showVideoProgressIndicator: true,
             progressIndicatorColor: Colors.blueAccent,
             topActions: <Widget>[
               IconButton(
@@ -183,6 +185,10 @@ class _MyHomePageState extends State<MyHomePage> {
                   decoration: InputDecoration(
                     border: OutlineInputBorder(),
                     hintText: "Enter youtube \<video id\> or \<link\>",
+                    suffixIcon: IconButton(
+                      icon: Icon(Icons.clear),
+                      onPressed: () => _idController.clear(),
+                    ),
                   ),
                 ),
                 _space,
@@ -225,15 +231,9 @@ class _MyHomePageState extends State<MyHomePage> {
                             }
                           : null,
                     ),
-                    IconButton(
-                      icon: Icon(
-                        _controller.value.isFullScreen
-                            ? Icons.fullscreen_exit
-                            : Icons.fullscreen,
-                      ),
-                      onPressed: _isPlayerReady
-                          ? () => _controller.toggleFullScreenMode()
-                          : null,
+                    FullScreenButton(
+                      controller: _controller,
+                      color: Colors.blueAccent,
                     ),
                   ],
                 ),

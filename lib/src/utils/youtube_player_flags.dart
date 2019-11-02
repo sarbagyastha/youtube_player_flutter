@@ -15,11 +15,6 @@ class YoutubePlayerFlags {
   /// Default is false.
   final bool mute;
 
-  /// Defines whether to show or hide progress indicator below the player.
-  ///
-  /// Default is false.
-  final bool showVideoProgressIndicator;
-
   /// if true, Live Playback controls will be shown instead of default one.
   ///
   /// Default is false.
@@ -71,7 +66,6 @@ class YoutubePlayerFlags {
     this.hideControls = false,
     this.autoPlay = true,
     this.mute = false,
-    this.showVideoProgressIndicator = true,
     this.isLive = false,
     this.forceHideAnnotation = true,
     this.hideThumbnail = false,
@@ -110,8 +104,6 @@ class YoutubePlayerFlags {
       isLive: isLive ?? this.isLive,
       loop: loop ?? this.loop,
       mute: mute ?? this.mute,
-      showVideoProgressIndicator:
-          showVideoProgressIndicator ?? this.showVideoProgressIndicator,
       start: start ?? this.start,
     );
   }

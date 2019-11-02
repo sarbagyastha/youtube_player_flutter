@@ -5,9 +5,14 @@ import '../utils/youtube_player_controller.dart';
 
 /// A widget to display play/pause button.
 class PlayPauseButton extends StatefulWidget {
+  /// Overrides the default [YoutubePlayerController].
+  final YoutubePlayerController controller;
+
+  /// Defines placeholder widget to show when player is in buffering state.
   final Widget bufferIndicator;
 
   PlayPauseButton({
+    this.controller,
     this.bufferIndicator,
   });
 
@@ -16,7 +21,7 @@ class PlayPauseButton extends StatefulWidget {
 }
 
 class _PlayPauseButtonState extends State<PlayPauseButton>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   YoutubePlayerController _controller;
   AnimationController _animController;
 
@@ -33,14 +38,23 @@ class _PlayPauseButtonState extends State<PlayPauseButton>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _controller ??= YoutubePlayerController.of(context)
-      ..addListener(_playPauseListener);
+    _controller = YoutubePlayerController.of(context);
+    if (_controller == null) {
+      assert(
+        widget.controller != null,
+        '\n\nNo controller could be found in the provided context.\n\n'
+        'Try passing the controller explicitly.',
+      );
+      _controller = widget.controller;
+    }
+    _controller.removeListener(_playPauseListener);
+    _controller.addListener(_playPauseListener);
   }
 
   @override
   void dispose() {
-    _animController.dispose();
     _controller?.removeListener(_playPauseListener);
+    _animController.dispose();
     super.dispose();
   }
 

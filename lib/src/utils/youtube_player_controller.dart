@@ -4,6 +4,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 import '../enums/playback_rate.dart';
 import '../enums/player_state.dart';
 import '../widgets/progress_bar.dart';
+import 'youtube_player_flags.dart';
 
 /// [ValueNotifier] for [YoutubePlayerController].
 class YoutubePlayerValue {
@@ -155,18 +156,32 @@ class YoutubePlayerValue {
   }
 }
 
+/// Controls a youtube player, and provides updates when the state is
+/// changing.
+///
+/// The video is displayed in a Flutter app by creating a [YoutubePlayer] widget.
+///
+/// To reclaim the resources used by the player call [dispose].
+///
+/// After [dispose] all further calls are ignored.
 class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
+  /// The video id with which the player initializes.
   final String initialVideoId;
+
+  /// Composes all the flags required to control the player.
+  final YoutubePlayerFlags flags;
 
   YoutubePlayerController({
     @required this.initialVideoId,
+    this.flags = const YoutubePlayerFlags(),
   })  : assert(initialVideoId != null, 'initialVideoId can\'t be null.'),
+        assert(flags != null),
         super(YoutubePlayerValue(isReady: false));
 
   static YoutubePlayerController of(BuildContext context) {
     InheritedYoutubePlayer _player =
         context.inheritFromWidgetOfExactType(InheritedYoutubePlayer);
-    return _player.controller;
+    return _player?.controller;
   }
 
   _evaluateJS(String javascriptString) {

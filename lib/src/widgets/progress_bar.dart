@@ -22,10 +22,19 @@ class ProgressBarColors {
 
 /// A widget to display video progress bar.
 class ProgressBar extends StatefulWidget {
+  /// Overrides the default [YoutubePlayerController].
+  final YoutubePlayerController controller;
+
+  /// Defines colors for the progress bar.
   final ProgressBarColors colors;
+
+  /// Set true to get expanded [ProgressBar].
+  ///
+  /// Default is false.
   final bool isExpanded;
 
   ProgressBar({
+    this.controller,
     this.colors,
     this.isExpanded = false,
   });
@@ -50,8 +59,17 @@ class _ProgressBarState extends State<ProgressBar> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _controller = YoutubePlayerController.of(context)
-      ..addListener(positionListener);
+    _controller = YoutubePlayerController.of(context);
+    if (_controller == null) {
+      assert(
+        widget.controller != null,
+        '\n\nNo controller could be found in the provided context.\n\n'
+        'Try passing the controller explicitly.',
+      );
+      _controller = widget.controller;
+    }
+    _controller.addListener(positionListener);
+    positionListener();
   }
 
   @override
@@ -62,7 +80,7 @@ class _ProgressBarState extends State<ProgressBar> {
 
   void positionListener() {
     int _totalDuration = _controller.value.duration?.inMilliseconds;
-    if (mounted && _totalDuration != null && _totalDuration != 0) {
+    if (mounted && !_totalDuration.isNaN && _totalDuration != 0) {
       setState(() {
         _playedValue =
             _controller.value.position.inMilliseconds / _totalDuration;
