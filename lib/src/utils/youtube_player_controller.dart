@@ -215,7 +215,6 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
       } else {
         methodString = '$methodName($arg1, $arg2)';
       }
-      print('\n\n$methodString\n\n');
       value.webViewController?.evaluateJavascript(methodString);
     } else {
       print('The controller is not ready for method calls.');
