@@ -290,9 +290,8 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
             function sendVideoData(player) {
                 var videoData = {
                     'duration': player.getDuration(),
-                    'videoUrl': player.getVideoUrl(),
-                    'availableQualityLevels': player.getAvailableQualityLevels(),
-                    'videoEmbedCode': player.getVideoEmbedCode(),
+                    'title': player.getVideoData().title,
+                    'author': player.getVideoData().author,
                 };
                 VideoData.postMessage(JSON.stringify(videoData));
             }

@@ -4,7 +4,7 @@
 
 import 'dart:async';
 
-import 'package:data_connection_checker/data_connection_checker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -181,15 +181,12 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
 
   double _aspectRatio;
   bool _initialLoad = true;
-  StreamSubscription _connectionChecker;
 
   @override
   void initState() {
     super.initState();
     controller = widget.controller..addListener(listener);
     _aspectRatio = widget.aspectRatio;
-    _connectionChecker =
-        DataConnectionChecker().onStatusChange.listen(_updateErrorCode);
   }
 
   @override
@@ -199,40 +196,16 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
     widget.controller?.addListener(listener);
   }
 
-  void _updateErrorCode(DataConnectionStatus status) {
-    if (status == DataConnectionStatus.connected) {
-      if (controller.value.errorCode == 400) {
-        controller.updateValue(
-          controller.value.copyWith(errorCode: 0),
-        );
-      }
-    } else {
-      controller.updateValue(
-        controller.value.copyWith(errorCode: 400),
-      );
-    }
-  }
-
   void listener() async {
     if (controller.value.isReady &&
         controller.value.isEvaluationReady &&
         _initialLoad) {
       _initialLoad = false;
-      controller.flags.autoPlay
-          ? controller.load(
-              controller.initialVideoId,
-              startAt: controller.flags?.start?.inSeconds ?? 0,
-            )
-          : controller.cue(
-              controller.initialVideoId,
-              startAt: controller.flags?.start?.inSeconds ?? 0,
-            );
-      if (controller.flags.mute) {
-        controller.mute();
-      }
+      if (controller.flags.autoPlay) controller.play();
+      if (controller.flags.mute) controller.mute();
       if (widget.onReady != null) widget.onReady();
     }
-    if (controller.value.toggleFullScreen) {
+    if (!kIsWeb && controller.value.toggleFullScreen) {
       controller.updateValue(
         controller.value.copyWith(
           toggleFullScreen: false,
@@ -285,7 +258,6 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
 
   @override
   void dispose() {
-    _connectionChecker?.cancel();
     controller.removeListener(listener);
     super.dispose();
   }
@@ -445,29 +417,25 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
               left: 0,
               right: 0,
               child: AnimatedOpacity(
-                  opacity: !controller.flags.hideControls &&
-                          controller.value.showControls
-                      ? 1
-                      : 0,
-                  duration: Duration(milliseconds: 300),
-                  child: Padding(
-                    padding: widget.actionsPadding,
-                    child: Row(
-                      children: widget.topActions ?? [Container()],
-                    ),
-                  )),
+                opacity: !controller.flags.hideControls &&
+                        controller.value.showControls
+                    ? 1
+                    : 0,
+                duration: Duration(milliseconds: 300),
+                child: Padding(
+                  padding: widget.actionsPadding,
+                  child: Row(
+                    children: widget.topActions ?? [Container()],
+                  ),
+                ),
+              ),
             ),
           if (!controller.flags.hideControls &&
               controller.value.isEvaluationReady)
             Center(
               child: PlayPauseButton(),
             ),
-          if (controller.value.hasError &&
-              controller.value.buffered.compareTo(
-                      controller.value.position.inMilliseconds /
-                          controller.value.duration.inMilliseconds) <=
-                  0)
-            errorWidget,
+          if (controller.value.hasError) errorWidget,
         ],
       ),
     );

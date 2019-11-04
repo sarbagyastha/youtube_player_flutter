@@ -32,6 +32,8 @@ class YoutubePlayerValue {
     this.videoId,
     this.toggleFullScreen = false,
     this.isDragging = false,
+    this.title = '',
+    this.author = '',
   });
 
   /// Returns true when underlying web player reports ready.
@@ -96,6 +98,13 @@ class YoutubePlayerValue {
   /// Returns true if [ProgressBar] is being dragged.
   final bool isDragging;
 
+  /// Returns title of the video.
+  final String title;
+
+  /// Returns author of the video.
+  /// i.e. Channel Name
+  final String author;
+
   YoutubePlayerValue copyWith({
     bool isReady,
     bool isEvaluationReady,
@@ -116,6 +125,8 @@ class YoutubePlayerValue {
     String videoId,
     bool toggleFullScreen,
     bool isDragging,
+    String title,
+    String author,
   }) {
     return YoutubePlayerValue(
       isReady: isReady ?? this.isReady,
@@ -137,6 +148,8 @@ class YoutubePlayerValue {
       videoId: videoId ?? this.videoId,
       toggleFullScreen: toggleFullScreen ?? this.toggleFullScreen,
       isDragging: isDragging ?? this.isDragging,
+      title: title ?? this.title,
+      author: author ?? this.author,
     );
   }
 
@@ -144,6 +157,8 @@ class YoutubePlayerValue {
   String toString() {
     return '$runtimeType('
         'videoId: $videoId, '
+        'title: $title, '
+        'author: $author, '
         'isReady: $isReady, '
         'isEvaluationReady: $isEvaluationReady, '
         'showControls: $showControls, '
@@ -188,9 +203,20 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
     return _player?.controller;
   }
 
-  _evaluateJS(String javascriptString) {
+  _callMethod(String methodName, {dynamic arg1, dynamic arg2}) {
     if (value.isEvaluationReady) {
-      value.webViewController?.evaluateJavascript(javascriptString);
+      String methodString;
+      if (arg1 == null && arg2 == null) {
+        methodString = '$methodName()';
+      } else if (arg1 != null && arg2 == null) {
+        methodString = '$methodName($arg1)';
+      } else if (arg1 == null && arg2 != null) {
+        throw Exception('Invalid argument order');
+      } else {
+        methodString = '$methodName($arg1, $arg2)';
+      }
+      print('\n\n$methodString\n\n');
+      value.webViewController?.evaluateJavascript(methodString);
     } else {
       print('The controller is not ready for method calls.');
     }
@@ -200,21 +226,21 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
   void updateValue(YoutubePlayerValue newValue) => value = newValue;
 
   /// Plays the video.
-  void play() => _evaluateJS('play()');
+  void play() => _callMethod('play');
 
   /// Pauses the video.
-  void pause() => _evaluateJS('pause()');
+  void pause() => _callMethod('pause');
 
   /// Loads the video as per the [videoId] provided.
   void load(String videoId, {int startAt = 0}) {
     _updateValues(videoId);
-    _evaluateJS('loadById("$videoId", $startAt)');
+    _callMethod('loadById', arg1: '"$videoId"', arg2: startAt);
   }
 
   /// Cues the video as per the [videoId] provided.
   void cue(String videoId, {int startAt = 0}) {
     _updateValues(videoId);
-    _evaluateJS('cueById("$videoId", $startAt)');
+    _callMethod('cueById', arg1: '"$videoId"', arg2: startAt);
   }
 
   void _updateValues(String id) {
@@ -232,15 +258,15 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
   }
 
   /// Mutes the player.
-  void mute() => _evaluateJS('mute()');
+  void mute() => _callMethod('mute');
 
   /// Un mutes the player.
-  void unMute() => _evaluateJS('unMute()');
+  void unMute() => _callMethod('unMute');
 
   /// Sets the volume of player.
   /// Max = 100 , Min = 0
   void setVolume(int volume) => volume >= 0 && volume <= 100
-      ? _evaluateJS('setVolume($volume)')
+      ? _callMethod('setVolume', arg1: volume)
       : throw Exception("Volume should be between 0 and 100");
 
   /// Seek to any position. Video auto plays after seeking.
@@ -248,21 +274,28 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
   /// if the seconds parameter specifies a time outside of the currently buffered video data.
   /// Default allowSeekAhead = true
   void seekTo(Duration position, {bool allowSeekAhead = true}) {
-    _evaluateJS('seekTo(${position.inSeconds},$allowSeekAhead)');
+    _callMethod('seekTo', arg1: position.inSeconds, arg2: allowSeekAhead);
     play();
     updateValue(value.copyWith(position: position));
   }
 
   /// Sets the size in pixels of the player.
   void setSize(Size size) =>
-      _evaluateJS('setSize(${size.width * 100},${size.height * 100})');
+      _callMethod('setSize', arg1: size.width, arg2: size.height);
 
   /// Sets the playback speed for the video.
-  void setPlaybackRate(double rate) => _evaluateJS('setPlaybackRate($rate)');
+  void setPlaybackRate(double rate) =>
+      _callMethod('setPlaybackRate', arg1: rate);
 
   /// Toggles the player's full screen mode.
   void toggleFullScreenMode() =>
       updateValue(value.copyWith(toggleFullScreen: true));
+
+  /// The title of the currently playing YouTube video.
+  String get title => value.title;
+
+  /// The author/channel of the currently playing YouTube video.
+  String get author => value.author;
 
   /// Reloads the player.
   ///
