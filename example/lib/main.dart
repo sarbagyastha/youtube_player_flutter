@@ -56,7 +56,7 @@ class _MyHomePageState extends State<MyHomePage> {
   var _seekToController = TextEditingController();
   double _volume = 100;
   bool _muted = false;
-  String _playerStatus = "";
+  String _playerStatus = '';
 
   bool _isPlayerReady = false;
 

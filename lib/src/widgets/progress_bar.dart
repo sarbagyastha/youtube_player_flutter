@@ -151,6 +151,7 @@ class _ProgressBarState extends State<ProgressBar> {
         _dragEndActions();
       },
       child: Container(
+        color: Colors.transparent,
         constraints: BoxConstraints.expand(height: 7.0 * 2),
         child: CustomPaint(
           painter: _ProgressBarPainter(

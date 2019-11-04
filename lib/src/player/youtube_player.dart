@@ -202,6 +202,9 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
         _initialLoad) {
       _initialLoad = false;
       if (controller.flags.autoPlay) controller.play();
+      controller.updateValue(
+        controller.value.copyWith(videoId: controller.initialVideoId),
+      );
       if (controller.flags.mute) controller.mute();
       if (widget.onReady != null) widget.onReady();
     }
@@ -230,6 +233,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
           controlsTimeOut: widget.controlsTimeOut,
           liveUIColor: widget.liveUIColor,
           onReady: () {
+            print(_videoId);
             controller.load(_videoId, startAt: _cachedPosition.inSeconds);
           },
           progressColors: widget.progressColors,
