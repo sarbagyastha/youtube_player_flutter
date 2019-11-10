@@ -12,6 +12,8 @@ import 'youtube_player_flags.dart';
 
 /// [ValueNotifier] for [YoutubePlayerController].
 class YoutubePlayerValue {
+  /// The duration, current position, buffering state, error state and settings
+  /// of a [YoutubePlayerController].
   YoutubePlayerValue({
     this.isReady = false,
     this.isEvaluationReady = false,
@@ -105,6 +107,8 @@ class YoutubePlayerValue {
   /// i.e. Channel Name
   final String author;
 
+  /// Creates new [YoutubePlayerValue] with assigned parameters and overrides
+  /// the old one.
   YoutubePlayerValue copyWith({
     bool isReady,
     bool isEvaluationReady,
@@ -190,6 +194,7 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
   /// Composes all the flags required to control the player.
   final YoutubePlayerFlags flags;
 
+  /// Creates [YoutubePlayerController].
   YoutubePlayerController({
     @required this.initialVideoId,
     this.flags = const YoutubePlayerFlags(),
@@ -197,49 +202,41 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
         assert(flags != null),
         super(YoutubePlayerValue(isReady: false));
 
+  /// Finds [YoutubePlayerController] in the provided context.
   static YoutubePlayerController of(BuildContext context) {
     InheritedYoutubePlayer _player =
         context.inheritFromWidgetOfExactType(InheritedYoutubePlayer);
     return _player?.controller;
   }
 
-  _callMethod(String methodName, {dynamic arg1, dynamic arg2}) {
+  _callMethod(String methodString) {
     if (value.isEvaluationReady) {
-      String methodString;
-      if (arg1 == null && arg2 == null) {
-        methodString = '$methodName()';
-      } else if (arg1 != null && arg2 == null) {
-        methodString = '$methodName($arg1)';
-      } else if (arg1 == null && arg2 != null) {
-        throw Exception('Invalid argument order');
-      } else {
-        methodString = '$methodName($arg1, $arg2)';
-      }
       value.webViewController?.evaluateJavascript(methodString);
     } else {
       print('The controller is not ready for method calls.');
     }
   }
 
+  // ignore: use_setters_to_change_properties
   /// Updates the old [YoutubePlayerValue] with new one provided.
   void updateValue(YoutubePlayerValue newValue) => value = newValue;
 
   /// Plays the video.
-  void play() => _callMethod('play');
+  void play() => _callMethod('play()');
 
   /// Pauses the video.
-  void pause() => _callMethod('pause');
+  void pause() => _callMethod('pause()');
 
   /// Loads the video as per the [videoId] provided.
   void load(String videoId, {int startAt = 0}) {
     _updateValues(videoId);
-    _callMethod('loadById', arg1: '"$videoId"', arg2: startAt);
+    _callMethod('loadById("$videoId",$startAt)');
   }
 
   /// Cues the video as per the [videoId] provided.
   void cue(String videoId, {int startAt = 0}) {
     _updateValues(videoId);
-    _callMethod('cueById', arg1: '"$videoId"', arg2: startAt);
+    _callMethod('cueById("$videoId",$startAt)');
   }
 
   void _updateValues(String id) {
@@ -257,15 +254,15 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
   }
 
   /// Mutes the player.
-  void mute() => _callMethod('mute');
+  void mute() => _callMethod('mute()');
 
   /// Un mutes the player.
-  void unMute() => _callMethod('unMute');
+  void unMute() => _callMethod('unMute()');
 
   /// Sets the volume of player.
   /// Max = 100 , Min = 0
   void setVolume(int volume) => volume >= 0 && volume <= 100
-      ? _callMethod('setVolume', arg1: volume)
+      ? _callMethod('setVolume($volume)')
       : throw Exception("Volume should be between 0 and 100");
 
   /// Seek to any position. Video auto plays after seeking.
@@ -273,18 +270,17 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
   /// if the seconds parameter specifies a time outside of the currently buffered video data.
   /// Default allowSeekAhead = true
   void seekTo(Duration position, {bool allowSeekAhead = true}) {
-    _callMethod('seekTo', arg1: position.inSeconds, arg2: allowSeekAhead);
+    _callMethod('seekTo(${position.inSeconds},$allowSeekAhead)');
     play();
     updateValue(value.copyWith(position: position));
   }
 
   /// Sets the size in pixels of the player.
   void setSize(Size size) =>
-      _callMethod('setSize', arg1: size.width, arg2: size.height);
+      _callMethod('setSize(${size.width}, ${size.height})');
 
   /// Sets the playback speed for the video.
-  void setPlaybackRate(double rate) =>
-      _callMethod('setPlaybackRate', arg1: rate);
+  void setPlaybackRate(double rate) => _callMethod('setPlaybackRate($rate)');
 
   /// Toggles the player's full screen mode.
   void toggleFullScreenMode() =>
@@ -324,6 +320,7 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
 
 /// An inherited widget to provide [YoutubePlayerController] to it's descendants.
 class InheritedYoutubePlayer extends InheritedWidget {
+  /// Creates [InheritedYoutubePlayer]
   const InheritedYoutubePlayer({
     Key key,
     @required this.controller,
@@ -331,6 +328,7 @@ class InheritedYoutubePlayer extends InheritedWidget {
   })  : assert(controller != null),
         super(key: key, child: child);
 
+  /// A [YoutubePlayerController] which controls the player.
   final YoutubePlayerController controller;
 
   @override

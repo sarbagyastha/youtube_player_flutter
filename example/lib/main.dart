@@ -11,10 +11,11 @@ void main() {
       statusBarColor: Colors.blueAccent,
     ),
   );
-  runApp(MyApp());
+  runApp(YoutubePlayerDemoApp());
 }
 
-class MyApp extends StatelessWidget {
+/// Creates [YoutubePlayerDemoApp] widget.
+class YoutubePlayerDemoApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -36,15 +37,13 @@ class MyApp extends StatelessWidget {
           color: Colors.blueAccent,
         ),
       ),
-      home: MyHomePage(title: 'Youtube Player Flutter'),
+      home: MyHomePage(),
     );
   }
 }
 
+/// Homepage
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
-  final String title;
-
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
@@ -52,12 +51,12 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
   YoutubePlayerController _controller;
-  var _idController = TextEditingController();
-  var _seekToController = TextEditingController();
+  TextEditingController _idController;
+  TextEditingController _seekToController;
+
+  PlayerState _playerState;
   double _volume = 100;
   bool _muted = false;
-  String _playerStatus = '';
-
   bool _isPlayerReady = false;
 
   @override
@@ -71,9 +70,11 @@ class _MyHomePageState extends State<MyHomePage> {
         forceHideAnnotation: true,
         disableDragSeek: false,
         loop: true,
-        start: Duration(seconds: 20),
       ),
     )..addListener(listener);
+    _idController = TextEditingController();
+    _seekToController = TextEditingController();
+    _playerState = PlayerState.unknown;
   }
 
   void listener() {
@@ -83,7 +84,7 @@ class _MyHomePageState extends State<MyHomePage> {
       }
       if (mounted && !_controller.value.isFullScreen) {
         setState(() {
-          _playerStatus = _controller.value.playerState.toString();
+          _playerState = _controller.value.playerState;
         });
       }
     }
@@ -99,6 +100,8 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void dispose() {
     _controller.dispose();
+    _idController.dispose();
+    _seekToController.dispose();
     super.dispose();
   }
 
@@ -115,7 +118,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ),
         title: Text(
-          widget.title,
+          'Youtube Player Flutter',
           style: TextStyle(color: Colors.white),
         ),
         actions: [
@@ -137,19 +140,10 @@ class _MyHomePageState extends State<MyHomePage> {
             showVideoProgressIndicator: true,
             progressIndicatorColor: Colors.blueAccent,
             topActions: <Widget>[
-              IconButton(
-                icon: Icon(
-                  Icons.arrow_back_ios,
-                  color: Colors.white,
-                  size: 20.0,
-                ),
-                onPressed: () {
-                  _controller.toggleFullScreenMode();
-                },
-              ),
+              SizedBox(width: 8.0),
               Expanded(
                 child: Text(
-                  'Youtube Player Title Demo',
+                  _controller.value?.title ?? '',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 18.0,
@@ -173,12 +167,16 @@ class _MyHomePageState extends State<MyHomePage> {
               _isPlayerReady = true;
             },
           ),
-          _space,
           Padding(
             padding: EdgeInsets.all(8.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
+              children: [
+                _space,
+                _text('Title', _controller.title),
+                _space,
+                _text('Channel', _controller.author),
+                _space,
                 TextField(
                   enabled: _isPlayerReady,
                   controller: _idController,
@@ -287,16 +285,16 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                   ],
                 ),
-                Chip(
-                  backgroundColor: Colors.blueAccent,
-                  padding: EdgeInsets.all(8.0),
-                  avatar: Icon(
-                    Icons.settings_input_antenna,
-                    color: Colors.white,
-                    size: 15.0,
+                _space,
+                AnimatedContainer(
+                  duration: Duration(milliseconds: 800),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20.0),
+                    color: _getStateColor(_playerState),
                   ),
-                  label: Text(
-                    _playerStatus,
+                  padding: EdgeInsets.all(8.0),
+                  child: Text(
+                    _playerState.toString(),
                     style: TextStyle(
                       fontWeight: FontWeight.w300,
                       color: Colors.white,
@@ -312,6 +310,50 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  Widget _text(String title, String value) {
+    return RichText(
+      text: TextSpan(
+        text: '$title : ',
+        style: TextStyle(
+          color: Colors.blueAccent,
+          fontWeight: FontWeight.bold,
+        ),
+        children: [
+          TextSpan(
+            text: value ?? '',
+            style: TextStyle(
+              color: Colors.blueAccent,
+              fontWeight: FontWeight.w300,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color _getStateColor(PlayerState state) {
+    switch (state) {
+      case PlayerState.unknown:
+        return Colors.redAccent;
+      case PlayerState.unStarted:
+        return Colors.grey[700];
+      case PlayerState.ended:
+        return Colors.pink;
+      case PlayerState.playing:
+        return Colors.blueAccent;
+      case PlayerState.paused:
+        return Colors.orange;
+      case PlayerState.buffering:
+        return Colors.yellow;
+      case PlayerState.cued:
+        return Colors.blue[900];
+      case PlayerState.stopped:
+        return Colors.red;
+      default:
+        return Colors.blue;
+    }
+  }
+
   Widget get _space => SizedBox(height: 10);
 
   Widget _loadCueButton(String action) {
@@ -321,7 +363,7 @@ class _MyHomePageState extends State<MyHomePage> {
         onPressed: _isPlayerReady
             ? () {
                 if (_idController.text.isNotEmpty) {
-                  String id = YoutubePlayer.convertUrlToId(
+                  var id = YoutubePlayer.convertUrlToId(
                     _idController.text,
                   );
                   if (action == 'LOAD') _controller.load(id);

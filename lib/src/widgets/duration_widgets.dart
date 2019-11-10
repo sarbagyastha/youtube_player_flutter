@@ -12,6 +12,7 @@ class CurrentPosition extends StatefulWidget {
   /// Overrides the default [YoutubePlayerController].
   final YoutubePlayerController controller;
 
+  /// Creates [CurrentPosition] widget.
   CurrentPosition({this.controller});
 
   @override
@@ -63,8 +64,10 @@ class _CurrentPositionState extends State<CurrentPosition> {
 
 /// A widget which displays the remaining duration of the video.
 class RemainingDuration extends StatefulWidget {
+  /// Overrides the default [YoutubePlayerController].
   final YoutubePlayerController controller;
 
+  /// Creates [RemainingDuration] widget.
   RemainingDuration({this.controller});
 
   @override

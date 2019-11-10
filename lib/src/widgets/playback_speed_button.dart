@@ -15,6 +15,7 @@ class PlaybackSpeedButton extends StatefulWidget {
   /// Defines icon for the button.
   final Widget icon;
 
+  /// Creates [PlaybackSpeedButton] widget.
   const PlaybackSpeedButton({
     this.controller,
     this.icon,
@@ -59,11 +60,11 @@ class _PlaybackSpeedButtonState extends State<PlaybackSpeedButton> {
       tooltip: 'PlayBack Rate',
       itemBuilder: (context) => [
         _popUpItem('2.0x', PlaybackRate.twice),
-        _popUpItem('1.75x', PlaybackRate.one_and_a_three_quarter),
-        _popUpItem('1.5x', PlaybackRate.one_and_a_half),
-        _popUpItem('1.25x', PlaybackRate.one_and_a_quarter),
+        _popUpItem('1.75x', PlaybackRate.oneAndAThreeQuarter),
+        _popUpItem('1.5x', PlaybackRate.oneAndAHalf),
+        _popUpItem('1.25x', PlaybackRate.oneAndAQuarter),
         _popUpItem('Normal', PlaybackRate.normal),
-        _popUpItem('0.75x', PlaybackRate.three_quarter),
+        _popUpItem('0.75x', PlaybackRate.threeQuarter),
         _popUpItem('0.5x', PlaybackRate.half),
         _popUpItem('0.25x', PlaybackRate.quarter),
       ],

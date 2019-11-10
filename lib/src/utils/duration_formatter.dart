@@ -4,8 +4,8 @@
 
 /// Formats duration in milliseconds to xx:xx:xx format.
 String durationFormatter(int milliSeconds) {
-  int seconds = milliSeconds ~/ 1000;
-  final int hours = seconds ~/ 3600;
+  var seconds = milliSeconds ~/ 1000;
+  final hours = seconds ~/ 3600;
   seconds = seconds % 3600;
   var minutes = seconds ~/ 60;
   seconds = seconds % 60;
@@ -15,6 +15,6 @@ String durationFormatter(int milliSeconds) {
   final secondsString =
       seconds >= 10 ? '$seconds' : seconds == 0 ? '00' : '0$seconds';
   final formattedTime =
-      '${hoursString == '00' ? '' : hoursString + ':'}$minutesString:$secondsString';
+      '${hoursString == '00' ? '' : '$hoursString:'}$minutesString:$secondsString';
   return formattedTime;
 }

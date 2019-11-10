@@ -16,6 +16,7 @@ class LiveBottomBar extends StatefulWidget {
   /// Defines color for UI.
   final Color liveUIColor;
 
+  /// Creates [LiveBottomBar] widget.
   LiveBottomBar({
     this.controller,
     @required this.liveUIColor,

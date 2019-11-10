@@ -17,6 +17,7 @@ import '../utils/youtube_player_controller.dart';
 ///
 /// Use [YoutubePlayer] instead.
 class RawYoutubePlayer extends StatefulWidget {
+  /// Creates a [RawYoutubePlayer] widget.
   RawYoutubePlayer({Key key}) : super(key: key);
 
   @override
@@ -25,7 +26,8 @@ class RawYoutubePlayer extends StatefulWidget {
 
 class _RawYoutubePlayerState extends State<RawYoutubePlayer>
     with WidgetsBindingObserver {
-  Completer<WebViewController> _webController = Completer<WebViewController>();
+  final Completer<WebViewController> _webController =
+      Completer<WebViewController>();
   YoutubePlayerController controller;
   PlayerState _cachedPlayerState;
 
@@ -164,6 +166,8 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
               controller.updateValue(
                 controller.value.copyWith(
                   duration: Duration(milliseconds: duration.floor()),
+                  title: videoData['title'],
+                  author: videoData['author'],
                 ),
               );
             },
@@ -171,7 +175,7 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
           JavascriptChannel(
             name: 'CurrentTime',
             onMessageReceived: (JavascriptMessage message) {
-              double position = (double.tryParse(message.message) ?? 0) * 1000;
+              var position = (double.tryParse(message.message) ?? 0) * 1000;
               controller.updateValue(
                 controller.value.copyWith(
                   position: Duration(milliseconds: position.floor()),
@@ -210,7 +214,7 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
   }
 
   String get player {
-    String _player = '''
+    var _player = '''
     <!DOCTYPE html>
     <html>
     <head>
@@ -264,9 +268,9 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
                         'showinfo': 0,
                         'iv_load_policy': 3,
                         'modestbranding': 1,
-                        'cc_load_policy': ${boolean(controller.flags.enableCaption)},
+                        'cc_load_policy': ${boolean(value: controller.flags.enableCaption)},
                         'cc_lang_pref': '${controller.flags.captionLanguage}',
-                        'autoplay': ${boolean(controller.flags.autoPlay)},
+                        'autoplay': ${boolean(value: controller.flags.autoPlay)}
                     },
                     events: {
                         onReady: (event) => Ready.postMessage("Ready"),
@@ -313,13 +317,23 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
                 return '';
             }
 
-            function loadById(id, startAt) {
-                player.loadVideoById(id, startAt);
+            function loadById(id, startAt, endAt) {
+                player.loadVideoById(id, startAt, endAt);
                 return '';
             }
 
-            function cueById(id, startAt) {
-                player.cueVideoById(id, startAt);
+            function cueById(id, startAt, endAt) {
+                player.cueVideoById(id, startAt, endAt);
+                return '';
+            }
+            
+            function loadPlaylist(playlist, index, startAt) {
+                player.loadPlaylist(playlist, 'playlist', index, startAt);
+                return '';
+            }
+            
+            function cuePlaylist(playlist, index, startAt) {
+                player.cuePlaylist(playlist, 'playlist', index, startAt);
                 return '';
             }
 
@@ -359,5 +373,5 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
     return 'data:text/html;base64,${base64Encode(const Utf8Encoder().convert(_player))}';
   }
 
-  String boolean(bool value) => value ? "'1'" : "'0'";
+  String boolean({@required bool value}) => value ? "'1'" : "'0'";
 }

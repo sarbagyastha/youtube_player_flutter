@@ -15,6 +15,7 @@ class PlayPauseButton extends StatefulWidget {
   /// Defines placeholder widget to show when player is in buffering state.
   final Widget bufferIndicator;
 
+  /// Creates [PlayPauseButton] widget.
   PlayPauseButton({
     this.controller,
     this.bufferIndicator,

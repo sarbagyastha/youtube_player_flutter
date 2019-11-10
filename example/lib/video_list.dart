@@ -2,13 +2,14 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
+/// Creates list of video players
 class VideoList extends StatefulWidget {
   @override
   _VideoListState createState() => _VideoListState();
 }
 
 class _VideoListState extends State<VideoList> {
-  List<YoutubePlayerController> _controllers = [
+  final List<YoutubePlayerController> _controllers = [
     'gQDByCdjUXw',
     'iLnmTe5Q2Qw',
     '_WoCV4c6XOE',

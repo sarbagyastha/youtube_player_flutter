@@ -24,6 +24,7 @@ class TouchShutter extends StatefulWidget {
   /// Sets the timeout until when the controls hide.
   final Duration timeOut;
 
+  /// Creates [TouchShutter] widget.
   TouchShutter({
     this.controller,
     this.disableDragSeek = false,

@@ -57,15 +57,7 @@ class YoutubePlayerFlags {
   /// Default is `en`.
   final String captionLanguage;
 
-  /// Causes the player to begin playing the video at the given number of seconds from the start of the video.
-  final Duration start;
-
-  /// Specifies the time, measured in seconds from the start of the video,
-  /// when the player should stop playing the video.
-  ///
-  /// The time is measured from the beginning of the video.
-  final Duration end;
-
+  /// Creates [YoutubePlayerFlags].
   const YoutubePlayerFlags({
     this.hideControls = false,
     this.autoPlay = true,
@@ -77,10 +69,9 @@ class YoutubePlayerFlags {
     this.enableCaption = true,
     this.captionLanguage = 'en',
     this.loop = false,
-    this.start,
-    this.end,
   });
 
+  /// Copies new values assigned to the [YoutubePlayerFlags].
   YoutubePlayerFlags copyWith({
     bool hideControls,
     bool autoPlay,
@@ -93,22 +84,18 @@ class YoutubePlayerFlags {
     bool loop,
     bool enableCaption,
     String captionLanguage,
-    Duration start,
-    Duration end,
   }) {
     return YoutubePlayerFlags(
       autoPlay: autoPlay ?? this.autoPlay,
       captionLanguage: captionLanguage ?? this.captionLanguage,
       disableDragSeek: disableDragSeek ?? this.disableDragSeek,
       enableCaption: enableCaption ?? this.enableCaption,
-      end: end ?? this.end,
       forceHideAnnotation: forceHideAnnotation ?? this.forceHideAnnotation,
       hideControls: hideControls ?? this.hideControls,
       hideThumbnail: hideThumbnail ?? this.hideThumbnail,
       isLive: isLive ?? this.isLive,
       loop: loop ?? this.loop,
       mute: mute ?? this.mute,
-      start: start ?? this.start,
     );
   }
 }

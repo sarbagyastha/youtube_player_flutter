@@ -14,6 +14,7 @@ class FullScreenButton extends StatefulWidget {
   /// Defines color of the button.
   final Color color;
 
+  /// Creates [FullScreenButton] widget.
   FullScreenButton({
     this.controller,
     this.color = Colors.white,

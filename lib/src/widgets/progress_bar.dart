@@ -8,14 +8,19 @@ import '../utils/youtube_player_controller.dart';
 
 /// Defines different colors for [ProgressBar].
 class ProgressBarColors {
+  /// Defines background color of the [ProgressBar].
   final Color backgroundColor;
 
+  /// Defines color for played portion of the [ProgressBar].
   final Color playedColor;
 
+  /// Defines color for buffered portion of the [ProgressBar].
   final Color bufferedColor;
 
+  /// Defines color for handle of the [ProgressBar].
   final Color handleColor;
 
+  /// Creates [ProgressBarColors].
   const ProgressBarColors({
     this.backgroundColor,
     this.playedColor,
@@ -37,6 +42,7 @@ class ProgressBar extends StatefulWidget {
   /// Default is false.
   final bool isExpanded;
 
+  /// Creates [ProgressBar] widget.
   ProgressBar({
     this.controller,
     this.colors,
@@ -83,7 +89,7 @@ class _ProgressBarState extends State<ProgressBar> {
   }
 
   void positionListener() {
-    int _totalDuration = _controller.value.duration?.inMilliseconds;
+    var _totalDuration = _controller.value.duration?.inMilliseconds;
     if (mounted && !_totalDuration.isNaN && _totalDuration != 0) {
       setState(() {
         _playedValue =
@@ -110,7 +116,7 @@ class _ProgressBarState extends State<ProgressBar> {
     final RenderBox box = context.findRenderObject();
     _touchPoint = box.globalToLocal(globalPosition);
     _checkTouchPoint();
-    final double relative = _touchPoint.dx / box.size.width;
+    final relative = _touchPoint.dx / box.size.width;
     _position = _controller.value.duration * relative;
     _controller.seekTo(_position, allowSeekAhead: false);
   }
@@ -140,16 +146,12 @@ class _ProgressBarState extends State<ProgressBar> {
       },
       onHorizontalDragUpdate: (details) {
         _seekToRelativePosition(details.globalPosition);
-        setState(() {
-          _setValue();
-        });
+        setState(_setValue);
       },
       onHorizontalDragEnd: (details) {
         _dragEndActions();
       },
-      onHorizontalDragCancel: () {
-        _dragEndActions();
-      },
+      onHorizontalDragCancel: _dragEndActions,
       child: Container(
         color: Colors.transparent,
         constraints: BoxConstraints.expand(height: 7.0 * 2),
@@ -201,7 +203,7 @@ class _ProgressBarPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final Paint paint = Paint()
+    final paint = Paint()
       ..isAntiAlias = true
       ..strokeCap = StrokeCap.square
       ..strokeWidth = progressWidth;
@@ -209,11 +211,11 @@ class _ProgressBarPainter extends CustomPainter {
     final centerY = size.height / 2.0;
     final barLength = size.width - handleRadius * 2.0;
 
-    final Offset startPoint = Offset(handleRadius, centerY);
-    final Offset endPoint = Offset(size.width - handleRadius, centerY);
-    final Offset progressPoint =
+    final startPoint = Offset(handleRadius, centerY);
+    final endPoint = Offset(size.width - handleRadius, centerY);
+    final progressPoint =
         Offset(barLength * playedValue + handleRadius, centerY);
-    final Offset secondProgressPoint =
+    final secondProgressPoint =
         Offset(barLength * bufferedValue + handleRadius, centerY);
 
     paint.color =
@@ -226,12 +228,12 @@ class _ProgressBarPainter extends CustomPainter {
     paint.color = colors?.playedColor ?? themeData.accentColor;
     canvas.drawLine(startPoint, progressPoint, paint);
 
-    final Paint handlePaint = Paint()..isAntiAlias = true;
+    final handlePaint = Paint()..isAntiAlias = true;
 
     handlePaint.color = Colors.transparent;
     canvas.drawCircle(progressPoint, centerY, handlePaint);
 
-    final Color _handleColor = colors?.handleColor ?? themeData.accentColor;
+    final _handleColor = colors?.handleColor ?? themeData.accentColor;
 
     if (touchDown) {
       handlePaint.color = _handleColor.withOpacity(0.4);

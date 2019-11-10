@@ -4,7 +4,6 @@
 
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -44,6 +43,7 @@ import 'raw_youtube_player.dart';
 /// ```
 ///
 class YoutubePlayer extends StatefulWidget {
+  /// A [YoutubePlayerController] to control the player.
   final YoutubePlayerController controller;
 
   /// {@template youtube_player_flutter.width}
@@ -124,7 +124,8 @@ class YoutubePlayer extends StatefulWidget {
   /// {@endtemplate}
   final bool showVideoProgressIndicator;
 
-  YoutubePlayer({
+  /// Creates [YoutubePlayer] widget.
+  const YoutubePlayer({
     Key key,
     @required this.controller,
     this.width,
@@ -145,7 +146,7 @@ class YoutubePlayer extends StatefulWidget {
   /// Converts fully qualified YouTube Url to video id.
   ///
   /// If videoId is passed as url then no conversion is done.
-  static String convertUrlToId(String url, [bool trimWhitespaces = true]) {
+  static String convertUrlToId(String url, {bool trimWhitespaces = true}) {
     assert(url?.isNotEmpty ?? false, 'Url cannot be empty');
     if (!url.contains("http") && (url.length == 11)) return url;
     if (trimWhitespaces) url = url.trim();
@@ -208,7 +209,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
       if (controller.flags.mute) controller.mute();
       if (widget.onReady != null) widget.onReady();
     }
-    if (!kIsWeb && controller.value.toggleFullScreen) {
+    if (controller.value.toggleFullScreen) {
       controller.updateValue(
         controller.value.copyWith(
           toggleFullScreen: false,
@@ -219,8 +220,8 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
         Navigator.pop(context);
       } else {
         controller.pause();
-        Duration _cachedPosition = controller.value.position;
-        String _videoId = controller.value.videoId;
+        var _cachedPosition = controller.value.position;
+        var _videoId = controller.value.videoId;
         _cachedWebController = controller.value.webViewController;
         controller.reset();
 
@@ -357,11 +358,6 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                     ),
             ),
           ),
-          if (!controller.flags.hideControls)
-            TouchShutter(
-              disableDragSeek: controller.flags.disableDragSeek,
-              timeOut: widget.controlsTimeOut,
-            ),
           if (!controller.flags.hideControls &&
               controller.value.position > Duration(milliseconds: 100) &&
               !controller.value.showControls &&
@@ -383,7 +379,11 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                 ),
               ),
             ),
-          if (!controller.flags.hideControls)
+          if (!controller.flags.hideControls) ...[
+            TouchShutter(
+              disableDragSeek: controller.flags.disableDragSeek,
+              timeOut: widget.controlsTimeOut,
+            ),
             Positioned(
               bottom: 0,
               left: 0,
@@ -415,7 +415,6 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                       ),
               ),
             ),
-          if (!controller.flags.hideControls && controller.value.showControls)
             Positioned(
               top: 0,
               left: 0,
@@ -434,6 +433,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                 ),
               ),
             ),
+          ],
           if (!controller.flags.hideControls &&
               controller.value.isEvaluationReady)
             Center(
