@@ -48,7 +48,7 @@ class _LiveBottomBarState extends State<LiveBottomBar> {
 
   @override
   void dispose() {
-    _controller?.dispose();
+    _controller?.removeListener(listener);
     super.dispose();
   }
 
@@ -100,7 +100,7 @@ class _LiveBottomBarState extends State<LiveBottomBar> {
             child: Material(
               color: widget.liveUIColor,
               child: Text(
-                " LIVE ",
+                ' LIVE ',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 12.0,

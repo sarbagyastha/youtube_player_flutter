@@ -3,6 +3,8 @@
 * Removed **DataConnectionChecker** dependency.
 * Removed `start` and `end` from flags as it wasn't functioning anyway.
 * **(Improvement)** Implemented effective dart lints.
+* **(Improvement)** Changed thumbnails to fetch webp format.
+* **(Fixed)** Issue with Live UI [Issue #115](https://github.com/sarbagyastha/youtube_player_flutter/issues/115).
 
 ## 6.0.0
 * **(Improvement)** Smooth fullscreen toggle and crash fix. [Issue #46](https://github.com/sarbagyastha/youtube_player_flutter/issues/46) & [Issue #105](https://github.com/sarbagyastha/youtube_player_flutter/issues/105)

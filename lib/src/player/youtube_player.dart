@@ -170,7 +170,7 @@ class YoutubePlayer extends StatefulWidget {
     @required String videoId,
     String quality = ThumbnailQuality.standard,
   }) =>
-      'https://i3.ytimg.com/vi/$videoId/$quality';
+      'https://i3.ytimg.com/vi_webp/$videoId/$quality';
 
   @override
   _YoutubePlayerState createState() => _YoutubePlayerState();
@@ -234,7 +234,6 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
           controlsTimeOut: widget.controlsTimeOut,
           liveUIColor: widget.liveUIColor,
           onReady: () {
-            print(_videoId);
             controller.load(_videoId, startAt: _cachedPosition.inSeconds);
           },
           progressColors: widget.progressColors,
@@ -338,26 +337,24 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
             Container(
               color: Colors.black,
             ),
-          AnimatedOpacity(
-            opacity:
-                controller.value.hasPlayed || controller.flags.hideThumbnail
-                    ? 0
-                    : 1,
-            duration: Duration(milliseconds: 300),
-            child: Image.network(
-              widget.thumbnailUrl ??
-                  YoutubePlayer.getThumbnail(
-                    videoId:
-                        controller.value.videoId ?? controller.initialVideoId,
-                  ),
-              fit: BoxFit.cover,
-              loadingBuilder: (_, child, progress) => progress == null
-                  ? child
-                  : Container(
-                      color: Colors.black,
+          if (!controller.flags.hideThumbnail)
+            AnimatedOpacity(
+              opacity: controller.value.hasPlayed ? 0 : 1,
+              duration: Duration(milliseconds: 300),
+              child: Image.network(
+                widget.thumbnailUrl ??
+                    YoutubePlayer.getThumbnail(
+                      videoId:
+                          controller.value.videoId ?? controller.initialVideoId,
                     ),
+                fit: BoxFit.cover,
+                loadingBuilder: (_, child, progress) => progress == null
+                    ? child
+                    : Container(
+                        color: Colors.black,
+                      ),
+              ),
             ),
-          ),
           if (!controller.flags.hideControls &&
               controller.value.position > Duration(milliseconds: 100) &&
               !controller.value.showControls &&

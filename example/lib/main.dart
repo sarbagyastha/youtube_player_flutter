@@ -70,6 +70,7 @@ class _MyHomePageState extends State<MyHomePage> {
         forceHideAnnotation: true,
         disableDragSeek: false,
         loop: true,
+        isLive: false,
       ),
     )..addListener(listener);
     _idController = TextEditingController();
