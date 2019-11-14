@@ -198,9 +198,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
   }
 
   void listener() async {
-    if (controller.value.isReady &&
-        controller.value.isEvaluationReady &&
-        _initialLoad) {
+    if (controller.value.isReady && _initialLoad) {
       _initialLoad = false;
       if (controller.flags.autoPlay) controller.play();
       controller.updateValue(
@@ -332,11 +330,6 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
         overflow: Overflow.visible,
         children: [
           RawYoutubePlayer(),
-          if (!controller.value.hasPlayed &&
-              controller.value.playerState == PlayerState.buffering)
-            Container(
-              color: Colors.black,
-            ),
           if (!controller.flags.hideThumbnail)
             AnimatedOpacity(
               opacity: controller.value.hasPlayed ? 0 : 1,
@@ -431,8 +424,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
               ),
             ),
           ],
-          if (!controller.flags.hideControls &&
-              controller.value.isEvaluationReady)
+          if (!controller.flags.hideControls)
             Center(
               child: PlayPauseButton(),
             ),

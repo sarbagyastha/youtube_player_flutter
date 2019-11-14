@@ -16,7 +16,6 @@ class YoutubePlayerValue {
   /// of a [YoutubePlayerController].
   YoutubePlayerValue({
     this.isReady = false,
-    this.isEvaluationReady = false,
     this.showControls = false,
     this.isLoaded = false,
     this.hasPlayed = false,
@@ -38,11 +37,8 @@ class YoutubePlayerValue {
     this.author = '',
   });
 
-  /// Returns true when underlying web player reports ready.
+  /// Returns true when the player is ready to play videos.
   final bool isReady;
-
-  /// Returns true when JavaScript evaluation can be triggered.
-  final bool isEvaluationReady;
 
   /// Whether to show controls or not.
   final bool showControls;
@@ -111,7 +107,6 @@ class YoutubePlayerValue {
   /// the old one.
   YoutubePlayerValue copyWith({
     bool isReady,
-    bool isEvaluationReady,
     bool showControls,
     bool isLoaded,
     bool hasPlayed,
@@ -134,7 +129,6 @@ class YoutubePlayerValue {
   }) {
     return YoutubePlayerValue(
       isReady: isReady ?? this.isReady,
-      isEvaluationReady: isEvaluationReady ?? this.isEvaluationReady,
       showControls: showControls ?? this.showControls,
       isLoaded: isLoaded ?? this.isLoaded,
       duration: duration ?? this.duration,
@@ -164,7 +158,6 @@ class YoutubePlayerValue {
         'title: $title, '
         'author: $author, '
         'isReady: $isReady, '
-        'isEvaluationReady: $isEvaluationReady, '
         'showControls: $showControls, '
         'isLoaded: $isLoaded, '
         'duration: $duration, '
@@ -200,7 +193,7 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
     this.flags = const YoutubePlayerFlags(),
   })  : assert(initialVideoId != null, 'initialVideoId can\'t be null.'),
         assert(flags != null),
-        super(YoutubePlayerValue(isReady: false));
+        super(YoutubePlayerValue());
 
   /// Finds [YoutubePlayerController] in the provided context.
   static YoutubePlayerController of(BuildContext context) {
@@ -210,7 +203,7 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
   }
 
   _callMethod(String methodString) {
-    if (value.isEvaluationReady) {
+    if (value.isReady) {
       value.webViewController?.evaluateJavascript(methodString);
     } else {
       print('The controller is not ready for method calls.');
@@ -230,13 +223,21 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
   /// Loads the video as per the [videoId] provided.
   void load(String videoId, {int startAt = 0}) {
     _updateValues(videoId);
-    _callMethod('loadById("$videoId",$startAt)');
+    if (value.errorCode == 1) {
+      pause();
+    } else {
+      _callMethod('loadById("$videoId",$startAt)');
+    }
   }
 
   /// Cues the video as per the [videoId] provided.
   void cue(String videoId, {int startAt = 0}) {
     _updateValues(videoId);
-    _callMethod('cueById("$videoId",$startAt)');
+    if (value.errorCode == 1) {
+      pause();
+    } else {
+      _callMethod('cueById("$videoId",$startAt)');
+    }
   }
 
   void _updateValues(String id) {
@@ -301,7 +302,6 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
   void reset() => updateValue(
         value.copyWith(
           isReady: false,
-          isEvaluationReady: false,
           isFullScreen: false,
           showControls: false,
           playerState: PlayerState.unknown,

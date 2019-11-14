@@ -15,8 +15,8 @@ String errorString(int errorCode, {String videoId = ''}) {
       return 'The video requested was not found.';
     case 101:
       return 'The owner of the requested video does not allow it to be played.';
-    case 400:
-      return 'No Connection';
+    case 150:
+      return 'The owner of the requested video may not allow it to be played.';
     default:
       return 'Unknown Error';
   }

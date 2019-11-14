@@ -30,6 +30,7 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
       Completer<WebViewController>();
   YoutubePlayerController controller;
   PlayerState _cachedPlayerState;
+  bool _isPlayerReady = false;
 
   @override
   void initState() {
@@ -55,10 +56,10 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
       case AppLifecycleState.inactive:
         break;
       case AppLifecycleState.paused:
-      case AppLifecycleState.suspending:
         _cachedPlayerState = controller.value.playerState;
         controller?.pause();
         break;
+      default:
     }
   }
 
@@ -75,7 +76,7 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
           JavascriptChannel(
             name: 'Ready',
             onMessageReceived: (JavascriptMessage message) {
-              controller.updateValue(controller.value.copyWith(isReady: true));
+              _isPlayerReady = true;
             },
           ),
           JavascriptChannel(
@@ -205,9 +206,11 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
           );
         },
         onPageFinished: (_) {
-          controller.updateValue(
-            controller.value.copyWith(isEvaluationReady: true),
-          );
+          if (_isPlayerReady) {
+            controller.updateValue(
+              controller.value.copyWith(isReady: true),
+            );
+          }
         },
       ),
     );
