@@ -59,18 +59,30 @@ class _MyHomePageState extends State<MyHomePage> {
   bool _muted = false;
   bool _isPlayerReady = false;
 
+  final List<String> _ids = [
+    'gQDByCdjUXw',
+    'iLnmTe5Q2Qw',
+    '_WoCV4c6XOE',
+    'KmzdUe0RSJo',
+    '6jZDSSZZxjQ',
+    'p2lYr3vM_1w',
+    '7QUtEmBT_-w',
+    '34_PXCzGw1M',
+  ];
+  int count = 0;
+
   @override
   void initState() {
     super.initState();
     _controller = YoutubePlayerController(
-      initialVideoId: 'p2lYr3vM_1w',
+      initialVideoId: 'QbjA8EiZJPk',
       flags: YoutubePlayerFlags(
         mute: false,
         autoPlay: true,
-        forceHideAnnotation: true,
         disableDragSeek: false,
-        loop: true,
+        loop: false,
         isLive: false,
+        controlsVisibleAtStart: true,
       ),
     )..addListener(listener);
     _idController = TextEditingController();
@@ -80,9 +92,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void listener() {
     if (_isPlayerReady) {
-      if (_controller.value.playerState == PlayerState.ended) {
-        _showSnackBar('Video Ended!');
-      }
       if (mounted && !_controller.value.isFullScreen) {
         setState(() {
           _playerState = _controller.value.playerState;
@@ -166,6 +175,10 @@ class _MyHomePageState extends State<MyHomePage> {
             ],
             onReady: () {
               _isPlayerReady = true;
+            },
+            onEnded: (id) {
+              _controller.load(_ids[count++]);
+              _showSnackBar('Next Video Started!');
             },
           ),
           Padding(
@@ -335,11 +348,11 @@ class _MyHomePageState extends State<MyHomePage> {
   Color _getStateColor(PlayerState state) {
     switch (state) {
       case PlayerState.unknown:
-        return Colors.redAccent;
-      case PlayerState.unStarted:
         return Colors.grey[700];
-      case PlayerState.ended:
+      case PlayerState.unStarted:
         return Colors.pink;
+      case PlayerState.ended:
+        return Colors.red;
       case PlayerState.playing:
         return Colors.blueAccent;
       case PlayerState.paused:
@@ -348,8 +361,6 @@ class _MyHomePageState extends State<MyHomePage> {
         return Colors.yellow;
       case PlayerState.cued:
         return Colors.blue[900];
-      case PlayerState.stopped:
-        return Colors.red;
       default:
         return Colors.blue;
     }

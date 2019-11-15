@@ -1,3 +1,8 @@
+## 6.0.2
+* Added `onEnded` callback for `YoutubePlayer` widget. (Fixes [#108](https://github.com/sarbagyastha/youtube_player_flutter/issues/108))
+* Removed `isEvaluationReady` & `isLoaded` flags as it had no use anyway.
+* Added `controlsVisibleAtStart` flag. (Fixes [#113](https://github.com/sarbagyastha/youtube_player_flutter/issues/113))
+
 ## 6.0.1
 * **(New Feature)** Added `title` and `author` property to `YoutubePlayerController`.
 * Removed **DataConnectionChecker** dependency.

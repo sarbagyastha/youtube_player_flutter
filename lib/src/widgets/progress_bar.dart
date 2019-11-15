@@ -123,7 +123,7 @@ class _ProgressBarState extends State<ProgressBar> {
 
   void _dragEndActions() {
     _controller.updateValue(
-      _controller.value.copyWith(showControls: false, isDragging: false),
+      _controller.value.copyWith(isControlsVisible: false, isDragging: false),
     );
     _controller.seekTo(_position, allowSeekAhead: true);
     setState(() {
@@ -136,7 +136,7 @@ class _ProgressBarState extends State<ProgressBar> {
     return GestureDetector(
       onHorizontalDragDown: (details) {
         _controller.updateValue(
-          _controller.value.copyWith(showControls: true, isDragging: true),
+          _controller.value.copyWith(isControlsVisible: true, isDragging: true),
         );
         _seekToRelativePosition(details.globalPosition);
         setState(() {
@@ -237,7 +237,7 @@ class _ProgressBarPainter extends CustomPainter {
 
     if (touchDown) {
       handlePaint.color = _handleColor.withOpacity(0.4);
-      canvas.drawCircle(progressPoint, handleRadius * 2, handlePaint);
+      canvas.drawCircle(progressPoint, handleRadius * 3, handlePaint);
     }
 
     handlePaint.color = _handleColor;

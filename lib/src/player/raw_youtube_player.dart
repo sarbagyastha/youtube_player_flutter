@@ -17,8 +17,14 @@ import '../utils/youtube_player_controller.dart';
 ///
 /// Use [YoutubePlayer] instead.
 class RawYoutubePlayer extends StatefulWidget {
+  /// {@macro youtube_player_flutter.onEnded}
+  final void Function(String videoId) onEnded;
+
   /// Creates a [RawYoutubePlayer] widget.
-  RawYoutubePlayer({Key key}) : super(key: key);
+  RawYoutubePlayer({
+    Key key,
+    this.onEnded,
+  }) : super(key: key);
 
   @override
   _RawYoutubePlayerState createState() => _RawYoutubePlayerState();
@@ -92,8 +98,13 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
                   );
                   break;
                 case '0':
+                  if (widget.onEnded != null) {
+                    widget.onEnded(controller.value.videoId);
+                  }
                   controller.updateValue(
-                    controller.value.copyWith(playerState: PlayerState.ended),
+                    controller.value.copyWith(
+                      playerState: PlayerState.ended,
+                    ),
                   );
                   break;
                 case '1':
@@ -116,13 +127,16 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
                   break;
                 case '3':
                   controller.updateValue(
-                    controller.value
-                        .copyWith(playerState: PlayerState.buffering),
+                    controller.value.copyWith(
+                      playerState: PlayerState.buffering,
+                    ),
                   );
                   break;
                 case '5':
                   controller.updateValue(
-                    controller.value.copyWith(playerState: PlayerState.cued),
+                    controller.value.copyWith(
+                      playerState: PlayerState.cued,
+                    ),
                   );
                   break;
                 default:

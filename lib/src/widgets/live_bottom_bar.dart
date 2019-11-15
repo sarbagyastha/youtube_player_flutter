@@ -66,7 +66,7 @@ class _LiveBottomBarState extends State<LiveBottomBar> {
   @override
   Widget build(BuildContext context) {
     return Visibility(
-      visible: _controller.value.showControls,
+      visible: _controller.value.isControlsVisible,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[

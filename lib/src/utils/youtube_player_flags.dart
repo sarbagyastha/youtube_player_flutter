@@ -4,10 +4,15 @@
 
 /// Defines player flags for [YoutubePlayer].
 class YoutubePlayerFlags {
-  /// if set to true, hides the controls.
+  /// If set to true, hides the controls.
   ///
   /// Default is false.
   final bool hideControls;
+
+  /// Is set to true, controls will be visible at start.
+  ///
+  /// Default is false.
+  final bool controlsVisibleAtStart;
 
   /// Define whether to auto play the video after initialization or not.
   ///
@@ -60,6 +65,7 @@ class YoutubePlayerFlags {
   /// Creates [YoutubePlayerFlags].
   const YoutubePlayerFlags({
     this.hideControls = false,
+    this.controlsVisibleAtStart = false,
     this.autoPlay = true,
     this.mute = false,
     this.isLive = false,

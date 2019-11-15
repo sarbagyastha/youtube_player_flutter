@@ -121,8 +121,12 @@ print(videoId); // BBAyRBTfsOU
 
 [Detailed Example](https://github.com/sarbagyastha/youtube_player_flutter/tree/master/example)
 
-## Note
-Know more about the configuration options [here](https://pub.dartlang.org/documentation/youtube_player_flutter/latest/youtube_player_flutter/youtube_player_flutter-library.html).
+## Quick Links
+* [YoutubePlayer](https://pub.dev/documentation/youtube_player_flutter/latest/youtube_player_flutter/YoutubePlayer-class.html)
+* [YoutubePlayerController](https://pub.dev/documentation/youtube_player_flutter/latest/youtube_player_flutter/YoutubePlayerController-class.html)
+* [YoutubePlayerFlags](https://pub.dev/documentation/youtube_player_flutter/latest/youtube_player_flutter/YoutubePlayerFlags-class.html)
+* [YoutubePlayerValue](https://pub.dev/documentation/youtube_player_flutter/latest/youtube_player_flutter/YoutubePlayerValue-class.html)
+
 
 ## Download
 Download apk from above(in badges) and try the plugin.

@@ -21,6 +21,7 @@ Future<void> showFullScreenYoutubePlayer({
   Duration controlsTimeOut,
   Color liveUIColor,
   VoidCallback onReady,
+  void Function(String) onEnded,
   ProgressBarColors progressColors,
   String thumbnailUrl,
 }) async =>
@@ -36,6 +37,7 @@ Future<void> showFullScreenYoutubePlayer({
           controlsTimeOut: controlsTimeOut,
           liveUIColor: liveUIColor,
           onReady: onReady,
+          onEnded: onEnded,
           progressColors: progressColors,
           thumbnailUrl: thumbnailUrl,
         ),
@@ -57,6 +59,9 @@ class _FullScreenYoutubePlayer extends StatefulWidget {
 
   /// {@macro youtube_player_flutter.onReady}
   final VoidCallback onReady;
+
+  /// {@macro youtube_player_flutter.onEnded}
+  final void Function(String) onEnded;
 
   /// {@macro youtube_player_flutter.liveUIColor}
   final Color liveUIColor;
@@ -80,6 +85,7 @@ class _FullScreenYoutubePlayer extends StatefulWidget {
     this.bufferIndicator,
     this.progressColors,
     this.onReady,
+    this.onEnded,
     this.liveUIColor = Colors.red,
     this.topActions,
     this.bottomActions,
@@ -104,6 +110,7 @@ class _FullScreenYoutubePlayerState extends State<_FullScreenYoutubePlayer> {
       controlsTimeOut: widget.controlsTimeOut,
       liveUIColor: widget.liveUIColor,
       onReady: widget.onReady,
+      onEnded: widget.onEnded,
       progressColors: widget.progressColors,
       thumbnailUrl: widget.thumbnailUrl,
       topActions: widget.topActions,

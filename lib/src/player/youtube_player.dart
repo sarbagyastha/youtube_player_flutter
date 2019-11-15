@@ -7,7 +7,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-import '../enums/player_state.dart';
 import '../enums/thumbnail_quality.dart';
 import '../utils/errors.dart';
 import '../utils/youtube_player_controller.dart';
@@ -88,6 +87,13 @@ class YoutubePlayer extends StatefulWidget {
   /// {@endtemplate}
   final VoidCallback onReady;
 
+  /// {@template youtube_player_flutter.onEnded}
+  /// Called when player had ended playing a video.
+  ///
+  /// Returns video id that has ended playing.
+  /// {@endtemplate}
+  final void Function(String videoId) onEnded;
+
   /// {@template youtube_player_flutter.liveUIColor}
   /// Overrides color of Live UI when enabled.
   /// {@endtemplate}
@@ -135,6 +141,7 @@ class YoutubePlayer extends StatefulWidget {
     this.progressIndicatorColor = Colors.red,
     this.progressColors,
     this.onReady,
+    this.onEnded,
     this.liveUIColor = Colors.red,
     this.topActions,
     this.bottomActions,
@@ -201,17 +208,19 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
     if (controller.value.isReady && _initialLoad) {
       _initialLoad = false;
       if (controller.flags.autoPlay) controller.play();
-      controller.updateValue(
-        controller.value.copyWith(videoId: controller.initialVideoId),
-      );
       if (controller.flags.mute) controller.mute();
       if (widget.onReady != null) widget.onReady();
+      if (controller.flags.controlsVisibleAtStart) {
+        controller.updateValue(
+          controller.value.copyWith(isControlsVisible: true),
+        );
+      }
     }
     if (controller.value.toggleFullScreen) {
       controller.updateValue(
         controller.value.copyWith(
           toggleFullScreen: false,
-          showControls: false,
+          isControlsVisible: false,
         ),
       );
       if (controller.value.isFullScreen) {
@@ -245,14 +254,6 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
           )
           ..seekTo(_cachedPosition);
         Future.delayed(Duration(seconds: 2), () => controller.play());
-      }
-    }
-    if (controller.value.playerState == PlayerState.ended) {
-      controller.updateValue(
-        controller.value.copyWith(playerState: PlayerState.stopped),
-      );
-      if (controller.flags.loop) {
-        controller.load(controller.value.videoId);
       }
     }
     if (mounted) setState(() {});
@@ -329,7 +330,16 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
         fit: StackFit.expand,
         overflow: Overflow.visible,
         children: [
-          RawYoutubePlayer(),
+          RawYoutubePlayer(
+            onEnded: (String id) {
+              if (controller.flags.loop) {
+                controller.load(controller.value.videoId);
+              }
+              if (widget.onEnded != null) {
+                widget.onEnded(id);
+              }
+            },
+          ),
           if (!controller.flags.hideThumbnail)
             AnimatedOpacity(
               opacity: controller.value.hasPlayed ? 0 : 1,
@@ -350,7 +360,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
             ),
           if (!controller.flags.hideControls &&
               controller.value.position > Duration(milliseconds: 100) &&
-              !controller.value.showControls &&
+              !controller.value.isControlsVisible &&
               widget.showVideoProgressIndicator &&
               !controller.flags.isLive &&
               !controller.value.isFullScreen)
@@ -380,7 +390,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
               right: 0,
               child: AnimatedOpacity(
                 opacity: !controller.flags.hideControls &&
-                        controller.value.showControls
+                        controller.value.isControlsVisible
                     ? 1
                     : 0,
                 duration: Duration(milliseconds: 300),
@@ -411,7 +421,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
               right: 0,
               child: AnimatedOpacity(
                 opacity: !controller.flags.hideControls &&
-                        controller.value.showControls
+                        controller.value.isControlsVisible
                     ? 1
                     : 0,
                 duration: Duration(milliseconds: 300),

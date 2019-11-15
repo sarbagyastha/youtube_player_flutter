@@ -69,7 +69,7 @@ class _TouchShutterState extends State<TouchShutter> {
   void _toggleControls() {
     _controller.updateValue(
       _controller.value.copyWith(
-        showControls: !_controller.value.showControls,
+        isControlsVisible: !_controller.value.isControlsVisible,
       ),
     );
     _timer?.cancel();
@@ -77,7 +77,7 @@ class _TouchShutterState extends State<TouchShutter> {
       if (!_controller.value.isDragging) {
         _controller.updateValue(
           _controller.value.copyWith(
-            showControls: false,
+            isControlsVisible: false,
           ),
         );
       }
@@ -99,7 +99,7 @@ class _TouchShutterState extends State<TouchShutter> {
             onHorizontalDragUpdate: (details) {
               _controller.updateValue(
                 _controller.value.copyWith(
-                  showControls: false,
+                  isControlsVisible: false,
                 ),
               );
               delta = details.globalPosition.dx - dragStartPos;
@@ -122,7 +122,7 @@ class _TouchShutterState extends State<TouchShutter> {
             },
             child: AnimatedContainer(
               duration: Duration(milliseconds: 300),
-              color: _controller.value.showControls
+              color: _controller.value.isControlsVisible
                   ? Colors.black.withAlpha(150)
                   : Colors.transparent,
               child: _dragging

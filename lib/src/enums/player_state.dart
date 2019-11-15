@@ -12,9 +12,7 @@ enum PlayerState {
   /// Denotes state when player loads first video.
   unStarted,
 
-  /// Denotes state when player ends playing a video.
-  ///
-  /// Fires only once after video ends and switches to [PlayerState.stopped].
+  /// Denotes state when player has ended playing a video.
   ended,
 
   /// Denotes state when player is playing video.
@@ -28,7 +26,4 @@ enum PlayerState {
 
   /// Denotes state when player loads video and is ready to be played.
   cued,
-
-  /// Denotes state when player has stopped playing videos.
-  stopped,
 }

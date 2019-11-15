@@ -16,8 +16,7 @@ class YoutubePlayerValue {
   /// of a [YoutubePlayerController].
   YoutubePlayerValue({
     this.isReady = false,
-    this.showControls = false,
-    this.isLoaded = false,
+    this.isControlsVisible = false,
     this.hasPlayed = false,
     this.duration = const Duration(),
     this.position = const Duration(),
@@ -40,11 +39,8 @@ class YoutubePlayerValue {
   /// Returns true when the player is ready to play videos.
   final bool isReady;
 
-  /// Whether to show controls or not.
-  final bool showControls;
-
-  /// Returns true once video loads.
-  final bool isLoaded;
+  /// Defines whether or not the controls are visible.
+  final bool isControlsVisible;
 
   /// Returns true once the video start playing for the first time.
   final bool hasPlayed;
@@ -55,7 +51,7 @@ class YoutubePlayerValue {
   /// The current position of the video.
   final Duration position;
 
-  /// The position up to which the video is buffered.
+  /// The position up to which the video is buffered.i
   final double buffered;
 
   /// Reports true if video is playing.
@@ -107,7 +103,7 @@ class YoutubePlayerValue {
   /// the old one.
   YoutubePlayerValue copyWith({
     bool isReady,
-    bool showControls,
+    bool isControlsVisible,
     bool isLoaded,
     bool hasPlayed,
     Duration duration,
@@ -129,8 +125,7 @@ class YoutubePlayerValue {
   }) {
     return YoutubePlayerValue(
       isReady: isReady ?? this.isReady,
-      showControls: showControls ?? this.showControls,
-      isLoaded: isLoaded ?? this.isLoaded,
+      isControlsVisible: isControlsVisible ?? this.isControlsVisible,
       duration: duration ?? this.duration,
       hasPlayed: hasPlayed ?? this.hasPlayed,
       position: position ?? this.position,
@@ -158,8 +153,7 @@ class YoutubePlayerValue {
         'title: $title, '
         'author: $author, '
         'isReady: $isReady, '
-        'showControls: $showControls, '
-        'isLoaded: $isLoaded, '
+        'isControlsVisible: $isControlsVisible, '
         'duration: $duration, '
         'position: $position, '
         'buffered: $buffered, '
@@ -303,7 +297,7 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
         value.copyWith(
           isReady: false,
           isFullScreen: false,
-          showControls: false,
+          isControlsVisible: false,
           playerState: PlayerState.unknown,
           hasPlayed: false,
           duration: Duration(),
