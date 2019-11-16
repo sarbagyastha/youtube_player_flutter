@@ -130,7 +130,8 @@ print(videoId); // BBAyRBTfsOU
 * [YoutubeMetaData](https://pub.dev/documentation/youtube_player_flutter/latest/youtube_player_flutter/YoutubeMetaData-class.html)
 
 ## Download
-Download apk from above(in badges) and try the plugin.
+Download APKs from above(in badge) and try the plugin.
+APKs are available in Assets of Github release page.
 
 ## Limitation 
 Since the plugin is based on platform views. This plugin requires Android API level 20 or greater.
