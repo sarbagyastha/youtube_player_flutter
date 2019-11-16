@@ -9,6 +9,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 
 import '../enums/thumbnail_quality.dart';
 import '../utils/errors.dart';
+import '../utils/youtube_meta_data.dart';
 import '../utils/youtube_player_controller.dart';
 import '../utils/youtube_player_flags.dart';
 import '../widgets/widgets.dart';
@@ -42,6 +43,9 @@ import 'raw_youtube_player.dart';
 /// ```
 ///
 class YoutubePlayer extends StatefulWidget {
+  /// Sets [Key] as an identification to underlying web view associated to the player.
+  final Key key;
+
   /// A [YoutubePlayerController] to control the player.
   final YoutubePlayerController controller;
 
@@ -90,9 +94,9 @@ class YoutubePlayer extends StatefulWidget {
   /// {@template youtube_player_flutter.onEnded}
   /// Called when player had ended playing a video.
   ///
-  /// Returns video id that has ended playing.
+  /// Returns [YoutubeMetaData] for the video that has just ended playing.
   /// {@endtemplate}
-  final void Function(String videoId) onEnded;
+  final void Function(YoutubeMetaData metaData) onEnded;
 
   /// {@template youtube_player_flutter.liveUIColor}
   /// Overrides color of Live UI when enabled.
@@ -132,7 +136,7 @@ class YoutubePlayer extends StatefulWidget {
 
   /// Creates [YoutubePlayer] widget.
   const YoutubePlayer({
-    Key key,
+    this.key,
     @required this.controller,
     this.width,
     this.aspectRatio = 16 / 9,
@@ -148,7 +152,7 @@ class YoutubePlayer extends StatefulWidget {
     this.actionsPadding = const EdgeInsets.all(8.0),
     this.thumbnailUrl,
     this.showVideoProgressIndicator = false,
-  }) : super(key: key);
+  });
 
   /// Converts fully qualified YouTube Url to video id.
   ///
@@ -228,7 +232,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
       } else {
         controller.pause();
         var _cachedPosition = controller.value.position;
-        var _videoId = controller.value.videoId;
+        var _videoId = controller.metadata.videoId;
         _cachedWebController = controller.value.webViewController;
         controller.reset();
 
@@ -294,7 +298,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                         child: Text(
                           errorString(
                             controller.value.errorCode,
-                            videoId: controller.value.videoId ??
+                            videoId: controller.metadata.videoId ??
                                 controller.initialVideoId,
                           ),
                           style: TextStyle(
@@ -331,12 +335,13 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
         overflow: Overflow.visible,
         children: [
           RawYoutubePlayer(
-            onEnded: (String id) {
+            key: widget.key,
+            onEnded: (YoutubeMetaData metaData) {
               if (controller.flags.loop) {
-                controller.load(controller.value.videoId);
+                controller.load(controller.metadata.videoId);
               }
               if (widget.onEnded != null) {
-                widget.onEnded(id);
+                widget.onEnded(metaData);
               }
             },
           ),
@@ -347,8 +352,9 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
               child: Image.network(
                 widget.thumbnailUrl ??
                     YoutubePlayer.getThumbnail(
-                      videoId:
-                          controller.value.videoId ?? controller.initialVideoId,
+                      videoId: controller.metadata.videoId.isEmpty
+                          ? controller.initialVideoId
+                          : controller.metadata.videoId,
                     ),
                 fit: BoxFit.cover,
                 loadingBuilder: (_, child, progress) => progress == null

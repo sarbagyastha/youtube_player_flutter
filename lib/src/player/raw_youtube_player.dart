@@ -11,20 +11,24 @@ import 'package:flutter/scheduler.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import '../enums/player_state.dart';
+import '../utils/youtube_meta_data.dart';
 import '../utils/youtube_player_controller.dart';
 
 /// A raw youtube player widget which interacts with the underlying webview inorder to play YouTube videos.
 ///
 /// Use [YoutubePlayer] instead.
 class RawYoutubePlayer extends StatefulWidget {
+  /// Sets [Key] as an identification to underlying web view associated to the player.
+  final Key key;
+
   /// {@macro youtube_player_flutter.onEnded}
-  final void Function(String videoId) onEnded;
+  final void Function(YoutubeMetaData metaData) onEnded;
 
   /// Creates a [RawYoutubePlayer] widget.
   RawYoutubePlayer({
-    Key key,
+    this.key,
     this.onEnded,
-  }) : super(key: key);
+  });
 
   @override
   _RawYoutubePlayerState createState() => _RawYoutubePlayerState();
@@ -75,6 +79,7 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
     return IgnorePointer(
       ignoring: true,
       child: WebView(
+        key: widget.key,
         initialUrl: player,
         javascriptMode: JavascriptMode.unrestricted,
         initialMediaPlaybackPolicy: AutoMediaPlaybackPolicy.always_allow,
@@ -99,7 +104,7 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
                   break;
                 case '0':
                   if (widget.onEnded != null) {
-                    widget.onEnded(controller.value.videoId);
+                    widget.onEnded(controller.metadata);
                   }
                   controller.updateValue(
                     controller.value.copyWith(
@@ -176,13 +181,9 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
           JavascriptChannel(
             name: 'VideoData',
             onMessageReceived: (JavascriptMessage message) {
-              var videoData = jsonDecode(message.message);
-              double duration = videoData['duration'] * 1000;
               controller.updateValue(
                 controller.value.copyWith(
-                  duration: Duration(milliseconds: duration.floor()),
-                  title: videoData['title'],
-                  author: videoData['author'],
+                  metaData: YoutubeMetaData.fromRawData(message.message),
                 ),
               );
             },
@@ -313,6 +314,7 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
                     'duration': player.getDuration(),
                     'title': player.getVideoData().title,
                     'author': player.getVideoData().author,
+                    'videoId': player.getVideoData().video_id
                 };
                 VideoData.postMessage(JSON.stringify(videoData));
             }

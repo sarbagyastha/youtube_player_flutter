@@ -89,7 +89,7 @@ class _ProgressBarState extends State<ProgressBar> {
   }
 
   void positionListener() {
-    var _totalDuration = _controller.value.duration?.inMilliseconds;
+    var _totalDuration = _controller.metadata.duration?.inMilliseconds;
     if (mounted && !_totalDuration.isNaN && _totalDuration != 0) {
       setState(() {
         _playedValue =
@@ -117,7 +117,7 @@ class _ProgressBarState extends State<ProgressBar> {
     _touchPoint = box.globalToLocal(globalPosition);
     _checkTouchPoint();
     final relative = _touchPoint.dx / box.size.width;
-    _position = _controller.value.duration * relative;
+    _position = _controller.metadata.duration * relative;
     _controller.seekTo(_position, allowSeekAhead: false);
   }
 

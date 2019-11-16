@@ -7,6 +7,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 
 import '../enums/playback_rate.dart';
 import '../enums/player_state.dart';
+import '../utils/youtube_meta_data.dart';
 import '../widgets/progress_bar.dart';
 import 'youtube_player_flags.dart';
 
@@ -18,7 +19,6 @@ class YoutubePlayerValue {
     this.isReady = false,
     this.isControlsVisible = false,
     this.hasPlayed = false,
-    this.duration = const Duration(),
     this.position = const Duration(),
     this.buffered = 0.0,
     this.isPlaying = false,
@@ -29,11 +29,9 @@ class YoutubePlayerValue {
     this.playbackQuality,
     this.errorCode = 0,
     this.webViewController,
-    this.videoId,
     this.toggleFullScreen = false,
     this.isDragging = false,
-    this.title = '',
-    this.author = '',
+    this.metaData = const YoutubeMetaData(),
   });
 
   /// Returns true when the player is ready to play videos.
@@ -44,9 +42,6 @@ class YoutubePlayerValue {
 
   /// Returns true once the video start playing for the first time.
   final bool hasPlayed;
-
-  /// The total length of the video.
-  final Duration duration;
 
   /// The current position of the video.
   final Duration position;
@@ -83,21 +78,14 @@ class YoutubePlayerValue {
   /// Reports the current playback quality.
   final String playbackQuality;
 
-  /// Reports currently loaded video Id.
-  final String videoId;
-
   /// Returns true if fullscreen mode is just toggled.
   final bool toggleFullScreen;
 
   /// Returns true if [ProgressBar] is being dragged.
   final bool isDragging;
 
-  /// Returns title of the video.
-  final String title;
-
-  /// Returns author of the video.
-  /// i.e. Channel Name
-  final String author;
+  /// Returns meta data of the currently loaded/cued video.
+  final YoutubeMetaData metaData;
 
   /// Creates new [YoutubePlayerValue] with assigned parameters and overrides
   /// the old one.
@@ -106,7 +94,6 @@ class YoutubePlayerValue {
     bool isControlsVisible,
     bool isLoaded,
     bool hasPlayed,
-    Duration duration,
     Duration position,
     double buffered,
     bool isPlaying,
@@ -117,16 +104,13 @@ class YoutubePlayerValue {
     String playbackQuality,
     int errorCode,
     WebViewController webViewController,
-    String videoId,
     bool toggleFullScreen,
     bool isDragging,
-    String title,
-    String author,
+    YoutubeMetaData metaData,
   }) {
     return YoutubePlayerValue(
       isReady: isReady ?? this.isReady,
       isControlsVisible: isControlsVisible ?? this.isControlsVisible,
-      duration: duration ?? this.duration,
       hasPlayed: hasPlayed ?? this.hasPlayed,
       position: position ?? this.position,
       buffered: buffered ?? this.buffered,
@@ -138,24 +122,19 @@ class YoutubePlayerValue {
       playbackQuality: playbackQuality ?? this.playbackQuality,
       errorCode: errorCode ?? this.errorCode,
       webViewController: webViewController ?? this.webViewController,
-      videoId: videoId ?? this.videoId,
       toggleFullScreen: toggleFullScreen ?? this.toggleFullScreen,
       isDragging: isDragging ?? this.isDragging,
-      title: title ?? this.title,
-      author: author ?? this.author,
+      metaData: metaData ?? this.metaData,
     );
   }
 
   @override
   String toString() {
     return '$runtimeType('
-        'videoId: $videoId, '
-        'title: $title, '
-        'author: $author, '
+        'metaData: ${metaData.toString()}, '
         'isReady: $isReady, '
         'isControlsVisible: $isControlsVisible, '
-        'duration: $duration, '
-        'position: $position, '
+        'position: ${position.inSeconds} sec. , '
         'buffered: $buffered, '
         'isPlaying: $isPlaying, '
         'volume: $volume, '
@@ -244,7 +223,7 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
       return;
     }
     updateValue(
-      value.copyWith(errorCode: 0, hasPlayed: false, videoId: id),
+      value.copyWith(errorCode: 0, hasPlayed: false),
     );
   }
 
@@ -281,11 +260,8 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
   void toggleFullScreenMode() =>
       updateValue(value.copyWith(toggleFullScreen: true));
 
-  /// The title of the currently playing YouTube video.
-  String get title => value.title;
-
-  /// The author/channel of the currently playing YouTube video.
-  String get author => value.author;
+  /// MetaData for the currently loaded or cued video.
+  YoutubeMetaData get metadata => value.metaData;
 
   /// Reloads the player.
   ///
@@ -300,7 +276,6 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
           isControlsVisible: false,
           playerState: PlayerState.unknown,
           hasPlayed: false,
-          duration: Duration(),
           position: Duration(),
           buffered: 0.0,
           errorCode: 0,
@@ -308,6 +283,7 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
           isLoaded: false,
           isPlaying: false,
           isDragging: false,
+          metaData: const YoutubeMetaData(),
         ),
       );
 }

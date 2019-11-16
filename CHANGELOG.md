@@ -1,3 +1,7 @@
+## 6.0.3
+* Moved `videoId`, `title`, `author` and `duration` to separate **YoutubeMetaData** class.
+* **(Fixed)** Issue with invalid video id being shown while switching to fullscreen. [Issue #118](https://github.com/sarbagyastha/youtube_player_flutter/issues/118)
+
 ## 6.0.2
 * Added `onEnded` callback for `YoutubePlayer` widget. (Fixes [#108](https://github.com/sarbagyastha/youtube_player_flutter/issues/108))
 * Removed `isEvaluationReady` & `isLoaded` flags as it had no use anyway.

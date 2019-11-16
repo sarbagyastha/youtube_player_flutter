@@ -7,6 +7,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 
 import '../player/youtube_player.dart';
+import '../utils/youtube_meta_data.dart';
 import '../utils/youtube_player_controller.dart';
 import '../widgets/widgets.dart';
 
@@ -21,7 +22,7 @@ Future<void> showFullScreenYoutubePlayer({
   Duration controlsTimeOut,
   Color liveUIColor,
   VoidCallback onReady,
-  void Function(String) onEnded,
+  void Function(YoutubeMetaData) onEnded,
   ProgressBarColors progressColors,
   String thumbnailUrl,
 }) async =>
@@ -61,7 +62,7 @@ class _FullScreenYoutubePlayer extends StatefulWidget {
   final VoidCallback onReady;
 
   /// {@macro youtube_player_flutter.onEnded}
-  final void Function(String) onEnded;
+  final void Function(YoutubeMetaData) onEnded;
 
   /// {@macro youtube_player_flutter.liveUIColor}
   final Color liveUIColor;

@@ -55,6 +55,7 @@ class _MyHomePageState extends State<MyHomePage> {
   TextEditingController _seekToController;
 
   PlayerState _playerState;
+  YoutubeMetaData _videoMetaData;
   double _volume = 100;
   bool _muted = false;
   bool _isPlayerReady = false;
@@ -82,21 +83,20 @@ class _MyHomePageState extends State<MyHomePage> {
         disableDragSeek: false,
         loop: false,
         isLive: false,
-        controlsVisibleAtStart: true,
       ),
     )..addListener(listener);
     _idController = TextEditingController();
     _seekToController = TextEditingController();
+    _videoMetaData = YoutubeMetaData();
     _playerState = PlayerState.unknown;
   }
 
   void listener() {
-    if (_isPlayerReady) {
-      if (mounted && !_controller.value.isFullScreen) {
-        setState(() {
-          _playerState = _controller.value.playerState;
-        });
-      }
+    if (_isPlayerReady && mounted && !_controller.value.isFullScreen) {
+      setState(() {
+        _playerState = _controller.value.playerState;
+        _videoMetaData = _controller.metadata;
+      });
     }
   }
 
@@ -153,7 +153,7 @@ class _MyHomePageState extends State<MyHomePage> {
               SizedBox(width: 8.0),
               Expanded(
                 child: Text(
-                  _controller.value?.title ?? '',
+                  _controller.metadata.title,
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 18.0,
@@ -187,9 +187,11 @@ class _MyHomePageState extends State<MyHomePage> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 _space,
-                _text('Title', _controller.title),
+                _text('Title', _videoMetaData.title),
                 _space,
-                _text('Channel', _controller.author),
+                _text('Channel', _videoMetaData.author),
+                _space,
+                _text('Video Id', _videoMetaData.videoId),
                 _space,
                 TextField(
                   enabled: _isPlayerReady,
