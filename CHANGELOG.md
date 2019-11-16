@@ -1,4 +1,4 @@
-## 6.0.3
+## 6.0.3+1
 * Moved `videoId`, `title`, `author` and `duration` to separate **YoutubeMetaData** class.
 * **(Fixed)** Issue with invalid video id being shown while switching to fullscreen. [Issue #118](https://github.com/sarbagyastha/youtube_player_flutter/issues/118)
 
