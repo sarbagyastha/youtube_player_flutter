@@ -22,6 +22,7 @@ Supported Platforms:
 * Supports captions
 * No need for API Key
 * Supports custom controls
+* Retrieves video meta data
 * Supports Live Stream videos
 * Supports changing playback rate
 * Support for both Android and iOS
@@ -126,7 +127,7 @@ print(videoId); // BBAyRBTfsOU
 * [YoutubePlayerController](https://pub.dev/documentation/youtube_player_flutter/latest/youtube_player_flutter/YoutubePlayerController-class.html)
 * [YoutubePlayerFlags](https://pub.dev/documentation/youtube_player_flutter/latest/youtube_player_flutter/YoutubePlayerFlags-class.html)
 * [YoutubePlayerValue](https://pub.dev/documentation/youtube_player_flutter/latest/youtube_player_flutter/YoutubePlayerValue-class.html)
-
+* [YoutubeMetaData](https://pub.dev/documentation/youtube_player_flutter/latest/youtube_player_flutter/YoutubeMetaData-class.html)
 
 ## Download
 Download apk from above(in badges) and try the plugin.
