@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
@@ -76,13 +77,14 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     _controller = YoutubePlayerController(
-      initialVideoId: 'QbjA8EiZJPk',
+      initialVideoId: 'QFlRzcZoNoA',
       flags: YoutubePlayerFlags(
         mute: false,
         autoPlay: true,
         disableDragSeek: false,
         loop: false,
         isLive: false,
+        forceHideAnnotation: true,
       ),
     )..addListener(listener);
     _idController = TextEditingController();
@@ -193,12 +195,32 @@ class _MyHomePageState extends State<MyHomePage> {
                 _space,
                 _text('Video Id', _videoMetaData.videoId),
                 _space,
+                Row(
+                  children: [
+                    _text(
+                      'Playback Quality',
+                      _controller.value.playbackQuality,
+                    ),
+                    Spacer(),
+                    _text(
+                      'Playback Rate',
+                      '${_controller.value.playbackRate}x  ',
+                    ),
+                  ],
+                ),
+                _space,
                 TextField(
                   enabled: _isPlayerReady,
                   controller: _idController,
                   decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    hintText: "Enter youtube \<video id\> or \<link\>",
+                    border: InputBorder.none,
+                    hintText: 'Enter youtube \<video id\> or \<link\>',
+                    fillColor: Colors.blueAccent.withAlpha(20),
+                    filled: true,
+                    hintStyle: TextStyle(
+                      fontWeight: FontWeight.w300,
+                      color: Colors.blueAccent,
+                    ),
                     suffixIcon: IconButton(
                       icon: Icon(Icons.clear),
                       onPressed: () => _idController.clear(),
@@ -250,29 +272,6 @@ class _MyHomePageState extends State<MyHomePage> {
                       color: Colors.blueAccent,
                     ),
                   ],
-                ),
-                _space,
-                TextField(
-                  enabled: _isPlayerReady,
-                  controller: _seekToController,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    hintText: "Seek to seconds",
-                    suffixIcon: Padding(
-                      padding: EdgeInsets.all(5.0),
-                      child: OutlineButton(
-                        child: Text("Seek"),
-                        onPressed: () {
-                          _controller.seekTo(
-                            Duration(
-                              seconds: int.parse(_seekToController.text),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
                 ),
                 _space,
                 Row(

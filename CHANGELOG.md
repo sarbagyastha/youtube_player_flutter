@@ -1,3 +1,7 @@
+## 6.0.3+2
+* **(New Feature)** Pinch in/out on the player to fit video.
+* **(Improvements)** Video plays in high definition, if supported.
+
 ## 6.0.3+1
 * Moved `videoId`, `title`, `author` and `duration` to separate **YoutubeMetaData** class.
 * **(Fixed)** Issue with invalid video id being shown while switching to fullscreen. [Issue #118](https://github.com/sarbagyastha/youtube_player_flutter/issues/118)

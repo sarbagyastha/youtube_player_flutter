@@ -80,6 +80,8 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
       ignoring: true,
       child: WebView(
         key: widget.key,
+        userAgent:
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36',
         initialUrl: player,
         javascriptMode: JavascriptMode.unrestricted,
         initialMediaPlaybackPolicy: AutoMediaPlaybackPolicy.always_allow,
@@ -277,6 +279,7 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
                     height: '100%',
                     width: '100%',
                     videoId: '${controller.initialVideoId}',
+                    host: 'https://www.youtube.com',
                     playerVars: {
                         'controls': 0,
                         'playsinline': 1,
@@ -383,6 +386,11 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
 
             function setPlaybackRate(rate) {
                 player.setPlaybackRate(rate);
+                return '';
+            }
+            
+            function setTopMargin(margin) {
+                document.getElementById("player").style.marginTop = margin;
                 return '';
             }
         </script>

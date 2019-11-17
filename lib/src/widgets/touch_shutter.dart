@@ -38,6 +38,7 @@ class TouchShutter extends StatefulWidget {
 class _TouchShutterState extends State<TouchShutter> {
   double dragStartPos = 0.0;
   double delta = 0.0;
+  double scaleAmount = 0.0;
   int seekToPosition = 0;
   String seekDuration = "";
   String seekPosition = "";
@@ -119,6 +120,19 @@ class _TouchShutterState extends State<TouchShutter> {
               setState(() {
                 _dragging = false;
               });
+            },
+            onScaleUpdate: (details) {
+              scaleAmount = details.scale;
+            },
+            onScaleEnd: (_) {
+              if (_controller.value.isFullScreen) {
+                if (scaleAmount > 1) {
+                  _controller.fitWidth(MediaQuery.of(context).size);
+                }
+                if (scaleAmount < 1) {
+                  _controller.fitHeight(MediaQuery.of(context).size);
+                }
+              }
             },
             child: AnimatedContainer(
               duration: Duration(milliseconds: 300),
