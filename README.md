@@ -28,6 +28,7 @@ Supported Platforms:
 * Support for both Android and iOS
 * Adapts to quality as per the bandwidth
 * Fast Forward and Rewind on horizontal drag
+* Fit Videos to wide screens with pinch gestures
 
 The plugin uses [webview_flutter](https://pub.dartlang.org/packages/webview_flutter) under-the-hood to play videos. 
 
