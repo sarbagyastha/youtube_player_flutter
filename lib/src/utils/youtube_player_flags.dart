@@ -14,6 +14,11 @@ class YoutubePlayerFlags {
   /// Default is false.
   final bool controlsVisibleAtStart;
 
+  /// I set to true, shows the controls at full screen only . To be used only if the "hideControls" flag is set to true
+  ///
+  /// Default if false
+  final bool controlsVisibleOnFullScreenOnly;
+
   /// Define whether to auto play the video after initialization or not.
   ///
   /// Default is true.
@@ -77,6 +82,8 @@ class YoutubePlayerFlags {
     this.enableCaption = true,
     this.captionLanguage = 'en',
     this.loop = false,
+    this.controlsVisibleOnFullScreenOnly = false
+
   });
 
   /// Copies new values assigned to the [YoutubePlayerFlags].

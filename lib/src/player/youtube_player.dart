@@ -360,11 +360,11 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                 loadingBuilder: (_, child, progress) => progress == null
                     ? child
                     : Container(
-                        color: Colors.black,
-                      ),
+                  color: Colors.black,
+                ),
               ),
             ),
-          if (!controller.flags.hideControls &&
+          if ((!controller.flags.hideControls || (controller.value.isFullScreen && controller.flags.controlsVisibleOnFullScreenOnly)) &&
               controller.value.position > Duration(milliseconds: 100) &&
               !controller.value.isControlsVisible &&
               widget.showVideoProgressIndicator &&
@@ -385,7 +385,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                 ),
               ),
             ),
-          if (!controller.flags.hideControls) ...[
+          if (!controller.flags.hideControls || (controller.value.isFullScreen && controller.flags.controlsVisibleOnFullScreenOnly)) ...[
             TouchShutter(
               disableDragSeek: controller.flags.disableDragSeek,
               timeOut: widget.controlsTimeOut,
@@ -395,30 +395,30 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
               left: 0,
               right: 0,
               child: AnimatedOpacity(
-                opacity: !controller.flags.hideControls &&
-                        controller.value.isControlsVisible
+                opacity: (!controller.flags.hideControls || (controller.value.isFullScreen && controller.flags.controlsVisibleOnFullScreenOnly)) &&
+                    controller.value.isControlsVisible
                     ? 1
                     : 0,
                 duration: Duration(milliseconds: 300),
                 child: controller.flags.isLive
                     ? LiveBottomBar(liveUIColor: widget.liveUIColor)
                     : Padding(
-                        padding: widget.bottomActions == null
-                            ? EdgeInsets.all(0.0)
-                            : widget.actionsPadding,
-                        child: Row(
-                          children: widget.bottomActions ??
-                              [
-                                SizedBox(width: 14.0),
-                                CurrentPosition(),
-                                SizedBox(width: 8.0),
-                                ProgressBar(isExpanded: true),
-                                RemainingDuration(),
-                                PlaybackSpeedButton(),
-                                FullScreenButton(),
-                              ],
-                        ),
-                      ),
+                  padding: widget.bottomActions == null
+                      ? EdgeInsets.all(0.0)
+                      : widget.actionsPadding,
+                  child: Row(
+                    children: widget.bottomActions ??
+                        [
+                          SizedBox(width: 14.0),
+                          CurrentPosition(),
+                          SizedBox(width: 8.0),
+                          ProgressBar(isExpanded: true),
+                          RemainingDuration(),
+//                                PlaybackSpeedButton(),
+                          FullScreenButton(),
+                        ],
+                  ),
+                ),
               ),
             ),
             Positioned(
@@ -426,8 +426,8 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
               left: 0,
               right: 0,
               child: AnimatedOpacity(
-                opacity: !controller.flags.hideControls &&
-                        controller.value.isControlsVisible
+                opacity: (!controller.flags.hideControls || (controller.value.isFullScreen && controller.flags.controlsVisibleOnFullScreenOnly)) &&
+                    controller.value.isControlsVisible
                     ? 1
                     : 0,
                 duration: Duration(milliseconds: 300),
@@ -440,7 +440,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
               ),
             ),
           ],
-          if (!controller.flags.hideControls)
+          if (!controller.flags.hideControls || (controller.value.isFullScreen && controller.flags.controlsVisibleOnFullScreenOnly))
             Center(
               child: PlayPauseButton(),
             ),
