@@ -211,7 +211,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
     oldWidget.controller?.removeListener(listener);
     widget.controller?.addListener(listener);
 
-    // not sure why this is needed.
+    // set value to new controller
     widget.controller.value = oldWidget.controller.value;
   }
 
