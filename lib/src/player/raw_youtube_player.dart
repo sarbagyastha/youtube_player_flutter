@@ -226,12 +226,6 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
             },
           );
         },
-        onPageStarted: (_) {
-          // print('page started.');
-        },
-        onPageFinished: (_) {
-          // print('page finished.');
-        },
       ),
     );
   }
