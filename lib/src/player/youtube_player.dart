@@ -5,6 +5,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:youtube_player_flutter/src/enums/player_state.dart';
 
 import '../enums/thumbnail_quality.dart';
 import '../utils/errors.dart';
@@ -209,6 +210,8 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
     super.didUpdateWidget(oldWidget);
     oldWidget.controller?.removeListener(listener);
     widget.controller?.addListener(listener);
+
+    // not sure why this is needed.
     widget.controller.value = oldWidget.controller.value;
   }
 
@@ -240,6 +243,9 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
       if (widget.controller.value.isFullScreen) {
         Navigator.pop(context);
       } else {
+        final bool wasPlaying =
+            widget.controller.value.playerState == PlayerState.playing;
+
         widget.controller.pause();
         final String videoId = widget.controller.metadata.videoId.isEmpty
             ? widget.controller.initialVideoId
@@ -262,8 +268,12 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
           topActions: widget.topActions,
         );
 
-        Future.delayed(
-            const Duration(seconds: 2), () => widget.controller.play());
+        if (wasPlaying) {
+          Future.delayed(
+            const Duration(seconds: 2),
+            () => widget.controller.play(),
+          );
+        }
       }
     }
     if (mounted) {
