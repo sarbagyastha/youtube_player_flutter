@@ -129,7 +129,7 @@ class _MyHomePageState extends State<MyHomePage> {
             fit: BoxFit.fitWidth,
           ),
         ),
-        title: Text(
+        title: const Text(
           'Youtube Player Flutter',
           style: TextStyle(color: Colors.white),
         ),
@@ -156,7 +156,7 @@ class _MyHomePageState extends State<MyHomePage> {
               Expanded(
                 child: Text(
                   _controller.metadata.title,
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 18.0,
                   ),
