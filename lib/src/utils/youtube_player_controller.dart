@@ -170,8 +170,8 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
 
   /// Finds [YoutubePlayerController] in the provided context.
   static YoutubePlayerController of(BuildContext context) {
-    InheritedYoutubePlayer _player =
-        context.inheritFromWidgetOfExactType(InheritedYoutubePlayer);
+    final _player =
+        context.dependOnInheritedWidgetOfExactType<InheritedYoutubePlayer>();
     return _player?.controller;
   }
 
