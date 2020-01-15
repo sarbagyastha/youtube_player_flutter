@@ -79,7 +79,7 @@ class _FullScreenYoutubePlayer extends StatefulWidget {
   /// {@macro youtube_player_flutter.thumbnailUrl}
   final String thumbnailUrl;
 
-  _FullScreenYoutubePlayer({
+  const _FullScreenYoutubePlayer({
     Key key,
     @required this.controller,
     this.controlsTimeOut = const Duration(seconds: 3),

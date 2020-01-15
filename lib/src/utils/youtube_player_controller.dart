@@ -175,7 +175,7 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
     return _player?.controller;
   }
 
-  _callMethod(String methodString) {
+  void _callMethod(String methodString) {
     if (value.isReady) {
       value.webViewController?.evaluateJavascript(methodString);
     } else {
@@ -237,7 +237,7 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
   /// Max = 100 , Min = 0
   void setVolume(int volume) => volume >= 0 && volume <= 100
       ? _callMethod('setVolume($volume)')
-      : throw Exception("Volume should be between 0 and 100");
+      : throw Exception('Volume should be between 0 and 100');
 
   /// Seek to any position. Video auto plays after seeking.
   /// The optional allowSeekAhead parameter determines whether the player will make a new request to the server
@@ -262,7 +262,7 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
 
   /// Fits the video to screen width.
   void fitWidth(Size screenSize) {
-    var adjustedHeight = 9 / 16 * screenSize.width;
+    final adjustedHeight = 9 / 16 * screenSize.width;
     setSize(Size(screenSize.width, adjustedHeight));
     _callMethod(
       'setTopMargin("-${((adjustedHeight - screenSize.height) / 2 * 100).abs()}px")',
@@ -298,7 +298,7 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
           isControlsVisible: false,
           playerState: PlayerState.unknown,
           hasPlayed: false,
-          position: Duration(),
+          position: const Duration(),
           buffered: 0.0,
           errorCode: 0,
           toggleFullScreen: false,

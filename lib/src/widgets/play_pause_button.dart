@@ -16,7 +16,7 @@ class PlayPauseButton extends StatefulWidget {
   final Widget bufferIndicator;
 
   /// Creates [PlayPauseButton] widget.
-  PlayPauseButton({
+  const PlayPauseButton({
     this.controller,
     this.bufferIndicator,
   });
@@ -36,7 +36,7 @@ class _PlayPauseButtonState extends State<PlayPauseButton>
     _animController = AnimationController(
       vsync: this,
       value: 0,
-      duration: Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 300),
     );
   }
 

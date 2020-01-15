@@ -25,7 +25,7 @@ class RawYoutubePlayer extends StatefulWidget {
   final void Function(YoutubeMetaData metaData) onEnded;
 
   /// Creates a [RawYoutubePlayer] widget.
-  RawYoutubePlayer({
+  const RawYoutubePlayer({
     this.key,
     this.onEnded,
   });
@@ -147,7 +147,7 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
                   );
                   break;
                 default:
-                  throw Exception("Invalid player state obtained.");
+                  throw Exception('Invalid player state obtained.');
               }
             },
           ),
@@ -193,7 +193,7 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
           JavascriptChannel(
             name: 'CurrentTime',
             onMessageReceived: (JavascriptMessage message) {
-              var position = (double.tryParse(message.message) ?? 0) * 1000;
+              final position = (double.tryParse(message.message) ?? 0) * 1000;
               controller.updateValue(
                 controller.value.copyWith(
                   position: Duration(milliseconds: position.floor()),
@@ -266,10 +266,10 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
         <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
     </head>
     <body>
-        <div id="player"></div>
+        <div id='player'></div>
         <script>
             var tag = document.createElement('script');
-            tag.src = "https://www.youtube.com/iframe_api";
+            tag.src = 'https://www.youtube.com/iframe_api';
             var firstScriptTag = document.getElementsByTagName('script')[0];
             firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
             var player;
@@ -294,7 +294,7 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
                         'autoplay': ${boolean(value: controller.flags.autoPlay)}
                     },
                     events: {
-                        onReady: (event) => Ready.postMessage("Ready"),
+                        onReady: (event) => Ready.postMessage('Ready'),
                         onStateChange: (event) => sendPlayerStateChange(event.data),
                         onPlaybackQualityChange: (event) => PlaybackQualityChange.postMessage(event.data),
                         onPlaybackRateChange: (event) => PlaybackRateChange.postMessage(event.data),
@@ -390,7 +390,7 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
             }
             
             function setTopMargin(margin) {
-                document.getElementById("player").style.marginTop = margin;
+                document.getElementById('player').style.marginTop = margin;
                 return '';
             }
         </script>

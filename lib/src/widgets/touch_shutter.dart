@@ -25,7 +25,7 @@ class TouchShutter extends StatefulWidget {
   final Duration timeOut;
 
   /// Creates [TouchShutter] widget.
-  TouchShutter({
+  const TouchShutter({
     this.controller,
     this.disableDragSeek = false,
     @required this.timeOut,
@@ -40,8 +40,8 @@ class _TouchShutterState extends State<TouchShutter> {
   double delta = 0.0;
   double scaleAmount = 0.0;
   int seekToPosition = 0;
-  String seekDuration = "";
-  String seekPosition = "";
+  String seekDuration = '';
+  String seekPosition = '';
   bool _dragging = false;
   Timer _timer;
 
@@ -108,10 +108,12 @@ class _TouchShutterState extends State<TouchShutter> {
                   (_controller.value.position.inMilliseconds + delta * 1000)
                       .round();
               setState(() {
-                seekDuration = (delta < 0 ? "- " : "+ ") +
+                seekDuration = (delta < 0 ? '- ' : '+ ') +
                     durationFormatter(
                         (delta < 0 ? -1 : 1) * (delta * 1000).round());
-                if (seekToPosition < 0) seekToPosition = 0;
+                if (seekToPosition < 0) {
+                  seekToPosition = 0;
+                }
                 seekPosition = durationFormatter(seekToPosition);
               });
             },
@@ -135,20 +137,21 @@ class _TouchShutterState extends State<TouchShutter> {
               }
             },
             child: AnimatedContainer(
-              duration: Duration(milliseconds: 300),
+              duration: const Duration(milliseconds: 300),
               color: _controller.value.isControlsVisible
                   ? Colors.black.withAlpha(150)
                   : Colors.transparent,
               child: _dragging
                   ? Center(
                       child: Container(
-                        padding: EdgeInsets.all(4.0),
+                        padding: const EdgeInsets.all(4.0),
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(5.0)),
                           color: Colors.black.withAlpha(150),
                         ),
                         child: Text(
-                          "$seekDuration ($seekPosition)",
+                          '$seekDuration ($seekPosition)',
                           style: TextStyle(
                             fontSize: 26.0,
                             fontWeight: FontWeight.w400,
