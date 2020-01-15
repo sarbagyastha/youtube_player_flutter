@@ -241,17 +241,20 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
         Navigator.pop(context);
       } else {
         widget.controller.pause();
+        final String videoId = widget.controller.metadata.videoId.isEmpty
+            ? widget.controller.initialVideoId
+            : widget.controller.metadata.videoId;
 
         await showFullScreenYoutubePlayer(
           context: context,
-          videoId: widget.controller.metadata.videoId,
+          videoId: videoId,
           actionsPadding: widget.actionsPadding,
           bottomActions: widget.bottomActions,
           bufferIndicator: widget.bufferIndicator,
           controlsTimeOut: widget.controlsTimeOut,
           liveUIColor: widget.liveUIColor,
           onReady: (ctrl) {
-            ctrl.load(widget.controller.metadata.videoId,
+            ctrl.load(videoId,
                 startAt: widget.controller.value.position.inSeconds);
           },
           progressColors: widget.progressColors,

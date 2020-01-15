@@ -123,6 +123,7 @@ class _FullScreenYoutubePlayerState extends State<_FullScreenYoutubePlayer> {
   @override
   void initState() {
     super.initState();
+
     controller = YoutubePlayerController(
       initialVideoId: widget.videoId,
       flags: const YoutubePlayerFlags(
