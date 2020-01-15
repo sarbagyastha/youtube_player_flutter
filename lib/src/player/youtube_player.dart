@@ -5,7 +5,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 
 import '../enums/thumbnail_quality.dart';
 import '../utils/errors.dart';
@@ -194,8 +193,6 @@ class YoutubePlayer extends StatefulWidget {
 }
 
 class _YoutubePlayerState extends State<YoutubePlayer> {
-  WebViewController _cachedWebController;
-
   double _aspectRatio;
   bool _initialLoad = true;
 
@@ -244,34 +241,24 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
         Navigator.pop(context);
       } else {
         widget.controller.pause();
-        var _cachedPosition = widget.controller.value.position;
-        final _videoId = widget.controller.metadata.videoId;
-        _cachedWebController = widget.controller.value.webViewController;
-        widget.controller.reset();
 
         await showFullScreenYoutubePlayer(
           context: context,
-          controller: widget.controller,
+          videoId: widget.controller.metadata.videoId,
           actionsPadding: widget.actionsPadding,
           bottomActions: widget.bottomActions,
           bufferIndicator: widget.bufferIndicator,
           controlsTimeOut: widget.controlsTimeOut,
           liveUIColor: widget.liveUIColor,
-          onReady: () {
-            widget.controller
-                .load(_videoId, startAt: _cachedPosition.inSeconds);
+          onReady: (ctrl) {
+            ctrl.load(widget.controller.metadata.videoId,
+                startAt: widget.controller.value.position.inSeconds);
           },
           progressColors: widget.progressColors,
           thumbnailUrl: widget.thumbnailUrl,
           topActions: widget.topActions,
         );
-        _cachedPosition = widget.controller.value.position;
-        widget.controller
-          ..updateValue(
-            widget.controller.value
-                .copyWith(webViewController: _cachedWebController),
-          )
-          ..seekTo(_cachedPosition);
+
         Future.delayed(
             const Duration(seconds: 2), () => widget.controller.play());
       }
