@@ -243,8 +243,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
       if (widget.controller.value.isFullScreen) {
         Navigator.pop(context);
       } else {
-        final bool wasPlaying =
-            widget.controller.value.playerState == PlayerState.playing;
+        final bool wasPlaying = widget.controller.value.isPlaying;
 
         widget.controller.pause();
         final String videoId = widget.controller.metadata.videoId.isEmpty
