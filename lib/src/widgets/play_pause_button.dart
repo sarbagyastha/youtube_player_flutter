@@ -74,7 +74,7 @@ class _PlayPauseButtonState extends State<PlayPauseButton>
           Container(
             width: 70.0,
             height: 70.0,
-            child: CircularProgressIndicator(
+            child: const CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation(Colors.white),
             ),
           );

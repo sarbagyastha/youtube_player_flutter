@@ -19,14 +19,14 @@ import '../utils/youtube_player_controller.dart';
 /// Use [YoutubePlayer] instead.
 class RawYoutubePlayer extends StatefulWidget {
   /// Sets [Key] as an identification to underlying web view associated to the player.
-  final Key key;
+  final Key webViewKey;
 
   /// {@macro youtube_player_flutter.onEnded}
   final void Function(YoutubeMetaData metaData) onEnded;
 
   /// Creates a [RawYoutubePlayer] widget.
   const RawYoutubePlayer({
-    this.key,
+    this.webViewKey,
     this.onEnded,
   });
 
@@ -79,7 +79,7 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
     return IgnorePointer(
       ignoring: true,
       child: WebView(
-        key: widget.key,
+        key: widget.webViewKey,
         userAgent:
             'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36',
         initialUrl: player,

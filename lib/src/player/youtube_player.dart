@@ -44,7 +44,7 @@ import 'raw_youtube_player.dart';
 ///
 class YoutubePlayer extends StatefulWidget {
   /// Sets [Key] as an identification to underlying web view associated to the player.
-  final Key key;
+  final Key webViewKey;
 
   /// A [YoutubePlayerController] to control the player.
   final YoutubePlayerController controller;
@@ -136,7 +136,7 @@ class YoutubePlayer extends StatefulWidget {
 
   /// Creates [YoutubePlayer] widget.
   const YoutubePlayer({
-    this.key,
+    this.webViewKey,
     @required this.controller,
     this.width,
     this.aspectRatio = 16 / 9,
@@ -350,7 +350,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
         overflow: Overflow.visible,
         children: [
           RawYoutubePlayer(
-            key: widget.key,
+            webViewKey: widget.webViewKey,
             onEnded: (YoutubeMetaData metaData) {
               if (controller.flags.loop) {
                 controller.load(controller.metadata.videoId);

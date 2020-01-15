@@ -324,6 +324,6 @@ class InheritedYoutubePlayer extends InheritedWidget {
   final YoutubePlayerController controller;
 
   @override
-  bool updateShouldNotify(InheritedYoutubePlayer oldPlayer) =>
-      oldPlayer.controller.hashCode != controller.hashCode;
+  bool updateShouldNotify(InheritedYoutubePlayer oldWidget) =>
+      oldWidget.controller.hashCode != controller.hashCode;
 }
