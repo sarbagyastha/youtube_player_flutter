@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -36,8 +35,6 @@ class RawYoutubePlayer extends StatefulWidget {
 
 class _RawYoutubePlayerState extends State<RawYoutubePlayer>
     with WidgetsBindingObserver {
-  final Completer<WebViewController> _webController =
-      Completer<WebViewController>();
   YoutubePlayerController controller;
   PlayerState _cachedPlayerState;
 
@@ -216,14 +213,9 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
             },
           ),
         },
-        onWebViewCreated: (webController) {
-          _webController.complete(webController);
-          _webController.future.then(
-            (webViewController) {
-              controller.updateValue(
-                controller.value.copyWith(webViewController: webViewController),
-              );
-            },
+        onWebViewCreated: (webViewController) {
+          controller.updateValue(
+            controller.value.copyWith(webViewController: webViewController),
           );
         },
       ),
