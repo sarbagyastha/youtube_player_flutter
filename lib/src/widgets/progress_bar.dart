@@ -43,7 +43,7 @@ class ProgressBar extends StatefulWidget {
   final bool isExpanded;
 
   /// Creates [ProgressBar] widget.
-  ProgressBar({
+  const ProgressBar({
     this.controller,
     this.colors,
     this.isExpanded = false,
@@ -89,7 +89,7 @@ class _ProgressBarState extends State<ProgressBar> {
   }
 
   void positionListener() {
-    var _totalDuration = _controller.metadata.duration?.inMilliseconds;
+    final _totalDuration = _controller.metadata.duration?.inMilliseconds;
     if (mounted && !_totalDuration.isNaN && _totalDuration != 0) {
       setState(() {
         _playedValue =
@@ -154,7 +154,7 @@ class _ProgressBarState extends State<ProgressBar> {
       onHorizontalDragCancel: _dragEndActions,
       child: Container(
         color: Colors.transparent,
-        constraints: BoxConstraints.expand(height: 7.0 * 2),
+        constraints: const BoxConstraints.expand(height: 7.0 * 2),
         child: CustomPaint(
           painter: _ProgressBarPainter(
             progressWidth: 2.0,
