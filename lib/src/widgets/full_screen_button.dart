@@ -15,7 +15,7 @@ class FullScreenButton extends StatefulWidget {
   final Color color;
 
   /// Creates [FullScreenButton] widget.
-  const FullScreenButton({
+  FullScreenButton({
     this.controller,
     this.color = Colors.white,
   });
@@ -50,9 +50,7 @@ class _FullScreenButtonState extends State<FullScreenButton> {
   }
 
   void listener() {
-    if (mounted) {
-      setState(() {});
-    }
+    if (mounted) setState(() {});
   }
 
   @override

@@ -170,12 +170,12 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
 
   /// Finds [YoutubePlayerController] in the provided context.
   static YoutubePlayerController of(BuildContext context) {
-    final _player =
-        context.dependOnInheritedWidgetOfExactType<InheritedYoutubePlayer>();
+    InheritedYoutubePlayer _player =
+        context.inheritFromWidgetOfExactType(InheritedYoutubePlayer);
     return _player?.controller;
   }
 
-  void _callMethod(String methodString) {
+  _callMethod(String methodString) {
     if (value.isReady) {
       value.webViewController?.evaluateJavascript(methodString);
     } else {
@@ -237,7 +237,7 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
   /// Max = 100 , Min = 0
   void setVolume(int volume) => volume >= 0 && volume <= 100
       ? _callMethod('setVolume($volume)')
-      : throw Exception('Volume should be between 0 and 100');
+      : throw Exception("Volume should be between 0 and 100");
 
   /// Seek to any position. Video auto plays after seeking.
   /// The optional allowSeekAhead parameter determines whether the player will make a new request to the server
@@ -262,7 +262,7 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
 
   /// Fits the video to screen width.
   void fitWidth(Size screenSize) {
-    final adjustedHeight = 9 / 16 * screenSize.width;
+    var adjustedHeight = 9 / 16 * screenSize.width;
     setSize(Size(screenSize.width, adjustedHeight));
     _callMethod(
       'setTopMargin("-${((adjustedHeight - screenSize.height) / 2 * 100).abs()}px")',
@@ -298,7 +298,7 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
           isControlsVisible: false,
           playerState: PlayerState.unknown,
           hasPlayed: false,
-          position: const Duration(),
+          position: Duration(),
           buffered: 0.0,
           errorCode: 0,
           toggleFullScreen: false,
@@ -324,6 +324,6 @@ class InheritedYoutubePlayer extends InheritedWidget {
   final YoutubePlayerController controller;
 
   @override
-  bool updateShouldNotify(InheritedYoutubePlayer oldWidget) =>
-      oldWidget.controller.hashCode != controller.hashCode;
+  bool updateShouldNotify(InheritedYoutubePlayer oldPlayer) =>
+      oldPlayer.controller.hashCode != controller.hashCode;
 }

@@ -78,7 +78,7 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     _controller = YoutubePlayerController(
       initialVideoId: 'QFlRzcZoNoA',
-      flags: const YoutubePlayerFlags(
+      flags: YoutubePlayerFlags(
         mute: false,
         autoPlay: true,
         disableDragSeek: false,
@@ -89,7 +89,7 @@ class _MyHomePageState extends State<MyHomePage> {
     )..addListener(listener);
     _idController = TextEditingController();
     _seekToController = TextEditingController();
-    _videoMetaData = const YoutubeMetaData();
+    _videoMetaData = YoutubeMetaData();
     _playerState = PlayerState.unknown;
   }
 
@@ -129,7 +129,7 @@ class _MyHomePageState extends State<MyHomePage> {
             fit: BoxFit.fitWidth,
           ),
         ),
-        title: const Text(
+        title: Text(
           'Youtube Player Flutter',
           style: TextStyle(color: Colors.white),
         ),
@@ -152,11 +152,11 @@ class _MyHomePageState extends State<MyHomePage> {
             showVideoProgressIndicator: true,
             progressIndicatorColor: Colors.blueAccent,
             topActions: <Widget>[
-              const SizedBox(width: 8.0),
+              SizedBox(width: 8.0),
               Expanded(
                 child: Text(
                   _controller.metadata.title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white,
                     fontSize: 18.0,
                   ),
@@ -184,7 +184,7 @@ class _MyHomePageState extends State<MyHomePage> {
             },
           ),
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: EdgeInsets.all(8.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -201,7 +201,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       'Playback Quality',
                       _controller.value.playbackQuality,
                     ),
-                    const Spacer(),
+                    Spacer(),
                     _text(
                       'Playback Rate',
                       '${_controller.value.playbackRate}x  ',
@@ -231,7 +231,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 Row(
                   children: [
                     _loadCueButton('LOAD'),
-                    const SizedBox(width: 10.0),
+                    SizedBox(width: 10.0),
                     _loadCueButton('CUE'),
                   ],
                 ),
@@ -277,7 +277,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 Row(
                   children: <Widget>[
                     Text(
-                      'Volume',
+                      "Volume",
                       style: TextStyle(fontWeight: FontWeight.w300),
                     ),
                     Expanded(
@@ -287,7 +287,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         min: 0.0,
                         max: 100.0,
                         divisions: 10,
-                        label: '${_volume.round()}',
+                        label: '${(_volume).round()}',
                         onChanged: _isPlayerReady
                             ? (value) {
                                 setState(() {
@@ -302,12 +302,12 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
                 _space,
                 AnimatedContainer(
-                  duration: const Duration(milliseconds: 800),
+                  duration: Duration(milliseconds: 800),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(20.0),
                     color: _getStateColor(_playerState),
                   ),
-                  padding: const EdgeInsets.all(8.0),
+                  padding: EdgeInsets.all(8.0),
                   child: Text(
                     _playerState.toString(),
                     style: TextStyle(
@@ -367,7 +367,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  Widget get _space => const SizedBox(height: 10);
+  Widget get _space => SizedBox(height: 10);
 
   Widget _loadCueButton(String action) {
     return Expanded(
@@ -376,15 +376,11 @@ class _MyHomePageState extends State<MyHomePage> {
         onPressed: _isPlayerReady
             ? () {
                 if (_idController.text.isNotEmpty) {
-                  final id = YoutubePlayer.convertUrlToId(
+                  var id = YoutubePlayer.convertUrlToId(
                     _idController.text,
                   );
-                  if (action == 'LOAD') {
-                    _controller.load(id);
-                  }
-                  if (action == 'CUE') {
-                    _controller.cue(id);
-                  }
+                  if (action == 'LOAD') _controller.load(id);
+                  if (action == 'CUE') _controller.cue(id);
                   FocusScope.of(context).requestFocus(FocusNode());
                 } else {
                   _showSnackBar('Source can\'t be empty!');

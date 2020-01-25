@@ -47,7 +47,7 @@ class _PlaybackSpeedButtonState extends State<PlaybackSpeedButton> {
     return PopupMenuButton<double>(
       onSelected: _controller.setPlaybackRate,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(8.0, 8.0, 0.0, 8.0),
+        padding: EdgeInsets.fromLTRB(8.0, 8.0, 0.0, 8.0),
         child: widget.icon ??
             Image.asset(
               'assets/speedometer.webp',
