@@ -50,7 +50,7 @@ YoutubePlayerController createController([YoutubePlayerFlags flags]) {
   return YoutubePlayerController(
     initialVideoId: 'p2lYr3vM_1w',
     flags: flags ??
-        const YoutubePlayerFlags(
+        YoutubePlayerFlags(
           hideThumbnail: true,
         ),
   );
@@ -61,7 +61,7 @@ void main() {
 
   testWidgets('Create Youtube Player', (WidgetTester tester) async {
     provideMockedNetworkImages(() async {
-      final _controller = createController();
+      var _controller = createController();
 
       await tester.pumpWidget(buildPlayer(controller: _controller));
     });
@@ -72,7 +72,7 @@ class TestApp extends StatelessWidget {
   final Widget child;
   final TextDirection textDirection;
 
-  const TestApp({
+  TestApp({
     this.textDirection = TextDirection.ltr,
     this.child,
   });

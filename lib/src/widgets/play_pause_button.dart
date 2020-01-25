@@ -16,7 +16,7 @@ class PlayPauseButton extends StatefulWidget {
   final Widget bufferIndicator;
 
   /// Creates [PlayPauseButton] widget.
-  const PlayPauseButton({
+  PlayPauseButton({
     this.controller,
     this.bufferIndicator,
   });
@@ -36,7 +36,7 @@ class _PlayPauseButtonState extends State<PlayPauseButton>
     _animController = AnimationController(
       vsync: this,
       value: 0,
-      duration: const Duration(milliseconds: 300),
+      duration: Duration(milliseconds: 300),
     );
   }
 
@@ -63,14 +63,9 @@ class _PlayPauseButtonState extends State<PlayPauseButton>
     super.dispose();
   }
 
-  void _playPauseListener() {
-    _controller.value.isPlaying
-        ? _animController.forward()
-        : _animController.reverse();
-
-    // have to rebuild on controller change to hide/show the play/pause button
-    setState(() {});
-  }
+  void _playPauseListener() => _controller.value.isPlaying
+      ? _animController.forward()
+      : _animController.reverse();
 
   @override
   Widget build(BuildContext context) {
@@ -79,7 +74,7 @@ class _PlayPauseButtonState extends State<PlayPauseButton>
           Container(
             width: 70.0,
             height: 70.0,
-            child: const CircularProgressIndicator(
+            child: CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation(Colors.white),
             ),
           );
