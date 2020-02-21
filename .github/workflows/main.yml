@@ -1,0 +1,23 @@
+name:  Build and deploy
+on: [push,pull_request]
+jobs:
+  build_deploy:
+    if: github.event_name != 'pull_request'
+    runs-on: macos-latest
+    name: Build  apk
+    steps:
+      - uses: actions/checkout@v1
+      - uses: subosito/flutter-action@v1
+        with:
+          flutter-version: '1.12.14'
+          channel: 'dev'
+      - uses: actions/setup-java@v1
+        with:
+          java-version: '12.x'
+      - run: flutter pub get
+      - run: flutter build apk --debug --split-per-abi
+      - name: Create a Release APK
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "build/app/outputs/apk/debug/*.apk,build/macos/Build/Products/Release/*.app"
+          token: ${{ secrets.GITHUB_TOKEN }}
