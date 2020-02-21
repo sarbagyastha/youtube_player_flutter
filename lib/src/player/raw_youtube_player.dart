@@ -1,14 +1,14 @@
-// Copyright 2019 Sarbagya Dhaubanjar. All rights reserved.
+// Copyright 2020 Sarbagya Dhaubanjar. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_media/platform_interface.dart';
+import 'package:webview_media/webview_flutter.dart';
 
 import '../enums/player_state.dart';
 import '../utils/youtube_meta_data.dart';
@@ -80,9 +80,13 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
       ignoring: true,
       child: WebView(
         key: widget.key,
-        userAgent:
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36',
-        initialUrl: player,
+        userAgent: userAgent,
+        initialData: WebData(
+          data: player,
+          baseUrl: 'https://www.youtube.com',
+          encoding: 'utf-8',
+          mimeType: 'text/html',
+        ),
         javascriptMode: JavascriptMode.unrestricted,
         initialMediaPlaybackPolicy: AutoMediaPlaybackPolicy.always_allow,
         javascriptChannels: {
@@ -397,8 +401,12 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
     </body>
     </html>
     ''';
-    return 'data:text/html;base64,${base64Encode(const Utf8Encoder().convert(_player))}';
+    return _player;
   }
 
   String boolean({@required bool value}) => value ? "'1'" : "'0'";
+
+  String get userAgent => controller.flags.forceHD
+      ? 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36'
+      : null;
 }

@@ -77,7 +77,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     _controller = YoutubePlayerController(
-      initialVideoId: 'QFlRzcZoNoA',
+      initialVideoId: 'lgkZC_Ss6YE',
       flags: YoutubePlayerFlags(
         mute: false,
         autoPlay: true,
@@ -85,6 +85,8 @@ class _MyHomePageState extends State<MyHomePage> {
         loop: false,
         isLive: false,
         forceHideAnnotation: true,
+        forceHD: false,
+        enableCaption: true,
       ),
     )..addListener(listener);
     _idController = TextEditingController();

@@ -1,3 +1,12 @@
+## 6.1.0
+* **(Fixed)** Some videos not playing [Issue #119](https://github.com/sarbagyastha/youtube_player_flutter/issues/119)
+* **(Improvements)** Faster initial video loading time
+* Added `forceHD` flag
+* Shows buffer indicator until video is playable
+
+**BREAKING CHANGE**
+If you're using `webview_flutter` alongside, then remove it from dependencies. The package exports webview on its own.
+
 ## 6.0.3+2
 * **(New Feature)** Pinch in/out on the player to fit video.
 * **(Improvements)** Video plays in high definition, if supported.
