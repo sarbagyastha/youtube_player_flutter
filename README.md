@@ -142,7 +142,7 @@ If you only want to target Android and need support for Android Kitkat or less, 
 ## License
 
 ```
-Copyright 2019 Sarbagya Dhaubanjar. All rights reserved.
+Copyright 2020 Sarbagya Dhaubanjar. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
