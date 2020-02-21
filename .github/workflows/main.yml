@@ -14,9 +14,9 @@ jobs:
         with:
           java-version: '12.x'
       - run: flutter pub get
-      - run: flutter build apk --debug --split-per-abi
+      - run: cd example && flutter build apk --debug --split-per-abi
       - name: Create a Release APK
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "build/app/outputs/apk/debug/*.apk,build/macos/Build/Products/Release/*.app"
+          artifacts: "example/build/app/outputs/apk/debug/*.apk"
           token: ${{ secrets.GITHUB_TOKEN }}
