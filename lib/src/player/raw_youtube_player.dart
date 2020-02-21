@@ -231,6 +231,8 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
             controller.updateValue(
               controller.value.copyWith(isReady: true),
             );
+          } else {
+            controller.reload();
           }
         },
       ),
@@ -298,11 +300,11 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
                         'autoplay': ${boolean(value: controller.flags.autoPlay)}
                     },
                     events: {
-                        onReady: (event) => Ready.postMessage("Ready"),
-                        onStateChange: (event) => sendPlayerStateChange(event.data),
-                        onPlaybackQualityChange: (event) => PlaybackQualityChange.postMessage(event.data),
-                        onPlaybackRateChange: (event) => PlaybackRateChange.postMessage(event.data),
-                        onError: (error) => Errors.postMessage(error.data)
+                        onReady: function(event) { Ready.postMessage("Ready"); },
+                        onStateChange: function(event) { sendPlayerStateChange(event.data); },
+                        onPlaybackQualityChange: function(event) { PlaybackQualityChange.postMessage(event.data); },
+                        onPlaybackRateChange: function(event) { PlaybackRateChange.postMessage(event.data); },
+                        onError: function(error) { Errors.postMessage(error.data); }
                     },
                 });
             }

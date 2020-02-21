@@ -1,4 +1,4 @@
-## 6.1.0+1
+## 6.1.0+2
 * **(Fixed)** Some videos not playing [Issue #119](https://github.com/sarbagyastha/youtube_player_flutter/issues/119)
 * **(Improvements)** Faster initial video loading time
 * Added `forceHD` flag

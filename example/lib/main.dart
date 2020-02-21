@@ -62,6 +62,7 @@ class _MyHomePageState extends State<MyHomePage> {
   bool _isPlayerReady = false;
 
   final List<String> _ids = [
+    'lgkZC_Ss6YE',
     'gQDByCdjUXw',
     'iLnmTe5Q2Qw',
     '_WoCV4c6XOE',
@@ -71,13 +72,12 @@ class _MyHomePageState extends State<MyHomePage> {
     '7QUtEmBT_-w',
     '34_PXCzGw1M',
   ];
-  int count = 0;
 
   @override
   void initState() {
     super.initState();
     _controller = YoutubePlayerController(
-      initialVideoId: 'lgkZC_Ss6YE',
+      initialVideoId: _ids.first,
       flags: YoutubePlayerFlags(
         mute: false,
         autoPlay: true,
@@ -180,8 +180,9 @@ class _MyHomePageState extends State<MyHomePage> {
             onReady: () {
               _isPlayerReady = true;
             },
-            onEnded: (id) {
-              _controller.load(_ids[count++]);
+            onEnded: (data) {
+              _controller
+                  .load(_ids[(_ids.indexOf(data.videoId) + 1) % _ids.length]);
               _showSnackBar('Next Video Started!');
             },
           ),
@@ -240,7 +241,15 @@ class _MyHomePageState extends State<MyHomePage> {
                 _space,
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: <Widget>[
+                  children: [
+                    IconButton(
+                      icon: Icon(Icons.skip_previous),
+                      onPressed: _isPlayerReady
+                          ? () => _controller.load(_ids[
+                              (_ids.indexOf(_controller.metadata.videoId) - 1) %
+                                  _ids.length])
+                          : null,
+                    ),
                     IconButton(
                       icon: Icon(
                         _controller.value.isPlaying
@@ -272,6 +281,14 @@ class _MyHomePageState extends State<MyHomePage> {
                     FullScreenButton(
                       controller: _controller,
                       color: Colors.blueAccent,
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.skip_next),
+                      onPressed: _isPlayerReady
+                          ? () => _controller.load(_ids[
+                              (_ids.indexOf(_controller.metadata.videoId) + 1) %
+                                  _ids.length])
+                          : null,
                     ),
                   ],
                 ),
