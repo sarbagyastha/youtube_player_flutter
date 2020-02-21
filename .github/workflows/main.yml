@@ -1,5 +1,8 @@
 name:  Build and deploy
-on: [push,pull_request]
+on:
+  push:
+    tags: 
+      - '*'
 jobs:
   build_deploy:
     if: github.event_name != 'pull_request'
