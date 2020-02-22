@@ -68,8 +68,10 @@ matrix:
         components:
           - tools
           - platform-tools
+          - build-tools-29.0.2
           - build-tools-28.0.3
           - build-tools-27.0.3
+          - android-29
           - android-28
           - android-27
           - sys-img-armeabi-v7a-google_apis-28
@@ -89,9 +91,9 @@ matrix:
             #- fonts-droid
 
       before_script:
-        - wget https://services.gradle.org/distributions/gradle-5.6.1-bin.zip
-        - unzip -qq gradle-5.6.1-bin.zip
-        - export GRADLE_HOME=$PWD/gradle-5.6.1
+        - wget https://services.gradle.org/distributions/gradle-5.6.2-bin.zip
+        - unzip -qq gradle-5.6.2-bin.zip
+        - export GRADLE_HOME=$PWD/gradle-5.6.2
         - export PATH=$GRADLE_HOME/bin:$PATH
         - git clone https://github.com/flutter/flutter.git
         - export PATH=`pwd`/flutter/bin:`pwd`/flutter/bin/cache/dart-sdk/bin:$PATH
