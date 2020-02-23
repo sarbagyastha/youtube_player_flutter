@@ -70,7 +70,8 @@ class _PlayPauseButtonState extends State<PlayPauseButton>
   @override
   Widget build(BuildContext context) {
     final _playerState = _controller.value.playerState;
-    if (_playerState == PlayerState.playing ||
+    if ((!_controller.flags.autoPlay && _controller.value.isReady) ||
+        _playerState == PlayerState.playing ||
         _playerState == PlayerState.paused) {
       return Visibility(
         visible: _playerState == PlayerState.cued ||
