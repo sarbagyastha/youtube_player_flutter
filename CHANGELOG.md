@@ -1,4 +1,4 @@
-## 6.1.0+3
+## 6.1.0+4
 * **(Fixed)** Infinite buffer indicator when `autoplay` set to false
 
 ## 6.1.0+2
