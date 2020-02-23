@@ -21,7 +21,7 @@ matrix:
             #- fonts-droid
 
       before_script:
-        - git clone https://github.com/flutter/flutter.git -b beta --depth 1
+        - git clone https://github.com/flutter/flutter.git -b stable --depth 1
         - export PATH=`pwd`/flutter/bin:`pwd`/flutter/bin/cache/dart-sdk/bin:$PATH
 
       script:
@@ -30,6 +30,31 @@ matrix:
 
       #after_success:
         #- bash <(curl -s https://codecov.io/bash)
+        
+    # Building an IPA.
+    - env: JOB=IPA
+      os: osx
+      language: generic
+      osx_image: xcode11
+
+      before_script:
+        - pip3 install six
+        - brew update
+        - brew install --HEAD usbmuxd
+        - brew unlink usbmuxd
+        - brew link usbmuxd
+        - brew unlink python@2
+        - brew install --HEAD libimobiledevice
+        - brew install ideviceinstaller
+        - brew install ios-deploy
+        - git clone https://github.com/flutter/flutter.git
+        - export PATH=`pwd`/flutter/bin:`pwd`/flutter/bin/cache/dart-sdk/bin:$PATH
+        - cd example
+        - flutter doctor -v
+
+      script:
+        - flutter -v build ios --no-codesign
+
 
     # Building an APK.
     - env: JOB=APK
@@ -43,8 +68,10 @@ matrix:
         components:
           - tools
           - platform-tools
+          - build-tools-29.0.2
           - build-tools-28.0.3
           - build-tools-27.0.3
+          - android-29
           - android-28
           - android-27
           - sys-img-armeabi-v7a-google_apis-28
@@ -64,9 +91,9 @@ matrix:
             #- fonts-droid
 
       before_script:
-        - wget http://services.gradle.org/distributions/gradle-5.3.1-bin.zip
-        - unzip -qq gradle-5.3.1-bin.zip
-        - export GRADLE_HOME=$PWD/gradle-5.3.1
+        - wget https://services.gradle.org/distributions/gradle-5.6.2-bin.zip
+        - unzip -qq gradle-5.6.2-bin.zip
+        - export GRADLE_HOME=$PWD/gradle-5.6.2
         - export PATH=$GRADLE_HOME/bin:$PATH
         - git clone https://github.com/flutter/flutter.git
         - export PATH=`pwd`/flutter/bin:`pwd`/flutter/bin/cache/dart-sdk/bin:$PATH
@@ -75,30 +102,6 @@ matrix:
 
       script:
         - flutter -v build apk
-
-
-    # Building an IPA.
-    - env: JOB=IPA
-      os: osx
-      language: generic
-      osx_image: xcode10.2
-
-      before_script:
-        - pip3 install six
-        - brew update
-        - brew install --HEAD usbmuxd
-        - brew unlink usbmuxd
-        - brew link usbmuxd
-        - brew install --HEAD libimobiledevice
-        - brew install ideviceinstaller
-        - brew install ios-deploy
-        - git clone https://github.com/flutter/flutter.git
-        - export PATH=`pwd`/flutter/bin:`pwd`/flutter/bin/cache/dart-sdk/bin:$PATH
-        - cd example
-        - flutter doctor -v
-
-      script:
-        - flutter -v build ios --no-codesign
 
 cache:
   directories:
