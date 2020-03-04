@@ -15,6 +15,7 @@ import '../widgets/widgets.dart';
 Future<void> showFullScreenYoutubePlayer({
   @required BuildContext context,
   @required YoutubePlayerController controller,
+  GlobalKey<NavigatorState> navigatorKey,
   EdgeInsetsGeometry actionsPadding,
   List<Widget> topActions,
   List<Widget> bottomActions,
@@ -25,25 +26,27 @@ Future<void> showFullScreenYoutubePlayer({
   void Function(YoutubeMetaData) onEnded,
   ProgressBarColors progressColors,
   String thumbnailUrl,
-}) async =>
-    await Navigator.push(
-      context,
-      _YoutubePageRoute(
-        builder: (context) => _FullScreenYoutubePlayer(
-          controller: controller,
-          actionsPadding: actionsPadding,
-          topActions: topActions,
-          bottomActions: bottomActions,
-          bufferIndicator: bufferIndicator,
-          controlsTimeOut: controlsTimeOut,
-          liveUIColor: liveUIColor,
-          onReady: onReady,
-          onEnded: onEnded,
-          progressColors: progressColors,
-          thumbnailUrl: thumbnailUrl,
-        ),
-      ),
-    );
+}) async {
+  final route = _YoutubePageRoute(
+    builder: (context) => _FullScreenYoutubePlayer(
+      controller: controller,
+      actionsPadding: actionsPadding,
+      topActions: topActions,
+      bottomActions: bottomActions,
+      bufferIndicator: bufferIndicator,
+      controlsTimeOut: controlsTimeOut,
+      liveUIColor: liveUIColor,
+      onReady: onReady,
+      onEnded: onEnded,
+      progressColors: progressColors,
+      thumbnailUrl: thumbnailUrl,
+    ),
+  );
+
+  return await navigatorKey != null
+      ? navigatorKey.currentState.push(route)
+      : Navigator.push(context, route);
+}
 
 class _FullScreenYoutubePlayer extends StatefulWidget {
   /// {@macro youtube_player_flutter.controller}

@@ -46,6 +46,9 @@ class YoutubePlayer extends StatefulWidget {
   /// Sets [Key] as an identification to underlying web view associated to the player.
   final Key key;
 
+  /// Optional [navigatorKey], If no key is provided the default Navigator will be used.
+  final GlobalKey<NavigatorState> navigatorKey;
+
   /// A [YoutubePlayerController] to control the player.
   final YoutubePlayerController controller;
 
@@ -137,6 +140,7 @@ class YoutubePlayer extends StatefulWidget {
   /// Creates [YoutubePlayer] widget.
   const YoutubePlayer({
     this.key,
+    this.navigatorKey,
     @required this.controller,
     this.width,
     this.aspectRatio = 16 / 9,
@@ -228,7 +232,9 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
         ),
       );
       if (controller.value.isFullScreen) {
-        Navigator.pop(context);
+        widget.navigatorKey != null
+            ? widget.navigatorKey.currentState.pop(context)
+            : Navigator.pop(context);
       } else {
         controller.pause();
         var _cachedPosition = controller.value.position;
@@ -239,6 +245,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
         await showFullScreenYoutubePlayer(
           context: context,
           controller: controller,
+          navigatorKey: widget.navigatorKey,
           actionsPadding: widget.actionsPadding,
           bottomActions: widget.bottomActions,
           bufferIndicator: widget.bufferIndicator,
