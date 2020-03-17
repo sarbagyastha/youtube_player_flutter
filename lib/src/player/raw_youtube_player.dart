@@ -226,7 +226,13 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
             },
           );
         },
-        onPageFinished: (_) {
+        onPageFinished: (_) async {
+          // wait up to 5 seconds for javascript if neccessary
+          for (var i = 0; i < 20; i++) {
+            if (_isPlayerReady) break;
+            await Future.delayed(Duration(milliseconds: 250));
+          }
+
           if (_isPlayerReady) {
             controller.updateValue(
               controller.value.copyWith(isReady: true),
