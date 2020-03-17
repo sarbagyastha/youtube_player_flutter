@@ -232,7 +232,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
       } else {
         controller.pause();
         var _cachedPosition = controller.value.position;
-        var _videoId = controller.metadata.videoId;
+        var _videoId = (controller.metadata.videoId != '')?controller.metadata.videoId:controller.initialVideoId;
         _cachedWebController = controller.value.webViewController;
         controller.reset();
 
