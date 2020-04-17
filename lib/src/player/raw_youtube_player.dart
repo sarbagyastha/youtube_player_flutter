@@ -34,10 +34,8 @@ class RawYoutubePlayer extends StatefulWidget {
   _RawYoutubePlayerState createState() => _RawYoutubePlayerState();
 }
 
-class _RawYoutubePlayerState extends State<RawYoutubePlayer>
-    with WidgetsBindingObserver {
-  final Completer<WebViewController> _webController =
-      Completer<WebViewController>();
+class _RawYoutubePlayerState extends State<RawYoutubePlayer> with WidgetsBindingObserver {
+  final Completer<WebViewController> _webController = Completer<WebViewController>();
   YoutubePlayerController controller;
   PlayerState _cachedPlayerState;
   bool _isPlayerReady = false;
@@ -58,8 +56,7 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.resumed:
-        if (_cachedPlayerState != null &&
-            _cachedPlayerState == PlayerState.playing) {
+        if (_cachedPlayerState != null && _cachedPlayerState == PlayerState.playing) {
           controller?.play();
         }
         break;
@@ -87,6 +84,9 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
           encoding: 'utf-8',
           mimeType: 'text/html',
         ),
+        onWebResourceError: (WebResourceError error) {
+          controller.updateValue(controller.value.copyWith(webResourceError: error));
+        },
         javascriptMode: JavascriptMode.unrestricted,
         initialMediaPlaybackPolicy: AutoMediaPlaybackPolicy.always_allow,
         javascriptChannels: {
@@ -179,8 +179,7 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
             name: 'Errors',
             onMessageReceived: (JavascriptMessage message) {
               controller.updateValue(
-                controller.value
-                    .copyWith(errorCode: int.tryParse(message.message) ?? 0),
+                controller.value.copyWith(errorCode: int.tryParse(message.message) ?? 0),
               );
             },
           ),

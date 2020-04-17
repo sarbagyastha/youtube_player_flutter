@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'package:flutter/widgets.dart';
+import 'package:webview_media/platform_interface.dart';
 import 'package:webview_media/webview_flutter.dart';
 
 import '../enums/playback_rate.dart';
@@ -32,6 +33,7 @@ class YoutubePlayerValue {
     this.toggleFullScreen = false,
     this.isDragging = false,
     this.metaData = const YoutubeMetaData(),
+    this.webResourceError,
   });
 
   /// Returns true when the player is ready to play videos.
@@ -69,11 +71,14 @@ class YoutubePlayerValue {
   /// See the onError Section.
   final int errorCode;
 
+  /// Reports error related toloading page resources.
+  final WebResourceError webResourceError;
+
   /// Reports the [WebViewController].
   final WebViewController webViewController;
 
   /// Returns true is player has errors.
-  bool get hasError => errorCode != 0;
+  bool get hasError => errorCode != 0 && webResourceError == null;
 
   /// Reports the current playback quality.
   final String playbackQuality;
@@ -107,6 +112,7 @@ class YoutubePlayerValue {
     bool toggleFullScreen,
     bool isDragging,
     YoutubeMetaData metaData,
+    WebResourceError webResourceError,
   }) {
     return YoutubePlayerValue(
       isReady: isReady ?? this.isReady,
@@ -125,6 +131,7 @@ class YoutubePlayerValue {
       toggleFullScreen: toggleFullScreen ?? this.toggleFullScreen,
       isDragging: isDragging ?? this.isDragging,
       metaData: metaData ?? this.metaData,
+      webResourceError: webResourceError ?? this.webResourceError,
     );
   }
 
@@ -141,6 +148,7 @@ class YoutubePlayerValue {
         'playerState: $playerState, '
         'playbackRate: $playbackRate, '
         'playbackQuality: $playbackQuality, '
+        'webResourceError: ${webResourceError?.description}, '
         'errorCode: $errorCode)';
   }
 }
@@ -169,9 +177,8 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
         super(YoutubePlayerValue());
 
   /// Finds [YoutubePlayerController] in the provided context.
-  factory YoutubePlayerController.of(BuildContext context) => context
-      .dependOnInheritedWidgetOfExactType<InheritedYoutubePlayer>()
-      ?.controller;
+  factory YoutubePlayerController.of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<InheritedYoutubePlayer>()?.controller;
 
   _callMethod(String methodString) {
     if (value.isReady) {
@@ -233,9 +240,8 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
 
   /// Sets the volume of player.
   /// Max = 100 , Min = 0
-  void setVolume(int volume) => volume >= 0 && volume <= 100
-      ? _callMethod('setVolume($volume)')
-      : throw Exception("Volume should be between 0 and 100");
+  void setVolume(int volume) =>
+      volume >= 0 && volume <= 100 ? _callMethod('setVolume($volume)') : throw Exception("Volume should be between 0 and 100");
 
   /// Seek to any position. Video auto plays after seeking.
   /// The optional allowSeekAhead parameter determines whether the player will make a new request to the server
@@ -277,8 +283,7 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
   void setPlaybackRate(double rate) => _callMethod('setPlaybackRate($rate)');
 
   /// Toggles the player's full screen mode.
-  void toggleFullScreenMode() =>
-      updateValue(value.copyWith(toggleFullScreen: true));
+  void toggleFullScreenMode() => updateValue(value.copyWith(toggleFullScreen: true));
 
   /// MetaData for the currently loaded or cued video.
   YoutubeMetaData get metadata => value.metaData;
@@ -304,6 +309,7 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
           isPlaying: false,
           isDragging: false,
           metaData: const YoutubeMetaData(),
+          webResourceError: null,
         ),
       );
 }
@@ -322,6 +328,5 @@ class InheritedYoutubePlayer extends InheritedWidget {
   final YoutubePlayerController controller;
 
   @override
-  bool updateShouldNotify(InheritedYoutubePlayer oldPlayer) =>
-      oldPlayer.controller.hashCode != controller.hashCode;
+  bool updateShouldNotify(InheritedYoutubePlayer oldPlayer) => oldPlayer.controller.hashCode != controller.hashCode;
 }

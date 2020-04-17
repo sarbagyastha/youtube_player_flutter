@@ -1,3 +1,6 @@
+## 6.1.0+7
+* Updated *webview_media* constraint to `>=0.1.2<1.0.0`
+
 ## 6.1.0+6
 * Exports `Webview`
 
