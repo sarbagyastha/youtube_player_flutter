@@ -1,3 +1,6 @@
+## 6.1.0+6
+* Exports `Webview`
+
 ## 6.1.0+5
 * **(Fixed)** Infinite buffer indicator when `autoplay` set to false
 
