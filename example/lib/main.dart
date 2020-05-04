@@ -87,7 +87,6 @@ class _MyHomePageState extends State<MyHomePage> {
         disableDragSeek: false,
         loop: false,
         isLive: false,
-        forceHideAnnotation: true,
         forceHD: false,
         enableCaption: true,
       ),
@@ -184,7 +183,8 @@ class _MyHomePageState extends State<MyHomePage> {
               _isPlayerReady = true;
             },
             onEnded: (data) {
-              _controller.load(_ids[(_ids.indexOf(data.videoId) + 1) % _ids.length]);
+              _controller
+                  .load(_ids[(_ids.indexOf(data.videoId) + 1) % _ids.length]);
               _showSnackBar('Next Video Started!');
             },
           ),
@@ -247,16 +247,22 @@ class _MyHomePageState extends State<MyHomePage> {
                     IconButton(
                       icon: Icon(Icons.skip_previous),
                       onPressed: _isPlayerReady
-                          ? () => _controller.load(_ids[(_ids.indexOf(_controller.metadata.videoId) - 1) % _ids.length])
+                          ? () => _controller.load(_ids[
+                              (_ids.indexOf(_controller.metadata.videoId) - 1) %
+                                  _ids.length])
                           : null,
                     ),
                     IconButton(
                       icon: Icon(
-                        _controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
+                        _controller.value.isPlaying
+                            ? Icons.pause
+                            : Icons.play_arrow,
                       ),
                       onPressed: _isPlayerReady
                           ? () {
-                              _controller.value.isPlaying ? _controller.pause() : _controller.play();
+                              _controller.value.isPlaying
+                                  ? _controller.pause()
+                                  : _controller.play();
                               setState(() {});
                             }
                           : null,
@@ -265,7 +271,9 @@ class _MyHomePageState extends State<MyHomePage> {
                       icon: Icon(_muted ? Icons.volume_off : Icons.volume_up),
                       onPressed: _isPlayerReady
                           ? () {
-                              _muted ? _controller.unMute() : _controller.mute();
+                              _muted
+                                  ? _controller.unMute()
+                                  : _controller.mute();
                               setState(() {
                                 _muted = !_muted;
                               });
@@ -279,7 +287,9 @@ class _MyHomePageState extends State<MyHomePage> {
                     IconButton(
                       icon: Icon(Icons.skip_next),
                       onPressed: _isPlayerReady
-                          ? () => _controller.load(_ids[(_ids.indexOf(_controller.metadata.videoId) + 1) % _ids.length])
+                          ? () => _controller.load(_ids[
+                              (_ids.indexOf(_controller.metadata.videoId) + 1) %
+                                  _ids.length])
                           : null,
                     ),
                   ],

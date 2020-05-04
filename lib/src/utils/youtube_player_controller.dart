@@ -177,8 +177,9 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
         super(YoutubePlayerValue());
 
   /// Finds [YoutubePlayerController] in the provided context.
-  factory YoutubePlayerController.of(BuildContext context) =>
-      context.dependOnInheritedWidgetOfExactType<InheritedYoutubePlayer>()?.controller;
+  factory YoutubePlayerController.of(BuildContext context) => context
+      .dependOnInheritedWidgetOfExactType<InheritedYoutubePlayer>()
+      ?.controller;
 
   _callMethod(String methodString) {
     if (value.isReady) {
@@ -240,8 +241,9 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
 
   /// Sets the volume of player.
   /// Max = 100 , Min = 0
-  void setVolume(int volume) =>
-      volume >= 0 && volume <= 100 ? _callMethod('setVolume($volume)') : throw Exception("Volume should be between 0 and 100");
+  void setVolume(int volume) => volume >= 0 && volume <= 100
+      ? _callMethod('setVolume($volume)')
+      : throw Exception("Volume should be between 0 and 100");
 
   /// Seek to any position. Video auto plays after seeking.
   /// The optional allowSeekAhead parameter determines whether the player will make a new request to the server
@@ -254,15 +256,8 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
   }
 
   /// Sets the size in pixels of the player.
-  void setSize(Size size) {
-    var _width = size.width;
-    var _height = size.height;
-    if (flags.forceHideAnnotation) {
-      _width *= 100;
-      _height *= 100;
-    }
-    _callMethod('setSize($_width, $_height)');
-  }
+  void setSize(Size size) =>
+      _callMethod('setSize(${size.width}, ${size.height})');
 
   /// Fits the video to screen width.
   void fitWidth(Size screenSize) {
@@ -283,7 +278,8 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
   void setPlaybackRate(double rate) => _callMethod('setPlaybackRate($rate)');
 
   /// Toggles the player's full screen mode.
-  void toggleFullScreenMode() => updateValue(value.copyWith(toggleFullScreen: true));
+  void toggleFullScreenMode() =>
+      updateValue(value.copyWith(toggleFullScreen: true));
 
   /// MetaData for the currently loaded or cued video.
   YoutubeMetaData get metadata => value.metaData;
@@ -328,5 +324,6 @@ class InheritedYoutubePlayer extends InheritedWidget {
   final YoutubePlayerController controller;
 
   @override
-  bool updateShouldNotify(InheritedYoutubePlayer oldPlayer) => oldPlayer.controller.hashCode != controller.hashCode;
+  bool updateShouldNotify(InheritedYoutubePlayer oldPlayer) =>
+      oldPlayer.controller.hashCode != controller.hashCode;
 }

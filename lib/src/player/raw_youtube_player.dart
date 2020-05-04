@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -34,8 +33,10 @@ class RawYoutubePlayer extends StatefulWidget {
   _RawYoutubePlayerState createState() => _RawYoutubePlayerState();
 }
 
-class _RawYoutubePlayerState extends State<RawYoutubePlayer> with WidgetsBindingObserver {
-  final Completer<WebViewController> _webController = Completer<WebViewController>();
+class _RawYoutubePlayerState extends State<RawYoutubePlayer>
+    with WidgetsBindingObserver {
+  final Completer<WebViewController> _webController =
+      Completer<WebViewController>();
   YoutubePlayerController controller;
   PlayerState _cachedPlayerState;
   bool _isPlayerReady = false;
@@ -56,7 +57,8 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer> with WidgetsBinding
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.resumed:
-        if (_cachedPlayerState != null && _cachedPlayerState == PlayerState.playing) {
+        if (_cachedPlayerState != null &&
+            _cachedPlayerState == PlayerState.playing) {
           controller?.play();
         }
         break;
@@ -85,7 +87,8 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer> with WidgetsBinding
           mimeType: 'text/html',
         ),
         onWebResourceError: (WebResourceError error) {
-          controller.updateValue(controller.value.copyWith(webResourceError: error));
+          controller
+              .updateValue(controller.value.copyWith(webResourceError: error));
         },
         javascriptMode: JavascriptMode.unrestricted,
         initialMediaPlaybackPolicy: AutoMediaPlaybackPolicy.always_allow,
@@ -179,7 +182,8 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer> with WidgetsBinding
             name: 'Errors',
             onMessageReceived: (JavascriptMessage message) {
               controller.updateValue(
-                controller.value.copyWith(errorCode: int.tryParse(message.message) ?? 0),
+                controller.value
+                    .copyWith(errorCode: int.tryParse(message.message) ?? 0),
               );
             },
           ),
@@ -238,8 +242,7 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer> with WidgetsBinding
     );
   }
 
-  String get player {
-    var _player = '''
+  String get player => '''
     <!DOCTYPE html>
     <html>
     <head>
@@ -251,21 +254,8 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer> with WidgetsBinding
                 background-color: #000000;
                 overflow: hidden;
                 position: fixed;
-    ''';
-    if (!Platform.isIOS && controller.flags.forceHideAnnotation) {
-      _player += '''
-                height: 1000%;
-                width: 1000%;
-                transform: scale(0.1);
-                transform-origin: left top;
-      ''';
-    } else {
-      _player += '''
                 height: 100%;
                 width: 100%;
-      ''';
-    }
-    _player += '''
             }
         </style>
         <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
@@ -401,9 +391,7 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer> with WidgetsBinding
         </script>
     </body>
     </html>
-    ''';
-    return _player;
-  }
+  ''';
 
   String boolean({@required bool value}) => value ? "'1'" : "'0'";
 
