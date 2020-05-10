@@ -12,7 +12,6 @@ void initState(){
         flags: YoutubePlayerFlags(
             mute: false,
             autoPlay: true,
-            forceHideAnnotation: true,
         ),
     );
     super.initState();
