@@ -289,7 +289,13 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
                         'autoplay': ${boolean(value: controller.flags.autoPlay)}
                     },
                     events: {
-                        onReady: function(event) { Ready.postMessage("Ready"); },
+                        onReady: function(event) { 
+                          //hide top title div
+                          for (let element of document.getElementsByClassName("ytp-chrome-top"))
+                          {
+                            element.style.display="none";
+                            }
+                          Ready.postMessage("Ready"); },
                         onStateChange: function(event) { sendPlayerStateChange(event.data); },
                         onPlaybackQualityChange: function(event) { PlaybackQualityChange.postMessage(event.data); },
                         onPlaybackRateChange: function(event) { PlaybackRateChange.postMessage(event.data); },
@@ -328,9 +334,14 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
                 player.playVideo();
                 return '';
             }
-
+            
             function pause() {
                 player.pauseVideo();
+                //hide pause overlay(more video overlay) 
+                for (let element of document.getElementsByClassName("ytp-pause-overlay"))
+                {
+                  element.style.display="none";
+                }
                 return '';
             }
 
