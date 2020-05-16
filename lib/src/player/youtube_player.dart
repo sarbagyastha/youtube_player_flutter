@@ -376,11 +376,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
               child: IgnorePointer(
                 ignoring: true,
                 child: ProgressBar(
-                  colors: ProgressBarColors(
-                    handleColor: Colors.transparent,
-                    bufferedColor: Colors.white,
-                    backgroundColor: Colors.black,
-                  ),
+                  colors: widget.progressColors,
                 ),
               ),
             ),
@@ -411,7 +407,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                                 SizedBox(width: 14.0),
                                 CurrentPosition(),
                                 SizedBox(width: 8.0),
-                                ProgressBar(isExpanded: true),
+                                ProgressBar(isExpanded: true, colors: widget.progressColors,),
                                 RemainingDuration(),
                                 PlaybackSpeedButton(),
                                 FullScreenButton(),
