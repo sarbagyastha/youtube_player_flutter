@@ -40,6 +40,12 @@ Since *webview_flutter* relies on Flutter's new mechanism for embedding Android 
 ### iOS
 Opt-in to the embedded views preview by adding a boolean property to the app's `Info.plist` file
 with the key `io.flutter.embedded_views_preview` and the value `YES`.
+For beginners-
+In the info.plist file copy the following code-
+<key>io.flutter.embedded_views_preview</key>
+<true/>
+
+Also don't copy it anywhere in the middle, you can disturb other keys, its better to paste it above any other defined key or at last before dict tag is closed.
 
 ### Android
 No configuration required - the plugin should work out of the box.
