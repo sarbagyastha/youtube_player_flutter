@@ -6,6 +6,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:webview_media/webview_flutter.dart';
+import 'package:flutter/services.dart';
 
 import '../enums/thumbnail_quality.dart';
 import '../utils/errors.dart';
@@ -31,6 +32,7 @@ import 'raw_youtube_player.dart';
 ///      autoPlay: true,
 ///      showVideoProgressIndicator: true,
 ///    ),
+///    setPortraitAfterFullScreen: true,
 ///    videoProgressIndicatorColor: Colors.amber,
 ///    progressColors: ProgressColors(
 ///      playedColor: Colors.amber,
@@ -134,25 +136,32 @@ class YoutubePlayer extends StatefulWidget {
   /// {@endtemplate}
   final bool showVideoProgressIndicator;
 
+  /// {@template youtube_player_flutter.setPortraitAfterFullScreen}
+  /// Set device orientation to Portrait after exiting full screen landscape mode
+  ///
+  /// Default is false.
+  /// {@endtemplate}
+  final bool setPortraitAfterFullScreen;
+
   /// Creates [YoutubePlayer] widget.
-  const YoutubePlayer({
-    this.key,
-    @required this.controller,
-    this.width,
-    this.aspectRatio = 16 / 9,
-    this.controlsTimeOut = const Duration(seconds: 3),
-    this.bufferIndicator,
-    this.progressIndicatorColor = Colors.red,
-    this.progressColors,
-    this.onReady,
-    this.onEnded,
-    this.liveUIColor = Colors.red,
-    this.topActions,
-    this.bottomActions,
-    this.actionsPadding = const EdgeInsets.all(8.0),
-    this.thumbnailUrl,
-    this.showVideoProgressIndicator = false,
-  });
+  const YoutubePlayer(
+      {this.key,
+      @required this.controller,
+      this.width,
+      this.aspectRatio = 16 / 9,
+      this.controlsTimeOut = const Duration(seconds: 3),
+      this.bufferIndicator,
+      this.progressIndicatorColor = Colors.red,
+      this.progressColors,
+      this.onReady,
+      this.onEnded,
+      this.liveUIColor = Colors.red,
+      this.topActions,
+      this.bottomActions,
+      this.actionsPadding = const EdgeInsets.all(8.0),
+      this.thumbnailUrl,
+      this.showVideoProgressIndicator = false,
+      this.setPortraitAfterFullScreen = false});
 
   /// Converts fully qualified YouTube Url to video id.
   ///
@@ -237,19 +246,19 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
         controller.reset();
 
         await showFullScreenYoutubePlayer(
-          context: context,
-          controller: controller,
-          actionsPadding: widget.actionsPadding,
-          bottomActions: widget.bottomActions,
-          bufferIndicator: widget.bufferIndicator,
-          controlsTimeOut: widget.controlsTimeOut,
-          liveUIColor: widget.liveUIColor,
-          onReady: () =>
-              controller.load(_videoId, startAt: _cachedPosition.inSeconds),
-          progressColors: widget.progressColors,
-          thumbnailUrl: widget.thumbnailUrl,
-          topActions: widget.topActions,
-        );
+            context: context,
+            controller: controller,
+            actionsPadding: widget.actionsPadding,
+            bottomActions: widget.bottomActions,
+            bufferIndicator: widget.bufferIndicator,
+            controlsTimeOut: widget.controlsTimeOut,
+            liveUIColor: widget.liveUIColor,
+            onReady: () =>
+                controller.load(_videoId, startAt: _cachedPosition.inSeconds),
+            progressColors: widget.progressColors,
+            thumbnailUrl: widget.thumbnailUrl,
+            topActions: widget.topActions,
+            setPortraitAfterFullScreen: widget.setPortraitAfterFullScreen);
         _cachedPosition = controller.value.position;
         controller
           ..updateValue(

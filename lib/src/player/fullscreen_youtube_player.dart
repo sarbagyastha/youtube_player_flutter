@@ -25,6 +25,7 @@ Future<void> showFullScreenYoutubePlayer({
   void Function(YoutubeMetaData) onEnded,
   ProgressBarColors progressColors,
   String thumbnailUrl,
+  bool setPortraitAfterFullScreen,
 }) async =>
     await Navigator.push(
       context,
@@ -41,6 +42,7 @@ Future<void> showFullScreenYoutubePlayer({
           onEnded: onEnded,
           progressColors: progressColors,
           thumbnailUrl: thumbnailUrl,
+          setPortraitAfterFullScreen: setPortraitAfterFullScreen
         ),
       ),
     );
@@ -79,6 +81,9 @@ class _FullScreenYoutubePlayer extends StatefulWidget {
   /// {@macro youtube_player_flutter.thumbnailUrl}
   final String thumbnailUrl;
 
+  // {@macro youtube_player_flutter.setPortraitAfterFullScreen}
+  final bool setPortraitAfterFullScreen;
+
   _FullScreenYoutubePlayer({
     Key key,
     @required this.controller,
@@ -92,6 +97,7 @@ class _FullScreenYoutubePlayer extends StatefulWidget {
     this.bottomActions,
     this.actionsPadding = const EdgeInsets.all(8.0),
     this.thumbnailUrl,
+    this.setPortraitAfterFullScreen
   }) : super(key: key);
 
   @override
@@ -115,6 +121,7 @@ class _FullScreenYoutubePlayerState extends State<_FullScreenYoutubePlayer> {
       progressColors: widget.progressColors,
       thumbnailUrl: widget.thumbnailUrl,
       topActions: widget.topActions,
+      setPortraitAfterFullScreen: widget.setPortraitAfterFullScreen
     );
   }
 
@@ -136,12 +143,19 @@ class _FullScreenYoutubePlayerState extends State<_FullScreenYoutubePlayer> {
   @override
   void dispose() {
     SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
-    SystemChrome.setPreferredOrientations(DeviceOrientation.values);
+
+    if (widget.setPortraitAfterFullScreen) {
+      SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+    } else {
+      SystemChrome.setPreferredOrientations(DeviceOrientation.values);
+    }
+
     SchedulerBinding.instance.addPostFrameCallback(
       (_) => widget.controller.updateValue(
         widget.controller.value.copyWith(isFullScreen: false),
       ),
     );
+
     super.dispose();
   }
 }
