@@ -3,6 +3,7 @@
 * **(Fixed)** issues with orientation
 * **(Improvements)** Added automatic fullscreen toggle wrt to orientation change
 * Added [`YoutubePlayerBuilder`](https://pub.dev/documentation/youtube_player_flutter/latest/youtube_player_flutter/YoutubePlayerBuilder-class.html)
+* **(Fixed)** progress color being ignored [#221](https://github.com/sarbagyastha/youtube_player_flutter/pull/221)
 
 **BREAKING CHANGE**
 * Requires **iOS**: `--ios-language swift`, Xcode version `>= 11`
