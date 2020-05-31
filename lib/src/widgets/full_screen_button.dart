@@ -57,9 +57,7 @@ class _FullScreenButtonState extends State<FullScreenButton> {
   Widget build(BuildContext context) {
     return IconButton(
       icon: Icon(
-        _controller.value.isFullScreen
-            ? Icons.fullscreen_exit
-            : Icons.fullscreen,
+        _controller.value.isFullScreen ? Icons.fullscreen_exit : Icons.fullscreen,
         color: widget.color,
       ),
       onPressed: () => _controller.toggleFullScreenMode(),

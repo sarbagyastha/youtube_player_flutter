@@ -2,10 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:webview_media/webview_flutter.dart';
 
 import '../enums/thumbnail_quality.dart';
 import '../utils/errors.dart';
@@ -13,7 +10,6 @@ import '../utils/youtube_meta_data.dart';
 import '../utils/youtube_player_controller.dart';
 import '../utils/youtube_player_flags.dart';
 import '../widgets/widgets.dart';
-import 'fullscreen_youtube_player.dart';
 import 'raw_youtube_player.dart';
 
 /// A widget to play or stream YouTube videos using the official [YouTube IFrame Player API](https://developers.google.com/youtube/iframe_api_reference).
@@ -163,10 +159,8 @@ class YoutubePlayer extends StatefulWidget {
     if (trimWhitespaces) url = url.trim();
 
     for (var exp in [
-      RegExp(
-          r"^https:\/\/(?:www\.|m\.)?youtube\.com\/watch\?v=([_\-a-zA-Z0-9]{11}).*$"),
-      RegExp(
-          r"^https:\/\/(?:www\.|m\.)?youtube(?:-nocookie)?\.com\/embed\/([_\-a-zA-Z0-9]{11}).*$"),
+      RegExp(r"^https:\/\/(?:www\.|m\.)?youtube\.com\/watch\?v=([_\-a-zA-Z0-9]{11}).*$"),
+      RegExp(r"^https:\/\/(?:www\.|m\.)?youtube(?:-nocookie)?\.com\/embed\/([_\-a-zA-Z0-9]{11}).*$"),
       RegExp(r"^https:\/\/youtu\.be\/([_\-a-zA-Z0-9]{11}).*$")
     ]) {
       Match match = exp.firstMatch(url);
@@ -189,7 +183,6 @@ class YoutubePlayer extends StatefulWidget {
 
 class _YoutubePlayerState extends State<YoutubePlayer> {
   YoutubePlayerController controller;
-  WebViewController _cachedWebController;
 
   double _aspectRatio;
   bool _initialLoad = true;
@@ -218,45 +211,6 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
         controller.updateValue(
           controller.value.copyWith(isControlsVisible: true),
         );
-      }
-    }
-    if (controller.value.toggleFullScreen) {
-      controller.updateValue(
-        controller.value.copyWith(
-          toggleFullScreen: false,
-          isControlsVisible: false,
-        ),
-      );
-      if (controller.value.isFullScreen) {
-        Navigator.pop(context);
-      } else {
-        controller.pause();
-        var _cachedPosition = controller.value.position;
-        var _videoId = controller.metadata.videoId;
-        _cachedWebController = controller.value.webViewController;
-        controller.reset();
-
-        await showFullScreenYoutubePlayer(
-          context: context,
-          controller: controller,
-          actionsPadding: widget.actionsPadding,
-          bottomActions: widget.bottomActions,
-          bufferIndicator: widget.bufferIndicator,
-          controlsTimeOut: widget.controlsTimeOut,
-          liveUIColor: widget.liveUIColor,
-          onReady: () =>
-              controller.load(_videoId, startAt: _cachedPosition.inSeconds),
-          progressColors: widget.progressColors,
-          thumbnailUrl: widget.thumbnailUrl,
-          topActions: widget.topActions,
-        );
-        _cachedPosition = controller.value.position;
-        controller
-          ..updateValue(
-            controller.value.copyWith(webViewController: _cachedWebController),
-          )
-          ..seekTo(_cachedPosition);
-        Future.delayed(Duration(seconds: 2), () => controller.play());
       }
     }
     if (mounted) setState(() {});
@@ -297,8 +251,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                         child: Text(
                           errorString(
                             controller.value.errorCode,
-                            videoId: controller.metadata.videoId ??
-                                controller.initialVideoId,
+                            videoId: controller.metadata.videoId ?? controller.initialVideoId,
                           ),
                           style: TextStyle(
                             color: Colors.white,
@@ -351,9 +304,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
               child: Image.network(
                 widget.thumbnailUrl ??
                     YoutubePlayer.getThumbnail(
-                      videoId: controller.metadata.videoId.isEmpty
-                          ? controller.initialVideoId
-                          : controller.metadata.videoId,
+                      videoId: controller.metadata.videoId.isEmpty ? controller.initialVideoId : controller.metadata.videoId,
                     ),
                 fit: BoxFit.cover,
                 loadingBuilder: (_, child, progress) => progress == null
@@ -394,17 +345,12 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
               left: 0,
               right: 0,
               child: AnimatedOpacity(
-                opacity: !controller.flags.hideControls &&
-                        controller.value.isControlsVisible
-                    ? 1
-                    : 0,
+                opacity: !controller.flags.hideControls && controller.value.isControlsVisible ? 1 : 0,
                 duration: Duration(milliseconds: 300),
                 child: controller.flags.isLive
                     ? LiveBottomBar(liveUIColor: widget.liveUIColor)
                     : Padding(
-                        padding: widget.bottomActions == null
-                            ? EdgeInsets.all(0.0)
-                            : widget.actionsPadding,
+                        padding: widget.bottomActions == null ? EdgeInsets.all(0.0) : widget.actionsPadding,
                         child: Row(
                           children: widget.bottomActions ??
                               [
@@ -425,10 +371,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
               left: 0,
               right: 0,
               child: AnimatedOpacity(
-                opacity: !controller.flags.hideControls &&
-                        controller.value.isControlsVisible
-                    ? 1
-                    : 0,
+                opacity: !controller.flags.hideControls && controller.value.isControlsVisible ? 1 : 0,
                 duration: Duration(milliseconds: 300),
                 child: Padding(
                   padding: widget.actionsPadding,

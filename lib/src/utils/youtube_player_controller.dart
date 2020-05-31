@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
-import 'package:webview_media/platform_interface.dart';
-import 'package:webview_media/webview_flutter.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
 import '../enums/playback_rate.dart';
 import '../enums/player_state.dart';
@@ -30,10 +30,8 @@ class YoutubePlayerValue {
     this.playbackQuality,
     this.errorCode = 0,
     this.webViewController,
-    this.toggleFullScreen = false,
     this.isDragging = false,
     this.metaData = const YoutubeMetaData(),
-    this.webResourceError,
   });
 
   /// Returns true when the player is ready to play videos.
@@ -71,20 +69,14 @@ class YoutubePlayerValue {
   /// See the onError Section.
   final int errorCode;
 
-  /// Reports error related toloading page resources.
-  final WebResourceError webResourceError;
-
   /// Reports the [WebViewController].
-  final WebViewController webViewController;
+  final InAppWebViewController webViewController;
 
   /// Returns true is player has errors.
-  bool get hasError => errorCode != 0 && webResourceError == null;
+  bool get hasError => errorCode != 0;
 
   /// Reports the current playback quality.
   final String playbackQuality;
-
-  /// Returns true if fullscreen mode is just toggled.
-  final bool toggleFullScreen;
 
   /// Returns true if [ProgressBar] is being dragged.
   final bool isDragging;
@@ -108,11 +100,9 @@ class YoutubePlayerValue {
     double playbackRate,
     String playbackQuality,
     int errorCode,
-    WebViewController webViewController,
-    bool toggleFullScreen,
+    InAppWebViewController webViewController,
     bool isDragging,
     YoutubeMetaData metaData,
-    WebResourceError webResourceError,
   }) {
     return YoutubePlayerValue(
       isReady: isReady ?? this.isReady,
@@ -128,10 +118,8 @@ class YoutubePlayerValue {
       playbackQuality: playbackQuality ?? this.playbackQuality,
       errorCode: errorCode ?? this.errorCode,
       webViewController: webViewController ?? this.webViewController,
-      toggleFullScreen: toggleFullScreen ?? this.toggleFullScreen,
       isDragging: isDragging ?? this.isDragging,
       metaData: metaData ?? this.metaData,
-      webResourceError: webResourceError ?? this.webResourceError,
     );
   }
 
@@ -148,7 +136,6 @@ class YoutubePlayerValue {
         'playerState: $playerState, '
         'playbackRate: $playbackRate, '
         'playbackQuality: $playbackQuality, '
-        'webResourceError: ${webResourceError?.description}, '
         'errorCode: $errorCode)';
   }
 }
@@ -177,13 +164,12 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
         super(YoutubePlayerValue());
 
   /// Finds [YoutubePlayerController] in the provided context.
-  factory YoutubePlayerController.of(BuildContext context) => context
-      .dependOnInheritedWidgetOfExactType<InheritedYoutubePlayer>()
-      ?.controller;
+  factory YoutubePlayerController.of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<InheritedYoutubePlayer>()?.controller;
 
   _callMethod(String methodString) {
     if (value.isReady) {
-      value.webViewController?.evaluateJavascript(methodString);
+      value.webViewController?.evaluateJavascript(source: methodString);
     } else {
       print('The controller is not ready for method calls.');
     }
@@ -241,9 +227,8 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
 
   /// Sets the volume of player.
   /// Max = 100 , Min = 0
-  void setVolume(int volume) => volume >= 0 && volume <= 100
-      ? _callMethod('setVolume($volume)')
-      : throw Exception("Volume should be between 0 and 100");
+  void setVolume(int volume) =>
+      volume >= 0 && volume <= 100 ? _callMethod('setVolume($volume)') : throw Exception("Volume should be between 0 and 100");
 
   /// Seek to any position. Video auto plays after seeking.
   /// The optional allowSeekAhead parameter determines whether the player will make a new request to the server
@@ -256,8 +241,7 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
   }
 
   /// Sets the size in pixels of the player.
-  void setSize(Size size) =>
-      _callMethod('setSize(${size.width}, ${size.height})');
+  void setSize(Size size) => _callMethod('setSize(${size.width}, ${size.height})');
 
   /// Fits the video to screen width.
   void fitWidth(Size screenSize) {
@@ -278,8 +262,17 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
   void setPlaybackRate(double rate) => _callMethod('setPlaybackRate($rate)');
 
   /// Toggles the player's full screen mode.
-  void toggleFullScreenMode() =>
-      updateValue(value.copyWith(toggleFullScreen: true));
+  void toggleFullScreenMode() {
+    updateValue(value.copyWith(isFullScreen: !value.isFullScreen));
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+      if (!value.isFullScreen) ...[
+        DeviceOrientation.portraitDown,
+        DeviceOrientation.portraitUp,
+      ],
+    ]);
+  }
 
   /// MetaData for the currently loaded or cued video.
   YoutubeMetaData get metadata => value.metaData;
@@ -300,12 +293,10 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
           position: Duration(),
           buffered: 0.0,
           errorCode: 0,
-          toggleFullScreen: false,
           isLoaded: false,
           isPlaying: false,
           isDragging: false,
           metaData: const YoutubeMetaData(),
-          webResourceError: null,
         ),
       );
 }
@@ -324,6 +315,5 @@ class InheritedYoutubePlayer extends InheritedWidget {
   final YoutubePlayerController controller;
 
   @override
-  bool updateShouldNotify(InheritedYoutubePlayer oldPlayer) =>
-      oldPlayer.controller.hashCode != controller.hashCode;
+  bool updateShouldNotify(InheritedYoutubePlayer oldPlayer) => oldPlayer.controller.hashCode != controller.hashCode;
 }
