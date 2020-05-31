@@ -249,7 +249,6 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
                     height: '100%',
                     width: '100%',
                     videoId: '${controller.initialVideoId}',
-                    host: 'https://www.youtube.com',
                     playerVars: {
                         'controls': 0,
                         'playsinline': 1,
