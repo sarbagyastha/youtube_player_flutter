@@ -30,20 +30,30 @@ Supported Platforms:
 * Fast Forward and Rewind on horizontal drag
 * Fit Videos to wide screens with pinch gestures
 
-The plugin uses [webview_flutter](https://pub.dartlang.org/packages/webview_flutter) under-the-hood to play videos. 
+The plugin uses [flutter_inappwebview](https://pub.dartlang.org/packages/flutter_inappwebview) under-the-hood.
 
-Since *webview_flutter* relies on Flutter's new mechanism for embedding Android and iOS views, this plugin might share some known issues tagged with the [platform-views](https://github.com/flutter/flutter/labels/a%3A%20platform-views) and/or [webview](https://github.com/flutter/flutter/labels/p%3A%20webview) labels.
+Since *flutter_inappwebview* relies on Flutter's mechanism for embedding Android and iOS views, this plugin might share some known issues tagged with the [platform-views](https://github.com/flutter/flutter/labels/a%3A%20platform-views) label.
 
+## Requirements
+* Android: `minSdkVersion 17` and add support for `androidx` (see [AndroidX Migration](https://flutter.dev/docs/development/androidx-migration))
+* iOS: `--ios-language swift`, Xcode version `>= 11`
 
 ## Setup
 
 ### iOS
-Opt-in to the embedded views preview by adding a boolean property to the app's `Info.plist` file
-with the key `io.flutter.embedded_views_preview` and the value `YES`.
+Add these lines to `Info.plist`
+
+```xml
+<key>io.flutter.embedded_views_preview</key>
+<true/>
+```
+
+For more info, [see here](https://pub.dev/packages/flutter_inappwebview#important-note-for-ios)
 
 ### Android
-No configuration required - the plugin should work out of the box.
+Set `minSdkVersion` of your `android/app/build.gradle` file to at least 17.
 
+For more info, [see here](https://pub.dev/packages/flutter_inappwebview#important-note-for-android)
 
 #### Using Youtube Player
          
@@ -69,6 +79,27 @@ YoutubePlayer(
     },
 ),
 ```
+
+#### For FullScreen Support
+If fullscreen support is required, wrap your player with `YoutubePlayerBuilder`
+
+```dart
+YoutubePlayerBuilder(
+    player: YoutubePlayer(
+        controller: _controller,
+    ),
+    builder: (context, player){
+        return Column(
+            children: [
+                // some widgets
+                player,
+                //some other widgets
+            ],
+        );
+    ),
+),
+```
+
          
 #### Playing live stream videos
 Set the isLive property to true in order to change the UI to match Live Video.
@@ -137,7 +168,6 @@ APKs are available in Assets of Github release page.
 ## Limitation 
 Since the plugin is based on platform views. This plugin requires Android API level 20 or greater.
 
-If you only want to target Android and need support for Android Kitkat or less, then you can use [youtube_player](https://pub.dartlang.org/packages/youtube_player).  
 
 ## License
 

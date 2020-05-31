@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -147,7 +149,7 @@ class _MyHomePageState extends State<MyHomePage> {
               size: 25.0,
             ),
             onPressed: () {
-              _showSnackBar('Settings Tapped!');
+              log('Settings Tapped!');
             },
           ),
         ],

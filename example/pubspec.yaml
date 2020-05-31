@@ -1,6 +1,6 @@
 name: youtube_player_flutter_example
 description: Demonstrates how to use the youtube_player_flutter plugin.
-version: 6.1.0+6010005
+version: 7.0.0
 publish_to: 'none'
 
 environment:

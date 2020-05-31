@@ -1,3 +1,10 @@
+## 7.0.0
+**INCLUDES BREAKING CHANGE**
+
+* **(Fixed)** random crashes
+* **(Fixed)** issues with orientation
+* **(Improvements)** Added automatic fullscreen toggle wrt to orientation change
+
 ## 6.1.1
 * Removed `forceHideAnnotation`.
 
