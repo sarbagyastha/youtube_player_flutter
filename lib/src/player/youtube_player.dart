@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 
 import '../enums/thumbnail_quality.dart';
 import '../utils/errors.dart';
@@ -299,7 +300,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
           ),
           if (!controller.flags.hideThumbnail)
             AnimatedOpacity(
-              opacity: controller.value.hasPlayed ? 0 : 1,
+              opacity: controller.value.isPlaying ? 0 : 1,
               duration: Duration(milliseconds: 300),
               child: Image.network(
                 widget.thumbnailUrl ??

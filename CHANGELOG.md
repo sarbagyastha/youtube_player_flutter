@@ -6,7 +6,7 @@
 **BREAKING CHANGE**
 * Requires **iOS**: `--ios-language swift`, Xcode version `>= 11`
 * Requires **Android**: `minSdkVersion 17`
-* removed exported `WebView` widget
+* Removed exported `WebView` widget
 
 ## 6.1.1
 * Removed `forceHideAnnotation`.
