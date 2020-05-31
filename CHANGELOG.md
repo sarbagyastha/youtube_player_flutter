@@ -1,9 +1,12 @@
 ## 7.0.0
-**INCLUDES BREAKING CHANGE**
-
 * **(Fixed)** random crashes
 * **(Fixed)** issues with orientation
 * **(Improvements)** Added automatic fullscreen toggle wrt to orientation change
+
+**BREAKING CHANGE**
+* Requires **iOS**: `--ios-language swift`, Xcode version `>= 11`
+* Requires **Android**: `minSdkVersion 17`
+* removed exported `WebView` widget
 
 ## 6.1.1
 * Removed `forceHideAnnotation`.
