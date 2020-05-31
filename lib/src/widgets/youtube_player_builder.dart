@@ -22,7 +22,8 @@ class YoutubePlayerBuilder extends StatefulWidget {
   _YoutubePlayerBuilderState createState() => _YoutubePlayerBuilderState();
 }
 
-class _YoutubePlayerBuilderState extends State<YoutubePlayerBuilder> with WidgetsBindingObserver {
+class _YoutubePlayerBuilderState extends State<YoutubePlayerBuilder>
+    with WidgetsBindingObserver {
   final GlobalKey playerKey = GlobalKey();
 
   @override
@@ -58,6 +59,8 @@ class _YoutubePlayerBuilderState extends State<YoutubePlayerBuilder> with Widget
       child: widget.player,
     );
     final child = widget.builder(context, _player);
-    return OrientationBuilder(builder: (context, orientation) => orientation == Orientation.portrait ? child : _player);
+    return OrientationBuilder(
+        builder: (context, orientation) =>
+            orientation == Orientation.portrait ? child : _player);
   }
 }

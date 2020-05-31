@@ -160,8 +160,10 @@ class YoutubePlayer extends StatefulWidget {
     if (trimWhitespaces) url = url.trim();
 
     for (var exp in [
-      RegExp(r"^https:\/\/(?:www\.|m\.)?youtube\.com\/watch\?v=([_\-a-zA-Z0-9]{11}).*$"),
-      RegExp(r"^https:\/\/(?:www\.|m\.)?youtube(?:-nocookie)?\.com\/embed\/([_\-a-zA-Z0-9]{11}).*$"),
+      RegExp(
+          r"^https:\/\/(?:www\.|m\.)?youtube\.com\/watch\?v=([_\-a-zA-Z0-9]{11}).*$"),
+      RegExp(
+          r"^https:\/\/(?:www\.|m\.)?youtube(?:-nocookie)?\.com\/embed\/([_\-a-zA-Z0-9]{11}).*$"),
       RegExp(r"^https:\/\/youtu\.be\/([_\-a-zA-Z0-9]{11}).*$")
     ]) {
       Match match = exp.firstMatch(url);
@@ -252,7 +254,8 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                         child: Text(
                           errorString(
                             controller.value.errorCode,
-                            videoId: controller.metadata.videoId ?? controller.initialVideoId,
+                            videoId: controller.metadata.videoId ??
+                                controller.initialVideoId,
                           ),
                           style: TextStyle(
                             color: Colors.white,
@@ -305,7 +308,9 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
               child: Image.network(
                 widget.thumbnailUrl ??
                     YoutubePlayer.getThumbnail(
-                      videoId: controller.metadata.videoId.isEmpty ? controller.initialVideoId : controller.metadata.videoId,
+                      videoId: controller.metadata.videoId.isEmpty
+                          ? controller.initialVideoId
+                          : controller.metadata.videoId,
                     ),
                 fit: BoxFit.cover,
                 loadingBuilder: (_, child, progress) => progress == null
@@ -346,12 +351,17 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
               left: 0,
               right: 0,
               child: AnimatedOpacity(
-                opacity: !controller.flags.hideControls && controller.value.isControlsVisible ? 1 : 0,
+                opacity: !controller.flags.hideControls &&
+                        controller.value.isControlsVisible
+                    ? 1
+                    : 0,
                 duration: Duration(milliseconds: 300),
                 child: controller.flags.isLive
                     ? LiveBottomBar(liveUIColor: widget.liveUIColor)
                     : Padding(
-                        padding: widget.bottomActions == null ? EdgeInsets.all(0.0) : widget.actionsPadding,
+                        padding: widget.bottomActions == null
+                            ? EdgeInsets.all(0.0)
+                            : widget.actionsPadding,
                         child: Row(
                           children: widget.bottomActions ??
                               [
@@ -372,7 +382,10 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
               left: 0,
               right: 0,
               child: AnimatedOpacity(
-                opacity: !controller.flags.hideControls && controller.value.isControlsVisible ? 1 : 0,
+                opacity: !controller.flags.hideControls &&
+                        controller.value.isControlsVisible
+                    ? 1
+                    : 0,
                 duration: Duration(milliseconds: 300),
                 child: Padding(
                   padding: widget.actionsPadding,

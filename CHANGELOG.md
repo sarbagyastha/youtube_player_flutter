@@ -1,7 +1,8 @@
-## 7.0.0
+## 7.0.0+1
 * **(Fixed)** random crashes
 * **(Fixed)** issues with orientation
 * **(Improvements)** Added automatic fullscreen toggle wrt to orientation change
+* Added [`YoutubePlayerBuilder`](https://pub.dev/documentation/youtube_player_flutter/latest/youtube_player_flutter/YoutubePlayerBuilder-class.html)
 
 **BREAKING CHANGE**
 * Requires **iOS**: `--ios-language swift`, Xcode version `>= 11`
