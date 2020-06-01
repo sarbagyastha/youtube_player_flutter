@@ -81,6 +81,7 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
           mimeType: 'text/html',
         ),
         initialOptions: InAppWebViewGroupOptions(
+          ios: IOSInAppWebViewOptions(allowsInlineMediaPlayback: true),
           crossPlatform: InAppWebViewOptions(
             userAgent: userAgent,
             mediaPlaybackRequiresUserGesture: false,
