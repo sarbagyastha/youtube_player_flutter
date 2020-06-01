@@ -37,7 +37,7 @@ linter:
     - type_init_formals
     - empty_constructor_bodies
     - unnecessary_new
-    - unnecessary_const
+    - prefer_const_constructors
     - avoid_catches_without_on_clauses # avoid
     - use_rethrow_when_possible
 

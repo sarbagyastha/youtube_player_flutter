@@ -49,10 +49,7 @@ Widget buildPlayer({
 YoutubePlayerController createController([YoutubePlayerFlags flags]) {
   return YoutubePlayerController(
     initialVideoId: 'p2lYr3vM_1w',
-    flags: flags ??
-        YoutubePlayerFlags(
-          hideThumbnail: true,
-        ),
+    flags: flags ?? const YoutubePlayerFlags(hideThumbnail: true),
   );
 }
 

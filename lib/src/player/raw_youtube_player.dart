@@ -30,8 +30,7 @@ class RawYoutubePlayer extends StatefulWidget {
   _RawYoutubePlayerState createState() => _RawYoutubePlayerState();
 }
 
-class _RawYoutubePlayerState extends State<RawYoutubePlayer>
-    with WidgetsBindingObserver {
+class _RawYoutubePlayerState extends State<RawYoutubePlayer> with WidgetsBindingObserver {
   YoutubePlayerController controller;
   PlayerState _cachedPlayerState;
   bool _isPlayerReady = false;
@@ -52,8 +51,7 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.resumed:
-        if (_cachedPlayerState != null &&
-            _cachedPlayerState == PlayerState.playing) {
+        if (_cachedPlayerState != null && _cachedPlayerState == PlayerState.playing) {
           controller?.play();
         }
         break;
@@ -88,8 +86,7 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
           ),
         ),
         onWebViewCreated: (webController) {
-          controller.updateValue(
-              controller.value.copyWith(webViewController: webController));
+          controller.updateValue(controller.value.copyWith(webViewController: webController));
           webController
             ..addJavaScriptHandler(
               handlerName: 'Ready',
@@ -108,8 +105,9 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
                     );
                     break;
                   case 0:
-                    if (widget.onEnded != null)
+                    if (widget.onEnded != null) {
                       widget.onEnded(controller.metadata);
+                    }
 
                     controller.updateValue(
                       controller.value.copyWith(
@@ -158,8 +156,7 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
               handlerName: 'PlaybackQualityChange',
               callback: (args) {
                 controller.updateValue(
-                  controller.value
-                      .copyWith(playbackQuality: args.first as String),
+                  controller.value.copyWith(playbackQuality: args.first as String),
                 );
               },
             )
@@ -167,8 +164,7 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
               handlerName: 'PlaybackRateChange',
               callback: (args) {
                 final _rawRate = args.first;
-                final double rate =
-                    _rawRate is int ? _rawRate.toDouble() : _rawRate;
+                final double rate = _rawRate is int ? _rawRate.toDouble() : _rawRate;
                 controller.updateValue(
                   controller.value.copyWith(playbackRate: rate),
                 );
@@ -186,8 +182,7 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
               handlerName: 'VideoData',
               callback: (args) {
                 controller.updateValue(
-                  controller.value.copyWith(
-                      metaData: YoutubeMetaData.fromRawData(args.first)),
+                  controller.value.copyWith(metaData: YoutubeMetaData.fromRawData(args.first)),
                 );
               },
             )

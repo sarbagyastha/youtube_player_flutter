@@ -54,7 +54,7 @@ class _CurrentPositionState extends State<CurrentPosition> {
       durationFormatter(
         _controller.value.position?.inMilliseconds ?? 0,
       ),
-      style: TextStyle(
+      style: const TextStyle(
         color: Colors.white,
         fontSize: 12.0,
       ),
@@ -110,7 +110,7 @@ class _RemainingDurationState extends State<RemainingDuration> {
         (_controller.metadata.duration?.inMilliseconds ?? 0) -
             (_controller.value.position?.inMilliseconds ?? 0),
       )}",
-      style: TextStyle(
+      style: const TextStyle(
         color: Colors.white,
         fontSize: 12.0,
       ),

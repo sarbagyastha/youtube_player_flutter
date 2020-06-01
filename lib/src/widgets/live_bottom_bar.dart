@@ -71,7 +71,7 @@ class _LiveBottomBarState extends State<LiveBottomBar> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          SizedBox(
+          const SizedBox(
             width: 14.0,
           ),
           CurrentPosition(),
@@ -91,7 +91,7 @@ class _LiveBottomBarState extends State<LiveBottomBar> {
                 activeColor: widget.liveUIColor,
                 inactiveColor: Colors.transparent,
               ),
-              padding: EdgeInsets.symmetric(
+              padding: const EdgeInsets.symmetric(
                 horizontal: 8.0,
               ),
             ),
@@ -100,7 +100,7 @@ class _LiveBottomBarState extends State<LiveBottomBar> {
             onTap: () => _controller.seekTo(_controller.metadata.duration),
             child: Material(
               color: widget.liveUIColor,
-              child: Text(
+              child: const Text(
                 ' LIVE ',
                 style: TextStyle(
                   color: Colors.white,

@@ -238,18 +238,19 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
           child: _buildPlayer(
             errorWidget: Container(
               color: Colors.black87,
-              padding: EdgeInsets.symmetric(horizontal: 40.0, vertical: 20.0),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 40.0, vertical: 20.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Row(
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.error_outline,
                         color: Colors.white,
                       ),
-                      SizedBox(width: 5.0),
+                      const SizedBox(width: 5.0),
                       Expanded(
                         child: Text(
                           errorString(
@@ -257,7 +258,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                             videoId: controller.metadata.videoId ??
                                 controller.initialVideoId,
                           ),
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w300,
                             fontSize: 15.0,
@@ -266,10 +267,10 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                       ),
                     ],
                   ),
-                  SizedBox(height: 16.0),
+                  const SizedBox(height: 16.0),
                   Text(
                     'Error Code: ${controller.value.errorCode}',
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Colors.grey,
                       fontWeight: FontWeight.w300,
                     ),
@@ -304,7 +305,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
           if (!controller.flags.hideThumbnail)
             AnimatedOpacity(
               opacity: controller.value.isPlaying ? 0 : 1,
-              duration: Duration(milliseconds: 300),
+              duration: const Duration(milliseconds: 300),
               child: Image.network(
                 widget.thumbnailUrl ??
                     YoutubePlayer.getThumbnail(
@@ -321,7 +322,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
               ),
             ),
           if (!controller.flags.hideControls &&
-              controller.value.position > Duration(milliseconds: 100) &&
+              controller.value.position > const Duration(milliseconds: 100) &&
               !controller.value.isControlsVisible &&
               widget.showVideoProgressIndicator &&
               !controller.flags.isLive &&
@@ -351,22 +352,25 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                         controller.value.isControlsVisible
                     ? 1
                     : 0,
-                duration: Duration(milliseconds: 300),
+                duration: const Duration(milliseconds: 300),
                 child: controller.flags.isLive
                     ? LiveBottomBar(liveUIColor: widget.liveUIColor)
                     : Padding(
                         padding: widget.bottomActions == null
-                            ? EdgeInsets.all(0.0)
+                            ? const EdgeInsets.all(0.0)
                             : widget.actionsPadding,
                         child: Row(
                           children: widget.bottomActions ??
                               [
-                                SizedBox(width: 14.0),
+                                const SizedBox(width: 14.0),
                                 CurrentPosition(),
-                                SizedBox(width: 8.0),
-                                ProgressBar(isExpanded: true, colors: widget.progressColors,),
+                                const SizedBox(width: 8.0),
+                                ProgressBar(
+                                  isExpanded: true,
+                                  colors: widget.progressColors,
+                                ),
                                 RemainingDuration(),
-                                PlaybackSpeedButton(),
+                                const PlaybackSpeedButton(),
                                 FullScreenButton(),
                               ],
                         ),
@@ -382,7 +386,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                         controller.value.isControlsVisible
                     ? 1
                     : 0,
-                duration: Duration(milliseconds: 300),
+                duration: const Duration(milliseconds: 300),
                 child: Padding(
                   padding: widget.actionsPadding,
                   child: Row(

@@ -154,7 +154,7 @@ class _ProgressBarState extends State<ProgressBar> {
       onHorizontalDragCancel: _dragEndActions,
       child: Container(
         color: Colors.transparent,
-        constraints: BoxConstraints.expand(height: 7.0 * 2),
+        constraints: const BoxConstraints.expand(height: 7.0 * 2),
         child: CustomPaint(
           painter: _ProgressBarPainter(
             progressWidth: 2.0,

@@ -293,7 +293,7 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
           isControlsVisible: false,
           playerState: PlayerState.unknown,
           hasPlayed: false,
-          position: Duration(),
+          position: Duration.zero,
           buffered: 0.0,
           errorCode: 0,
           isLoaded: false,
