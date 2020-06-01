@@ -11,7 +11,7 @@ import 'video_list.dart';
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setSystemUIOverlayStyle(
-    SystemUiOverlayStyle(
+    const SystemUiOverlayStyle(
       statusBarColor: Colors.blueAccent,
     ),
   );
@@ -27,7 +27,7 @@ class YoutubePlayerDemoApp extends StatelessWidget {
       title: 'Youtube Player Flutter',
       theme: ThemeData(
         primarySwatch: Colors.blue,
-        appBarTheme: AppBarTheme(
+        appBarTheme: const AppBarTheme(
           color: Colors.blueAccent,
           textTheme: TextTheme(
             headline6: TextStyle(
@@ -37,7 +37,7 @@ class YoutubePlayerDemoApp extends StatelessWidget {
             ),
           ),
         ),
-        iconTheme: IconThemeData(
+        iconTheme: const IconThemeData(
           color: Colors.blueAccent,
         ),
       ),
@@ -66,7 +66,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   final List<String> _ids = [
     'nPt8bK2gbaU',
-    'qiYKD1FZ5YM',
     'gQDByCdjUXw',
     'iLnmTe5Q2Qw',
     '_WoCV4c6XOE',
@@ -82,7 +81,7 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     _controller = YoutubePlayerController(
       initialVideoId: _ids.first,
-      flags: YoutubePlayerFlags(
+      flags: const YoutubePlayerFlags(
         mute: false,
         autoPlay: true,
         disableDragSeek: false,
@@ -94,7 +93,7 @@ class _MyHomePageState extends State<MyHomePage> {
     )..addListener(listener);
     _idController = TextEditingController();
     _seekToController = TextEditingController();
-    _videoMetaData = YoutubeMetaData();
+    _videoMetaData = const YoutubeMetaData();
     _playerState = PlayerState.unknown;
   }
 
@@ -130,11 +129,11 @@ class _MyHomePageState extends State<MyHomePage> {
         showVideoProgressIndicator: true,
         progressIndicatorColor: Colors.blueAccent,
         topActions: <Widget>[
-          SizedBox(width: 8.0),
+          const SizedBox(width: 8.0),
           Expanded(
             child: Text(
               _controller.metadata.title,
-              style: TextStyle(
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 18.0,
               ),
@@ -143,7 +142,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
           ),
           IconButton(
-            icon: Icon(
+            icon: const Icon(
               Icons.settings,
               color: Colors.white,
               size: 25.0,
@@ -172,13 +171,13 @@ class _MyHomePageState extends State<MyHomePage> {
               fit: BoxFit.fitWidth,
             ),
           ),
-          title: Text(
+          title: const Text(
             'Youtube Player Flutter',
             style: TextStyle(color: Colors.white),
           ),
           actions: [
             IconButton(
-              icon: Icon(Icons.video_library),
+              icon: const Icon(Icons.video_library),
               onPressed: () => Navigator.push(
                 context,
                 CupertinoPageRoute(
@@ -192,7 +191,7 @@ class _MyHomePageState extends State<MyHomePage> {
           children: [
             player,
             Padding(
-              padding: EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(8.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -209,7 +208,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         'Playback Quality',
                         _controller.value.playbackQuality,
                       ),
-                      Spacer(),
+                      const Spacer(),
                       _text(
                         'Playback Rate',
                         '${_controller.value.playbackRate}x  ',
@@ -225,12 +224,12 @@ class _MyHomePageState extends State<MyHomePage> {
                       hintText: 'Enter youtube \<video id\> or \<link\>',
                       fillColor: Colors.blueAccent.withAlpha(20),
                       filled: true,
-                      hintStyle: TextStyle(
+                      hintStyle: const TextStyle(
                         fontWeight: FontWeight.w300,
                         color: Colors.blueAccent,
                       ),
                       suffixIcon: IconButton(
-                        icon: Icon(Icons.clear),
+                        icon: const Icon(Icons.clear),
                         onPressed: () => _idController.clear(),
                       ),
                     ),
@@ -239,7 +238,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   Row(
                     children: [
                       _loadCueButton('LOAD'),
-                      SizedBox(width: 10.0),
+                      const SizedBox(width: 10.0),
                       _loadCueButton('CUE'),
                     ],
                   ),
@@ -248,7 +247,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       IconButton(
-                        icon: Icon(Icons.skip_previous),
+                        icon: const Icon(Icons.skip_previous),
                         onPressed: _isPlayerReady
                             ? () => _controller.load(_ids[
                                 (_ids.indexOf(_controller.metadata.videoId) -
@@ -289,7 +288,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         color: Colors.blueAccent,
                       ),
                       IconButton(
-                        icon: Icon(Icons.skip_next),
+                        icon: const Icon(Icons.skip_next),
                         onPressed: _isPlayerReady
                             ? () => _controller.load(_ids[
                                 (_ids.indexOf(_controller.metadata.videoId) +
@@ -302,7 +301,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   _space,
                   Row(
                     children: <Widget>[
-                      Text(
+                      const Text(
                         "Volume",
                         style: TextStyle(fontWeight: FontWeight.w300),
                       ),
@@ -328,15 +327,15 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                   _space,
                   AnimatedContainer(
-                    duration: Duration(milliseconds: 800),
+                    duration: const Duration(milliseconds: 800),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(20.0),
                       color: _getStateColor(_playerState),
                     ),
-                    padding: EdgeInsets.all(8.0),
+                    padding: const EdgeInsets.all(8.0),
                     child: Text(
                       _playerState.toString(),
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontWeight: FontWeight.w300,
                         color: Colors.white,
                       ),
@@ -356,14 +355,14 @@ class _MyHomePageState extends State<MyHomePage> {
     return RichText(
       text: TextSpan(
         text: '$title : ',
-        style: TextStyle(
+        style: const TextStyle(
           color: Colors.blueAccent,
           fontWeight: FontWeight.bold,
         ),
         children: [
           TextSpan(
             text: value ?? '',
-            style: TextStyle(
+            style: const TextStyle(
               color: Colors.blueAccent,
               fontWeight: FontWeight.w300,
             ),
@@ -394,7 +393,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  Widget get _space => SizedBox(height: 10);
+  Widget get _space => const SizedBox(height: 10);
 
   Widget _loadCueButton(String action) {
     return Expanded(
@@ -420,7 +419,7 @@ class _MyHomePageState extends State<MyHomePage> {
           padding: const EdgeInsets.symmetric(vertical: 14.0),
           child: Text(
             action,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 18.0,
               color: Colors.white,
               fontWeight: FontWeight.w300,
@@ -438,7 +437,7 @@ class _MyHomePageState extends State<MyHomePage> {
         content: Text(
           message,
           textAlign: TextAlign.center,
-          style: TextStyle(
+          style: const TextStyle(
             fontWeight: FontWeight.w300,
             fontSize: 16.0,
           ),

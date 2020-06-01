@@ -27,6 +27,20 @@ class ProgressBarColors {
     this.bufferedColor,
     this.handleColor,
   });
+
+  ///
+  ProgressBarColors copyWith({
+    Color backgroundColor,
+    Color playedColor,
+    Color bufferedColor,
+    Color handleColor,
+  }) =>
+      ProgressBarColors(
+        backgroundColor: backgroundColor ?? this.backgroundColor,
+        handleColor: handleColor ?? this.handleColor,
+        bufferedColor: bufferedColor ?? this.bufferedColor,
+        playedColor: playedColor ?? this.playedColor,
+      );
 }
 
 /// A widget to display video progress bar.

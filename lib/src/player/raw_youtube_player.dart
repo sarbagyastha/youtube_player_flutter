@@ -30,7 +30,8 @@ class RawYoutubePlayer extends StatefulWidget {
   _RawYoutubePlayerState createState() => _RawYoutubePlayerState();
 }
 
-class _RawYoutubePlayerState extends State<RawYoutubePlayer> with WidgetsBindingObserver {
+class _RawYoutubePlayerState extends State<RawYoutubePlayer>
+    with WidgetsBindingObserver {
   YoutubePlayerController controller;
   PlayerState _cachedPlayerState;
   bool _isPlayerReady = false;
@@ -51,7 +52,8 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer> with WidgetsBinding
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.resumed:
-        if (_cachedPlayerState != null && _cachedPlayerState == PlayerState.playing) {
+        if (_cachedPlayerState != null &&
+            _cachedPlayerState == PlayerState.playing) {
           controller?.play();
         }
         break;
@@ -86,7 +88,8 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer> with WidgetsBinding
           ),
         ),
         onWebViewCreated: (webController) {
-          controller.updateValue(controller.value.copyWith(webViewController: webController));
+          controller.updateValue(
+              controller.value.copyWith(webViewController: webController));
           webController
             ..addJavaScriptHandler(
               handlerName: 'Ready',
@@ -156,17 +159,17 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer> with WidgetsBinding
               handlerName: 'PlaybackQualityChange',
               callback: (args) {
                 controller.updateValue(
-                  controller.value.copyWith(playbackQuality: args.first as String),
+                  controller.value
+                      .copyWith(playbackQuality: args.first as String),
                 );
               },
             )
             ..addJavaScriptHandler(
               handlerName: 'PlaybackRateChange',
               callback: (args) {
-                final _rawRate = args.first;
-                final double rate = _rawRate is int ? _rawRate.toDouble() : _rawRate;
+                final num rate = args.first;
                 controller.updateValue(
-                  controller.value.copyWith(playbackRate: rate),
+                  controller.value.copyWith(playbackRate: rate.toDouble()),
                 );
               },
             )
@@ -182,18 +185,20 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer> with WidgetsBinding
               handlerName: 'VideoData',
               callback: (args) {
                 controller.updateValue(
-                  controller.value.copyWith(metaData: YoutubeMetaData.fromRawData(args.first)),
+                  controller.value.copyWith(
+                      metaData: YoutubeMetaData.fromRawData(args.first)),
                 );
               },
             )
             ..addJavaScriptHandler(
               handlerName: 'VideoTime',
               callback: (args) {
-                final position = (args.first as double) * 1000;
+                final position = args.first * 1000;
+                final num buffered = args.last;
                 controller.updateValue(
                   controller.value.copyWith(
                     position: Duration(milliseconds: position.floor()),
-                    buffered: args.last as double,
+                    buffered: buffered.toDouble(),
                   ),
                 );
               },
@@ -204,8 +209,6 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer> with WidgetsBinding
             controller.updateValue(
               controller.value.copyWith(isReady: true),
             );
-          } else {
-            controller.reload();
           }
         },
       ),

@@ -1,3 +1,9 @@
+## 7.0.0+2
+* Added `onEnterFullScreen` & `onExitFullScreen` callback to `YoutubePlayerBuilder`.
+* Player switches back to normal mode on system back, if on fullscreen.
+* Added `thumbnail` parameter to `YoutubePlayer`, removed `thumbnailUrl`. Now any widget can be used as thumbnail.
+* Fixed issues with progress colors.
+
 ## 7.0.0+1
 * **(Fixed)** random crashes
 * **(Fixed)** issues with orientation
