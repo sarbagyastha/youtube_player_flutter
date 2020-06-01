@@ -81,6 +81,7 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
           mimeType: 'text/html',
         ),
         initialOptions: InAppWebViewGroupOptions(
+          ios: IOSInAppWebViewOptions(allowsInlineMediaPlayback: true),
           crossPlatform: InAppWebViewOptions(
             userAgent: userAgent,
             mediaPlaybackRequiresUserGesture: false,
@@ -247,7 +248,6 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
                     height: '100%',
                     width: '100%',
                     videoId: '${controller.initialVideoId}',
-                    host: 'https://www.youtube.com',
                     playerVars: {
                         'controls': 0,
                         'playsinline': 1,
