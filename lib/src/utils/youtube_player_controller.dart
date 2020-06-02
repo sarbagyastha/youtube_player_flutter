@@ -274,13 +274,6 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
       ]);
     } else {
       SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-      Future.delayed(const Duration(seconds: 1), () {
-        if (!value.isFullScreen) {
-          SystemChrome.setPreferredOrientations(
-            DeviceOrientation.values,
-          );
-        }
-      });
     }
   }
 

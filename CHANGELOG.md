@@ -1,3 +1,6 @@
+## 7.0.0+3
+* Fixed `onExitFullScreen` callback.
+
 ## 7.0.0+2
 * Added `onEnterFullScreen` & `onExitFullScreen` callback to `YoutubePlayerBuilder`.
 * Player switches back to normal mode on system back, if on fullscreen.

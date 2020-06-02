@@ -57,7 +57,7 @@ class _YoutubePlayerBuilderState extends State<YoutubePlayerBuilder>
     } else {
       controller.updateValue(controller.value.copyWith(isFullScreen: false));
       SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
-      if (widget.onExitFullScreen != null) widget.onEnterFullScreen();
+      if (widget.onExitFullScreen != null) widget.onExitFullScreen();
     }
     super.didChangeMetrics();
   }
