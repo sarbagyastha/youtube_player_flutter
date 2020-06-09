@@ -35,6 +35,7 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
   YoutubePlayerController controller;
   PlayerState _cachedPlayerState;
   bool _isPlayerReady = false;
+  bool _onLoadStopCalled = false;
 
   @override
   void initState() {
@@ -94,7 +95,14 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
           webController
             ..addJavaScriptHandler(
               handlerName: 'Ready',
-              callback: (_) => _isPlayerReady = true,
+              callback: (_) {
+                _isPlayerReady = true;
+                if (_onLoadStopCalled) {
+                  controller.updateValue(
+                    controller.value.copyWith(isReady: true),
+                  );
+                }
+              },
             )
             ..addJavaScriptHandler(
               handlerName: 'StateChange',
@@ -206,6 +214,7 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
             );
         },
         onLoadStop: (_, __) {
+          _onLoadStopCalled = true;
           if (_isPlayerReady) {
             controller.updateValue(
               controller.value.copyWith(isReady: true),
@@ -315,12 +324,12 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
                 player.cueVideoById(id, startAt, endAt);
                 return '';
             }
-            
+
             function loadPlaylist(playlist, index, startAt) {
                 player.loadPlaylist(playlist, 'playlist', index, startAt);
                 return '';
             }
-            
+
             function cuePlaylist(playlist, index, startAt) {
                 player.cuePlaylist(playlist, 'playlist', index, startAt);
                 return '';
@@ -355,7 +364,7 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
                 player.setPlaybackRate(rate);
                 return '';
             }
-            
+
             function setTopMargin(margin) {
                 document.getElementById("player").style.marginTop = margin;
                 return '';
