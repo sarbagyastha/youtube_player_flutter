@@ -289,6 +289,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
   }
 
   Widget _buildPlayer({Widget errorWidget}) {
+    final EdgeInsets padding = MediaQuery.of(context).padding;
     return AspectRatio(
       aspectRatio: _aspectRatio,
       child: Stack(
@@ -297,7 +298,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
         children: [
           Transform.scale(
             scale: controller.value.isFullScreen
-                ? (1 / _aspectRatio * MediaQuery.of(context).size.width) /
+                ? (1 / _aspectRatio * (MediaQuery.of(context).size.width - padding.right - padding.left - padding.bottom)) /
                     MediaQuery.of(context).size.height
                 : 1,
             child: RawYoutubePlayer(
