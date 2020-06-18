@@ -187,22 +187,22 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
   void pause() => _callMethod('pause()');
 
   /// Loads the video as per the [videoId] provided.
-  void load(String videoId, {int startAt = 0}) {
+  void load(String videoId, {int startAt = 0, int endAt = 0}) {
     _updateValues(videoId);
     if (value.errorCode == 1) {
       pause();
     } else {
-      _callMethod('loadById("$videoId",$startAt)');
+      _callMethod('loadById("$videoId",$startAt,$endAt)');
     }
   }
 
   /// Cues the video as per the [videoId] provided.
-  void cue(String videoId, {int startAt = 0}) {
+  void cue(String videoId, {int startAt = 0, int endAt = 0}) {
     _updateValues(videoId);
     if (value.errorCode == 1) {
       pause();
     } else {
-      _callMethod('cueById("$videoId",$startAt)');
+      _callMethod('cueById("$videoId",$startAt,$endAt)');
     }
   }
 

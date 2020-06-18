@@ -59,6 +59,16 @@ class YoutubePlayerFlags {
   /// Default is false.
   final bool forceHD;
 
+  /// Specifies the default starting point of the video in seconds
+  ///
+  /// Default is 0.
+  final int startAt;
+
+  /// Specifies the default end point of the video in seconds
+  ///
+  /// Default is 0.
+  final int endAt;
+
   /// Creates [YoutubePlayerFlags].
   const YoutubePlayerFlags({
     this.hideControls = false,
@@ -72,6 +82,8 @@ class YoutubePlayerFlags {
     this.captionLanguage = 'en',
     this.loop = false,
     this.forceHD = false,
+    this.startAt = 0,
+    this.endAt = 0,
   });
 
   /// Copies new values assigned to the [YoutubePlayerFlags].
