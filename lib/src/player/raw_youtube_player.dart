@@ -230,6 +230,7 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
                 position: fixed;
                 height: 100%;
                 width: 100%;
+                pointer-events: none;
             }
         </style>
         <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
