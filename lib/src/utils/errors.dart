@@ -14,9 +14,11 @@ String errorString(int errorCode, {String videoId = ''}) {
     case 100:
       return 'The video requested was not found.';
     case 101:
-      return 'The owner of the requested video does not allow it to be played.';
+      return 'Playback on other apps has been disabled by the video owner.';
+    case 105:
+      return 'Exact error cannot be determined for this video.';
     case 150:
-      return 'The owner of the requested video may not allow it to be played.';
+      return 'Playback on other apps has been disabled by the video owner.';
     default:
       return 'Unknown Error';
   }

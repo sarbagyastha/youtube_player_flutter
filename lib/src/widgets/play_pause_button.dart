@@ -94,6 +94,7 @@ class _PlayPauseButtonState extends State<PlayPauseButton>
         ),
       );
     }
+    if (_controller.value.hasError) return const SizedBox();
     return widget.bufferIndicator ??
         Container(
           width: 70.0,

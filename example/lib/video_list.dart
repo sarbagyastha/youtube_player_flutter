@@ -22,7 +22,7 @@ class _VideoListState extends State<VideoList> {
       .map<YoutubePlayerController>(
         (videoId) => YoutubePlayerController(
           initialVideoId: videoId,
-          flags: YoutubePlayerFlags(
+          flags: const YoutubePlayerFlags(
             autoPlay: false,
           ),
         ),
@@ -33,26 +33,26 @@ class _VideoListState extends State<VideoList> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Video List Demo'),
+        title: const Text('Video List Demo'),
       ),
       body: ListView.separated(
         itemBuilder: (context, index) {
           return YoutubePlayer(
             key: ObjectKey(_controllers[index]),
             controller: _controllers[index],
-            actionsPadding: EdgeInsets.only(left: 16.0),
+            actionsPadding: const EdgeInsets.only(left: 16.0),
             bottomActions: [
               CurrentPosition(),
-              SizedBox(width: 10.0),
+              const SizedBox(width: 10.0),
               ProgressBar(isExpanded: true),
-              SizedBox(width: 10.0),
+              const SizedBox(width: 10.0),
               RemainingDuration(),
               FullScreenButton(),
             ],
           );
         },
         itemCount: _controllers.length,
-        separatorBuilder: (context, _) => SizedBox(height: 10.0),
+        separatorBuilder: (context, _) => const SizedBox(height: 10.0),
       ),
     );
   }

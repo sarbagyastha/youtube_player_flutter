@@ -55,6 +55,9 @@ Set `minSdkVersion` of your `android/app/build.gradle` file to at least 17.
 
 For more info, [see here](https://pub.dev/packages/flutter_inappwebview#important-note-for-android)
 
+*Note:* Although the minimum to be set is 17, the player won't play on device with API < 20. 
+For API < 20 devices, you might want to forward the video to be played using YouTube app instead, using packages like `url_launcher` or `android_intent`.
+
 #### Using Youtube Player
          
 ```dart

@@ -1,3 +1,10 @@
+## 7.0.0+5
+* Revert padding on fullscreen.
+
+## 7.0.0+4
+* Updated dependencies. Fixes [#262](https://github.com/sarbagyastha/youtube_player_flutter/issues/262)
+* Added clear error description for 101, 105 and 150 error codes.
+
 ## 7.0.0+3
 * Fixed `onExitFullScreen` callback.
 
