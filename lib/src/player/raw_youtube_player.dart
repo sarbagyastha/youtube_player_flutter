@@ -318,31 +318,13 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
                 return '';
             }
 
-            function loadById(id, startAt, endAt) {
-                var loadParams = {
-                  videoId: id,
-                  startSeconds: startAt
-                };
-
-                if (endAt) {
-                  loadParams.endSeconds = endAt;
-                }
-
-                player.loadVideoById(loadParams);
+            function loadById(loadSettings) {
+                player.loadVideoById(loadSettings);
                 return '';
             }
 
-            function cueById(id, startAt, endAt) {
-                var cueParams = {
-                  videoId: id,
-                  startSeconds: startAt
-                };
-
-                if (endAt) {
-                  cueParams.endSeconds = endAt;
-                }
-
-                player.cueVideoById(cueParams);
+            function cueById(cueSettings) {
+                player.cueVideoById(cueSettings);
                 return '';
             }
 
