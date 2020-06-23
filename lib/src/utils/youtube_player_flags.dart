@@ -65,8 +65,6 @@ class YoutubePlayerFlags {
   final int startAt;
 
   /// Specifies the default end point of the video in seconds
-  ///
-  /// Default is 0.
   final int endAt;
 
   /// Creates [YoutubePlayerFlags].
@@ -83,7 +81,7 @@ class YoutubePlayerFlags {
     this.loop = false,
     this.forceHD = false,
     this.startAt = 0,
-    this.endAt = 0,
+    this.endAt,
   });
 
   /// Copies new values assigned to the [YoutubePlayerFlags].
@@ -99,6 +97,8 @@ class YoutubePlayerFlags {
     bool enableCaption,
     bool forceHD,
     String captionLanguage,
+    int startAt,
+    int endAt,
   }) {
     return YoutubePlayerFlags(
       autoPlay: autoPlay ?? this.autoPlay,
@@ -111,6 +111,8 @@ class YoutubePlayerFlags {
       loop: loop ?? this.loop,
       mute: mute ?? this.mute,
       forceHD: forceHD ?? this.forceHD,
+      startAt: startAt ?? this.startAt,
+      endAt: endAt ?? this.endAt,
     );
   }
 }
