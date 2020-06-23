@@ -1,3 +1,8 @@
+## 7.0.0+6
+* **(Improvements)** Added support for `endAt` in load and cue methods as well as `startAt` and `endAt` in video initialization.
+* **(Fixed)** Sticky video watermarks in iOS. Fixes[#208](https://github.com/sarbagyastha/youtube_player_flutter/issues/208)
+* **(Fixed)** Timing and Sizing Issue [#249](https://github.com/sarbagyastha/youtube_player_flutter/pull/249)
+
 ## 7.0.0+5
 * Revert padding on fullscreen.
 
