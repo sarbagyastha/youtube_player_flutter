@@ -90,6 +90,10 @@ class _MyHomePageState extends State<MyHomePage> {
         forceHD: false,
         enableCaption: true,
       ),
+      onExitFullScreen: () {
+        // The player forces portraitUp after exiting fullscreen. This overrides the behaviour.
+        SystemChrome.setPreferredOrientations(DeviceOrientation.values);
+      },
     )..addListener(listener);
     _idController = TextEditingController();
     _seekToController = TextEditingController();
@@ -124,10 +128,6 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return YoutubePlayerBuilder(
-      onExitFullScreen: () {
-        // The player forces portraitUp after exiting fullscreen. This overrides the behaviour.
-        SystemChrome.setPreferredOrientations(DeviceOrientation.values);
-      },
       player: YoutubePlayer(
         controller: _controller,
         showVideoProgressIndicator: true,

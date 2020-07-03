@@ -152,12 +152,20 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
   /// The video id with which the player initializes.
   final String initialVideoId;
 
+  /// Callback to notify that the player has entered fullscreen.
+  final VoidCallback onEnterFullScreen;
+
+  /// Callback to notify that the player has exited fullscreen.
+  final VoidCallback onExitFullScreen;
+
   /// Composes all the flags required to control the player.
   final YoutubePlayerFlags flags;
 
   /// Creates [YoutubePlayerController].
   YoutubePlayerController({
     @required this.initialVideoId,
+    this.onEnterFullScreen,
+    this.onExitFullScreen,
     this.flags = const YoutubePlayerFlags(),
   })  : assert(initialVideoId != null, 'initialVideoId can\'t be null.'),
         assert(flags != null),
@@ -280,8 +288,10 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
         DeviceOrientation.landscapeLeft,
         DeviceOrientation.landscapeRight,
       ]);
+      if (onEnterFullScreen != null) onEnterFullScreen();
     } else {
       SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+      if (onExitFullScreen != null) onExitFullScreen();
     }
   }
 

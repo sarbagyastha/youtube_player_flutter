@@ -11,19 +11,11 @@ class YoutubePlayerBuilder extends StatefulWidget {
   /// Builds the widget below this [builder].
   final Widget Function(BuildContext, Widget) builder;
 
-  /// Callback to notify that the player has entered fullscreen.
-  final VoidCallback onEnterFullScreen;
-
-  /// Callback to notify that the player has exited fullscreen.
-  final VoidCallback onExitFullScreen;
-
   /// Builder for [YoutubePlayer] that supports switching between fullscreen and normal mode.
   const YoutubePlayerBuilder({
     Key key,
     @required this.player,
     @required this.builder,
-    this.onEnterFullScreen,
-    this.onExitFullScreen,
   }) : super(key: key);
 
   @override
@@ -53,11 +45,9 @@ class _YoutubePlayerBuilderState extends State<YoutubePlayerBuilder>
     if (physicalSize.width > physicalSize.height) {
       controller.updateValue(controller.value.copyWith(isFullScreen: true));
       SystemChrome.setEnabledSystemUIOverlays([]);
-      if (widget.onEnterFullScreen != null) widget.onEnterFullScreen();
     } else {
       controller.updateValue(controller.value.copyWith(isFullScreen: false));
       SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
-      if (widget.onExitFullScreen != null) widget.onExitFullScreen();
     }
     super.didChangeMetrics();
   }
