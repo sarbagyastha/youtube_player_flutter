@@ -304,7 +304,9 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
               key: widget.key,
               onEnded: (YoutubeMetaData metaData) {
                 if (controller.flags.loop) {
-                  controller.load(controller.metadata.videoId, startAt: controller.flags.startAt, endAt: controller.flags.endAt);
+                  controller.load(controller.metadata.videoId,
+                      startAt: controller.flags.startAt,
+                      endAt: controller.flags.endAt);
                 }
                 if (widget.onEnded != null) {
                   widget.onEnded(metaData);
