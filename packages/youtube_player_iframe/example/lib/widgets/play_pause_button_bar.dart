@@ -21,11 +21,15 @@ class PlayPauseButtonBar extends StatelessWidget {
           builder: (context, value) {
             return IconButton(
               icon: Icon(
-                value.playerState == PlayerState.playing ? Icons.pause : Icons.play_arrow,
+                value.playerState == PlayerState.playing
+                    ? Icons.pause
+                    : Icons.play_arrow,
               ),
               onPressed: value.isReady
                   ? () {
-                      value.playerState == PlayerState.playing ? context.ytController.pause() : context.ytController.play();
+                      value.playerState == PlayerState.playing
+                          ? context.ytController.pause()
+                          : context.ytController.play();
                     }
                   : null,
             );
@@ -38,7 +42,9 @@ class PlayPauseButtonBar extends StatelessWidget {
               icon: Icon(isMuted ? Icons.volume_off : Icons.volume_up),
               onPressed: () {
                 _isMuted.value = !isMuted;
-                isMuted ? context.ytController.unMute() : context.ytController.mute();
+                isMuted
+                    ? context.ytController.unMute()
+                    : context.ytController.mute();
               },
             );
           },

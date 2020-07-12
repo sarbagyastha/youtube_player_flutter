@@ -1,3 +1,6 @@
+## 7.0.0+7
+* Updated dependencies
+
 ## 7.0.0+6
 * **(Improvements)** Added support for `endAt` in load and cue methods as well as `startAt` and `endAt` in video initialization.
 * **(Fixed)** Sticky video watermarks in iOS. Fixes[#208](https://github.com/sarbagyastha/youtube_player_flutter/issues/208)
