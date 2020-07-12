@@ -21,7 +21,7 @@ Supported Platforms:
 
 ![YOUTUBE PLAYER IFRAME](youtube_player_iframe.png)
 
-[WEB DEMO](http://sarbagya.me/youtube_player_flutter)
+[Click here for WEB DEMO](http://sarbagya.me/youtube_player_flutter)
 
 ## Salient Features
 * Inline Playback
