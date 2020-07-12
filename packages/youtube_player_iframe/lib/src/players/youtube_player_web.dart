@@ -46,6 +46,7 @@ class _WebYoutubePlayerState extends State<RawYoutubePlayer> {
   void initState() {
     super.initState();
     controller = widget.controller;
+    // ignore: undefined_prefixed_name
     ui.platformViewRegistry.registerViewFactory(
       _viewType,
       (int id) => _iFrame ??= IFrameElement()
@@ -115,8 +116,7 @@ class _WebYoutubePlayerState extends State<RawYoutubePlayer> {
 
         if (data.containsKey('PlaybackQualityChange')) {
           controller.add(
-            controller.value.copyWith(
-                playbackQuality: data['PlaybackQualityChange'] as String),
+            controller.value.copyWith(playbackQuality: data['PlaybackQualityChange'] as String),
           );
         }
 
@@ -135,8 +135,7 @@ class _WebYoutubePlayerState extends State<RawYoutubePlayer> {
 
         if (data.containsKey('VideoData')) {
           controller.add(
-            controller.value.copyWith(
-                metaData: YoutubeMetaData.fromRawData(data['VideoData'])),
+            controller.value.copyWith(metaData: YoutubeMetaData.fromRawData(data['VideoData'])),
           );
         }
 
