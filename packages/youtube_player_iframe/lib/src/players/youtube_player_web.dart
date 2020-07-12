@@ -116,7 +116,8 @@ class _WebYoutubePlayerState extends State<RawYoutubePlayer> {
 
         if (data.containsKey('PlaybackQualityChange')) {
           controller.add(
-            controller.value.copyWith(playbackQuality: data['PlaybackQualityChange'] as String),
+            controller.value.copyWith(
+                playbackQuality: data['PlaybackQualityChange'] as String),
           );
         }
 
@@ -135,7 +136,8 @@ class _WebYoutubePlayerState extends State<RawYoutubePlayer> {
 
         if (data.containsKey('VideoData')) {
           controller.add(
-            controller.value.copyWith(metaData: YoutubeMetaData.fromRawData(data['VideoData'])),
+            controller.value.copyWith(
+                metaData: YoutubeMetaData.fromRawData(data['VideoData'])),
           );
         }
 

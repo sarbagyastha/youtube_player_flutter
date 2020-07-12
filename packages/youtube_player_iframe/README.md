@@ -19,6 +19,10 @@ Supported Platforms:
 - **iOS**
 - **Web**
 
+![YOUTUBE PLAYER IFRAME](youtube_player_iframe.png)
+
+[WEB DEMO](http://sarbagya.me/youtube_player_flutter)
+
 ## Salient Features
 * Inline Playback
 * Supports captions
