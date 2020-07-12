@@ -26,7 +26,7 @@ class RawYoutubePlayer extends StatefulWidget {
   final YoutubePlayerController controller;
 
   /// Creates a [RawYoutubePlayer] widget.
-  RawYoutubePlayer(
+  const RawYoutubePlayer(
     this.controller, {
     this.key,
   });
@@ -78,7 +78,7 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
   @override
   Widget build(BuildContext context) {
     return InAppWebView(
-      key: widget.key,
+      key: ValueKey(controller.hashCode),
       initialData: InAppWebViewInitialData(
         data: player,
         baseUrl: 'https://www.youtube.com',

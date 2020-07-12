@@ -4,6 +4,7 @@
 
 import 'dart:developer';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
@@ -26,7 +27,7 @@ class YoutubeApp extends StatelessWidget {
       title: 'Youtube Player IFrame Demo',
       theme: ThemeData(
         primarySwatch: Colors.deepPurple,
-        iconTheme: IconThemeData(color: Colors.deepPurpleAccent),
+        iconTheme: const IconThemeData(color: Colors.deepPurpleAccent),
       ),
       debugShowCheckedModeBanner: false,
       home: YoutubeAppDemo(),
@@ -47,7 +48,7 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
     super.initState();
     _controller = YoutubePlayerController(
       initialVideoId: 'K18cpp_-gP8',
-      params: YoutubePlayerParams(
+      params: const YoutubePlayerParams(
         playlist: [
           'nPt8bK2gbaU',
           'gQDByCdjUXw',
@@ -59,12 +60,12 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
           '7QUtEmBT_-w',
           '34_PXCzGw1M',
         ],
-        startAt: Duration(seconds: 30),
+        startAt: const Duration(seconds: 30),
         showControls: true,
         showFullscreenButton: true,
       ),
     )..listen((event) {
-        log(event.toString());
+        //log(event.toString());
       });
     _controller.onEnterFullscreen = () => log('Entered Fullscreen');
     _controller.onExitFullscreen = () {
@@ -78,28 +79,34 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
 
   @override
   Widget build(BuildContext context) {
+    const player = YoutubePlayerIFrame();
     return YoutubePlayerControllerProvider(
       // Passing controller to widgets below.
       controller: _controller,
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Youtube Player Demo'),
+          title: const Text('Youtube Player Demo'),
         ),
         body: LayoutBuilder(
           builder: (context, constraints) {
-            if (constraints.maxWidth > 800) {
+            if (kIsWeb && constraints.maxWidth > 800) {
               return Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(child: YoutubePlayerIFrame()),
-                  SizedBox(width: 500, child: Controls()),
+                  const Expanded(child: player),
+                  const SizedBox(
+                    width: 500,
+                    child: SingleChildScrollView(
+                      child: Controls(),
+                    ),
+                  ),
                 ],
               );
             }
             return ListView(
               children: [
-                YoutubePlayerIFrame(),
-                Controls(),
+                player,
+                const Controls(),
               ],
             );
           },
@@ -116,6 +123,8 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
 }
 
 class Controls extends StatelessWidget {
+  const Controls();
+
   @override
   Widget build(BuildContext context) {
     return Padding(
