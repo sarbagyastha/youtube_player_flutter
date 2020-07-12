@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 class PlayPauseButtonBar extends StatelessWidget {
+  final ValueNotifier<bool> _isMuted = ValueNotifier(false);
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -20,35 +21,26 @@ class PlayPauseButtonBar extends StatelessWidget {
           builder: (context, value) {
             return IconButton(
               icon: Icon(
-                value.playerState == PlayerState.playing
-                    ? Icons.pause
-                    : Icons.play_arrow,
+                value.playerState == PlayerState.playing ? Icons.pause : Icons.play_arrow,
               ),
               onPressed: value.isReady
                   ? () {
-                      value.playerState == PlayerState.playing
-                          ? context.ytController.pause()
-                          : context.ytController.play();
+                      value.playerState == PlayerState.playing ? context.ytController.pause() : context.ytController.play();
                     }
                   : null,
             );
           },
         ),
-        FutureBuilder<bool>(
-          future: context.ytController.isMuted(),
-          initialData: false,
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              return IconButton(
-                icon: Icon(snapshot.data ? Icons.volume_off : Icons.volume_up),
-                onPressed: () {
-                  snapshot.data
-                      ? context.ytController.unMute()
-                      : context.ytController.mute();
-                },
-              );
-            }
-            return const SizedBox();
+        ValueListenableBuilder<bool>(
+          valueListenable: _isMuted,
+          builder: (context, isMuted, _) {
+            return IconButton(
+              icon: Icon(isMuted ? Icons.volume_off : Icons.volume_up),
+              onPressed: () {
+                _isMuted.value = !isMuted;
+                isMuted ? context.ytController.unMute() : context.ytController.mute();
+              },
+            );
           },
         ),
         IconButton(

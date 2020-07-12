@@ -139,7 +139,6 @@ loadPlaylist(list, {listType, startAt, index})      | Loads the specified list a
 cuePlaylist(list, {listType, startAt, index})       | Queues the specified list of videos.
 mute()                                              | Mutes the player.
 unMute()                                            | Unmutes the player.
-isMuted()                                           | Determines whether or not the player is muted.
 setVolume(volume)                                   | Sets the volume of player.
 seekTo(position, {allowSeekAhead})                  | Seeks to a specified time in the video.
 setSize(size)                                       | Sets the size in pixels of the player.
@@ -155,6 +154,7 @@ invokeJavascript(function)                          | Invoke custom javascript f
 
 ## Youtube Player Parameters
 All the available parameters.
+
 Parameter                  | Description
 ------------               | ---------------
 autoPlay                   | Specifies whether the initial video will automatically start to play when the player loads. **Default = true**

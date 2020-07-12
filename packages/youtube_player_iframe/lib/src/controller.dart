@@ -21,8 +21,7 @@ import 'player_value.dart';
 /// The video is displayed in a Flutter app by creating a [YoutubePlayerIFrame] widget.
 ///
 /// After [YoutubePlayerController.close] all further calls are ignored.
-class YoutubePlayerController extends Stream<YoutubePlayerValue>
-    implements Sink<YoutubePlayerValue> {
+class YoutubePlayerController extends Stream<YoutubePlayerValue> implements Sink<YoutubePlayerValue> {
   /// Creates [YoutubePlayerController].
   YoutubePlayerController({
     @required this.initialVideoId,
@@ -44,8 +43,7 @@ class YoutubePlayerController extends Stream<YoutubePlayerValue>
   /// Called when player exits fullscreen.
   VoidCallback onExitFullscreen;
 
-  final StreamController<YoutubePlayerValue> _controller =
-      StreamController.broadcast();
+  final StreamController<YoutubePlayerValue> _controller = StreamController.broadcast();
 
   YoutubePlayerValue _value = YoutubePlayerValue();
 
@@ -131,8 +129,7 @@ class YoutubePlayerController extends Stream<YoutubePlayerValue>
   ///
   /// [startAt] & [endAt] parameter accepts a [Duration].
   /// If specified, then the video will (start from the closest keyframe to the specified time / end at the specified time).
-  void load(String videoId,
-      {Duration startAt = Duration.zero, Duration endAt}) {
+  void load(String videoId, {Duration startAt = Duration.zero, Duration endAt}) {
     var loadParams = 'videoId:"$videoId",startSeconds:${startAt.inSeconds}';
     if (endAt != null && endAt > startAt) {
       loadParams += ',endSeconds:${endAt.inSeconds}';
@@ -181,8 +178,7 @@ class YoutubePlayerController extends Stream<YoutubePlayerValue>
     int startAt = 0,
     int index = 0,
   }) {
-    var loadParams =
-        'list:"$list",listType:"$listType",index:$index,startSeconds:$startAt';
+    var loadParams = 'list:"$list",listType:"$listType",index:$index,startSeconds:$startAt';
     invokeJavascript('loadPlaylist({$loadParams})');
   }
 
@@ -202,8 +198,7 @@ class YoutubePlayerController extends Stream<YoutubePlayerValue>
     int startAt = 0,
     int index = 0,
   }) {
-    var cueParams =
-        'list:"$list",listType:"$listType",index:$index,startSeconds:$startAt';
+    var cueParams = 'list:"$list",listType:"$listType",index:$index,startSeconds:$startAt';
     invokeJavascript('cuePlaylist({$cueParams})');
   }
 
@@ -221,14 +216,10 @@ class YoutubePlayerController extends Stream<YoutubePlayerValue>
   /// Unmutes the player.
   void unMute() => invokeJavascript('unMute()');
 
-  /// Returns true if the player is muted, false if not.
-  Future<bool> isMuted() async => (await invokeJavascript('isMuted')) as bool;
-
   /// Sets the volume of player.
   /// Max = 100 , Min = 0
-  void setVolume(int volume) => volume >= 0 && volume <= 100
-      ? invokeJavascript('setVolume($volume)')
-      : throw Exception("Volume should be between 0 and 100");
+  void setVolume(int volume) =>
+      volume >= 0 && volume <= 100 ? invokeJavascript('setVolume($volume)') : throw Exception("Volume should be between 0 and 100");
 
   /// Seeks to a specified time in the video.
   ///
@@ -246,12 +237,10 @@ class YoutubePlayerController extends Stream<YoutubePlayerValue>
   }
 
   /// Sets the size in pixels of the player.
-  void setSize(Size size) =>
-      invokeJavascript('setSize(${size.width}, ${size.height})');
+  void setSize(Size size) => invokeJavascript('setSize(${size.width}, ${size.height})');
 
   /// Sets the playback speed for the video.
-  void setPlaybackRate(double rate) =>
-      invokeJavascript('setPlaybackRate($rate)');
+  void setPlaybackRate(double rate) => invokeJavascript('setPlaybackRate($rate)');
 
   /// This function indicates whether the video player should continuously play a playlist
   /// or if it should stop playing after the last video in the playlist ends.
@@ -313,8 +302,6 @@ class YoutubePlayerController extends Stream<YoutubePlayerValue>
     String quality = ThumbnailQuality.standard,
     bool webp = true,
   }) {
-    return webp
-        ? 'https://i3.ytimg.com/vi_webp/$videoId/$quality.webp'
-        : 'https://i3.ytimg.com/vi/$videoId/$quality.jpg';
+    return webp ? 'https://i3.ytimg.com/vi_webp/$videoId/$quality.webp' : 'https://i3.ytimg.com/vi/$videoId/$quality.jpg';
   }
 }
