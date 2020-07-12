@@ -6,7 +6,6 @@ homepage: https://github.com/sarbagyastha/youtube_player_flutter/tree/master/pac
 
 environment:
   sdk: '>=2.7.0 <3.0.0'
-  flutter: '>=1.12.13+hotfix.5'
 
 dependencies:
   flutter:
