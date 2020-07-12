@@ -4,8 +4,8 @@
 
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
-import 'package:meta/meta.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 import 'enums/player_state.dart';
@@ -209,7 +209,7 @@ class YoutubePlayerController extends Stream<YoutubePlayerValue>
 
   void _updateId(String id) {
     if (id?.length != 11) {
-      add(_value.copyWith(error: YoutubeError.invalid_param));
+      add(_value.copyWith(error: YoutubeError.invalidParam));
     } else {
       add(_value.copyWith(error: YoutubeError.none, hasPlayed: false));
     }
@@ -257,12 +257,14 @@ class YoutubePlayerController extends Stream<YoutubePlayerValue>
   /// or if it should stop playing after the last video in the playlist ends.
   ///
   /// The default behavior is that playlists do not loop.
+  // ignore: avoid_positional_boolean_parameters
   void setLoop(bool loop) => invokeJavascript('setLoop($loop)');
 
   /// This function indicates whether a playlist's videos should be shuffled so that they play back in an order different from the one that the playlist creator designated.
   ///
   /// If you shuffle a playlist after it has already started playing, the list will be reordered while the video that is playing continues to play.
   /// The next video that plays will then be selected based on the reordered list.
+  // ignore: avoid_positional_boolean_parameters
   void setShuffle(bool shuffle) => invokeJavascript('setShuffle($shuffle)');
 
   /// MetaData for the currently loaded or cued video.

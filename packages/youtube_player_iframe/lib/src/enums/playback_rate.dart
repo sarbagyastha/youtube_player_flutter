@@ -30,6 +30,7 @@ class PlaybackRate {
   /// Sets playback rate to 0.25 times.
   static const double quarter = 0.25;
 
+  /// All
   static const List<double> all = [
     twice,
     oneAndAThreeQuarter,

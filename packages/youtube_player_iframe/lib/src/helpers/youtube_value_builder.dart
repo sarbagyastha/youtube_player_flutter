@@ -12,7 +12,10 @@ import 'youtube_value_provider.dart';
 
 /// Widget that builds itself based on the latest snapshot of interaction with a [YoutubePlayerController].
 class YoutubeValueBuilder extends StatelessWidget {
+  /// The [YoutubePlayerController].
   final YoutubePlayerController controller;
+
+  /// Build strategy fot the widget.
   final Widget Function(BuildContext, YoutubePlayerValue) builder;
 
   /// Creates a new [YoutubeValueBuilder] that builds itself based on the latest

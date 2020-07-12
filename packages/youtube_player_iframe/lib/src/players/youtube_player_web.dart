@@ -141,7 +141,7 @@ class _WebYoutubePlayerState extends State<RawYoutubePlayer> {
         }
 
         if (data.containsKey('VideoTime')) {
-          final double position = data['VideoTime']['currentTime'] as double;
+          final position = data['VideoTime']['currentTime'] as double;
           final buffered = data['VideoTime']['videoLoadedFraction'] as num;
 
           if (position == null || buffered == null) return;

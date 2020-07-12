@@ -1,3 +1,9 @@
+analyzer:
+  errors:
+    undefined_prefixed_name: ignore
+  exclude:
+    - 'example/**'
+
 linter:
   rules:
     # STYLE
