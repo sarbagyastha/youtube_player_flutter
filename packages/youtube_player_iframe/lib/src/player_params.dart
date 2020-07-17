@@ -123,8 +123,12 @@ class YoutubePlayerParams {
   /// This means that sometimes the play head may seek to just before the requested time, usually no more than around two seconds.
   final Duration startAt;
 
-  /// Enabling this forces the player to play videos in higher resolution than usual.
-  final bool forceHD;
+  /// Enabling desktop mode.
+  ///
+  /// The player controls will be like the one seen on youtube.com
+  ///
+  /// Only effective on mobile devices.
+  final bool desktopMode;
 
   /// Defines player parameters for [YoutubePlayer].
   const YoutubePlayerParams({
@@ -146,6 +150,6 @@ class YoutubePlayerParams {
     this.playsInline = true,
     this.strictRelatedVideos = false,
     this.startAt = Duration.zero,
-    this.forceHD = false,
+    this.desktopMode = false,
   });
 }

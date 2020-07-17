@@ -5,6 +5,7 @@
 import 'package:flutter/material.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
+///
 class MetaDataSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -25,7 +26,7 @@ class MetaDataSection extends StatelessWidget {
                 value.playbackQuality,
               ),
               const Spacer(),
-              _Text(
+              const _Text(
                 'Playback Rate',
                 '',
               ),

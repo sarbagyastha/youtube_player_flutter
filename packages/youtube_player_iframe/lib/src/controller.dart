@@ -27,7 +27,9 @@ class YoutubePlayerController extends Stream<YoutubePlayerValue>
   YoutubePlayerController({
     @required this.initialVideoId,
     this.params = const YoutubePlayerParams(),
-  });
+  }) {
+    invokeJavascript = (_) {};
+  }
 
   /// The Youtube video id for initial video to be loaded.
   final String initialVideoId;
@@ -36,6 +38,8 @@ class YoutubePlayerController extends Stream<YoutubePlayerValue>
   final YoutubePlayerParams params;
 
   /// Can be used to invokes javascript function.
+  ///
+  /// Ensure that the player is ready before using this.
   void Function(String function) invokeJavascript;
 
   /// Called when player enters fullscreen.
@@ -263,6 +267,16 @@ class YoutubePlayerController extends Stream<YoutubePlayerValue>
   /// The next video that plays will then be selected based on the reordered list.
   // ignore: avoid_positional_boolean_parameters
   void setShuffle(bool shuffle) => invokeJavascript('setShuffle($shuffle)');
+
+  /// Hides top menu i.e. title, playlist, share icon shown at top of the player.
+  ///
+  /// Might violates Youtube's TOS. Use at your own risk.
+  void hideTopMenu() => invokeJavascript('hideTopMenu()');
+
+  /// Hides pause overlay i.e. related videos shown when player is paused.
+  ///
+  /// Might violates Youtube's TOS. Use at your own risk.
+  void hidePauseOverlay() => invokeJavascript('hidePauseOverlay()');
 
   /// MetaData for the currently loaded or cued video.
   YoutubeMetaData get metadata => _value.metaData;

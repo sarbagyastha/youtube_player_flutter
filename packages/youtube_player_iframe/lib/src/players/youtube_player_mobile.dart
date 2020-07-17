@@ -86,13 +86,21 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
         mimeType: 'text/html',
       ),
       initialOptions: InAppWebViewGroupOptions(
-        ios: IOSInAppWebViewOptions(allowsInlineMediaPlayback: true),
         crossPlatform: InAppWebViewOptions(
           userAgent: userAgent,
           mediaPlaybackRequiresUserGesture: false,
           transparentBackground: true,
+          disableContextMenu: true,
+          supportZoom: false,
+          disableHorizontalScroll: true,
+          disableVerticalScroll: true,
+          useShouldOverrideUrlLoading: true,
         ),
+        ios: IOSInAppWebViewOptions(allowsInlineMediaPlayback: true),
+        android: AndroidInAppWebViewOptions(useWideViewPort: false),
       ),
+      shouldOverrideUrlLoading: (_, __) async =>
+          ShouldOverrideUrlLoadingAction.CANCEL,
       onWebViewCreated: (webController) {
         controller.invokeJavascript = _callMethod;
         _webController = webController;
@@ -301,7 +309,7 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
 
   String boolean({@required bool value}) => value ? "'1'" : "'0'";
 
-  String get userAgent => controller.params.forceHD
+  String get userAgent => controller.params.desktopMode
       ? 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36'
       : null;
 }

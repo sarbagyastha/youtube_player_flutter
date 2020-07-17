@@ -20,6 +20,7 @@ void main() {
   runApp(YoutubeApp());
 }
 
+///
 class YoutubeApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -35,6 +36,7 @@ class YoutubeApp extends StatelessWidget {
   }
 }
 
+///
 class YoutubeAppDemo extends StatefulWidget {
   @override
   _YoutubeAppDemoState createState() => _YoutubeAppDemoState();
@@ -47,11 +49,11 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
   void initState() {
     super.initState();
     _controller = YoutubePlayerController(
-      initialVideoId: 'K18cpp_-gP8',
+      initialVideoId: 'tcodrIK2P_I',
       params: const YoutubePlayerParams(
         playlist: [
           'nPt8bK2gbaU',
-          'gQDByCdjUXw',
+          'K18cpp_-gP8',
           'iLnmTe5Q2Qw',
           '_WoCV4c6XOE',
           'KmzdUe0RSJo',
@@ -60,17 +62,31 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
           '7QUtEmBT_-w',
           '34_PXCzGw1M',
         ],
-        startAt: const Duration(seconds: 30),
+        startAt: const Duration(minutes: 1, seconds: 36),
         showControls: true,
         showFullscreenButton: true,
+        desktopMode: true,
       ),
-    )..listen((event) {
-        //log(event.toString());
+    )..listen((value) {
+        if (value.isReady) {
+          _controller
+            ..hidePauseOverlay()
+            ..hideTopMenu();
+        }
       });
-    _controller.onEnterFullscreen = () => log('Entered Fullscreen');
+    _controller.onEnterFullscreen = () {
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+      ]);
+      log('Entered Fullscreen');
+    };
     _controller.onExitFullscreen = () {
       SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
       Future.delayed(const Duration(seconds: 1), () {
+        _controller.play();
+      });
+      Future.delayed(const Duration(seconds: 5), () {
         SystemChrome.setPreferredOrientations(DeviceOrientation.values);
       });
       log('Exited Fullscreen');
@@ -122,7 +138,9 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
   }
 }
 
+///
 class Controls extends StatelessWidget {
+  ///
   const Controls();
 
   @override

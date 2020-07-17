@@ -6,12 +6,12 @@
 [![Stars](https://img.shields.io/github/stars/sarbagyastha/youtube_player_flutter?color=deeppink)](https://github.com/sarbagyastha/youtube_player_flutter)
 [![Top Language](https://img.shields.io/github/languages/top/sarbagyastha/youtube_player_flutter?color=9cf)](https://github.com/sarbagyastha/youtube_player_flutter)
 [![effective dart](https://img.shields.io/badge/style-effective_dart-40c4ff.svg)](https://dart.dev/guides/language/effective-dart)
-[![Web DEMO](https://img.shields.io/badge/Web-DEMO-informational.svg)](http://sarbagya.me/youtube_player_flutter)
+[![Web DEMO](https://img.shields.io/badge/Web-DEMO-informational.svg)](https://sarbagyastha.github.io/youtube_player_flutter)
 
 Flutter plugin for playing or streaming YouTube videos inline using the official [**iFrame Player API**](https://developers.google.com/youtube/iframe_api_reference).
 The package exposes almost all the API provided by **iFrame Player API**. So, it's 100% customizable.
 
-Note: This package only provides default youtube web player's skin. If you need Youtube Android player like player with gesture support, use [youtube_player_flutter](ttps://pub.dartlang.org/packages/youtube_player_flutter) instead.
+Note: This package only provides default youtube web player's skin. If you need Youtube Android player like player with gesture support, use [youtube_player_flutter](https://pub.dartlang.org/packages/youtube_player_flutter) instead.
 `youtube_player_flutter` also uses this package as dependency. (Migration Pending)
 
 Supported Platforms:
@@ -21,7 +21,7 @@ Supported Platforms:
 
 ![YOUTUBE PLAYER IFRAME](youtube_player_iframe.png)
 
-[Click here for WEB DEMO](http://sarbagya.me/youtube_player_flutter)
+[Click here for WEB DEMO](https://sarbagyastha.github.io/youtube_player_flutter)
 
 ## Salient Features
 * Inline Playback
@@ -65,7 +65,7 @@ Add these lines to `Info.plist`
 ### Android
 Set `minSdkVersion` of your `android/app/build.gradle` file to at least 17.
 
-[Follow the guide here for complete iOS setup](https://pub.dev/packages/flutter_inappwebview#important-note-for-android)
+[Follow the guide here for complete Android setup](https://pub.dev/packages/flutter_inappwebview#important-note-for-android)
 
 *Note:* Although the minimum to be set is 17, the player won't play on device with API < 20. 
 For API < 20 devices, you might want to forward the video to be played using YouTube app instead, using packages like `url_launcher` or `android_intent`.
@@ -155,6 +155,8 @@ getThumbnail(videoId, {quality, webp})              | Grabs YouTube video's thum
 onEnterFullScreen()                                 | Called when player enters fullscreen.
 onExitFullScreen()                                  | Called when player exits fullscreen.
 invokeJavascript(function)                          | Invoke custom javascript function.
+hideTopMenu()                                       | Hides the title and share icons at the top of player (_May violate YouTube's TOS. Use at your own risk._)
+hidePauseOverlay()                                  | Hides the related videos overlay while player is paused (_May violate YouTube's TOS. Use at your own risk._)
 
 ## Youtube Player Parameters
 All the available parameters.
@@ -178,7 +180,7 @@ playlist                   | Specifies a list of video IDs to be played after in
 playsInline                | Controls whether videos play inline or fullscreen in an HTML5 player on iOS. **Default = true**
 strictRelatedVideos        | Enabling ensure that related videos will come from the same channel as the video that was just played. **Default = false**
 startAt                    | Starts the video at specified time.
-forceHD                    | Forces the player to play videos in higher resolution than usual.
+desktopMode                | The controls will be alike Youtube Desktop's controls.
 
 
 ## Limitation 

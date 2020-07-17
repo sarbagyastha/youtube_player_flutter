@@ -118,7 +118,17 @@ function stop() {
 
 function isMuted() {
   return player.isMuted();
-} 
+}
+
+function hideTopMenu() {
+  try { document.querySelector('#player').contentDocument.querySelector('.ytp-chrome-top').style.display = 'none'; } catch(e) { }
+  return '';
+}
+
+function hidePauseOverlay() {
+  try { document.querySelector('#player').contentDocument.querySelector('.ytp-pause-overlay').style.display = 'none'; } catch(e) { }
+  return '';
+}
 ''';
 
 ///
@@ -145,7 +155,6 @@ String get playerDocHead => '''
          }
      </style>
      <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
-     <script src="https://www.youtube.com/iframe_api"></script>
 </head>
 ''';
 
