@@ -65,7 +65,7 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
         startAt: const Duration(minutes: 1, seconds: 36),
         showControls: true,
         showFullscreenButton: true,
-        desktopMode: true,
+        desktopMode: false,
       ),
     )..listen((value) {
         if (value.isReady) {
