@@ -51,15 +51,6 @@ class PlayPauseButtonBar extends StatelessWidget {
           },
         ),
         IconButton(
-          icon: const Icon(Icons.fullscreen),
-          onPressed: () {
-            SystemChrome.setPreferredOrientations([
-              DeviceOrientation.landscapeRight,
-              DeviceOrientation.landscapeLeft,
-            ]);
-          },
-        ),
-        IconButton(
           icon: const Icon(Icons.skip_next),
           onPressed: context.ytController.nextVideo,
         ),
