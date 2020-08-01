@@ -155,7 +155,7 @@ print(videoId); // BBAyRBTfsOU
 
 ## Example
 
-[Detailed Example](https://github.com/sarbagyastha/youtube_player_flutter/tree/master/example)
+[Detailed Example](https://github.com/sarbagyastha/youtube_player_flutter/tree/master/packages/youtube_player_flutter/example)
 
 ## Quick Links
 * [YoutubePlayer](https://pub.dev/documentation/youtube_player_flutter/latest/youtube_player_flutter/YoutubePlayer-class.html)
