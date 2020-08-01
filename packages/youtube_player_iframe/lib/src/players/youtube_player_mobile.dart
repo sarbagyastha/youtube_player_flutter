@@ -96,11 +96,17 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
           disableVerticalScroll: true,
           useShouldOverrideUrlLoading: true,
         ),
-        ios: IOSInAppWebViewOptions(allowsInlineMediaPlayback: true),
+        ios: IOSInAppWebViewOptions(
+          allowsInlineMediaPlayback: true,
+          allowsAirPlayForMediaPlayback: true,
+          allowsPictureInPictureMediaPlayback: true,
+        ),
         android: AndroidInAppWebViewOptions(useWideViewPort: false),
       ),
-      shouldOverrideUrlLoading: (_, __) async =>
-          ShouldOverrideUrlLoadingAction.CANCEL,
+      shouldOverrideUrlLoading: (controller, detail) async {
+        print(detail.toJson());
+        return ShouldOverrideUrlLoadingAction.ALLOW;
+      },
       onWebViewCreated: (webController) {
         controller.invokeJavascript = _callMethod;
         _webController = webController;
