@@ -104,8 +104,15 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
         android: AndroidInAppWebViewOptions(useWideViewPort: false),
       ),
       shouldOverrideUrlLoading: (controller, detail) async {
-        print(detail.toJson());
-        return ShouldOverrideUrlLoadingAction.ALLOW;
+        if (detail.headers == null) {
+          return ShouldOverrideUrlLoadingAction.CANCEL;
+        } else {
+          final referer = detail.headers['Referer'];
+          if (referer != null && referer != 'https://www.youtube.com/') {
+            return ShouldOverrideUrlLoadingAction.CANCEL;
+          }
+          return ShouldOverrideUrlLoadingAction.ALLOW;
+        }
       },
       onWebViewCreated: (webController) {
         controller.invokeJavascript = _callMethod;

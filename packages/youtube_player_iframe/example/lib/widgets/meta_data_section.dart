@@ -17,17 +17,17 @@ class MetaDataSection extends StatelessWidget {
           const SizedBox(height: 10),
           _Text('Channel', value.metaData.author),
           const SizedBox(height: 10),
-          _Text('Video Id', value.metaData.videoId),
+          _Text(
+            'Playback Quality',
+            value.playbackQuality,
+          ),
           const SizedBox(height: 10),
           Row(
             children: [
-              _Text(
-                'Playback Quality',
-                value.playbackQuality,
-              ),
+              _Text('Video Id', value.metaData.videoId),
               const Spacer(),
               const _Text(
-                'Playback Rate',
+                'Speed',
                 '',
               ),
               YoutubeValueBuilder(

@@ -68,7 +68,7 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
         desktopMode: false,
       ),
     )..listen((value) {
-        if (value.isReady) {
+        if (value.isReady && !value.hasPlayed) {
           _controller
             ..hidePauseOverlay()
             ..hideTopMenu();
