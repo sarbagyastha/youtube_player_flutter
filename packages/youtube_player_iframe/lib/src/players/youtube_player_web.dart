@@ -36,138 +36,135 @@ class RawYoutubePlayer extends StatefulWidget {
 }
 
 class _WebYoutubePlayerState extends State<RawYoutubePlayer> {
-  static final _iFrameMap = <int, IFrameElement>{};
   YoutubePlayerController controller;
+  IFrameElement _iFrame;
 
   @override
   void initState() {
     super.initState();
     controller = widget.controller;
-    if (_iFrameMap[controller.hashCode] == null) {
-      // ignore: undefined_prefixed_name
-      ui.platformViewRegistry.registerViewFactory(
-        'youtube-player-${controller.hashCode}',
-        (int id) {
-          _iFrameMap[controller.hashCode] = IFrameElement()
-            ..srcdoc = player
-            ..style.border = 'none';
-          window.onMessage.listen(
-            (event) {
-              final Map<String, dynamic> data = jsonDecode(event.data);
-              if (data.containsKey('Ready')) {
-                controller.add(
-                  controller.value.copyWith(isReady: true),
-                );
-              }
+    // ignore: undefined_prefixed_name
+    ui.platformViewRegistry.registerViewFactory(
+      'youtube-player-${controller.hashCode}',
+      (int id) {
+        _iFrame = IFrameElement()
+          ..srcdoc = player
+          ..style.border = 'none';
+        window.onMessage.listen(
+          (event) {
+            final Map<String, dynamic> data = jsonDecode(event.data);
+            if (data.containsKey('Ready')) {
+              controller.add(
+                controller.value.copyWith(isReady: true),
+              );
+            }
 
-              if (data.containsKey('StateChange')) {
-                switch (data['StateChange'] as int) {
-                  case -1:
-                    controller.add(
-                      controller.value.copyWith(
-                        playerState: PlayerState.unStarted,
-                        isReady: true,
-                      ),
-                    );
-                    break;
-                  case 0:
-                    controller.add(
-                      controller.value.copyWith(
-                        playerState: PlayerState.ended,
-                      ),
-                    );
-                    break;
-                  case 1:
-                    controller.add(
-                      controller.value.copyWith(
-                        playerState: PlayerState.playing,
-                        hasPlayed: true,
-                        error: YoutubeError.none,
-                      ),
-                    );
-                    break;
-                  case 2:
-                    controller.add(
-                      controller.value.copyWith(
-                        playerState: PlayerState.paused,
-                      ),
-                    );
-                    break;
-                  case 3:
-                    controller.add(
-                      controller.value.copyWith(
-                        playerState: PlayerState.buffering,
-                      ),
-                    );
-                    break;
-                  case 5:
-                    controller.add(
-                      controller.value.copyWith(
-                        playerState: PlayerState.cued,
-                      ),
-                    );
-                    break;
-                  default:
-                    throw Exception("Invalid player state obtained.");
-                }
+            if (data.containsKey('StateChange')) {
+              switch (data['StateChange'] as int) {
+                case -1:
+                  controller.add(
+                    controller.value.copyWith(
+                      playerState: PlayerState.unStarted,
+                      isReady: true,
+                    ),
+                  );
+                  break;
+                case 0:
+                  controller.add(
+                    controller.value.copyWith(
+                      playerState: PlayerState.ended,
+                    ),
+                  );
+                  break;
+                case 1:
+                  controller.add(
+                    controller.value.copyWith(
+                      playerState: PlayerState.playing,
+                      hasPlayed: true,
+                      error: YoutubeError.none,
+                    ),
+                  );
+                  break;
+                case 2:
+                  controller.add(
+                    controller.value.copyWith(
+                      playerState: PlayerState.paused,
+                    ),
+                  );
+                  break;
+                case 3:
+                  controller.add(
+                    controller.value.copyWith(
+                      playerState: PlayerState.buffering,
+                    ),
+                  );
+                  break;
+                case 5:
+                  controller.add(
+                    controller.value.copyWith(
+                      playerState: PlayerState.cued,
+                    ),
+                  );
+                  break;
+                default:
+                  throw Exception("Invalid player state obtained.");
               }
+            }
 
-              if (data.containsKey('PlaybackQualityChange')) {
-                controller.add(
-                  controller.value.copyWith(
-                      playbackQuality: data['PlaybackQualityChange'] as String),
-                );
-              }
+            if (data.containsKey('PlaybackQualityChange')) {
+              controller.add(
+                controller.value.copyWith(
+                    playbackQuality: data['PlaybackQualityChange'] as String),
+              );
+            }
 
-              if (data.containsKey('PlaybackRateChange')) {
-                final rate = data['PlaybackRateChange'] as num;
-                controller.add(
-                  controller.value.copyWith(playbackRate: rate.toDouble()),
-                );
-              }
+            if (data.containsKey('PlaybackRateChange')) {
+              final rate = data['PlaybackRateChange'] as num;
+              controller.add(
+                controller.value.copyWith(playbackRate: rate.toDouble()),
+              );
+            }
 
-              if (data.containsKey('Errors')) {
-                controller.add(
-                  controller.value
-                      .copyWith(error: errorEnum(data['Errors'] as int)),
-                );
-              }
+            if (data.containsKey('Errors')) {
+              controller.add(
+                controller.value
+                    .copyWith(error: errorEnum(data['Errors'] as int)),
+              );
+            }
 
-              if (data.containsKey('VideoData')) {
-                controller.add(
-                  controller.value.copyWith(
-                      metaData: YoutubeMetaData.fromRawData(data['VideoData'])),
-                );
-              }
+            if (data.containsKey('VideoData')) {
+              controller.add(
+                controller.value.copyWith(
+                    metaData: YoutubeMetaData.fromRawData(data['VideoData'])),
+              );
+            }
 
-              if (data.containsKey('VideoTime')) {
-                final position = data['VideoTime']['currentTime'] as double;
-                final buffered =
-                    data['VideoTime']['videoLoadedFraction'] as num;
+            if (data.containsKey('VideoTime')) {
+              final position = data['VideoTime']['currentTime'] as double;
+              final buffered = data['VideoTime']['videoLoadedFraction'] as num;
 
-                if (position == null || buffered == null) return;
-                controller.add(
-                  controller.value.copyWith(
-                    position: Duration(milliseconds: (position * 1000).floor()),
-                    buffered: buffered.toDouble(),
-                  ),
-                );
-              }
-            },
-          );
-          controller.invokeJavascript = _callMethod;
-          return _iFrameMap[controller.hashCode];
-        },
-      );
-    }
+              if (position == null || buffered == null) return;
+              controller.add(
+                controller.value.copyWith(
+                  position: Duration(milliseconds: (position * 1000).floor()),
+                  buffered: buffered.toDouble(),
+                ),
+              );
+            }
+          },
+        );
+        controller.invokeJavascript = _callMethod;
+        return _iFrame;
+      },
+    );
   }
 
   void _callMethod(String methodName) {
-    if (_iFrameMap[controller.hashCode] == null) {
+    if (_iFrame == null) {
       log('Youtube Player is not ready for method calls.');
       return;
     }
-    _iFrameMap[controller.hashCode].contentWindow.postMessage(methodName, '*');
+    _iFrame.contentWindow.postMessage(methodName, '*');
   }
 
   @override
