@@ -349,7 +349,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
               left: 0,
               right: 0,
               child: AbsorbPointer(
-                absorbing: controller.flags.hideControls &&
+                absorbing: controller.flags.hideControls ||
                     !controller.value.isControlsVisible,
                 child: AnimatedOpacity(
                   opacity: !controller.flags.hideControls &&
@@ -387,7 +387,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
               left: 0,
               right: 0,
               child: AbsorbPointer(
-                absorbing: controller.flags.hideControls &&
+                absorbing: controller.flags.hideControls ||
                     !controller.value.isControlsVisible,
                 child: AnimatedOpacity(
                   opacity: !controller.flags.hideControls &&
