@@ -132,6 +132,13 @@ class YoutubePlayer extends StatefulWidget {
   /// {@endtemplate}
   final bool showVideoProgressIndicator;
 
+  /// {@template youtube_player_flutter.showPlayPauseButton}
+  /// Defines whether to show or hide play pause button inside the player the player.
+  ///
+  /// Default is true.
+  /// {@endtemplate}
+  final bool showPlayPauseButton;
+
   /// Creates [YoutubePlayer] widget.
   const YoutubePlayer({
     this.key,
@@ -150,6 +157,7 @@ class YoutubePlayer extends StatefulWidget {
     this.actionsPadding = const EdgeInsets.all(8.0),
     this.thumbnail,
     this.showVideoProgressIndicator = false,
+    this.showPlayPauseButton = true,
   });
 
   /// Converts fully qualified YouTube Url to video id.
@@ -405,7 +413,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
               ),
             ),
           ],
-          if (!controller.flags.hideControls)
+          if (!controller.flags.hideControls && widget.showPlayPauseButton)
             Center(
               child: PlayPauseButton(),
             ),
