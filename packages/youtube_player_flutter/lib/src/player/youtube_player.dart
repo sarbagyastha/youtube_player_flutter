@@ -355,7 +355,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                   : 0,
               duration: const Duration(milliseconds: 300),
               child: Container(
-                color: Colors.black26,
+                color: Colors.black38,
               ),
             ),
             TouchShutter(
