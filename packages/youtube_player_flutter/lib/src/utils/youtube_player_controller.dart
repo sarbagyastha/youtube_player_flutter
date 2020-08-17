@@ -273,15 +273,16 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
   void setPlaybackRate(double rate) => _callMethod('setPlaybackRate($rate)');
 
   /// Toggles the player's full screen mode.
-  void toggleFullScreenMode() {
+  Future<void> toggleFullScreenMode() async {
     updateValue(value.copyWith(isFullScreen: !value.isFullScreen));
     if (value.isFullScreen) {
-      SystemChrome.setPreferredOrientations([
+      await SystemChrome.setPreferredOrientations([
         DeviceOrientation.landscapeLeft,
         DeviceOrientation.landscapeRight,
       ]);
     } else {
-      SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+      await SystemChrome.setPreferredOrientations(
+          [DeviceOrientation.portraitUp]);
     }
   }
 
