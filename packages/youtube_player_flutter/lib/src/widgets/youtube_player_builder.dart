@@ -75,7 +75,7 @@ class _YoutubePlayerBuilderState extends State<YoutubePlayerBuilder>
           }
           return true;
         },
-        child: widget.player,
+        child: SafeArea(child: widget.player),
       ),
     );
     final child = widget.builder(context, _player);
