@@ -303,24 +303,29 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
         fit: StackFit.expand,
         overflow: Overflow.visible,
         children: [
-          Transform.scale(
-            scale: controller.value.isFullScreen
-                ? (1 / _aspectRatio * MediaQuery.of(context).size.width) /
-                    MediaQuery.of(context).size.height
-                : 1,
-            child: RawYoutubePlayer(
-              key: widget.key,
-              onEnded: (YoutubeMetaData metaData) {
-                if (controller.flags.loop) {
-                  controller.load(controller.metadata.videoId,
-                      startAt: controller.flags.startAt,
-                      endAt: controller.flags.endAt);
-                }
-                if (widget.onEnded != null) {
-                  widget.onEnded(metaData);
-                }
-              },
-            ),
+          SafeArea(
+            bottom: false,
+            child: LayoutBuilder(builder: (context, constraints) {
+              return Transform.scale(
+                scale: controller.value.isFullScreen
+                    ? (1 / _aspectRatio * constraints.maxWidth) /
+                        constraints.maxHeight
+                    : 1,
+                child: RawYoutubePlayer(
+                  key: widget.key,
+                  onEnded: (YoutubeMetaData metaData) {
+                    if (controller.flags.loop) {
+                      controller.load(controller.metadata.videoId,
+                          startAt: controller.flags.startAt,
+                          endAt: controller.flags.endAt);
+                    }
+                    if (widget.onEnded != null) {
+                      widget.onEnded(metaData);
+                    }
+                  },
+                ),
+              );
+            }),
           ),
           if (!controller.flags.hideThumbnail)
             AnimatedOpacity(
