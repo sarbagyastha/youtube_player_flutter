@@ -241,6 +241,10 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
                 width: 100%;
                 pointer-events: none;
             }
+
+            .video-ads, .ytp-ad-module {
+              display: none;
+            }
         </style>
         <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
     </head>
