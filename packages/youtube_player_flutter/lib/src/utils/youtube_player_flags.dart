@@ -44,6 +44,11 @@ class YoutubePlayerFlags {
   /// Default is false.
   final bool loop;
 
+  /// returns true when the player should show popover ads
+  ///
+  /// default is false
+  final bool hideAds;
+
   /// Enabling causes closed captions to be shown by default.
   ///
   /// Default is true.
@@ -80,6 +85,7 @@ class YoutubePlayerFlags {
     this.captionLanguage = 'en',
     this.loop = false,
     this.forceHD = false,
+    this.hideAds = false,
     this.startAt = 0,
     this.endAt,
   });

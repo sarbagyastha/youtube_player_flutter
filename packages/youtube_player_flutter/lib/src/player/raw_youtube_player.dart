@@ -280,10 +280,12 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
                     },
                     events: {
                         onReady: function(event) {
-                          var iframe = document.getElementsByTagName('iframe')[0].contentWindow.document;
-                          var div = iframe.getElementsByTagName('div')[0];
-                          var css = document.getElementById('yt-css');
-                          div.parentNode.insertBefore(css, div);
+                          if (${controller.flags.hideAds}) {
+                            var iframe = document.getElementsByTagName('iframe')[0].contentWindow.document;
+                            var div = iframe.getElementsByTagName('div')[0];
+                            var css = document.getElementById('yt-css');
+                            div.parentNode.insertBefore(css, div);
+                          }
 
                           window.flutter_inappwebview.callHandler('Ready');
                         },
