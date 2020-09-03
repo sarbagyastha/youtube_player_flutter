@@ -241,7 +241,8 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
                 width: 100%;
                 pointer-events: none;
             }
-
+          </style>
+          <style id="yt-css">
             .video-ads, .ytp-ad-module {
               display: none !important;
             }
@@ -278,7 +279,14 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
                         'end': ${controller.flags.endAt}
                     },
                     events: {
-                        onReady: function(event) { window.flutter_inappwebview.callHandler('Ready'); },
+                        onReady: function(event) {
+                          var iframe = document.getElementByTagName('iframe')[0].contentWindow.document;
+                          var div = iframe.getElementByTagName('div')[0];
+                          var css = document.getElementById('yt-css');
+                          div.parentNode.insertBefore(css, div);
+
+                          window.flutter_inappwebview.callHandler('Ready');
+                        },
                         onStateChange: function(event) { sendPlayerStateChange(event.data); },
                         onPlaybackQualityChange: function(event) { window.flutter_inappwebview.callHandler('PlaybackQualityChange', event.data); },
                         onPlaybackRateChange: function(event) { window.flutter_inappwebview.callHandler('PlaybackRateChange', event.data); },
