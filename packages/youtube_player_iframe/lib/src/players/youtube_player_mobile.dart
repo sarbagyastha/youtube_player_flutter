@@ -21,6 +21,8 @@ import '../meta_data.dart';
 class RawYoutubePlayer extends StatefulWidget {
   /// Sets [Key] as an identification to underlying web view associated to the player.
   final Key key;
+  /// Sets [useHybridComposition] to true if you want use new platform view.
+  final bool useHybridComposition;
 
   /// The [YoutubePlayerController].
   final YoutubePlayerController controller;
@@ -29,6 +31,7 @@ class RawYoutubePlayer extends StatefulWidget {
   const RawYoutubePlayer(
     this.controller, {
     this.key,
+    this.useHybridComposition
   });
 
   @override
@@ -101,7 +104,7 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
           allowsAirPlayForMediaPlayback: true,
           allowsPictureInPictureMediaPlayback: true,
         ),
-        android: AndroidInAppWebViewOptions(useWideViewPort: false),
+        android: AndroidInAppWebViewOptions(useWideViewPort: false , useHybridComposition:widget.useHybridComposition),
       ),
       shouldOverrideUrlLoading: (controller, detail) async {
         if (detail.headers == null) {

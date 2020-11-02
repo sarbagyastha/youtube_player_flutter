@@ -26,7 +26,8 @@ export 'src/player_params.dart';
 class YoutubePlayerIFrame extends StatelessWidget {
   /// The [controller] for this player.
   final YoutubePlayerController controller;
-
+  /// Sets [useHybridComposition] to true if you want use new platform view.
+  final bool useHybridComposition;
   /// Aspect ratio for the player.
   final double aspectRatio;
 
@@ -35,13 +36,14 @@ class YoutubePlayerIFrame extends StatelessWidget {
     Key key,
     this.controller,
     this.aspectRatio = 16 / 9,
+    this.useHybridComposition=false
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return AspectRatio(
       aspectRatio: aspectRatio,
-      child: RawYoutubePlayer(controller ?? context.ytController),
+      child: RawYoutubePlayer(controller ?? context.ytController , useHybridComposition: useHybridComposition,),
     );
   }
 }
