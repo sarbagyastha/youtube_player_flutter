@@ -33,19 +33,19 @@ enum YoutubeError {
 }
 
 ///
-YoutubeError errorEnum(int errorCode) {
+YoutubeError errorEnum(String errorCode) {
   switch (errorCode) {
-    case 2:
+    case '2':
       return YoutubeError.invalidParam;
-    case 5:
+    case '5':
       return YoutubeError.html5Error;
-    case 100:
+    case '100':
       return YoutubeError.videoNotFound;
-    case 101:
+    case '101':
       return YoutubeError.notEmbeddable;
-    case 105:
+    case '105':
       return YoutubeError.cannotFindVideo;
-    case 150:
+    case '150':
       return YoutubeError.sameAsNotEmbeddable;
     default:
       return YoutubeError.unknown;

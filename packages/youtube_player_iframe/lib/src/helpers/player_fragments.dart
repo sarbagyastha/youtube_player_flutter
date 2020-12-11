@@ -1,6 +1,45 @@
 import 'package:youtube_player_iframe/src/controller.dart';
 
 ///
+String youtubeIFrameTag(YoutubePlayerController controller) {
+  final params = <String, String>{
+    'autoplay': _boolean(controller.params.autoPlay),
+    'mute': _boolean(controller.params.mute),
+    'controls': _boolean(controller.params.showControls),
+    'playsinline': _boolean(controller.params.playsInline),
+    'enablejsapi': _boolean(controller.params.enableJavaScript),
+    'fs': _boolean(controller.params.showFullscreenButton),
+    'rel': _boolean(!controller.params.strictRelatedVideos),
+    'showinfo': '0',
+    'iv_load_policy': '${controller.params.showVideoAnnotations ? 1 : 3}',
+    'modestbranding': '1',
+    'cc_load_policy': _boolean(controller.params.enableCaption),
+    'cc_lang_pref': controller.params.captionLanguage,
+    'start': '${controller.params.startAt.inSeconds}',
+    if (controller.params.endAt != null)
+      'end': '${controller.params.endAt.inSeconds}',
+    'disablekb': _boolean(!controller.params.enableKeyboard),
+    'color': controller.params.color,
+    'hl': controller.params.interfaceLanguage,
+    'loop': _boolean(controller.params.loop),
+    if (controller.params.playlist.isNotEmpty)
+      'playlist': '${controller.params.playlist.join(',')}'
+  };
+  bool privacyEnhanced = false;
+  final youtubeAuthority =
+      privacyEnhanced ? 'www.youtube-nocookie.com' : 'www.youtube.com';
+  final sourceUri = Uri.https(
+    youtubeAuthority,
+    'embed/${controller.initialVideoId}',
+    params,
+  );
+  return '<iframe id="player" type="text/html"'
+      ' style="position:absolute; top:0px; left:0px; bottom:0px; right:10px;'
+      ' width:100%; height:100%; border:none; margin:0; padding:0; overflow:hidden; z-index:999999;"'
+      ' src="$sourceUri" frameborder="0" allowfullscreen></iframe>';
+}
+
+///
 String playerVars(YoutubePlayerController controller) => '''
 {
     'autoplay': ${_boolean(controller.params.autoPlay)},
@@ -141,21 +180,7 @@ firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
 ///
 String get playerDocHead => '''
-<head>
-     <style>
-         html,
-         body {
-             margin: 0;
-             padding: 0;
-             background-color: #000000;
-             overflow: hidden;
-             position: fixed;
-             height: 100%;
-             width: 100%;
-         }
-     </style>
-     <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
-</head>
+
 ''';
 
-String _boolean(bool value) => value ? "'1'" : "'0'";
+String _boolean(bool value) => value ? '1' : '0';

@@ -38,9 +38,7 @@ class YoutubePlayerController extends Stream<YoutubePlayerValue>
   final YoutubePlayerParams params;
 
   /// Can be used to invokes javascript function.
-  ///
-  /// Ensure that the player is ready before using this.
-  void Function(String function) invokeJavascript;
+  Future<void> Function(String function) invokeJavascript;
 
   /// Called when player enters fullscreen.
   VoidCallback onEnterFullscreen;

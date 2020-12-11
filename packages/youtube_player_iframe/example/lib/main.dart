@@ -65,32 +65,17 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
         startAt: const Duration(minutes: 1, seconds: 36),
         showControls: true,
         showFullscreenButton: true,
-        desktopMode: false,
+        desktopMode: true,
+        autoPlay: true,
+        playsInline: false,
       ),
     )..listen((value) {
-        if (value.isReady && !value.hasPlayed) {
-          _controller
-            ..hidePauseOverlay()
-            ..hideTopMenu();
-        }
+        // if (value.isReady && !value.hasPlayed) {
+        //   _controller
+        //     ..hidePauseOverlay()
+        //     ..hideTopMenu();
+        // }
       });
-    _controller.onEnterFullscreen = () {
-      SystemChrome.setPreferredOrientations([
-        DeviceOrientation.landscapeLeft,
-        DeviceOrientation.landscapeRight,
-      ]);
-      log('Entered Fullscreen');
-    };
-    _controller.onExitFullscreen = () {
-      SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-      Future.delayed(const Duration(seconds: 1), () {
-        _controller.play();
-      });
-      Future.delayed(const Duration(seconds: 5), () {
-        SystemChrome.setPreferredOrientations(DeviceOrientation.values);
-      });
-      log('Exited Fullscreen');
-    };
   }
 
   @override

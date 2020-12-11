@@ -143,7 +143,7 @@ class YoutubePlayerParams {
     this.color = 'white',
     this.showControls = true,
     this.enableKeyboard = kIsWeb,
-    this.enableJavaScript = false,
+    this.enableJavaScript = true,
     this.endAt,
     this.showFullscreenButton = false,
     this.interfaceLanguage = 'en',

@@ -128,7 +128,7 @@ class _WebYoutubePlayerState extends State<RawYoutubePlayer> {
             if (data.containsKey('Errors')) {
               controller.add(
                 controller.value
-                    .copyWith(error: errorEnum(data['Errors'] as int)),
+                    .copyWith(error: errorEnum('${data['Errors']}')),
               );
             }
 
