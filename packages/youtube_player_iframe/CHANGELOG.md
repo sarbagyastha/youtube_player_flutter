@@ -1,3 +1,9 @@
+## 1.2.0
+- Added `YoutubePlayerParams.privacyEnhanced` flag.
+- Exposed `gestureRecognizers` through `YoutubePlayerIFrame` widget.
+- Handled internal links correctly. Tapping on video suggestion will now play it and all the buttons are enabled.
+- Flutter `>=1.22.0 <2.0.0` is required.
+
 ## 1.1.0
 - **Fixed** Black Screen on iOS [#302](https://github.com/sarbagyastha/youtube_player_flutter/issues/302).
 - **Fixed** Minor fix for web player [#300](https://github.com/sarbagyastha/youtube_player_flutter/issues/300)
