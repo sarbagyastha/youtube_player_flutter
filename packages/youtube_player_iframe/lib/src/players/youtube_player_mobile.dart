@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -19,17 +20,14 @@ import '../meta_data.dart';
 ///
 /// Use [YoutubePlayerIFrame] instead.
 class RawYoutubePlayer extends StatefulWidget {
-  /// Sets [Key] as an identification to underlying web view associated to the player.
-  final Key key;
-
   /// The [YoutubePlayerController].
   final YoutubePlayerController controller;
 
   /// Creates a [RawYoutubePlayer] widget.
-  const RawYoutubePlayer(
-    this.controller, {
-    this.key,
-  });
+  const RawYoutubePlayer({
+    Key key,
+    this.controller,
+  }) : super(key: key);
 
   @override
   _MobileYoutubePlayerState createState() => _MobileYoutubePlayerState();
@@ -38,7 +36,7 @@ class RawYoutubePlayer extends StatefulWidget {
 class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
     with WidgetsBindingObserver {
   YoutubePlayerController controller;
-  InAppWebViewController _webController;
+  Completer<InAppWebViewController> _webController;
   PlayerState _cachedPlayerState;
   bool _isPlayerReady = false;
   bool _onLoadStopCalled = false;
@@ -46,6 +44,7 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
   @override
   void initState() {
     super.initState();
+    _webController = Completer();
     controller = widget.controller;
     WidgetsBinding.instance.addObserver(this);
   }
@@ -115,8 +114,11 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
         }
       },
       onWebViewCreated: (webController) {
+        if (!_webController.isCompleted) {
+          _webController.complete(webController);
+        }
         controller.invokeJavascript = _callMethod;
-        _webController = webController;
+
         webController
           ..addJavaScriptHandler(
             handlerName: 'Ready',
@@ -256,29 +258,21 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
     );
   }
 
-  void _callMethod(String methodName) {
-    if (_webController == null) {
-      log('Youtube Player is not ready for method calls.');
-    }
-    _webController.evaluateJavascript(source: methodName);
+  Future<void> _callMethod(String methodName) async {
+    final webController = await _webController.future;
+    webController.evaluateJavascript(source: methodName);
   }
 
   String get player => '''
     <!DOCTYPE html>
-    <html>
-    $playerDocHead
     <body>
-        <div id="player"></div>
+         ${youtubeIFrameTag(controller)}
         <script>
             $initPlayerIFrame
             var player;
             var timerId;
             function onYouTubeIframeAPIReady() {
                 player = new YT.Player('player', {
-                    height: '100%',
-                    width: '100%',
-                    videoId: '${controller.initialVideoId}',
-                    playerVars: ${playerVars(controller)},
                     events: {
                         onReady: function(event) { window.flutter_inappwebview.callHandler('Ready'); },
                         onStateChange: function(event) { sendPlayerStateChange(event.data); },
@@ -317,10 +311,7 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
             $youtubeIFrameFunctions
         </script>
     </body>
-    </html>
   ''';
-
-  String boolean({@required bool value}) => value ? "'1'" : "'0'";
 
   String get userAgent => controller.params.desktopMode
       ? 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36'

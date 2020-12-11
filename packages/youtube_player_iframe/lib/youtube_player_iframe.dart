@@ -39,9 +39,13 @@ class YoutubePlayerIFrame extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final _controller = controller ?? context.ytController;
     return AspectRatio(
       aspectRatio: aspectRatio,
-      child: RawYoutubePlayer(controller ?? context.ytController),
+      child: RawYoutubePlayer(
+        key: ObjectKey(_controller),
+        controller: _controller,
+      ),
     );
   }
 }
