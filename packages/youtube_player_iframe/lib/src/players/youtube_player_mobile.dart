@@ -24,17 +24,26 @@ import '../meta_data.dart';
 ///
 /// Use [YoutubePlayerIFrame] instead.
 class RawYoutubePlayer extends StatefulWidget {
-  /// Sets [Key] as an identification to underlying web view associated to the player.
-  final Key key;
-
   /// The [YoutubePlayerController].
   final YoutubePlayerController controller;
 
+  /// Which gestures should be consumed by the youtube player.
+  ///
+  /// It is possible for other gesture recognizers to be competing with the player on pointer
+  /// events, e.g if the player is inside a [ListView] the [ListView] will want to handle
+  /// vertical drags. The player will claim gestures that are recognized by any of the
+  /// recognizers on this list.
+  ///
+  /// By default vertical and horizontal gestures are absorbed by the player.
+  /// Passing an empty set will ignore the defaults.
+  final Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers;
+
   /// Creates a [RawYoutubePlayer] widget.
-  const RawYoutubePlayer(
-    this.controller, {
-    this.key,
-  });
+  const RawYoutubePlayer({
+    Key key,
+    this.controller,
+    this.gestureRecognizers,
+  }) : super(key: key);
 
   @override
   _MobileYoutubePlayerState createState() => _MobileYoutubePlayerState();
@@ -100,14 +109,15 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
         return NavigationDecision.prevent;
       },
       userAgent: userAgent,
-      gestureRecognizers: {
-        Factory<VerticalDragGestureRecognizer>(
-          () => VerticalDragGestureRecognizer(),
-        ),
-        Factory<HorizontalDragGestureRecognizer>(
-          () => HorizontalDragGestureRecognizer(),
-        ),
-      },
+      gestureRecognizers: widget.gestureRecognizers ??
+          {
+            Factory<VerticalDragGestureRecognizer>(
+              () => VerticalDragGestureRecognizer(),
+            ),
+            Factory<HorizontalDragGestureRecognizer>(
+              () => HorizontalDragGestureRecognizer(),
+            ),
+          },
       onWebViewCreated: (webController) {
         if (!_webController.isCompleted) {
           _webController.complete(webController);

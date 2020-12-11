@@ -6,6 +6,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:html';
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:youtube_player_iframe/src/enums/player_state.dart';
 import 'package:youtube_player_iframe/src/enums/youtube_error.dart';
@@ -19,17 +21,18 @@ import 'stubs/dummy_ui.dart' if (dart.library.html) 'stubs/web_ui.dart' as ui;
 ///
 /// Use [YoutubePlayerIFrame] instead.
 class RawYoutubePlayer extends StatefulWidget {
-  /// Sets [Key] as an identification to underlying web view associated to the player.
-  final Key key;
-
   /// The [YoutubePlayerController].
   final YoutubePlayerController controller;
 
+  /// no-op
+  final Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers;
+
   /// Creates a [MobileYoutubePlayer] widget.
-  const RawYoutubePlayer(
-    this.controller, {
-    this.key,
-  });
+  const RawYoutubePlayer({
+    Key key,
+    this.controller,
+    this.gestureRecognizers,
+  }) : super(key: key);
 
   @override
   _WebYoutubePlayerState createState() => _WebYoutubePlayerState();
