@@ -1,4 +1,4 @@
-## 1.2.0
+## 1.2.0+1
 - Added `YoutubePlayerParams.privacyEnhanced` flag.
 - Exposed `gestureRecognizers` through `YoutubePlayerIFrame` widget.
 - Handled internal links correctly. Tapping on video suggestion will now play it and all the buttons are enabled.

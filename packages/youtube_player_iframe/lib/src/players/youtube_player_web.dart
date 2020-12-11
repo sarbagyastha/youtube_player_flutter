@@ -15,7 +15,7 @@ import 'package:youtube_player_iframe/src/helpers/player_fragments.dart';
 
 import '../controller.dart';
 import '../meta_data.dart';
-import 'stubs/dummy_ui.dart' if (dart.library.html) 'stubs/web_ui.dart' as ui;
+import 'platform_view_stub.dart' if (dart.library.html) 'dart:ui' as ui;
 
 /// A youtube player widget which interacts with the underlying iframe inorder to play YouTube videos.
 ///
@@ -46,6 +46,7 @@ class _WebYoutubePlayerState extends State<RawYoutubePlayer> {
   void initState() {
     super.initState();
     controller = widget.controller;
+    _iFrame = Completer();
     final playerIFrame = IFrameElement()
       ..srcdoc = player
       ..style.border = 'none';
@@ -159,7 +160,7 @@ class _WebYoutubePlayerState extends State<RawYoutubePlayer> {
           _iFrame.complete(playerIFrame);
         }
         controller.invokeJavascript = _callMethod;
-        return _iFrame;
+        return playerIFrame;
       },
     );
   }
