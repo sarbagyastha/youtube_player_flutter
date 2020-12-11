@@ -109,7 +109,9 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
         ),
       },
       onWebViewCreated: (webController) {
-        _webController.complete(webController);
+        if (!_webController.isCompleted) {
+          _webController.complete(webController);
+        }
         controller.invokeJavascript = _callMethod;
       },
       onPageFinished: (_) {
@@ -146,7 +148,9 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
           onMessageReceived: (videoData) {
             controller.add(
               controller.value.copyWith(
-                metaData: YoutubeMetaData.fromRawData(videoData.message),
+                metaData: YoutubeMetaData.fromRawData(
+                  jsonDecode(videoData.message),
+                ),
               ),
             );
           },

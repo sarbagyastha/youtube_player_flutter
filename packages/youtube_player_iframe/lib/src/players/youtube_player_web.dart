@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:async';
 import 'dart:convert';
-import 'dart:developer';
 import 'dart:html';
-import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:youtube_player_iframe/src/enums/player_state.dart';
@@ -14,6 +13,7 @@ import 'package:youtube_player_iframe/src/helpers/player_fragments.dart';
 
 import '../controller.dart';
 import '../meta_data.dart';
+import 'stubs/dummy_ui.dart' if (dart.library.html) 'stubs/web_ui.dart' as ui;
 
 /// A youtube player widget which interacts with the underlying iframe inorder to play YouTube videos.
 ///
@@ -37,19 +37,19 @@ class RawYoutubePlayer extends StatefulWidget {
 
 class _WebYoutubePlayerState extends State<RawYoutubePlayer> {
   YoutubePlayerController controller;
-  IFrameElement _iFrame;
+  Completer<IFrameElement> _iFrame;
 
   @override
   void initState() {
     super.initState();
+    _iFrame = Completer();
     controller = widget.controller;
-    // ignore: undefined_prefixed_name
+    final playerIFrame = IFrameElement()
+      ..srcdoc = player
+      ..style.border = 'none';
     ui.platformViewRegistry.registerViewFactory(
       'youtube-player-${controller.hashCode}',
       (int id) {
-        _iFrame = IFrameElement()
-          ..srcdoc = player
-          ..style.border = 'none';
         window.onMessage.listen(
           (event) {
             final Map<String, dynamic> data = jsonDecode(event.data);
@@ -153,18 +153,18 @@ class _WebYoutubePlayerState extends State<RawYoutubePlayer> {
             }
           },
         );
+        if (!_iFrame.isCompleted) {
+          _iFrame.complete(playerIFrame);
+        }
         controller.invokeJavascript = _callMethod;
-        return _iFrame;
+        return playerIFrame;
       },
     );
   }
 
-  void _callMethod(String methodName) {
-    if (_iFrame == null) {
-      log('Youtube Player is not ready for method calls.');
-      return;
-    }
-    _iFrame.contentWindow.postMessage(methodName, '*');
+  Future<void> _callMethod(String methodName) async {
+    final iFrame = await _iFrame.future;
+    iFrame.contentWindow?.postMessage(methodName, '*');
   }
 
   @override
@@ -177,20 +177,14 @@ class _WebYoutubePlayerState extends State<RawYoutubePlayer> {
 
   String get player => '''
     <!DOCTYPE html>
-    <html>
-    $playerDocHead
     <body>
-        <div id="player"></div>
+        ${youtubeIFrameTag(controller)}
         <script>
             $initPlayerIFrame
             var player;
             var timerId;
             function onYouTubeIframeAPIReady() {
                 player = new YT.Player('player', {
-                    height: '100%',
-                    width: '100%',
-                    videoId: '${controller.initialVideoId}',
-                    playerVars: ${playerVars(controller)},
                     events: {
                       onReady: (event) => sendMessage({ 'Ready': true }),
                       onStateChange: (event) => sendPlayerStateChange(event.data),
@@ -241,6 +235,5 @@ class _WebYoutubePlayerState extends State<RawYoutubePlayer> {
             $youtubeIFrameFunctions
         </script>
     </body>
-    </html>
   ''';
 }
