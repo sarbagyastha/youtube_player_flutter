@@ -69,13 +69,7 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
         autoPlay: true,
         playsInline: false,
       ),
-    )..listen((value) {
-        // if (value.isReady && !value.hasPlayed) {
-        //   _controller
-        //     ..hidePauseOverlay()
-        //     ..hideTopMenu();
-        // }
-      });
+    );
   }
 
   @override
@@ -90,12 +84,12 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
         ),
         body: LayoutBuilder(
           builder: (context, constraints) {
-            if (kIsWeb && constraints.maxWidth > 800) {
+            if (kIsWeb && constraints.maxWidth > 500) {
               return Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Expanded(child: player),
-                  const SizedBox(
+                children: const [
+                  Expanded(child: player),
+                  SizedBox(
                     width: 500,
                     child: SingleChildScrollView(
                       child: Controls(),
@@ -104,10 +98,11 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
                 ],
               );
             }
+
             return ListView(
-              children: [
+              children: const [
                 player,
-                const Controls(),
+                Controls(),
               ],
             );
           },

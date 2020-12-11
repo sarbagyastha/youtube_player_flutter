@@ -17,6 +17,7 @@ class PlayerStateSection extends StatelessWidget {
             borderRadius: BorderRadius.circular(20.0),
             color: _getStateColor(value.playerState),
           ),
+          constraints: BoxConstraints(maxWidth: 500),
           width: double.infinity,
           padding: const EdgeInsets.all(8.0),
           child: Text(

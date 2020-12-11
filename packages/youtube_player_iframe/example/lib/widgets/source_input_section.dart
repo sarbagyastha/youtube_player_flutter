@@ -80,7 +80,7 @@ class _SourceInputSectionState extends State<SourceInputSection> {
             GridView.count(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              childAspectRatio: 20 / 6,
+              childAspectRatio: 3.33,
               crossAxisSpacing: 10,
               mainAxisSpacing: 10,
               crossAxisCount: 2,
