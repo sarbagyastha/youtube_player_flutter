@@ -6,6 +6,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:html';
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:youtube_player_iframe/src/enums/player_state.dart';
 import 'package:youtube_player_iframe/src/enums/youtube_error.dart';
@@ -22,10 +24,14 @@ class RawYoutubePlayer extends StatefulWidget {
   /// The [YoutubePlayerController].
   final YoutubePlayerController controller;
 
+  /// no-op
+  final Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers;
+
   /// Creates a [MobileYoutubePlayer] widget.
   const RawYoutubePlayer({
     Key key,
     this.controller,
+    this.gestureRecognizers,
   }) : super(key: key);
 
   @override

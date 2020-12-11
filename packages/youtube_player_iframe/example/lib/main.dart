@@ -66,6 +66,7 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
         showControls: true,
         showFullscreenButton: true,
         desktopMode: true,
+        privacyEnhanced: true,
       ),
     );
     _controller.onEnterFullscreen = () {

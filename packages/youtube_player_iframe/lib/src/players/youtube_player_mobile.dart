@@ -5,12 +5,15 @@
 import 'dart:async';
 import 'dart:developer';
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:youtube_player_iframe/src/enums/youtube_error.dart';
 import 'package:youtube_player_iframe/src/helpers/player_fragments.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
+import 'package:url_launcher/url_launcher.dart' as url_launcher;
 
 import '../controller.dart';
 import '../enums/player_state.dart';
@@ -23,10 +26,22 @@ class RawYoutubePlayer extends StatefulWidget {
   /// The [YoutubePlayerController].
   final YoutubePlayerController controller;
 
+  /// Which gestures should be consumed by the youtube player.
+  ///
+  /// It is possible for other gesture recognizers to be competing with the player on pointer
+  /// events, e.g if the player is inside a [ListView] the [ListView] will want to handle
+  /// vertical drags. The player will claim gestures that are recognized by any of the
+  /// recognizers on this list.
+  ///
+  /// By default vertical and horizontal gestures are absorbed by the player.
+  /// Passing an empty set will ignore the defaults.
+  final Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers;
+
   /// Creates a [RawYoutubePlayer] widget.
   const RawYoutubePlayer({
     Key key,
     this.controller,
+    this.gestureRecognizers,
   }) : super(key: key);
 
   @override
@@ -80,10 +95,21 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
       key: ValueKey(controller.hashCode),
       initialData: InAppWebViewInitialData(
         data: player,
-        baseUrl: 'https://www.youtube.com',
+        baseUrl: controller.params.privacyEnhanced
+            ? 'https://www.youtube-nocookie.com'
+            : 'https://www.youtube.com',
         encoding: 'utf-8',
         mimeType: 'text/html',
       ),
+      gestureRecognizers: widget.gestureRecognizers ??
+          {
+            Factory<VerticalDragGestureRecognizer>(
+              () => VerticalDragGestureRecognizer(),
+            ),
+            Factory<HorizontalDragGestureRecognizer>(
+              () => HorizontalDragGestureRecognizer(),
+            ),
+          },
       initialOptions: InAppWebViewGroupOptions(
         crossPlatform: InAppWebViewOptions(
           userAgent: userAgent,
@@ -91,8 +117,8 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
           transparentBackground: true,
           disableContextMenu: true,
           supportZoom: false,
-          disableHorizontalScroll: true,
-          disableVerticalScroll: true,
+          disableHorizontalScroll: false,
+          disableVerticalScroll: false,
           useShouldOverrideUrlLoading: true,
         ),
         ios: IOSInAppWebViewOptions(
@@ -102,16 +128,15 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
         ),
         android: AndroidInAppWebViewOptions(useWideViewPort: false),
       ),
-      shouldOverrideUrlLoading: (controller, detail) async {
-        if (detail.headers == null) {
-          return ShouldOverrideUrlLoadingAction.CANCEL;
+      shouldOverrideUrlLoading: (_, detail) async {
+        final uri = Uri.parse(detail.url);
+        final feature = uri.queryParameters['feature'];
+        if (feature == 'emb_rel_pause') {
+          controller.load(uri.queryParameters['v']);
         } else {
-          final referer = detail.headers['Referer'];
-          if (referer != null && referer != 'https://www.youtube.com/') {
-            return ShouldOverrideUrlLoadingAction.CANCEL;
-          }
-          return ShouldOverrideUrlLoadingAction.ALLOW;
+          url_launcher.launch(detail.url);
         }
+        return ShouldOverrideUrlLoadingAction.CANCEL;
       },
       onWebViewCreated: (webController) {
         if (!_webController.isCompleted) {

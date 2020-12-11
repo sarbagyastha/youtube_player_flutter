@@ -28,7 +28,7 @@ class YoutubePlayerController extends Stream<YoutubePlayerValue>
     @required this.initialVideoId,
     this.params = const YoutubePlayerParams(),
   }) {
-    invokeJavascript = (_) {};
+    invokeJavascript = (_) async {};
   }
 
   /// The Youtube video id for initial video to be loaded.

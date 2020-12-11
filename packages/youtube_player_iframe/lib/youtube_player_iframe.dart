@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import 'src/controller.dart';
@@ -30,11 +31,25 @@ class YoutubePlayerIFrame extends StatelessWidget {
   /// Aspect ratio for the player.
   final double aspectRatio;
 
+  /// Which gestures should be consumed by the youtube player.
+  ///
+  /// It is possible for other gesture recognizers to be competing with the player on pointer
+  /// events, e.g if the player is inside a [ListView] the [ListView] will want to handle
+  /// vertical drags. The player will claim gestures that are recognized by any of the
+  /// recognizers on this list.
+  ///
+  /// By default vertical and horizontal gestures are absorbed by the player.
+  /// Passing an empty set will ignore the defaults.
+  ///
+  /// This is ignored on web.
+  final Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers;
+
   /// A widget to play or stream Youtube Videos.
   const YoutubePlayerIFrame({
     Key key,
     this.controller,
     this.aspectRatio = 16 / 9,
+    this.gestureRecognizers,
   }) : super(key: key);
 
   @override
@@ -45,6 +60,7 @@ class YoutubePlayerIFrame extends StatelessWidget {
       child: RawYoutubePlayer(
         key: ObjectKey(_controller),
         controller: _controller,
+        gestureRecognizers: gestureRecognizers,
       ),
     );
   }
