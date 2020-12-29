@@ -49,43 +49,51 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
   void initState() {
     super.initState();
     _controller = YoutubePlayerController(
-      initialVideoId: 'tcodrIK2P_I',
-      params: const YoutubePlayerParams(
+      initialVideoId: 'F1B9Fk_SgI0',
+      params: YoutubePlayerParams(
         playlist: [
-          'nPt8bK2gbaU',
-          'K18cpp_-gP8',
-          'iLnmTe5Q2Qw',
-          '_WoCV4c6XOE',
-          'KmzdUe0RSJo',
-          '6jZDSSZZxjQ',
-          'p2lYr3vM_1w',
-          '7QUtEmBT_-w',
-          '34_PXCzGw1M',
+          "MnrJzXM7a6o",
+          "FTQbiNvZqaY",
+          "iYKXdt0LRs8",
         ],
-        startAt: const Duration(minutes: 1, seconds: 36),
+        //startAt: Duration(minutes: 1, seconds: 5),
         showControls: true,
         showFullscreenButton: true,
-        desktopMode: true,
+        desktopMode: false, // false for platform design
+        autoPlay: false,
+        enableCaption: true,
+        showVideoAnnotations: false,
+        enableJavaScript: true,
         privacyEnhanced: true,
+        playsInline: false, // iOS only - Auto fullscreen or not
       ),
-    );
-    _controller.onEnterFullscreen = () {
-      SystemChrome.setPreferredOrientations([
-        DeviceOrientation.landscapeLeft,
-        DeviceOrientation.landscapeRight,
-      ]);
-      log('Entered Fullscreen');
-    };
-    _controller.onExitFullscreen = () {
-      SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-      Future.delayed(const Duration(seconds: 1), () {
-        _controller.play();
+    )..listen((value) {
+        if (value.isReady && !value.hasPlayed) {
+          _controller
+            ..hidePauseOverlay()
+            // Uncomment below to start autoplay on iOS
+            //..play()
+            ..hideTopMenu();
+        }
       });
-      Future.delayed(const Duration(seconds: 5), () {
-        SystemChrome.setPreferredOrientations(DeviceOrientation.values);
-      });
-      log('Exited Fullscreen');
-    };
+    //Uncomment below for auto rotation on fullscreen
+    // _controller.onEnterFullscreen = () {
+    //   SystemChrome.setPreferredOrientations([
+    //     DeviceOrientation.landscapeLeft,
+    //     DeviceOrientation.landscapeRight,
+    //   ]);
+    //   log('Entered Fullscreen');
+    // };
+    // _controller.onExitFullscreen = () {
+    //   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+    //   Future.delayed(const Duration(seconds: 1), () {
+    //     _controller.play();
+    //   });
+    //   Future.delayed(const Duration(seconds: 5), () {
+    //     SystemChrome.setPreferredOrientations(DeviceOrientation.values);
+    //   });
+    //   log('Exited Fullscreen');
+    // };
   }
 
   @override
