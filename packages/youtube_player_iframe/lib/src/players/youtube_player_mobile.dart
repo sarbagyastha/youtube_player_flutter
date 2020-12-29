@@ -13,7 +13,6 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:youtube_player_iframe/src/enums/youtube_error.dart';
 import 'package:youtube_player_iframe/src/helpers/player_fragments.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
-import 'package:url_launcher/url_launcher.dart' as url_launcher;
 
 import '../controller.dart';
 import '../enums/player_state.dart';
@@ -134,7 +133,7 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
         if (feature == 'emb_rel_pause') {
           controller.load(uri.queryParameters['v']);
         } else {
-          url_launcher.launch(detail.url);
+          return ShouldOverrideUrlLoadingAction.ALLOW;
         }
         return ShouldOverrideUrlLoadingAction.CANCEL;
       },
