@@ -2,14 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:async';
 import 'dart:developer';
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:youtube_player_iframe/src/enums/youtube_error.dart';
 import 'package:youtube_player_iframe/src/helpers/player_fragments.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
+import 'package:url_launcher/url_launcher.dart' as url_launcher;
 
 import '../controller.dart';
 import '../enums/player_state.dart';
@@ -19,20 +23,32 @@ import '../meta_data.dart';
 ///
 /// Use [YoutubePlayerIFrame] instead.
 class RawYoutubePlayer extends StatefulWidget {
-  /// Sets [Key] as an identification to underlying web view associated to the player.
-  final Key key;
-  /// Sets [useHybridComposition] to true if you want use new platform view.
-  final bool useHybridComposition;
-
   /// The [YoutubePlayerController].
   final YoutubePlayerController controller;
 
+  /// Sets [useHybridComposition] to true if you want use new platform view.
+  final bool useHybridComposition;
+
+  /// Which gestures should be consumed by the youtube player.
+  ///
+  /// It is possible for other gesture recognizers to be competing with the player on pointer
+  /// events, e.g if the player is inside a [ListView] the [ListView] will want to handle
+  /// vertical drags. The player will claim gestures that are recognized by any of the
+  /// recognizers on this list.
+  ///
+  /// By default vertical and horizontal gestures are absorbed by the player.
+  /// Passing an empty set will ignore the defaults.
+  final Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers;
+
+
   /// Creates a [RawYoutubePlayer] widget.
-  const RawYoutubePlayer(
-    this.controller, {
-    this.key,
-    this.useHybridComposition
-  });
+  const RawYoutubePlayer({
+    Key key,
+    this.controller,
+    this.gestureRecognizers,
+    this.useHybridComposition=false
+
+  }) : super(key: key);
 
   @override
   _MobileYoutubePlayerState createState() => _MobileYoutubePlayerState();
@@ -41,7 +57,7 @@ class RawYoutubePlayer extends StatefulWidget {
 class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
     with WidgetsBindingObserver {
   YoutubePlayerController controller;
-  InAppWebViewController _webController;
+  Completer<InAppWebViewController> _webController;
   PlayerState _cachedPlayerState;
   bool _isPlayerReady = false;
   bool _onLoadStopCalled = false;
@@ -49,6 +65,7 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
   @override
   void initState() {
     super.initState();
+    _webController = Completer();
     controller = widget.controller;
     WidgetsBinding.instance.addObserver(this);
   }
@@ -84,10 +101,21 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
       key: ValueKey(controller.hashCode),
       initialData: InAppWebViewInitialData(
         data: player,
-        baseUrl: 'https://www.youtube.com',
+        baseUrl: controller.params.privacyEnhanced
+            ? 'https://www.youtube-nocookie.com'
+            : 'https://www.youtube.com',
         encoding: 'utf-8',
         mimeType: 'text/html',
       ),
+      gestureRecognizers: widget.gestureRecognizers ??
+          {
+            Factory<VerticalDragGestureRecognizer>(
+              () => VerticalDragGestureRecognizer(),
+            ),
+            Factory<HorizontalDragGestureRecognizer>(
+              () => HorizontalDragGestureRecognizer(),
+            ),
+          },
       initialOptions: InAppWebViewGroupOptions(
         crossPlatform: InAppWebViewOptions(
           userAgent: userAgent,
@@ -95,8 +123,8 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
           transparentBackground: true,
           disableContextMenu: true,
           supportZoom: false,
-          disableHorizontalScroll: true,
-          disableVerticalScroll: true,
+          disableHorizontalScroll: false,
+          disableVerticalScroll: false,
           useShouldOverrideUrlLoading: true,
         ),
         ios: IOSInAppWebViewOptions(
@@ -106,20 +134,22 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
         ),
         android: AndroidInAppWebViewOptions(useWideViewPort: false , useHybridComposition:widget.useHybridComposition),
       ),
-      shouldOverrideUrlLoading: (controller, detail) async {
-        if (detail.headers == null) {
-          return ShouldOverrideUrlLoadingAction.CANCEL;
+      shouldOverrideUrlLoading: (_, detail) async {
+        final uri = Uri.parse(detail.url);
+        final feature = uri.queryParameters['feature'];
+        if (feature == 'emb_rel_pause') {
+          controller.load(uri.queryParameters['v']);
         } else {
-          final referer = detail.headers['Referer'];
-          if (referer != null && referer != 'https://www.youtube.com/') {
-            return ShouldOverrideUrlLoadingAction.CANCEL;
-          }
-          return ShouldOverrideUrlLoadingAction.ALLOW;
+          url_launcher.launch(detail.url);
         }
+        return ShouldOverrideUrlLoadingAction.CANCEL;
       },
       onWebViewCreated: (webController) {
+        if (!_webController.isCompleted) {
+          _webController.complete(webController);
+        }
         controller.invokeJavascript = _callMethod;
-        _webController = webController;
+
         webController
           ..addJavaScriptHandler(
             handlerName: 'Ready',
@@ -259,29 +289,21 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
     );
   }
 
-  void _callMethod(String methodName) {
-    if (_webController == null) {
-      log('Youtube Player is not ready for method calls.');
-    }
-    _webController.evaluateJavascript(source: methodName);
+  Future<void> _callMethod(String methodName) async {
+    final webController = await _webController.future;
+    webController.evaluateJavascript(source: methodName);
   }
 
   String get player => '''
     <!DOCTYPE html>
-    <html>
-    $playerDocHead
     <body>
-        <div id="player"></div>
+         ${youtubeIFrameTag(controller)}
         <script>
             $initPlayerIFrame
             var player;
             var timerId;
             function onYouTubeIframeAPIReady() {
                 player = new YT.Player('player', {
-                    height: '100%',
-                    width: '100%',
-                    videoId: '${controller.initialVideoId}',
-                    playerVars: ${playerVars(controller)},
                     events: {
                         onReady: function(event) { window.flutter_inappwebview.callHandler('Ready'); },
                         onStateChange: function(event) { sendPlayerStateChange(event.data); },
@@ -320,10 +342,7 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
             $youtubeIFrameFunctions
         </script>
     </body>
-    </html>
   ''';
-
-  String boolean({@required bool value}) => value ? "'1'" : "'0'";
 
   String get userAgent => controller.params.desktopMode
       ? 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36'

@@ -53,12 +53,7 @@ Since *flutter_inappwebview* relies on Flutter's mechanism for embedding Android
 No Configuration Required.
 
 ### iOS
-Add these lines to `Info.plist`
-
-```xml
-<key>io.flutter.embedded_views_preview</key>
-<true/>
-```
+No Configuration Required.
 
 [Follow the guide here for complete iOS setup](https://pub.dev/packages/flutter_inappwebview#important-note-for-ios)
 

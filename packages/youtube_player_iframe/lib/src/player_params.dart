@@ -134,6 +134,13 @@ class YoutubePlayerParams {
   /// Only effective on mobile devices.
   final bool desktopMode;
 
+  /// Enables privacy enhanced embedding mode.
+  ///
+  /// More detail at https://support.google.com/youtube/answer/171780?hl=en
+  ///
+  /// Default is false.
+  final bool privacyEnhanced;
+
   /// Defines player parameters for [YoutubePlayer].
   const YoutubePlayerParams({
     this.autoPlay = true,
@@ -143,7 +150,7 @@ class YoutubePlayerParams {
     this.color = 'white',
     this.showControls = true,
     this.enableKeyboard = kIsWeb,
-    this.enableJavaScript = false,
+    this.enableJavaScript = true,
     this.endAt,
     this.showFullscreenButton = false,
     this.interfaceLanguage = 'en',
@@ -155,5 +162,6 @@ class YoutubePlayerParams {
     this.strictRelatedVideos = false,
     this.startAt = Duration.zero,
     this.desktopMode = false,
+    this.privacyEnhanced = false,
   });
 }

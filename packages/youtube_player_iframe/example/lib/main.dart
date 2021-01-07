@@ -65,15 +65,10 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
         startAt: const Duration(minutes: 1, seconds: 36),
         showControls: true,
         showFullscreenButton: true,
-        desktopMode: false,
+        desktopMode: true,
+        privacyEnhanced: true,
       ),
-    )..listen((value) {
-        if (value.isReady && !value.hasPlayed) {
-          _controller
-            ..hidePauseOverlay()
-            ..hideTopMenu();
-        }
-      });
+    );
     _controller.onEnterFullscreen = () {
       SystemChrome.setPreferredOrientations([
         DeviceOrientation.landscapeLeft,

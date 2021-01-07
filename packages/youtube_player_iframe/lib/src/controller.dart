@@ -28,7 +28,7 @@ class YoutubePlayerController extends Stream<YoutubePlayerValue>
     @required this.initialVideoId,
     this.params = const YoutubePlayerParams(),
   }) {
-    invokeJavascript = (_) {};
+    invokeJavascript = (_) async {};
   }
 
   /// The Youtube video id for initial video to be loaded.
@@ -40,7 +40,7 @@ class YoutubePlayerController extends Stream<YoutubePlayerValue>
   /// Can be used to invokes javascript function.
   ///
   /// Ensure that the player is ready before using this.
-  void Function(String function) invokeJavascript;
+  Future<void> Function(String function) invokeJavascript;
 
   /// Called when player enters fullscreen.
   VoidCallback onEnterFullscreen;
