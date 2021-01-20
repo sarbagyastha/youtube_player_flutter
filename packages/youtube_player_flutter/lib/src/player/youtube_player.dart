@@ -111,6 +111,13 @@ class YoutubePlayer extends StatefulWidget {
   /// {@endtemplate}
   final List<Widget> bottomActions;
 
+  /// {@template youtube_player_flutter.enableToggleFullScreenMode}
+  /// display or not FullScreenModeButton.
+  ///
+  /// defaut is true
+  /// {@endtemplate}
+  final bool enableToggleFullScreenMode;
+
   /// {@template youtube_player_flutter.actionsPadding}
   /// Defines padding for [topActions] and [bottomActions].
   ///
@@ -147,6 +154,7 @@ class YoutubePlayer extends StatefulWidget {
     this.liveUIColor = Colors.red,
     this.topActions,
     this.bottomActions,
+    this.enableToggleFullScreenMode = true,
     this.actionsPadding = const EdgeInsets.all(8.0),
     this.thumbnail,
     this.showVideoProgressIndicator = false,
@@ -372,7 +380,8 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                                 ),
                                 RemainingDuration(),
                                 const PlaybackSpeedButton(),
-                                FullScreenButton(),
+                                if (widget.enableToggleFullScreenMode)
+                                  FullScreenButton(),
                               ],
                         ),
                       ),
