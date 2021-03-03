@@ -10,7 +10,6 @@ String youtubeIFrameTag(YoutubePlayerController controller) {
     'enablejsapi': _boolean(controller.params.enableJavaScript),
     'fs': _boolean(controller.params.showFullscreenButton),
     'rel': _boolean(!controller.params.strictRelatedVideos),
-    'showinfo': '0',
     'iv_load_policy': '${controller.params.showVideoAnnotations ? 1 : 3}',
     'modestbranding': '1',
     'cc_load_policy': _boolean(controller.params.enableCaption),
@@ -34,7 +33,7 @@ String youtubeIFrameTag(YoutubePlayerController controller) {
     params,
   );
   return '<iframe id="player" type="text/html"'
-      ' style="position:absolute; top:0px; left:0px; bottom:0px; right:10px;'
+      ' style="position:absolute; top:0px; left:px; bottom:0px; right:0px;'
       ' width:100%; height:100%; border:none; margin:0; padding:0; overflow:hidden; z-index:999999;"'
       ' src="$sourceUri" frameborder="0" allowfullscreen></iframe>';
 }

@@ -95,21 +95,13 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
       key: ValueKey(controller.hashCode),
       initialData: InAppWebViewInitialData(
         data: player,
-        baseUrl: controller.params.privacyEnhanced
+        baseUrl: Uri.parse(controller.params.privacyEnhanced
             ? 'https://www.youtube-nocookie.com'
-            : 'https://www.youtube.com',
+            : 'https://www.youtube.com'),
         encoding: 'utf-8',
         mimeType: 'text/html',
       ),
-      gestureRecognizers: widget.gestureRecognizers ??
-          {
-            Factory<VerticalDragGestureRecognizer>(
-              () => VerticalDragGestureRecognizer(),
-            ),
-            Factory<HorizontalDragGestureRecognizer>(
-              () => HorizontalDragGestureRecognizer(),
-            ),
-          },
+      gestureRecognizers: widget.gestureRecognizers,
       initialOptions: InAppWebViewGroupOptions(
         crossPlatform: InAppWebViewOptions(
           userAgent: userAgent,
@@ -117,8 +109,8 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
           transparentBackground: true,
           disableContextMenu: true,
           supportZoom: false,
-          disableHorizontalScroll: false,
-          disableVerticalScroll: false,
+          disableHorizontalScroll: true,
+          disableVerticalScroll: true,
           useShouldOverrideUrlLoading: true,
         ),
         ios: IOSInAppWebViewOptions(
@@ -126,17 +118,21 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
           allowsAirPlayForMediaPlayback: true,
           allowsPictureInPictureMediaPlayback: true,
         ),
-        android: AndroidInAppWebViewOptions(useWideViewPort: false),
+        android: AndroidInAppWebViewOptions(
+          useWideViewPort: false,
+          offscreenPreRaster: true,
+          useHybridComposition: true,
+        ),
       ),
-      shouldOverrideUrlLoading: (_, detail) async {
-        final uri = Uri.parse(detail.url);
+      shouldOverrideUrlLoading: (_, NavigationAction detail) async {
+        final uri = detail.request.url;
         final feature = uri.queryParameters['feature'];
         if (feature == 'emb_rel_pause') {
           controller.load(uri.queryParameters['v']);
         } else {
-          url_launcher.launch(detail.url);
+          url_launcher.launch(detail.request.url.toString());
         }
-        return ShouldOverrideUrlLoadingAction.CANCEL;
+        return NavigationActionPolicy.CANCEL;
       },
       onWebViewCreated: (webController) {
         if (!_webController.isCompleted) {
