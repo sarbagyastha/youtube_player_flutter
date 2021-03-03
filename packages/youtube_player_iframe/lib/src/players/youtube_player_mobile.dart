@@ -92,11 +92,13 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
       key: ValueKey(controller.hashCode),
       initialData: InAppWebViewInitialData(
         data: player,
-        baseUrl: _baseUrl,
+        baseUrl: Uri.parse(controller.params.privacyEnhanced
+            ? 'https://www.youtube-nocookie.com'
+            : 'https://www.youtube.com'),
         encoding: 'utf-8',
         mimeType: 'text/html',
       ),
-      gestureRecognizers: _gestureRecognizers,
+      gestureRecognizers: widget.gestureRecognizers,
       initialOptions: InAppWebViewGroupOptions(
         crossPlatform: InAppWebViewOptions(
           userAgent: userAgent,
@@ -104,8 +106,8 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
           transparentBackground: true,
           disableContextMenu: true,
           supportZoom: false,
-          disableHorizontalScroll: false,
-          disableVerticalScroll: false,
+          disableHorizontalScroll: true,
+          disableVerticalScroll: true,
           useShouldOverrideUrlLoading: true,
         ),
         ios: IOSInAppWebViewOptions(
@@ -115,10 +117,40 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
         ),
         android: AndroidInAppWebViewOptions(
           useWideViewPort: false,
-          useHybridComposition: controller.params.useHybridComposition,
+          offscreenPreRaster: true,
+          useHybridComposition: true,
         ),
       ),
-      shouldOverrideUrlLoading: _decideNavigationActionPolicy,
+      shouldOverrideUrlLoading: (_, detail) async {
+        final uri = detail.request.url;
+        if (uri == null) return NavigationActionPolicy.CANCEL;
+
+        final params = uri.queryParameters;
+        final host = uri.host;
+
+        String? featureName;
+        if (host.contains('facebook') || uri.host.contains('twitter')) {
+          featureName = 'social';
+        } else {
+          featureName = params['feature'];
+        }
+
+        switch (featureName) {
+          case 'emb_title':
+          case 'emb_rel_pause':
+          case 'emb_rel_end':
+            final videoId = params['v'];
+            if (videoId != null) controller.load(videoId);
+            break;
+          case 'emb_logo':
+          case 'social':
+          case 'wl_button':
+            url_launcher.launch(uri.toString());
+            break;
+        }
+
+        return NavigationActionPolicy.CANCEL;
+      },
       onWebViewCreated: (webController) {
         if (!_webController.isCompleted) {
           _webController.complete(webController);
@@ -133,7 +165,9 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
           controller.add(_value);
         }
       },
-      onConsoleMessage: (_, message) => log(message.message),
+      onConsoleMessage: (_, message) {
+        log(message.message);
+      },
       onEnterFullscreen: (_) => controller.onEnterFullscreen?.call(),
       onExitFullscreen: (_) => controller.onExitFullscreen?.call(),
     );
@@ -157,10 +191,10 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
     return widget.gestureRecognizers ??
         {
           Factory<VerticalDragGestureRecognizer>(
-            () => VerticalDragGestureRecognizer(),
+                () => VerticalDragGestureRecognizer(),
           ),
           Factory<HorizontalDragGestureRecognizer>(
-            () => HorizontalDragGestureRecognizer(),
+                () => HorizontalDragGestureRecognizer(),
           ),
         };
   }
@@ -194,8 +228,19 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
               break;
             case 0:
               _value = _value.copyWith(playerState: PlayerState.ended);
+              widget.callbacks?.onEnd?.call();
               break;
             case 1:
+            /// As workaround for this issue https://updaymedia.atlassian.net/browse/ESC-768?focusedCommentId=73895
+            /// we need callbacks or some other implementation
+            ///
+            /// Send only once this callback if playing, it works like `onPlayTap` feature
+              if (_value.playerState != PlayerState.playing) {
+                _debounceTime().then((value) {
+                  widget.callbacks?.onPlay?.call();
+                });
+              }
+
               _value = _value.copyWith(
                 playerState: PlayerState.playing,
                 hasPlayed: true,
@@ -204,6 +249,7 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
               break;
             case 2:
               _value = _value.copyWith(playerState: PlayerState.paused);
+              widget.callbacks?.onPause?.call();
               break;
             case 3:
               _value = _value.copyWith(playerState: PlayerState.buffering);
@@ -258,44 +304,9 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
             buffered: buffered.toDouble(),
           );
           controller.add(_value);
+          controller.add(_value);
         },
       );
-  }
-
-  Future<NavigationActionPolicy?> _decideNavigationActionPolicy(
-    _,
-    NavigationAction action,
-  ) async {
-    final uri = action.request.url;
-    if (uri == null) return NavigationActionPolicy.CANCEL;
-
-    final params = uri.queryParameters;
-    final host = uri.host;
-
-    String? featureName;
-    if (host.contains('facebook') || uri.host.contains('twitter')) {
-      featureName = 'social';
-    } else if (params.containsKey('feature')) {
-      featureName = params['feature'];
-    } else if (defaultTargetPlatform == TargetPlatform.iOS) {
-      return NavigationActionPolicy.ALLOW;
-    }
-
-    switch (featureName) {
-      case 'emb_title':
-      case 'emb_rel_pause':
-      case 'emb_rel_end':
-        final videoId = params['v'];
-        if (videoId != null) controller.load(videoId);
-        break;
-      case 'emb_logo':
-      case 'social':
-      case 'wl_button':
-        url_launcher.launch(uri.toString());
-        break;
-    }
-
-    return NavigationActionPolicy.CANCEL;
   }
 
   String get player => '''
