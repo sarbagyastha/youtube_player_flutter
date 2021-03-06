@@ -96,8 +96,8 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
       initialData: InAppWebViewInitialData(
         data: player,
         baseUrl: controller.params.privacyEnhanced
-            ? 'https://www.youtube-nocookie.com'
-            : 'https://www.youtube.com',
+            ? Uri.parse('https://www.youtube-nocookie.com')
+            : Uri.parse('https://www.youtube.com'),
         encoding: 'utf-8',
         mimeType: 'text/html',
       ),
@@ -129,14 +129,14 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
         android: AndroidInAppWebViewOptions(useWideViewPort: false),
       ),
       shouldOverrideUrlLoading: (_, detail) async {
-        final uri = Uri.parse(detail.url);
+        final uri = detail.request.url;
         final feature = uri.queryParameters['feature'];
         if (feature == 'emb_rel_pause') {
           controller.load(uri.queryParameters['v']);
         } else {
-          url_launcher.launch(detail.url);
+          url_launcher.launch(detail.request.url.path);
         }
-        return ShouldOverrideUrlLoadingAction.CANCEL;
+        return NavigationActionPolicy.CANCEL;
       },
       onWebViewCreated: (webController) {
         if (!_webController.isCompleted) {
