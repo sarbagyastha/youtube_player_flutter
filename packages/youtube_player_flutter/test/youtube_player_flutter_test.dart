@@ -11,19 +11,19 @@ import 'package:youtube_player_flutter/src/utils/youtube_player_flags.dart';
 import 'package:youtube_player_flutter/src/widgets/widgets.dart';
 
 Widget buildPlayer({
-  YoutubePlayerController controller,
-  double width,
-  List<Widget> bottomActions,
-  List<Widget> topActions,
+  YoutubePlayerController? controller,
+  double? width,
+  List<Widget>? bottomActions,
+  List<Widget>? topActions,
   bool showVideoProgressIndicator = true,
   double aspectRatio = 16 / 9,
-  Widget bufferIndicator,
+  Widget? bufferIndicator,
   Duration controlsTimeOut = const Duration(seconds: 3),
   Color liveUIColor = Colors.red,
-  void Function() onReady,
-  ProgressBarColors progressBarColors,
-  Color progressIndicatorColor,
-  Widget thumbnail,
+  void Function()? onReady,
+  ProgressBarColors? progressBarColors,
+  Color? progressIndicatorColor,
+  Widget? thumbnail,
   EdgeInsetsGeometry actionsPadding = const EdgeInsets.all(8.0),
 }) {
   return TestApp(
@@ -46,7 +46,7 @@ Widget buildPlayer({
   );
 }
 
-YoutubePlayerController createController([YoutubePlayerFlags flags]) {
+YoutubePlayerController createController([YoutubePlayerFlags? flags]) {
   return YoutubePlayerController(
     initialVideoId: 'p2lYr3vM_1w',
     flags: flags ?? const YoutubePlayerFlags(hideThumbnail: true),
@@ -66,7 +66,7 @@ void main() {
 }
 
 class TestApp extends StatelessWidget {
-  final Widget child;
+  final Widget? child;
   final TextDirection textDirection;
 
   TestApp({
@@ -86,7 +86,7 @@ class TestApp extends StatelessWidget {
         data: MediaQueryData.fromWindow(window),
         child: Directionality(
           textDirection: textDirection,
-          child: child,
+          child: child!,
         ),
       ),
     );
@@ -109,32 +109,23 @@ class MockHttpClientResponse extends Mock implements HttpClientResponse {}
 class MockHttpHeaders extends Mock implements HttpHeaders {}
 
 // Returns a mock HTTP client that responds with an image to all requests.
-MockHttpClient _createMockImageHttpClient(
-    SecurityContext _, List<int> imageBytes) {
+MockHttpClient _createMockImageHttpClient(SecurityContext? _, List<int> imageBytes) {
   final client = MockHttpClient();
   final request = MockHttpClientRequest();
   final response = MockHttpClientResponse();
   final headers = MockHttpHeaders();
 
-  when(client.getUrl(any))
-      .thenAnswer((_) => Future<HttpClientRequest>.value(request));
   when(request.headers).thenReturn(headers);
-  when(request.close())
-      .thenAnswer((_) => Future<HttpClientResponse>.value(response));
+  when(request.close()).thenAnswer((_) => Future<HttpClientResponse>.value(response));
   when(response.contentLength).thenReturn(_transparentImage.length);
   when(response.statusCode).thenReturn(HttpStatus.ok);
   when(response.listen(any)).thenAnswer((Invocation invocation) {
-    final void Function(List<int>) onData = invocation.positionalArguments[0];
-    final void Function() onDone = invocation.namedArguments[#onDone];
-    final void Function(Object, [StackTrace]) onError =
-        invocation.namedArguments[#onError];
-    final bool cancelOnError = invocation.namedArguments[#cancelOnError];
+    final void Function(List<int>)? onData = invocation.positionalArguments[0];
+    final void Function()? onDone = invocation.namedArguments[#onDone];
+    final void Function(Object, [StackTrace?])? onError = invocation.namedArguments[#onError];
+    final bool? cancelOnError = invocation.namedArguments[#cancelOnError];
 
-    return Stream<List<int>>.fromIterable(<List<int>>[imageBytes]).listen(
-        onData,
-        onDone: onDone,
-        onError: onError,
-        cancelOnError: cancelOnError);
+    return Stream<List<int>>.fromIterable(<List<int>>[imageBytes]).listen(onData, onDone: onDone, onError: onError, cancelOnError: cancelOnError);
   });
   return client;
 }

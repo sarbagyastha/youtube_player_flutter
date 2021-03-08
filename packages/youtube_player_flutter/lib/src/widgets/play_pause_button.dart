@@ -10,10 +10,10 @@ import '../utils/youtube_player_controller.dart';
 /// A widget to display play/pause button.
 class PlayPauseButton extends StatefulWidget {
   /// Overrides the default [YoutubePlayerController].
-  final YoutubePlayerController controller;
+  final YoutubePlayerController? controller;
 
   /// Defines placeholder widget to show when player is in buffering state.
-  final Widget bufferIndicator;
+  final Widget? bufferIndicator;
 
   /// Creates [PlayPauseButton] widget.
   PlayPauseButton({
@@ -27,8 +27,8 @@ class PlayPauseButton extends StatefulWidget {
 
 class _PlayPauseButtonState extends State<PlayPauseButton>
     with TickerProviderStateMixin {
-  YoutubePlayerController _controller;
-  AnimationController _animController;
+  YoutubePlayerController? _controller;
+  late AnimationController _animController;
 
   @override
   void initState() {
@@ -52,8 +52,8 @@ class _PlayPauseButtonState extends State<PlayPauseButton>
       );
       _controller = widget.controller;
     }
-    _controller.removeListener(_playPauseListener);
-    _controller.addListener(_playPauseListener);
+    _controller!.removeListener(_playPauseListener);
+    _controller!.addListener(_playPauseListener);
   }
 
   @override
@@ -63,27 +63,27 @@ class _PlayPauseButtonState extends State<PlayPauseButton>
     super.dispose();
   }
 
-  void _playPauseListener() => _controller.value.isPlaying
+  void _playPauseListener() => _controller!.value.isPlaying
       ? _animController.forward()
       : _animController.reverse();
 
   @override
   Widget build(BuildContext context) {
-    final _playerState = _controller.value.playerState;
-    if ((!_controller.flags.autoPlay && _controller.value.isReady) ||
+    final _playerState = _controller!.value.playerState;
+    if ((!_controller!.flags.autoPlay && _controller!.value.isReady) ||
         _playerState == PlayerState.playing ||
         _playerState == PlayerState.paused) {
       return Visibility(
         visible: _playerState == PlayerState.cued ||
-            !_controller.value.isPlaying ||
-            _controller.value.isControlsVisible,
+            !_controller!.value.isPlaying ||
+            _controller!.value.isControlsVisible,
         child: Material(
           color: Colors.transparent,
           child: InkWell(
             borderRadius: BorderRadius.circular(50.0),
-            onTap: () => _controller.value.isPlaying
-                ? _controller.pause()
-                : _controller.play(),
+            onTap: () => _controller!.value.isPlaying
+                ? _controller!.pause()
+                : _controller!.play(),
             child: AnimatedIcon(
               icon: AnimatedIcons.play_pause,
               progress: _animController.view,
@@ -94,7 +94,7 @@ class _PlayPauseButtonState extends State<PlayPauseButton>
         ),
       );
     }
-    if (_controller.value.hasError) return const SizedBox();
+    if (_controller!.value.hasError) return const SizedBox();
     return widget.bufferIndicator ??
         Container(
           width: 70.0,

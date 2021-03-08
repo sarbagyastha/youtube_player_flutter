@@ -70,13 +70,13 @@ class YoutubePlayerValue {
   final int errorCode;
 
   /// Reports the [WebViewController].
-  final InAppWebViewController webViewController;
+  final InAppWebViewController? webViewController;
 
   /// Returns true is player has errors.
   bool get hasError => errorCode != 0;
 
   /// Reports the current playback quality.
-  final String playbackQuality;
+  final String? playbackQuality;
 
   /// Returns true if [ProgressBar] is being dragged.
   final bool isDragging;
@@ -87,22 +87,22 @@ class YoutubePlayerValue {
   /// Creates new [YoutubePlayerValue] with assigned parameters and overrides
   /// the old one.
   YoutubePlayerValue copyWith({
-    bool isReady,
-    bool isControlsVisible,
-    bool isLoaded,
-    bool hasPlayed,
-    Duration position,
-    double buffered,
-    bool isPlaying,
-    bool isFullScreen,
-    double volume,
-    PlayerState playerState,
-    double playbackRate,
-    String playbackQuality,
-    int errorCode,
-    InAppWebViewController webViewController,
-    bool isDragging,
-    YoutubeMetaData metaData,
+    bool? isReady,
+    bool? isControlsVisible,
+    bool? isLoaded,
+    bool? hasPlayed,
+    Duration? position,
+    double? buffered,
+    bool? isPlaying,
+    bool? isFullScreen,
+    double? volume,
+    PlayerState? playerState,
+    double? playbackRate,
+    String? playbackQuality,
+    int? errorCode,
+    InAppWebViewController? webViewController,
+    bool? isDragging,
+    YoutubeMetaData? metaData,
   }) {
     return YoutubePlayerValue(
       isReady: isReady ?? this.isReady,
@@ -112,7 +112,7 @@ class YoutubePlayerValue {
       buffered: buffered ?? this.buffered,
       isPlaying: isPlaying ?? this.isPlaying,
       isFullScreen: isFullScreen ?? this.isFullScreen,
-      volume: volume ?? this.volume,
+      volume: volume as int? ?? this.volume,
       playerState: playerState ?? this.playerState,
       playbackRate: playbackRate ?? this.playbackRate,
       playbackQuality: playbackQuality ?? this.playbackQuality,
@@ -157,16 +157,12 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
 
   /// Creates [YoutubePlayerController].
   YoutubePlayerController({
-    @required this.initialVideoId,
+    required this.initialVideoId,
     this.flags = const YoutubePlayerFlags(),
-  })  : assert(initialVideoId != null, 'initialVideoId can\'t be null.'),
-        assert(flags != null),
-        super(YoutubePlayerValue());
+  }) : super(YoutubePlayerValue());
 
   /// Finds [YoutubePlayerController] in the provided context.
-  factory YoutubePlayerController.of(BuildContext context) => context
-      .dependOnInheritedWidgetOfExactType<InheritedYoutubePlayer>()
-      ?.controller;
+  factory YoutubePlayerController.of(BuildContext context) => context.dependOnInheritedWidgetOfExactType<InheritedYoutubePlayer>()!.controller;
 
   _callMethod(String methodString) {
     if (value.isReady) {
@@ -187,7 +183,7 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
   void pause() => _callMethod('pause()');
 
   /// Loads the video as per the [videoId] provided.
-  void load(String videoId, {int startAt = 0, int endAt}) {
+  void load(String? videoId, {int startAt = 0, int? endAt}) {
     var loadParams = 'videoId:"$videoId",startSeconds:$startAt';
     if (endAt != null && endAt > startAt) {
       loadParams += ',endSeconds:$endAt';
@@ -201,7 +197,7 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
   }
 
   /// Cues the video as per the [videoId] provided.
-  void cue(String videoId, {int startAt = 0, int endAt}) {
+  void cue(String videoId, {int startAt = 0, int? endAt}) {
     var cueParams = 'videoId:"$videoId",startSeconds:$startAt';
     if (endAt != null && endAt > startAt) {
       cueParams += ',endSeconds:$endAt';
@@ -214,7 +210,7 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
     }
   }
 
-  void _updateValues(String id) {
+  void _updateValues(String? id) {
     if (id?.length != 11) {
       updateValue(
         value.copyWith(
@@ -236,9 +232,8 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
 
   /// Sets the volume of player.
   /// Max = 100 , Min = 0
-  void setVolume(int volume) => volume >= 0 && volume <= 100
-      ? _callMethod('setVolume($volume)')
-      : throw Exception("Volume should be between 0 and 100");
+  void setVolume(int volume) =>
+      volume >= 0 && volume <= 100 ? _callMethod('setVolume($volume)') : throw Exception("Volume should be between 0 and 100");
 
   /// Seek to any position. Video auto plays after seeking.
   /// The optional allowSeekAhead parameter determines whether the player will make a new request to the server
@@ -251,8 +246,7 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
   }
 
   /// Sets the size in pixels of the player.
-  void setSize(Size size) =>
-      _callMethod('setSize(${size.width}, ${size.height})');
+  void setSize(Size size) => _callMethod('setSize(${size.width}, ${size.height})');
 
   /// Fits the video to screen width.
   void fitWidth(Size screenSize) {
@@ -316,16 +310,14 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
 class InheritedYoutubePlayer extends InheritedWidget {
   /// Creates [InheritedYoutubePlayer]
   const InheritedYoutubePlayer({
-    Key key,
-    @required this.controller,
-    @required Widget child,
-  })  : assert(controller != null),
-        super(key: key, child: child);
+    Key? key,
+    required this.controller,
+    required Widget child,
+  }) : super(key: key, child: child);
 
   /// A [YoutubePlayerController] which controls the player.
   final YoutubePlayerController controller;
 
   @override
-  bool updateShouldNotify(InheritedYoutubePlayer oldPlayer) =>
-      oldPlayer.controller.hashCode != controller.hashCode;
+  bool updateShouldNotify(InheritedYoutubePlayer oldPlayer) => oldPlayer.controller.hashCode != controller.hashCode;
 }

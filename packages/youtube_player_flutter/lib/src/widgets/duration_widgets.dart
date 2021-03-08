@@ -10,7 +10,7 @@ import '../utils/youtube_player_controller.dart';
 /// A widget which displays the current position of the video.
 class CurrentPosition extends StatefulWidget {
   /// Overrides the default [YoutubePlayerController].
-  final YoutubePlayerController controller;
+  final YoutubePlayerController? controller;
 
   /// Creates [CurrentPosition] widget.
   CurrentPosition({this.controller});
@@ -20,7 +20,7 @@ class CurrentPosition extends StatefulWidget {
 }
 
 class _CurrentPositionState extends State<CurrentPosition> {
-  YoutubePlayerController _controller;
+  YoutubePlayerController? _controller;
 
   @override
   void didChangeDependencies() {
@@ -34,13 +34,13 @@ class _CurrentPositionState extends State<CurrentPosition> {
       );
       _controller = widget.controller;
     }
-    _controller.removeListener(listener);
-    _controller.addListener(listener);
+    _controller!.removeListener(listener);
+    _controller!.addListener(listener);
   }
 
   @override
   void dispose() {
-    _controller.removeListener(listener);
+    _controller!.removeListener(listener);
     super.dispose();
   }
 
@@ -52,7 +52,7 @@ class _CurrentPositionState extends State<CurrentPosition> {
   Widget build(BuildContext context) {
     return Text(
       durationFormatter(
-        _controller.value.position?.inMilliseconds ?? 0,
+        _controller!.value.position.inMilliseconds,
       ),
       style: const TextStyle(
         color: Colors.white,
@@ -65,7 +65,7 @@ class _CurrentPositionState extends State<CurrentPosition> {
 /// A widget which displays the remaining duration of the video.
 class RemainingDuration extends StatefulWidget {
   /// Overrides the default [YoutubePlayerController].
-  final YoutubePlayerController controller;
+  final YoutubePlayerController? controller;
 
   /// Creates [RemainingDuration] widget.
   RemainingDuration({this.controller});
@@ -75,7 +75,7 @@ class RemainingDuration extends StatefulWidget {
 }
 
 class _RemainingDurationState extends State<RemainingDuration> {
-  YoutubePlayerController _controller;
+  YoutubePlayerController? _controller;
 
   @override
   void didChangeDependencies() {
@@ -89,13 +89,13 @@ class _RemainingDurationState extends State<RemainingDuration> {
       );
       _controller = widget.controller;
     }
-    _controller.removeListener(listener);
-    _controller.addListener(listener);
+    _controller!.removeListener(listener);
+    _controller!.addListener(listener);
   }
 
   @override
   void dispose() {
-    _controller.removeListener(listener);
+    _controller!.removeListener(listener);
     super.dispose();
   }
 
@@ -107,8 +107,7 @@ class _RemainingDurationState extends State<RemainingDuration> {
   Widget build(BuildContext context) {
     return Text(
       "- ${durationFormatter(
-        (_controller.metadata.duration?.inMilliseconds ?? 0) -
-            (_controller.value.position?.inMilliseconds ?? 0),
+        (_controller!.metadata.duration.inMilliseconds) - (_controller!.value.position.inMilliseconds),
       )}",
       style: const TextStyle(
         color: Colors.white,
