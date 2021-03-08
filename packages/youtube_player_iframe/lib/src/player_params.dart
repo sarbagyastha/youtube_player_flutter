@@ -70,7 +70,7 @@ class YoutubePlayerParams {
   ///
   /// Note that the time is measured from the beginning of the video and not from either the value of the start player parameter or the startSeconds parameter,
   /// which is used in YouTube Player API functions for loading or queueing a video.
-  final Duration endAt;
+  final Duration? endAt;
 
   /// Setting this parameter to false prevents the fullscreen button from displaying in the player.
   ///

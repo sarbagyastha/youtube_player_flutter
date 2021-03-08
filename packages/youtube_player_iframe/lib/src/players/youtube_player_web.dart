@@ -22,14 +22,14 @@ import 'platform_view_stub.dart' if (dart.library.html) 'dart:ui' as ui;
 /// Use [YoutubePlayerIFrame] instead.
 class RawYoutubePlayer extends StatefulWidget {
   /// The [YoutubePlayerController].
-  final YoutubePlayerController controller;
+  final YoutubePlayerController? controller;
 
   /// no-op
-  final Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers;
+  final Set<Factory<OneSequenceGestureRecognizer>>? gestureRecognizers;
 
   /// Creates a [MobileYoutubePlayer] widget.
   const RawYoutubePlayer({
-    Key key,
+    Key? key,
     this.controller,
     this.gestureRecognizers,
   }) : super(key: key);
@@ -39,8 +39,8 @@ class RawYoutubePlayer extends StatefulWidget {
 }
 
 class _WebYoutubePlayerState extends State<RawYoutubePlayer> {
-  YoutubePlayerController controller;
-  Completer<IFrameElement> _iFrame;
+  YoutubePlayerController? controller;
+  late Completer<IFrameElement> _iFrame;
 
   @override
   void initState() {
@@ -57,31 +57,31 @@ class _WebYoutubePlayerState extends State<RawYoutubePlayer> {
           (event) {
             final Map<String, dynamic> data = jsonDecode(event.data);
             if (data.containsKey('Ready')) {
-              controller.add(
-                controller.value.copyWith(isReady: true),
+              controller!.add(
+                controller!.value.copyWith(isReady: true),
               );
             }
 
             if (data.containsKey('StateChange')) {
-              switch (data['StateChange'] as int) {
+              switch (data['StateChange'] as int?) {
                 case -1:
-                  controller.add(
-                    controller.value.copyWith(
+                  controller!.add(
+                    controller!.value.copyWith(
                       playerState: PlayerState.unStarted,
                       isReady: true,
                     ),
                   );
                   break;
                 case 0:
-                  controller.add(
-                    controller.value.copyWith(
+                  controller!.add(
+                    controller!.value.copyWith(
                       playerState: PlayerState.ended,
                     ),
                   );
                   break;
                 case 1:
-                  controller.add(
-                    controller.value.copyWith(
+                  controller!.add(
+                    controller!.value.copyWith(
                       playerState: PlayerState.playing,
                       hasPlayed: true,
                       error: YoutubeError.none,
@@ -89,22 +89,22 @@ class _WebYoutubePlayerState extends State<RawYoutubePlayer> {
                   );
                   break;
                 case 2:
-                  controller.add(
-                    controller.value.copyWith(
+                  controller!.add(
+                    controller!.value.copyWith(
                       playerState: PlayerState.paused,
                     ),
                   );
                   break;
                 case 3:
-                  controller.add(
-                    controller.value.copyWith(
+                  controller!.add(
+                    controller!.value.copyWith(
                       playerState: PlayerState.buffering,
                     ),
                   );
                   break;
                 case 5:
-                  controller.add(
-                    controller.value.copyWith(
+                  controller!.add(
+                    controller!.value.copyWith(
                       playerState: PlayerState.cued,
                     ),
                   );
@@ -115,40 +115,40 @@ class _WebYoutubePlayerState extends State<RawYoutubePlayer> {
             }
 
             if (data.containsKey('PlaybackQualityChange')) {
-              controller.add(
-                controller.value.copyWith(
-                    playbackQuality: data['PlaybackQualityChange'] as String),
+              controller!.add(
+                controller!.value.copyWith(
+                    playbackQuality: data['PlaybackQualityChange'] as String?),
               );
             }
 
             if (data.containsKey('PlaybackRateChange')) {
               final rate = data['PlaybackRateChange'] as num;
-              controller.add(
-                controller.value.copyWith(playbackRate: rate.toDouble()),
+              controller!.add(
+                controller!.value.copyWith(playbackRate: rate.toDouble()),
               );
             }
 
             if (data.containsKey('Errors')) {
-              controller.add(
-                controller.value
-                    .copyWith(error: errorEnum(data['Errors'] as int)),
+              controller!.add(
+                controller!.value
+                    .copyWith(error: errorEnum(data['Errors'] as int?)),
               );
             }
 
             if (data.containsKey('VideoData')) {
-              controller.add(
-                controller.value.copyWith(
+              controller!.add(
+                controller!.value.copyWith(
                     metaData: YoutubeMetaData.fromRawData(data['VideoData'])),
               );
             }
 
             if (data.containsKey('VideoTime')) {
-              final position = data['VideoTime']['currentTime'] as double;
-              final buffered = data['VideoTime']['videoLoadedFraction'] as num;
+              final position = data['VideoTime']['currentTime'] as double?;
+              final buffered = data['VideoTime']['videoLoadedFraction'] as num?;
 
               if (position == null || buffered == null) return;
-              controller.add(
-                controller.value.copyWith(
+              controller!.add(
+                controller!.value.copyWith(
                   position: Duration(milliseconds: (position * 1000).floor()),
                   buffered: buffered.toDouble(),
                 ),
@@ -159,7 +159,7 @@ class _WebYoutubePlayerState extends State<RawYoutubePlayer> {
         if (!_iFrame.isCompleted) {
           _iFrame.complete(playerIFrame);
         }
-        controller.invokeJavascript = _callMethod;
+        controller!.invokeJavascript = _callMethod;
         return playerIFrame;
       },
     );
@@ -181,7 +181,7 @@ class _WebYoutubePlayerState extends State<RawYoutubePlayer> {
   String get player => '''
     <!DOCTYPE html>
     <body>
-        ${youtubeIFrameTag(controller)}
+        ${youtubeIFrameTag(controller!)}
         <script>
             $initPlayerIFrame
             var player;

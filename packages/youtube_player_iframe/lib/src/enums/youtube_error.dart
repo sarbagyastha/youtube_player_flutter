@@ -33,7 +33,7 @@ enum YoutubeError {
 }
 
 ///
-YoutubeError errorEnum(int errorCode) {
+YoutubeError errorEnum(int? errorCode) {
   switch (errorCode) {
     case 2:
       return YoutubeError.invalidParam;

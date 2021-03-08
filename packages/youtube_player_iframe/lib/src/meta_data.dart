@@ -5,13 +5,13 @@
 /// Meta data for Youtube Video.
 class YoutubeMetaData {
   /// Youtube video ID of the currently loaded video.
-  final String videoId;
+  final String? videoId;
 
   /// Video title of the currently loaded video.
-  final String title;
+  final String? title;
 
   /// Channel name or uploader of the currently loaded video.
-  final String author;
+  final String? author;
 
   /// Total duration of the currently loaded video.
   final Duration duration;
