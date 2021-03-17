@@ -43,7 +43,7 @@ class YoutubeAppDemo extends StatefulWidget {
 }
 
 class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
-  YoutubePlayerController _controller;
+  late YoutubePlayerController _controller;
 
   @override
   void initState() {

@@ -65,7 +65,7 @@ class YoutubePlayerFlags {
   final int startAt;
 
   /// Specifies the default end point of the video in seconds
-  final int endAt;
+  final int? endAt;
 
   /// Creates [YoutubePlayerFlags].
   const YoutubePlayerFlags({
@@ -86,19 +86,19 @@ class YoutubePlayerFlags {
 
   /// Copies new values assigned to the [YoutubePlayerFlags].
   YoutubePlayerFlags copyWith({
-    bool hideControls,
-    bool autoPlay,
-    bool mute,
-    bool showVideoProgressIndicator,
-    bool isLive,
-    bool hideThumbnail,
-    bool disableDragSeek,
-    bool loop,
-    bool enableCaption,
-    bool forceHD,
-    String captionLanguage,
-    int startAt,
-    int endAt,
+    bool? hideControls,
+    bool? autoPlay,
+    bool? mute,
+    bool? showVideoProgressIndicator,
+    bool? isLive,
+    bool? hideThumbnail,
+    bool? disableDragSeek,
+    bool? loop,
+    bool? enableCaption,
+    bool? forceHD,
+    String? captionLanguage,
+    int? startAt,
+    int? endAt,
   }) {
     return YoutubePlayerFlags(
       autoPlay: autoPlay ?? this.autoPlay,

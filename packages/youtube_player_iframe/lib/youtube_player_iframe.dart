@@ -26,7 +26,7 @@ export 'src/player_params.dart';
 /// A widget to play or stream Youtube Videos.
 class YoutubePlayerIFrame extends StatelessWidget {
   /// The [controller] for this player.
-  final YoutubePlayerController controller;
+  final YoutubePlayerController? controller;
 
   /// Aspect ratio for the player.
   final double aspectRatio;
@@ -42,11 +42,11 @@ class YoutubePlayerIFrame extends StatelessWidget {
   /// Passing an empty set will ignore the defaults.
   ///
   /// This is ignored on web.
-  final Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers;
+  final Set<Factory<OneSequenceGestureRecognizer>>? gestureRecognizers;
 
   /// A widget to play or stream Youtube Videos.
   const YoutubePlayerIFrame({
-    Key key,
+    Key? key,
     this.controller,
     this.aspectRatio = 16 / 9,
     this.gestureRecognizers,

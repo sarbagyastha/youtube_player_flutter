@@ -25,7 +25,7 @@ class YoutubePlayerController extends Stream<YoutubePlayerValue>
     implements Sink<YoutubePlayerValue> {
   /// Creates [YoutubePlayerController].
   YoutubePlayerController({
-    @required this.initialVideoId,
+    required this.initialVideoId,
     this.params = const YoutubePlayerParams(),
   }) {
     invokeJavascript = (_) async {};
@@ -40,13 +40,13 @@ class YoutubePlayerController extends Stream<YoutubePlayerValue>
   /// Can be used to invokes javascript function.
   ///
   /// Ensure that the player is ready before using this.
-  Future<void> Function(String function) invokeJavascript;
+  late Future<void> Function(String function) invokeJavascript;
 
   /// Called when player enters fullscreen.
-  VoidCallback onEnterFullscreen;
+  VoidCallback? onEnterFullscreen;
 
   /// Called when player exits fullscreen.
-  VoidCallback onExitFullscreen;
+  VoidCallback? onExitFullscreen;
 
   final StreamController<YoutubePlayerValue> _controller =
       StreamController.broadcast();
@@ -65,15 +65,15 @@ class YoutubePlayerController extends Stream<YoutubePlayerValue>
   /// Listen to updates in [YoutubePlayerController].
   @override
   StreamSubscription<YoutubePlayerValue> listen(
-    void Function(YoutubePlayerValue event) onData, {
-    Function onError,
-    void Function() onDone,
-    bool cancelOnError,
+    void Function(YoutubePlayerValue event)? onData, {
+    Function? onError,
+    void Function()? onDone,
+    bool? cancelOnError,
   }) {
     return _controller.stream.listen(
       (value) {
         _value = value;
-        onData(value);
+        onData?.call(value);
       },
       onError: onError,
       onDone: onDone,
@@ -136,7 +136,7 @@ class YoutubePlayerController extends Stream<YoutubePlayerValue>
   /// [startAt] & [endAt] parameter accepts a [Duration].
   /// If specified, then the video will (start from the closest keyframe to the specified time / end at the specified time).
   void load(String videoId,
-      {Duration startAt = Duration.zero, Duration endAt}) {
+      {Duration startAt = Duration.zero, Duration? endAt}) {
     var loadParams = 'videoId:"$videoId",startSeconds:${startAt.inSeconds}';
     if (endAt != null && endAt > startAt) {
       loadParams += ',endSeconds:${endAt.inSeconds}';
@@ -157,7 +157,8 @@ class YoutubePlayerController extends Stream<YoutubePlayerValue>
   ///
   /// [startAt] & [endAt] parameter accepts a [Duration].
   /// If specified, then the video will (start from the closest keyframe to the specified time / end at the specified time).
-  void cue(String videoId, {Duration startAt = Duration.zero, Duration endAt}) {
+  void cue(String videoId,
+      {Duration startAt = Duration.zero, Duration? endAt}) {
     var cueParams = 'videoId:"$videoId",startSeconds:${startAt.inSeconds}';
     if (endAt != null && endAt > startAt) {
       cueParams += ',endSeconds:${endAt.inSeconds}';
@@ -212,7 +213,7 @@ class YoutubePlayerController extends Stream<YoutubePlayerValue>
   }
 
   void _updateId(String id) {
-    if (id?.length != 11) {
+    if (id.length != 11) {
       add(_value.copyWith(error: YoutubeError.invalidParam));
     } else {
       add(_value.copyWith(error: YoutubeError.none, hasPlayed: false));
@@ -298,8 +299,7 @@ class YoutubePlayerController extends Stream<YoutubePlayerValue>
   /// Converts fully qualified YouTube Url to video id.
   ///
   /// If videoId is passed as url then no conversion is done.
-  static String convertUrlToId(String url, {bool trimWhitespaces = true}) {
-    assert(url?.isNotEmpty ?? false, 'Url cannot be empty');
+  static String? convertUrlToId(String url, {bool trimWhitespaces = true}) {
     if (!url.contains("http") && (url.length == 11)) return url;
     if (trimWhitespaces) url = url.trim();
 
@@ -308,7 +308,7 @@ class YoutubePlayerController extends Stream<YoutubePlayerValue>
       r'^https:\/\/(?:www\.|m\.)?youtube(?:-nocookie)?\.com\/embed\/([_\-a-zA-Z0-9]{11}).*$',
       r'^https:\/\/youtu\.be\/([_\-a-zA-Z0-9]{11}).*$',
     ]) {
-      Match match = RegExp(regex).firstMatch(url);
+      Match? match = RegExp(regex).firstMatch(url);
       if (match != null && match.groupCount >= 1) return match.group(1);
     }
 
@@ -320,7 +320,7 @@ class YoutubePlayerController extends Stream<YoutubePlayerValue>
   /// If [webp] is true, webp version of the thumbnail will be retrieved,
   /// Otherwise a JPG thumbnail.
   static String getThumbnail({
-    @required String videoId,
+    required String videoId,
     String quality = ThumbnailQuality.standard,
     bool webp = true,
   }) {

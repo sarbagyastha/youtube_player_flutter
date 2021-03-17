@@ -17,7 +17,7 @@ String youtubeIFrameTag(YoutubePlayerController controller) {
     'cc_lang_pref': controller.params.captionLanguage,
     'start': '${controller.params.startAt.inSeconds}',
     if (controller.params.endAt != null)
-      'end': '${controller.params.endAt.inSeconds}',
+      'end': '${controller.params.endAt!.inSeconds}',
     'disablekb': _boolean(!controller.params.enableKeyboard),
     'color': controller.params.color,
     'hl': controller.params.interfaceLanguage,
