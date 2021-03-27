@@ -2,7 +2,7 @@
 ![YOUTUBE PLAYER IFRAME](packages/youtube_player_flutter/misc/ypf_banner.png)
 
 
-[![pub package](https://img.shields.io/pub/vpre/youtube_player_iframe.svg)](https://pub.dartlang.org/packages/youtube_player_iframe)
+[![pub package](https://img.shields.io/pub/v/youtube_player_iframe.svg)](https://pub.dartlang.org/packages/youtube_player_iframe)
 [![licence](https://img.shields.io/badge/licence-BSD-orange.svg)](https://github.com/sarbagyastha/youtube_player_flutter/blob/master/LICENSE)
 [![Download](https://img.shields.io/badge/download-APK-informational.svg)](https://github.com/sarbagyastha/youtube_player_flutter/releases)
 [![Stars](https://img.shields.io/github/stars/sarbagyastha/youtube_player_flutter?color=deeppink)](https://github.com/sarbagyastha/youtube_player_flutter)
@@ -178,10 +178,11 @@ playsInline                | Controls whether videos play inline or fullscreen i
 strictRelatedVideos        | Enabling ensure that related videos will come from the same channel as the video that was just played. **Default = false**
 startAt                    | Starts the video at specified time.
 desktopMode                | The controls will be alike Youtube Desktop's controls.
+useHybridComposition       | Enable [Hybrid Composition](https://github.com/flutter/flutter/wiki/Hybrid-Composition)
 
 
 ## Limitation 
-For Android: Since the plugin is based on platform views. This plugin requires Android API level 20 or greater.
+For Android: Since the plugin is based on platform views. This plugin requires Android API level 19 or greater.
 
 ## License
 ```
