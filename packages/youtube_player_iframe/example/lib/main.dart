@@ -67,6 +67,7 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
         showFullscreenButton: true,
         desktopMode: true,
         privacyEnhanced: true,
+        useHybridComposition: true,
       ),
     );
     _controller.onEnterFullscreen = () {
@@ -77,13 +78,6 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
       log('Entered Fullscreen');
     };
     _controller.onExitFullscreen = () {
-      SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-      Future.delayed(const Duration(seconds: 1), () {
-        _controller.play();
-      });
-      Future.delayed(const Duration(seconds: 5), () {
-        SystemChrome.setPreferredOrientations(DeviceOrientation.values);
-      });
       log('Exited Fullscreen');
     };
   }
@@ -96,7 +90,7 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
       controller: _controller,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Youtube Player Demo'),
+          title: const Text('Youtube Player IFrame'),
         ),
         body: LayoutBuilder(
           builder: (context, constraints) {
