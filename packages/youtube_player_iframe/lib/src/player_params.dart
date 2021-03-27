@@ -141,6 +141,13 @@ class YoutubePlayerParams {
   /// Default is false.
   final bool privacyEnhanced;
 
+  /// Set to `true` to enable Flutter's new Hybrid Composition. The default value is `true`.
+  /// Hybrid Composition is supported starting with Flutter v1.20+.
+  ///
+  /// **NOTE**: It is recommended to use Hybrid Composition only on Android 10+ for a release app,
+  /// as it can cause framerate drops on animations in Android 9 and lower (see [Hybrid-Composition#performance](https://github.com/flutter/flutter/wiki/Hybrid-Composition#performance)).
+  final bool useHybridComposition;
+
   /// Defines player parameters for [YoutubePlayer].
   const YoutubePlayerParams({
     this.autoPlay = true,
@@ -163,5 +170,6 @@ class YoutubePlayerParams {
     this.startAt = Duration.zero,
     this.desktopMode = false,
     this.privacyEnhanced = false,
+    this.useHybridComposition = true,
   });
 }

@@ -130,12 +130,13 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
         ),
         android: AndroidInAppWebViewOptions(
           useWideViewPort: false,
-          useHybridComposition: true,
+          useHybridComposition: controller.params.useHybridComposition,
         ),
       ),
       shouldOverrideUrlLoading: (_, detail) async {
         final uri = detail.request.url;
         if (uri == null) return NavigationActionPolicy.CANCEL;
+
         final feature = uri.queryParameters['feature'];
         if (feature == 'emb_rel_pause') {
           if (uri.queryParameters.containsKey('v')) {
