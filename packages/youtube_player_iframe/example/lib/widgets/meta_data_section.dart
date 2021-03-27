@@ -19,7 +19,7 @@ class MetaDataSection extends StatelessWidget {
           const SizedBox(height: 10),
           _Text(
             'Playback Quality',
-            value.playbackQuality,
+            value.playbackQuality ?? '',
           ),
           const SizedBox(height: 10),
           Row(
@@ -50,7 +50,11 @@ class MetaDataSection extends StatelessWidget {
                           ),
                         )
                         .toList(),
-                    onChanged: context.ytController.setPlaybackRate,
+                    onChanged: (double? newValue) {
+                      if (newValue != null) {
+                        context.ytController.setPlaybackRate(newValue);
+                      }
+                    },
                   );
                 },
               ),
@@ -79,7 +83,7 @@ class _Text extends StatelessWidget {
         ),
         children: [
           TextSpan(
-            text: value ?? '',
+            text: value,
             style: TextStyle(
               color: Theme.of(context).primaryColor,
               fontWeight: FontWeight.w300,

@@ -18,7 +18,7 @@ class VolumeSlider extends StatelessWidget {
           style: TextStyle(fontWeight: FontWeight.w300),
         ),
         Expanded(
-          child: ValueListenableBuilder(
+          child: ValueListenableBuilder<int>(
             valueListenable: _volume,
             builder: (context, volume, _) {
               return Slider(

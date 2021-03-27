@@ -35,7 +35,7 @@ class PlayerStateSection extends StatelessWidget {
   Color _getStateColor(PlayerState state) {
     switch (state) {
       case PlayerState.unknown:
-        return Colors.grey[700];
+        return Colors.grey[700]!;
       case PlayerState.unStarted:
         return Colors.pink;
       case PlayerState.ended:
@@ -47,7 +47,7 @@ class PlayerStateSection extends StatelessWidget {
       case PlayerState.buffering:
         return Colors.yellow;
       case PlayerState.cued:
-        return Colors.blue[900];
+        return Colors.blue[900]!;
       default:
         return Colors.blue;
     }

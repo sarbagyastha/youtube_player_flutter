@@ -12,8 +12,8 @@ class SourceInputSection extends StatefulWidget {
 }
 
 class _SourceInputSectionState extends State<SourceInputSection> {
-  TextEditingController _textController;
-  String _playlistType;
+  late TextEditingController _textController;
+  String? _playlistType;
 
   @override
   void initState() {
@@ -88,13 +88,15 @@ class _SourceInputSectionState extends State<SourceInputSection> {
                 _Button(
                   action: 'LOAD',
                   onTap: () {
-                    context.ytController.load(_cleanId(_textController.text));
+                    context.ytController
+                        .load(_cleanId(_textController.text) ?? '');
                   },
                 ),
                 _Button(
                   action: 'CUE',
                   onTap: () {
-                    context.ytController.cue(_cleanId(_textController.text));
+                    context.ytController
+                        .cue(_cleanId(_textController.text) ?? '');
                   },
                 ),
                 _Button(
@@ -104,7 +106,7 @@ class _SourceInputSectionState extends State<SourceInputSection> {
                       : () {
                           context.ytController.loadPlaylist(
                             _textController.text,
-                            listType: _playlistType,
+                            listType: _playlistType!,
                           );
                         },
                 ),
@@ -115,7 +117,7 @@ class _SourceInputSectionState extends State<SourceInputSection> {
                       : () {
                           context.ytController.cuePlaylist(
                             _textController.text,
-                            listType: _playlistType,
+                            listType: _playlistType!,
                           );
                         },
                 ),
@@ -127,7 +129,7 @@ class _SourceInputSectionState extends State<SourceInputSection> {
     );
   }
 
-  String get _helperText {
+  String? get _helperText {
     switch (_playlistType) {
       case PlaylistType.search:
         return '"avengers trailer", "nepali songs"';
@@ -151,7 +153,7 @@ class _SourceInputSectionState extends State<SourceInputSection> {
     return 'Enter youtube \<video id\> or \<link\>';
   }
 
-  String _cleanId(String source) {
+  String? _cleanId(String source) {
     if (source.startsWith('http://') || source.startsWith('https://')) {
       return YoutubePlayerController.convertUrlToId(source);
     } else if (source.length != 11) {
@@ -183,19 +185,19 @@ class _SourceInputSectionState extends State<SourceInputSection> {
 
   @override
   void dispose() {
-    _textController?.dispose();
+    _textController.dispose();
     super.dispose();
   }
 }
 
 class _Button extends StatelessWidget {
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final String action;
 
   const _Button({
-    Key key,
-    @required this.onTap,
-    @required this.action,
+    Key? key,
+    required this.onTap,
+    required this.action,
   }) : super(key: key);
 
   @override
@@ -205,7 +207,7 @@ class _Button extends StatelessWidget {
       onPressed: onTap == null
           ? null
           : () {
-              onTap();
+              onTap?.call();
               FocusScope.of(context).unfocus();
             },
       disabledColor: Colors.grey,

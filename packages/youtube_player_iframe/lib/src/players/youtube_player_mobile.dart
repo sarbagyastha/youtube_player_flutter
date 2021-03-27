@@ -35,12 +35,12 @@ class RawYoutubePlayer extends StatefulWidget {
   ///
   /// By default vertical and horizontal gestures are absorbed by the player.
   /// Passing an empty set will ignore the defaults.
-  final Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers;
+  final Set<Factory<OneSequenceGestureRecognizer>>? gestureRecognizers;
 
   /// Creates a [RawYoutubePlayer] widget.
   const RawYoutubePlayer({
-    Key key,
-    this.controller,
+    Key? key,
+    required this.controller,
     this.gestureRecognizers,
   }) : super(key: key);
 
@@ -50,9 +50,9 @@ class RawYoutubePlayer extends StatefulWidget {
 
 class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
     with WidgetsBindingObserver {
-  YoutubePlayerController controller;
-  Completer<InAppWebViewController> _webController;
-  PlayerState _cachedPlayerState;
+  late YoutubePlayerController controller;
+  late Completer<InAppWebViewController> _webController;
+  PlayerState? _cachedPlayerState;
   bool _isPlayerReady = false;
   bool _onLoadStopCalled = false;
 
@@ -61,12 +61,12 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
     super.initState();
     _webController = Completer();
     controller = widget.controller;
-    WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance?.addObserver(this);
   }
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
+    WidgetsBinding.instance?.removeObserver(this);
     super.dispose();
   }
 
@@ -76,14 +76,14 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
       case AppLifecycleState.resumed:
         if (_cachedPlayerState != null &&
             _cachedPlayerState == PlayerState.playing) {
-          controller?.play();
+          controller.play();
         }
         break;
       case AppLifecycleState.inactive:
         break;
       case AppLifecycleState.paused:
         _cachedPlayerState = controller.value.playerState;
-        controller?.pause();
+        controller.pause();
         break;
       default:
     }
@@ -96,8 +96,8 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
       initialData: InAppWebViewInitialData(
         data: player,
         baseUrl: controller.params.privacyEnhanced
-            ? 'https://www.youtube-nocookie.com'
-            : 'https://www.youtube.com',
+            ? Uri.parse('https://www.youtube-nocookie.com')
+            : Uri.parse('https://www.youtube.com'),
         encoding: 'utf-8',
         mimeType: 'text/html',
       ),
@@ -129,14 +129,14 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
         android: AndroidInAppWebViewOptions(useWideViewPort: false),
       ),
       shouldOverrideUrlLoading: (_, detail) async {
-        final uri = Uri.parse(detail.url);
-        final feature = uri.queryParameters['feature'];
-        if (feature == 'emb_rel_pause') {
-          controller.load(uri.queryParameters['v']);
+        final uri = detail.request.url;
+        final feature = uri?.queryParameters['feature'];
+        if (feature == 'emb_rel_pause' && uri!.queryParameters['v'] != null) {
+          controller.load(uri.queryParameters['v']!);
         } else {
-          url_launcher.launch(detail.url);
+          url_launcher.launch(uri.toString());
         }
-        return ShouldOverrideUrlLoadingAction.CANCEL;
+        return NavigationActionPolicy.CANCEL;
       },
       onWebViewCreated: (webController) {
         if (!_webController.isCompleted) {
@@ -271,14 +271,10 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
         log(message.message);
       },
       onEnterFullscreen: (_) {
-        if (controller.onEnterFullscreen != null) {
-          controller.onEnterFullscreen();
-        }
+        controller.onEnterFullscreen?.call();
       },
       onExitFullscreen: (_) {
-        if (controller.onExitFullscreen != null) {
-          controller.onExitFullscreen();
-        }
+        controller.onExitFullscreen?.call();
       },
     );
   }
@@ -340,5 +336,5 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
 
   String get userAgent => controller.params.desktopMode
       ? 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36'
-      : null;
+      : '';
 }
