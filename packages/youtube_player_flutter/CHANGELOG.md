@@ -1,3 +1,6 @@
+## 8.0.0
+* Null Safety Release
+
 ## 7.0.0+7
 * Updated dependencies
 

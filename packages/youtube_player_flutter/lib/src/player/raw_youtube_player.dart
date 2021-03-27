@@ -82,16 +82,30 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
           mimeType: 'text/html',
         ),
         initialOptions: InAppWebViewGroupOptions(
-          ios: IOSInAppWebViewOptions(allowsInlineMediaPlayback: true),
           crossPlatform: InAppWebViewOptions(
             userAgent: userAgent,
             mediaPlaybackRequiresUserGesture: false,
             transparentBackground: true,
+            disableContextMenu: true,
+            supportZoom: false,
+            disableHorizontalScroll: false,
+            disableVerticalScroll: false,
+            useShouldOverrideUrlLoading: true,
+          ),
+          ios: IOSInAppWebViewOptions(
+            allowsInlineMediaPlayback: true,
+            allowsAirPlayForMediaPlayback: true,
+            allowsPictureInPictureMediaPlayback: true,
+          ),
+          android: AndroidInAppWebViewOptions(
+            useWideViewPort: false,
+            useHybridComposition: controller!.flags.useHybridComposition,
           ),
         ),
         onWebViewCreated: (webController) {
           controller!.updateValue(
-              controller!.value.copyWith(webViewController: webController));
+            controller!.value.copyWith(webViewController: webController),
+          );
           webController
             ..addJavaScriptHandler(
               handlerName: 'Ready',

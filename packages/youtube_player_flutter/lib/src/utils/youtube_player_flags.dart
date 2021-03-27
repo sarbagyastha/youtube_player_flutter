@@ -67,6 +67,13 @@ class YoutubePlayerFlags {
   /// Specifies the default end point of the video in seconds
   final int? endAt;
 
+  /// Set to `true` to enable Flutter's new Hybrid Composition. The default value is `true`.
+  /// Hybrid Composition is supported starting with Flutter v1.20+.
+  ///
+  /// **NOTE**: It is recommended to use Hybrid Composition only on Android 10+ for a release app,
+  /// as it can cause framerate drops on animations in Android 9 and lower (see [Hybrid-Composition#performance](https://github.com/flutter/flutter/wiki/Hybrid-Composition#performance)).
+  final bool useHybridComposition;
+
   /// Creates [YoutubePlayerFlags].
   const YoutubePlayerFlags({
     this.hideControls = false,
@@ -82,6 +89,7 @@ class YoutubePlayerFlags {
     this.forceHD = false,
     this.startAt = 0,
     this.endAt,
+    this.useHybridComposition = true,
   });
 
   /// Copies new values assigned to the [YoutubePlayerFlags].
@@ -99,6 +107,8 @@ class YoutubePlayerFlags {
     String? captionLanguage,
     int? startAt,
     int? endAt,
+    bool? controlsVisibleAtStart,
+    bool? useHybridComposition,
   }) {
     return YoutubePlayerFlags(
       autoPlay: autoPlay ?? this.autoPlay,
@@ -113,6 +123,9 @@ class YoutubePlayerFlags {
       forceHD: forceHD ?? this.forceHD,
       startAt: startAt ?? this.startAt,
       endAt: endAt ?? this.endAt,
+      controlsVisibleAtStart:
+          controlsVisibleAtStart ?? this.controlsVisibleAtStart,
+      useHybridComposition: useHybridComposition ?? this.useHybridComposition,
     );
   }
 }
