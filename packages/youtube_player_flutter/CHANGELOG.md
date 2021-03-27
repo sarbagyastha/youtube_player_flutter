@@ -1,5 +1,6 @@
 ## 8.0.0
 * Null Safety Release
+* Added `useHybridComposition` flag
 
 ## 7.0.0+7
 * Updated dependencies
