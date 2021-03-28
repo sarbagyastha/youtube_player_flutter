@@ -1,3 +1,8 @@
+# 2.0.0
+- Migrated to null safety
+- Added `useHybridComposition` param.
+- Updated dependencies to latest version.
+
 ## 1.2.0+2
 - Added `YoutubePlayerParams.privacyEnhanced` flag.
 - Exposed `gestureRecognizers` through `YoutubePlayerIFrame` widget.

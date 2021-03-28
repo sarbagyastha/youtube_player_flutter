@@ -42,7 +42,7 @@ import 'raw_youtube_player.dart';
 ///
 class YoutubePlayer extends StatefulWidget {
   /// Sets [Key] as an identification to underlying web view associated to the player.
-  final Key key;
+  final Key? key;
 
   /// A [YoutubePlayerController] to control the player.
   final YoutubePlayerController controller;
@@ -52,7 +52,7 @@ class YoutubePlayer extends StatefulWidget {
   ///
   /// Default is devices's width.
   /// {@endtemplate}
-  final double width;
+  final double? width;
 
   /// {@template youtube_player_flutter.aspectRatio}
   /// Defines the aspect ratio to be assigned to the player. This property along with [width] calculates the player size.
@@ -71,7 +71,7 @@ class YoutubePlayer extends StatefulWidget {
   /// {@template youtube_player_flutter.bufferIndicator}
   /// Overrides the default buffering indicator for the player.
   /// {@endtemplate}
-  final Widget bufferIndicator;
+  final Widget? bufferIndicator;
 
   /// {@template youtube_player_flutter.progressColors}
   /// Overrides default colors of the progress bar, takes [ProgressColors].
@@ -87,14 +87,14 @@ class YoutubePlayer extends StatefulWidget {
   /// Called when player is ready to perform control methods like:
   /// play(), pause(), load(), cue(), etc.
   /// {@endtemplate}
-  final VoidCallback onReady;
+  final VoidCallback? onReady;
 
   /// {@template youtube_player_flutter.onEnded}
   /// Called when player had ended playing a video.
   ///
   /// Returns [YoutubeMetaData] for the video that has just ended playing.
   /// {@endtemplate}
-  final void Function(YoutubeMetaData metaData) onEnded;
+  final void Function(YoutubeMetaData metaData)? onEnded;
 
   /// {@template youtube_player_flutter.liveUIColor}
   /// Overrides color of Live UI when enabled.
@@ -104,12 +104,12 @@ class YoutubePlayer extends StatefulWidget {
   /// {@template youtube_player_flutter.topActions}
   /// Adds custom top bar widgets.
   /// {@endtemplate}
-  final List<Widget> topActions;
+  final List<Widget>? topActions;
 
   /// {@template youtube_player_flutter.bottomActions}
   /// Adds custom bottom bar widgets.
   /// {@endtemplate}
-  final List<Widget> bottomActions;
+  final List<Widget>? bottomActions;
 
   /// {@template youtube_player_flutter.actionsPadding}
   /// Defines padding for [topActions] and [bottomActions].
@@ -123,7 +123,7 @@ class YoutubePlayer extends StatefulWidget {
   ///
   /// If not set, default thumbnail of the video is shown.
   /// {@endtemplate}
-  final Widget thumbnail;
+  final Widget? thumbnail;
 
   /// {@template youtube_player_flutter.showVideoProgressIndicator}
   /// Defines whether to show or hide progress indicator below the player.
@@ -135,13 +135,13 @@ class YoutubePlayer extends StatefulWidget {
   /// Creates [YoutubePlayer] widget.
   const YoutubePlayer({
     this.key,
-    @required this.controller,
+    required this.controller,
     this.width,
     this.aspectRatio = 16 / 9,
     this.controlsTimeOut = const Duration(seconds: 3),
     this.bufferIndicator,
-    this.progressIndicatorColor = Colors.red,
-    this.progressColors = const ProgressBarColors(),
+    Color? progressIndicatorColor,
+    ProgressBarColors? progressColors,
     this.onReady,
     this.onEnded,
     this.liveUIColor = Colors.red,
@@ -150,13 +150,13 @@ class YoutubePlayer extends StatefulWidget {
     this.actionsPadding = const EdgeInsets.all(8.0),
     this.thumbnail,
     this.showVideoProgressIndicator = false,
-  });
+  })  : progressColors = progressColors ?? const ProgressBarColors(),
+        progressIndicatorColor = progressIndicatorColor ?? Colors.red;
 
   /// Converts fully qualified YouTube Url to video id.
   ///
   /// If videoId is passed as url then no conversion is done.
-  static String convertUrlToId(String url, {bool trimWhitespaces = true}) {
-    assert(url?.isNotEmpty ?? false, 'Url cannot be empty');
+  static String? convertUrlToId(String url, {bool trimWhitespaces = true}) {
     if (!url.contains("http") && (url.length == 11)) return url;
     if (trimWhitespaces) url = url.trim();
 
@@ -167,7 +167,7 @@ class YoutubePlayer extends StatefulWidget {
           r"^https:\/\/(?:www\.|m\.)?youtube(?:-nocookie)?\.com\/embed\/([_\-a-zA-Z0-9]{11}).*$"),
       RegExp(r"^https:\/\/youtu\.be\/([_\-a-zA-Z0-9]{11}).*$")
     ]) {
-      Match match = exp.firstMatch(url);
+      Match? match = exp.firstMatch(url);
       if (match != null && match.groupCount >= 1) return match.group(1);
     }
 
@@ -176,7 +176,7 @@ class YoutubePlayer extends StatefulWidget {
 
   /// Grabs YouTube video's thumbnail for provided video id.
   static String getThumbnail({
-    @required String videoId,
+    required String videoId,
     String quality = ThumbnailQuality.standard,
     bool webp = true,
   }) =>
@@ -189,9 +189,9 @@ class YoutubePlayer extends StatefulWidget {
 }
 
 class _YoutubePlayerState extends State<YoutubePlayer> {
-  YoutubePlayerController controller;
+  late YoutubePlayerController controller;
 
-  double _aspectRatio;
+  late double _aspectRatio;
   bool _initialLoad = true;
 
   @override
@@ -204,8 +204,8 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
   @override
   void didUpdateWidget(YoutubePlayer oldWidget) {
     super.didUpdateWidget(oldWidget);
-    oldWidget.controller?.removeListener(listener);
-    widget.controller?.addListener(listener);
+    oldWidget.controller.removeListener(listener);
+    widget.controller.addListener(listener);
   }
 
   void listener() async {
@@ -213,7 +213,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
       _initialLoad = false;
       if (controller.flags.autoPlay) controller.play();
       if (controller.flags.mute) controller.mute();
-      if (widget.onReady != null) widget.onReady();
+      widget.onReady?.call();
       if (controller.flags.controlsVisibleAtStart) {
         controller.updateValue(
           controller.value.copyWith(isControlsVisible: true),
@@ -259,8 +259,9 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                         child: Text(
                           errorString(
                             controller.value.errorCode,
-                            videoId: controller.metadata.videoId ??
-                                controller.initialVideoId,
+                            videoId: controller.metadata.videoId.isNotEmpty
+                                ? controller.metadata.videoId
+                                : controller.initialVideoId,
                           ),
                           style: const TextStyle(
                             color: Colors.white,
@@ -288,12 +289,12 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
     );
   }
 
-  Widget _buildPlayer({Widget errorWidget}) {
+  Widget _buildPlayer({required Widget errorWidget}) {
     return AspectRatio(
       aspectRatio: _aspectRatio,
       child: Stack(
         fit: StackFit.expand,
-        overflow: Overflow.visible,
+        clipBehavior: Clip.none,
         children: [
           Transform.scale(
             scale: controller.value.isFullScreen
@@ -308,9 +309,8 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                       startAt: controller.flags.startAt,
                       endAt: controller.flags.endAt);
                 }
-                if (widget.onEnded != null) {
-                  widget.onEnded(metaData);
-                }
+
+                widget.onEnded?.call(metaData);
               },
             ),
           ),

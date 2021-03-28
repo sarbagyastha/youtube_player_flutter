@@ -65,7 +65,14 @@ class YoutubePlayerFlags {
   final int startAt;
 
   /// Specifies the default end point of the video in seconds
-  final int endAt;
+  final int? endAt;
+
+  /// Set to `true` to enable Flutter's new Hybrid Composition. The default value is `true`.
+  /// Hybrid Composition is supported starting with Flutter v1.20+.
+  ///
+  /// **NOTE**: It is recommended to use Hybrid Composition only on Android 10+ for a release app,
+  /// as it can cause framerate drops on animations in Android 9 and lower (see [Hybrid-Composition#performance](https://github.com/flutter/flutter/wiki/Hybrid-Composition#performance)).
+  final bool useHybridComposition;
 
   /// Defines whether to show or hide the fullscreen button in the live player.
   ///
@@ -87,25 +94,28 @@ class YoutubePlayerFlags {
     this.forceHD = false,
     this.startAt = 0,
     this.endAt,
+    this.useHybridComposition = true,
     this.showLiveFullscreenButton = true,
   });
 
   /// Copies new values assigned to the [YoutubePlayerFlags].
   YoutubePlayerFlags copyWith({
-    bool hideControls,
-    bool autoPlay,
-    bool mute,
-    bool showVideoProgressIndicator,
-    bool isLive,
-    bool hideThumbnail,
-    bool disableDragSeek,
-    bool loop,
-    bool enableCaption,
-    bool forceHD,
-    String captionLanguage,
-    int startAt,
-    int endAt,
-    bool showLiveFullscreenButton,
+    bool? hideControls,
+    bool? autoPlay,
+    bool? mute,
+    bool? showVideoProgressIndicator,
+    bool? isLive,
+    bool? hideThumbnail,
+    bool? disableDragSeek,
+    bool? loop,
+    bool? enableCaption,
+    bool? forceHD,
+    String? captionLanguage,
+    int? startAt,
+    int? endAt,
+    bool? controlsVisibleAtStart,
+    bool? useHybridComposition,
+    bool? showLiveFullscreenButton,
   }) {
     return YoutubePlayerFlags(
       autoPlay: autoPlay ?? this.autoPlay,
@@ -120,6 +130,9 @@ class YoutubePlayerFlags {
       forceHD: forceHD ?? this.forceHD,
       startAt: startAt ?? this.startAt,
       endAt: endAt ?? this.endAt,
+      controlsVisibleAtStart:
+          controlsVisibleAtStart ?? this.controlsVisibleAtStart,
+      useHybridComposition: useHybridComposition ?? this.useHybridComposition,
       showLiveFullscreenButton:
           showLiveFullscreenButton ?? this.showLiveFullscreenButton,
     );
