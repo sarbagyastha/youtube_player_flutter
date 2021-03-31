@@ -72,6 +72,18 @@ class _PlayPauseButtonState extends State<PlayPauseButton>
   @override
   Widget build(BuildContext context) {
     final _playerState = _controller.value.playerState;
+    if (_playerState == PlayerState.buffering ||
+        _playerState == PlayerState.unStarted) {
+      return widget.bufferIndicator ??
+          Container(
+            width: 70.0,
+            height: 70.0,
+            child: const CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation(Colors.white),
+            ),
+          );
+    }
+
     if ((!_controller.flags.autoPlay && _controller.value.isReady) ||
         _playerState == PlayerState.playing ||
         _playerState == PlayerState.paused) {
