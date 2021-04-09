@@ -77,7 +77,7 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
         key: widget.key,
         initialData: InAppWebViewInitialData(
           data: player,
-          baseUrl: 'https://www.youtube.com',
+          baseUrl: Uri.dataFromString('https://www.youtube.com'),
           encoding: 'utf-8',
           mimeType: 'text/html',
         ),

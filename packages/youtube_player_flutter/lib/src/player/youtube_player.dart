@@ -301,7 +301,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
       aspectRatio: _aspectRatio,
       child: Stack(
         fit: StackFit.expand,
-        overflow: Overflow.visible,
+        clipBehavior: Clip.none,
         children: [
           SafeArea(
             child: LayoutBuilder(builder: (context, constraints) {
