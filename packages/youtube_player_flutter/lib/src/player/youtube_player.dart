@@ -132,6 +132,13 @@ class YoutubePlayer extends StatefulWidget {
   /// {@endtemplate}
   final bool showVideoProgressIndicator;
 
+  /// {@template youtube_player_flutter.showPlayPauseButton}
+  /// Defines whether to show or hide play pause button inside the player the player.
+  ///
+  /// Default is true.
+  /// {@endtemplate}
+  final bool showPlayPauseButton;
+
   /// Creates [YoutubePlayer] widget.
   const YoutubePlayer({
     this.key,
@@ -150,6 +157,7 @@ class YoutubePlayer extends StatefulWidget {
     this.actionsPadding = const EdgeInsets.all(8.0),
     this.thumbnail,
     this.showVideoProgressIndicator = false,
+    this.showPlayPauseButton = true,
   });
 
   /// Converts fully qualified YouTube Url to video id.
@@ -293,26 +301,30 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
       aspectRatio: _aspectRatio,
       child: Stack(
         fit: StackFit.expand,
-        overflow: Overflow.visible,
+        clipBehavior: Clip.none,
         children: [
-          Transform.scale(
-            scale: controller.value.isFullScreen
-                ? (1 / _aspectRatio * MediaQuery.of(context).size.width) /
-                    MediaQuery.of(context).size.height
-                : 1,
-            child: RawYoutubePlayer(
-              key: widget.key,
-              onEnded: (YoutubeMetaData metaData) {
-                if (controller.flags.loop) {
-                  controller.load(controller.metadata.videoId,
-                      startAt: controller.flags.startAt,
-                      endAt: controller.flags.endAt);
-                }
-                if (widget.onEnded != null) {
-                  widget.onEnded(metaData);
-                }
-              },
-            ),
+          SafeArea(
+            child: LayoutBuilder(builder: (context, constraints) {
+              return Transform.scale(
+                scale: controller.value.isFullScreen
+                    ? (1 / _aspectRatio * constraints.maxWidth) /
+                        constraints.maxHeight
+                    : 1,
+                child: RawYoutubePlayer(
+                  key: widget.key,
+                  onEnded: (YoutubeMetaData metaData) {
+                    if (controller.flags.loop) {
+                      controller.load(controller.metadata.videoId,
+                          startAt: controller.flags.startAt,
+                          endAt: controller.flags.endAt);
+                    }
+                    if (widget.onEnded != null) {
+                      widget.onEnded(metaData);
+                    }
+                  },
+                ),
+              );
+            }),
           ),
           if (!controller.flags.hideThumbnail)
             AnimatedOpacity(
@@ -340,6 +352,16 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
               ),
             ),
           if (!controller.flags.hideControls) ...[
+            AnimatedOpacity(
+              opacity: !controller.flags.hideControls &&
+                      controller.value.isControlsVisible
+                  ? 1
+                  : 0,
+              duration: const Duration(milliseconds: 300),
+              child: Container(
+                color: Colors.black38,
+              ),
+            ),
             TouchShutter(
               disableDragSeek: controller.flags.disableDragSeek,
               timeOut: widget.controlsTimeOut,
@@ -348,37 +370,39 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
               bottom: 0,
               left: 0,
               right: 0,
-              child: AbsorbPointer(
-                absorbing: controller.flags.hideControls ||
+              child: IgnorePointer(
+                ignoring: controller.flags.hideControls ||
                     !controller.value.isControlsVisible,
-                child: AnimatedOpacity(
-                  opacity: !controller.flags.hideControls &&
-                          controller.value.isControlsVisible
-                      ? 1
-                      : 0,
-                  duration: const Duration(milliseconds: 300),
-                  child: controller.flags.isLive
-                      ? LiveBottomBar(liveUIColor: widget.liveUIColor)
-                      : Padding(
-                          padding: widget.bottomActions == null
-                              ? const EdgeInsets.all(0.0)
-                              : widget.actionsPadding,
-                          child: Row(
-                            children: widget.bottomActions ??
-                                [
-                                  const SizedBox(width: 14.0),
-                                  CurrentPosition(),
-                                  const SizedBox(width: 8.0),
-                                  ProgressBar(
-                                    isExpanded: true,
-                                    colors: widget.progressColors,
-                                  ),
-                                  RemainingDuration(),
-                                  const PlaybackSpeedButton(),
-                                  FullScreenButton(),
-                                ],
+                child: SafeArea(
+                  child: AnimatedOpacity(
+                    opacity: !controller.flags.hideControls &&
+                            controller.value.isControlsVisible
+                        ? 1
+                        : 0,
+                    duration: const Duration(milliseconds: 300),
+                    child: controller.flags.isLive
+                        ? LiveBottomBar(liveUIColor: widget.liveUIColor)
+                        : Padding(
+                            padding: widget.bottomActions == null
+                                ? const EdgeInsets.all(0.0)
+                                : widget.actionsPadding,
+                            child: Row(
+                              children: widget.bottomActions ??
+                                  [
+                                    const SizedBox(width: 14.0),
+                                    CurrentPosition(),
+                                    const SizedBox(width: 8.0),
+                                    ProgressBar(
+                                      isExpanded: true,
+                                      colors: widget.progressColors,
+                                    ),
+                                    RemainingDuration(),
+                                    const PlaybackSpeedButton(),
+                                    FullScreenButton(),
+                                  ],
+                            ),
                           ),
-                        ),
+                  ),
                 ),
               ),
             ),
@@ -386,26 +410,28 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
               top: 0,
               left: 0,
               right: 0,
-              child: AbsorbPointer(
-                absorbing: controller.flags.hideControls ||
+              child: IgnorePointer(
+                ignoring: controller.flags.hideControls ||
                     !controller.value.isControlsVisible,
-                child: AnimatedOpacity(
-                  opacity: !controller.flags.hideControls &&
-                          controller.value.isControlsVisible
-                      ? 1
-                      : 0,
-                  duration: const Duration(milliseconds: 300),
-                  child: Padding(
-                    padding: widget.actionsPadding,
-                    child: Row(
-                      children: widget.topActions ?? [Container()],
+                child: SafeArea(
+                  child: AnimatedOpacity(
+                    opacity: !controller.flags.hideControls &&
+                            controller.value.isControlsVisible
+                        ? 1
+                        : 0,
+                    duration: const Duration(milliseconds: 300),
+                    child: Padding(
+                      padding: widget.actionsPadding,
+                      child: Row(
+                        children: widget.topActions ?? [Container()],
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
           ],
-          if (!controller.flags.hideControls)
+          if (!controller.flags.hideControls && widget.showPlayPauseButton)
             Center(
               child: PlayPauseButton(),
             ),

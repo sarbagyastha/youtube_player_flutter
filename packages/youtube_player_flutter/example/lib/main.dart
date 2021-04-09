@@ -436,7 +436,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _showSnackBar(String message) {
-    _scaffoldKey.currentState.showSnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
           message,
