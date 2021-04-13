@@ -4,6 +4,7 @@
 
 import 'dart:async';
 import 'dart:developer';
+import 'dart:io' show Platform;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
