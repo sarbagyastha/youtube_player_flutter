@@ -122,7 +122,7 @@ MockHttpClient _createMockImageHttpClient(
   when(() => client.getUrl(any<Uri>()))
       .thenAnswer((_) => Future<HttpClientRequest>.value(request));
   when(() => request.headers).thenReturn(headers);
-  when(() => request.close())
+  when(request.close)
       .thenAnswer((_) => Future<HttpClientResponse>.value(response));
   when(() => response.contentLength).thenReturn(_transparentImage.length);
   when(() => response.statusCode).thenReturn(HttpStatus.ok);
