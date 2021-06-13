@@ -1,3 +1,6 @@
+# 2.1.0
+- Updated dependencies to latest version.
+
 # 2.0.0
 - Migrated to null safety
 - Added `useHybridComposition` param.
