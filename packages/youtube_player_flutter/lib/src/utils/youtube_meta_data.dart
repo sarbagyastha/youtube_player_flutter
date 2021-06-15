@@ -23,7 +23,8 @@ class YoutubeMetaData {
   /// Creates [YoutubeMetaData] from raw json video data.
   factory YoutubeMetaData.fromRawData(dynamic rawData) {
     final data = rawData as Map<String, dynamic>;
-    final durationInMs = ((data['duration'] ?? 0).toDouble() * 1000).floor();
+    final duration = data["duration"].toString().split('.')[0];
+    final durationInMs = ((int.parse(duration) ?? 0) * 1000);
     return YoutubeMetaData(
       videoId: data['videoId'],
       title: data['title'],
