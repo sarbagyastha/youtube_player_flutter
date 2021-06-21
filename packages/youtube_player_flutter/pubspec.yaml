@@ -11,8 +11,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_inappwebview: '>=4.0.0 <5.0.0'
-
+  flutter_inappwebview: 
+    git:
+      url: git://github.com/mecidr/flutter_inappwebview.git
+      ref: mecidr-patch-ios14.5
 dev_dependencies:
   flutter_test:
     sdk: flutter
