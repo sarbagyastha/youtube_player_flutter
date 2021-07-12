@@ -42,6 +42,8 @@ Supported Platforms:
 For Web, Flutter's [HtmlElementView](https://api.flutter.dev/flutter/widgets/HtmlElementView-class.html).
 For Android & iOS, the package uses [flutter_inappwebview](https://pub.dartlang.org/packages/flutter_inappwebview) under-the-hood.
 
+If your app uses services workers, you may need add additional configuration on the app startup code, in order to ensure that the web view behaviour don't get unstable. To do so, please refer to the [flutter_inappwebview documentation](https://inappwebview.dev/docs/service-worker-api/).
+
 Since *flutter_inappwebview* relies on Flutter's mechanism for embedding Android and iOS views, this plugin might share some known issues tagged with the [platform-views](https://github.com/flutter/flutter/labels/a%3A%20platform-views) label.
 
 ## Requirements
