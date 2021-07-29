@@ -21,8 +21,7 @@ import 'player_value.dart';
 /// The video is displayed in a Flutter app by creating a [YoutubePlayerIFrame] widget.
 ///
 /// After [YoutubePlayerController.close] all further calls are ignored.
-class YoutubePlayerController extends Stream<YoutubePlayerValue>
-    implements Sink<YoutubePlayerValue> {
+class YoutubePlayerController {
   /// Creates [YoutubePlayerController].
   YoutubePlayerController({
     required this.initialVideoId,
@@ -56,21 +55,22 @@ class YoutubePlayerController extends Stream<YoutubePlayerValue>
   /// The [YoutubePlayerValue].
   YoutubePlayerValue get value => _value;
 
+  /// The stream that this controller is controlling.
+  Stream<YoutubePlayerValue> get stream => _controller.stream;
+
   /// Updates [YoutubePlayerController] with provided [data].
   ///
   /// Intended for internal usage only.
-  @override
   void add(YoutubePlayerValue data) => _controller.add(data);
 
   /// Listen to updates in [YoutubePlayerController].
-  @override
   StreamSubscription<YoutubePlayerValue> listen(
     void Function(YoutubePlayerValue event)? onData, {
     Function? onError,
     void Function()? onDone,
     bool? cancelOnError,
   }) {
-    return _controller.stream.listen(
+    return stream.listen(
       (value) {
         _value = value;
         onData?.call(value);
@@ -84,7 +84,6 @@ class YoutubePlayerController extends Stream<YoutubePlayerValue>
   /// Closes [YoutubePlayerController].
   ///
   /// Call when the controller is no longer used.
-  @override
   Future<void> close() => _controller.close();
 
   /// Plays the currently cued/loaded video.

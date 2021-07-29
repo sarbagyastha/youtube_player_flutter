@@ -36,7 +36,7 @@ class YoutubeValueBuilder extends StatelessWidget {
     // ignore: close_sinks
     final _controller = controller ?? context.ytController;
     return StreamBuilder<YoutubePlayerValue>(
-      stream: _controller,
+      stream: _controller.stream,
       initialData: _controller.value,
       builder: (context, snapshot) {
         if (snapshot.hasData) {
