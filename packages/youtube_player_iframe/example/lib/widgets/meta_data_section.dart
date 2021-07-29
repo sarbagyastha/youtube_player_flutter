@@ -10,6 +10,7 @@ class MetaDataSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return YoutubeValueBuilder(
+      buildWhen: (o, n) => o.metaData != n.metaData,
       builder: (context, value) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
