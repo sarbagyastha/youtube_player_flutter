@@ -1,3 +1,6 @@
+# 2.2.1
+- Removed `YoutubePlayerController.setWebDebuggingInAndroid`
+
 # 2.2.0
 **Contains Breaking Changes**
 - Fixed issue iOS redirection issue
