@@ -1,3 +1,11 @@
+# 2.2.0
+**Contains Breaking Changes**
+- Fixed issue iOS redirection issue
+- `YoutubePlayerController` is no more Stream.
+- Added `YoutubePlayerController.setWebDebuggingInAndroid`
+- Added `buildWhen` to **YoutubeValueBuilder**
+- Fixed issue where metadata weren't updated correctly
+
 # 2.1.0
 - Updated dependencies to latest version.
 
