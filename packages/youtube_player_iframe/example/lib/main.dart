@@ -15,8 +15,9 @@ import 'widgets/player_state_section.dart';
 import 'widgets/source_input_section.dart';
 import 'widgets/volume_slider.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await YoutubePlayerController.setWebDebuggingInAndroid(enabled: true);
   runApp(YoutubeApp());
 }
 

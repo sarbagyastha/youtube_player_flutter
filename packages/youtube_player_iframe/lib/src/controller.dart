@@ -6,6 +6,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 import 'enums/player_state.dart';
@@ -326,5 +327,14 @@ class YoutubePlayerController {
     return webp
         ? 'https://i3.ytimg.com/vi_webp/$videoId/$quality.webp'
         : 'https://i3.ytimg.com/vi/$videoId/$quality.jpg';
+  }
+
+  /// Can be used to enable/disable debugging Youtube Player's Iframe in Android.
+  ///
+  /// Once this is enabled, an attached debugger can be accessed using `chrome://inspect`
+  static Future<void> setWebDebuggingInAndroid({required bool enabled}) {
+    return AndroidInAppWebViewController.setWebContentsDebuggingEnabled(
+      enabled,
+    );
   }
 }
