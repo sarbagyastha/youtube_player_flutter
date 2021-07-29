@@ -137,14 +137,30 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
         final uri = detail.request.url;
         if (uri == null) return NavigationActionPolicy.CANCEL;
 
-        final feature = uri.queryParameters['feature'];
-        if (feature == 'emb_rel_pause') {
-          if (uri.queryParameters.containsKey('v')) {
-            controller.load(uri.queryParameters['v']!);
-          }
+        final params = uri.queryParameters;
+        final host = uri.host;
+
+        String? featureName;
+        if (host.contains('facebook') || uri.host.contains('twitter')) {
+          featureName = 'social';
         } else {
-          url_launcher.launch(uri.toString());
+          featureName = params['feature'];
         }
+
+        switch (featureName) {
+          case 'emb_title':
+          case 'emb_rel_pause':
+          case 'emb_rel_end':
+            final videoId = params['v'];
+            if (videoId != null) controller.load(videoId);
+            break;
+          case 'emb_logo':
+          case 'social':
+          case 'wl_button':
+            url_launcher.launch(uri.toString());
+            break;
+        }
+
         return NavigationActionPolicy.CANCEL;
       },
       onWebViewCreated: (webController) {
@@ -341,7 +357,7 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
     </body>
   ''';
 
-  String get userAgent => !controller.params.desktopMode
+  String get userAgent => controller.params.desktopMode
       ? 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36'
       : '';
 }
