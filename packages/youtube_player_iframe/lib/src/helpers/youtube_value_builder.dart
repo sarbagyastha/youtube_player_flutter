@@ -52,12 +52,6 @@ class _YoutubeValueBuilderState extends State<YoutubeValueBuilder> {
   late Widget _child;
 
   @override
-  void initState() {
-    super.initState();
-    _controller = widget.controller;
-  }
-
-  @override
   void didUpdateWidget(YoutubeValueBuilder oldWidget) {
     super.didUpdateWidget(oldWidget);
     final oldController = oldWidget.controller ?? context.ytController;
@@ -99,7 +93,7 @@ class _YoutubeValueBuilderState extends State<YoutubeValueBuilder> {
       (value) {
         if (widget.buildWhen?.call(_previousValue, value) ?? true) {
           _child = widget.builder(context, value);
-          setState(() {});
+          if (mounted) setState(() {});
         }
         _previousValue = value;
       },

@@ -176,9 +176,8 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
       onLoadStop: (_, __) {
         _onLoadStopCalled = true;
         if (_isPlayerReady) {
-          controller.add(
-            controller.value.copyWith(isReady: true),
-          );
+          _value = _value.copyWith(isReady: true);
+          controller.add(_value);
         }
       },
       onConsoleMessage: (_, message) {

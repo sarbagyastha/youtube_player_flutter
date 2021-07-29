@@ -111,7 +111,44 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
             }
             return ListView(
               children: [
-                player,
+                Stack(
+                  children: [
+                    player,
+                    Positioned.fill(
+                      child: YoutubeValueBuilder(
+                        controller: _controller,
+                        builder: (context, value) {
+                          return AnimatedCrossFade(
+                            firstChild: const SizedBox.shrink(),
+                            secondChild: Material(
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  image: DecorationImage(
+                                    image: NetworkImage(
+                                      YoutubePlayerController.getThumbnail(
+                                        videoId:
+                                            _controller.params.playlist.first,
+                                        quality: ThumbnailQuality.medium,
+                                      ),
+                                    ),
+                                    fit: BoxFit.fitWidth,
+                                  ),
+                                ),
+                                child: const Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                              ),
+                            ),
+                            crossFadeState: value.isReady
+                                ? CrossFadeState.showFirst
+                                : CrossFadeState.showSecond,
+                            duration: const Duration(milliseconds: 300),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
                 const Controls(),
               ],
             );
