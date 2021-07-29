@@ -5,6 +5,7 @@
 - Added `YoutubePlayerController.setWebDebuggingInAndroid`
 - Added `buildWhen` to **YoutubeValueBuilder**
 - Fixed issue where metadata weren't updated correctly
+- Fixed `desktopMode` flag.
 
 # 2.1.0
 - Updated dependencies to latest version.
