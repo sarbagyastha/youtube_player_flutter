@@ -1,6 +1,6 @@
 # Youtube Player IFrame
 
-[![pub package](https://img.shields.io/pub/vpre/youtube_player_iframe.svg)](https://pub.dartlang.org/packages/youtube_player_iframe)
+[![pub package](https://img.shields.io/pub/v/youtube_player_iframe.svg)](https://pub.dartlang.org/packages/youtube_player_iframe)
 [![licence](https://img.shields.io/badge/licence-BSD-orange.svg)](https://github.com/sarbagyastha/youtube_player_flutter/blob/master/LICENSE)
 [![Download](https://img.shields.io/badge/download-APK-informational.svg)](https://github.com/sarbagyastha/youtube_player_flutter/releases)
 [![Stars](https://img.shields.io/github/stars/sarbagyastha/youtube_player_flutter?color=deeppink)](https://github.com/sarbagyastha/youtube_player_flutter)
@@ -62,7 +62,7 @@ Set `minSdkVersion` of your `android/app/build.gradle` file to at least 17.
 
 [Follow the guide here for complete Android setup](https://pub.dev/packages/flutter_inappwebview#important-note-for-android)
 
-*Note:* Although the minimum to be set is 17, the player won't play on device with API < 20. 
+*Note:* Although the minimum to be set is 17, the player won't play on device with API < 20 (19 if Hybrid Composition is enabled). 
 For API < 20 devices, you might want to forward the video to be played using YouTube app instead, using packages like `url_launcher` or `android_intent`.
 
 #### Using the player
@@ -176,14 +176,15 @@ playsInline                | Controls whether videos play inline or fullscreen i
 strictRelatedVideos        | Enabling ensure that related videos will come from the same channel as the video that was just played. **Default = false**
 startAt                    | Starts the video at specified time.
 desktopMode                | The controls will be alike Youtube Desktop's controls.
+useHybridComposition       | Enable [Hybrid Composition](https://github.com/flutter/flutter/wiki/Hybrid-Composition)
 
 
 ## Limitation 
-For Android: Since the plugin is based on platform views. This plugin requires Android API level 20 or greater.
+For Android: Since the plugin is based on platform views. This plugin requires Android API level 19 or greater.
 
 ## License
 ```
-Copyright 2020 Sarbagya Dhaubanjar. All rights reserved.
+Copyright 2021 Sarbagya Dhaubanjar. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -194,9 +195,6 @@ are permitted provided that the following conditions are met:
       copyright notice, this list of conditions and the following
       disclaimer in the documentation and/or other materials provided
       with the distribution.
-    * Neither the name of Google Inc. nor the names of its
-      contributors may be used to endorse or promote products derived
-      from this software without specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED

@@ -14,7 +14,7 @@ import '../utils/youtube_player_controller.dart';
 /// Also provides ability to seek video by dragging horizontally.
 class TouchShutter extends StatefulWidget {
   /// Overrides the default [YoutubePlayerController].
-  final YoutubePlayerController controller;
+  final YoutubePlayerController? controller;
 
   /// If true, disables the drag to seek functionality.
   ///
@@ -28,7 +28,7 @@ class TouchShutter extends StatefulWidget {
   TouchShutter({
     this.controller,
     this.disableDragSeek = false,
-    @required this.timeOut,
+    required this.timeOut,
   });
 
   @override
@@ -43,21 +43,23 @@ class _TouchShutterState extends State<TouchShutter> {
   String seekDuration = "";
   String seekPosition = "";
   bool _dragging = false;
-  Timer _timer;
+  Timer? _timer;
 
-  YoutubePlayerController _controller;
+  late YoutubePlayerController _controller;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _controller = YoutubePlayerController.of(context);
-    if (_controller == null) {
+    final controller = YoutubePlayerController.of(context);
+    if (controller == null) {
       assert(
         widget.controller != null,
         '\n\nNo controller could be found in the provided context.\n\n'
         'Try passing the controller explicitly.',
       );
-      _controller = widget.controller;
+      _controller = widget.controller!;
+    } else {
+      _controller = controller;
     }
   }
 

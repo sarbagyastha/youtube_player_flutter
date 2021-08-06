@@ -15,7 +15,7 @@ import 'widgets/player_state_section.dart';
 import 'widgets/source_input_section.dart';
 import 'widgets/volume_slider.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(YoutubeApp());
 }
@@ -43,7 +43,7 @@ class YoutubeAppDemo extends StatefulWidget {
 }
 
 class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
-  YoutubePlayerController _controller;
+  late YoutubePlayerController _controller;
 
   @override
   void initState() {
@@ -65,8 +65,9 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
         startAt: const Duration(minutes: 1, seconds: 36),
         showControls: true,
         showFullscreenButton: true,
-        desktopMode: true,
+        desktopMode: false,
         privacyEnhanced: true,
+        useHybridComposition: true,
       ),
     );
     _controller.onEnterFullscreen = () {
@@ -77,13 +78,6 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
       log('Entered Fullscreen');
     };
     _controller.onExitFullscreen = () {
-      SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-      Future.delayed(const Duration(seconds: 1), () {
-        _controller.play();
-      });
-      Future.delayed(const Duration(seconds: 5), () {
-        SystemChrome.setPreferredOrientations(DeviceOrientation.values);
-      });
       log('Exited Fullscreen');
     };
   }
@@ -96,7 +90,7 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
       controller: _controller,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Youtube Player Demo'),
+          title: const Text('Youtube Player IFrame'),
         ),
         body: LayoutBuilder(
           builder: (context, constraints) {
@@ -116,7 +110,44 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
             }
             return ListView(
               children: [
-                player,
+                Stack(
+                  children: [
+                    player,
+                    Positioned.fill(
+                      child: YoutubeValueBuilder(
+                        controller: _controller,
+                        builder: (context, value) {
+                          return AnimatedCrossFade(
+                            firstChild: const SizedBox.shrink(),
+                            secondChild: Material(
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  image: DecorationImage(
+                                    image: NetworkImage(
+                                      YoutubePlayerController.getThumbnail(
+                                        videoId:
+                                            _controller.params.playlist.first,
+                                        quality: ThumbnailQuality.medium,
+                                      ),
+                                    ),
+                                    fit: BoxFit.fitWidth,
+                                  ),
+                                ),
+                                child: const Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                              ),
+                            ),
+                            crossFadeState: value.isReady
+                                ? CrossFadeState.showFirst
+                                : CrossFadeState.showSecond,
+                            duration: const Duration(milliseconds: 300),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
                 const Controls(),
               ],
             );

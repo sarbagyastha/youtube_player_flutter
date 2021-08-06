@@ -53,13 +53,12 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
-  YoutubePlayerController _controller;
-  TextEditingController _idController;
-  TextEditingController _seekToController;
+  late YoutubePlayerController _controller;
+  late TextEditingController _idController;
+  late TextEditingController _seekToController;
 
-  PlayerState _playerState;
-  YoutubeMetaData _videoMetaData;
+  late PlayerState _playerState;
+  late YoutubeMetaData _videoMetaData;
   double _volume = 100;
   bool _muted = false;
   bool _isPlayerReady = false;
@@ -166,7 +165,6 @@ class _MyHomePageState extends State<MyHomePage> {
         },
       ),
       builder: (context, player) => Scaffold(
-        key: _scaffoldKey,
         appBar: AppBar(
           leading: Padding(
             padding: const EdgeInsets.only(left: 12.0),
@@ -210,7 +208,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     children: [
                       _text(
                         'Playback Quality',
-                        _controller.value.playbackQuality,
+                        _controller.value.playbackQuality ?? '',
                       ),
                       const Spacer(),
                       _text(
@@ -365,7 +363,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
         children: [
           TextSpan(
-            text: value ?? '',
+            text: value,
             style: const TextStyle(
               color: Colors.blueAccent,
               fontWeight: FontWeight.w300,
@@ -379,7 +377,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Color _getStateColor(PlayerState state) {
     switch (state) {
       case PlayerState.unknown:
-        return Colors.grey[700];
+        return Colors.grey[700]!;
       case PlayerState.unStarted:
         return Colors.pink;
       case PlayerState.ended:
@@ -391,7 +389,7 @@ class _MyHomePageState extends State<MyHomePage> {
       case PlayerState.buffering:
         return Colors.yellow;
       case PlayerState.cued:
-        return Colors.blue[900];
+        return Colors.blue[900]!;
       default:
         return Colors.blue;
     }
@@ -407,8 +405,9 @@ class _MyHomePageState extends State<MyHomePage> {
             ? () {
                 if (_idController.text.isNotEmpty) {
                   var id = YoutubePlayer.convertUrlToId(
-                    _idController.text,
-                  );
+                        _idController.text,
+                      ) ??
+                      '';
                   if (action == 'LOAD') _controller.load(id);
                   if (action == 'CUE') _controller.cue(id);
                   FocusScope.of(context).requestFocus(FocusNode());
@@ -436,7 +435,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _showSnackBar(String message) {
-    _scaffoldKey.currentState.showSnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
           message,
