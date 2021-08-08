@@ -1,6 +1,7 @@
 // Copyright 2020 Sarbagya Dhaubanjar. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+// ignore_for_file: public_member_api_docs
 
 import 'dart:async';
 import 'dart:developer';
@@ -10,6 +11,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:youtube_player_iframe/src/callbacks.dart';
 import 'package:youtube_player_iframe/src/enums/youtube_error.dart';
 import 'package:youtube_player_iframe/src/helpers/player_fragments.dart';
 import 'package:youtube_player_iframe/src/player_value.dart';
@@ -27,6 +29,10 @@ class RawYoutubePlayer extends StatefulWidget {
   /// The [YoutubePlayerController].
   final YoutubePlayerController controller;
 
+  /// As workaround for this issue https://updaymedia.atlassian.net/browse/ESC-768?focusedCommentId=73895
+  /// we need callbacks or some other implementation
+  final YoutubeCallbacks? callbacks;
+
   /// Which gestures should be consumed by the youtube player.
   ///
   /// It is possible for other gesture recognizers to be competing with the player on pointer
@@ -43,6 +49,7 @@ class RawYoutubePlayer extends StatefulWidget {
     Key? key,
     required this.controller,
     this.gestureRecognizers,
+    this.callbacks,
   }) : super(key: key);
 
   @override
@@ -56,6 +63,7 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
   PlayerState? _cachedPlayerState;
   bool _isPlayerReady = false;
   bool _onLoadStopCalled = false;
+
   late YoutubePlayerValue _value;
 
   @override
@@ -65,6 +73,12 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
     controller = widget.controller;
     _value = controller.value;
     WidgetsBinding.instance?.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance?.removeObserver(this);
+    super.dispose();
   }
 
   @override
@@ -173,32 +187,6 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
     );
   }
 
-  @override
-  void dispose() {
-    WidgetsBinding.instance?.removeObserver(this);
-    super.dispose();
-  }
-
-  Uri get _baseUrl {
-    return Uri.parse(
-      controller.params.privacyEnhanced
-          ? 'https://www.youtube-nocookie.com'
-          : 'https://www.youtube.com',
-    );
-  }
-
-  Set<Factory<OneSequenceGestureRecognizer>> get _gestureRecognizers {
-    return widget.gestureRecognizers ??
-        {
-          Factory<VerticalDragGestureRecognizer>(
-                () => VerticalDragGestureRecognizer(),
-          ),
-          Factory<HorizontalDragGestureRecognizer>(
-                () => HorizontalDragGestureRecognizer(),
-          ),
-        };
-  }
-
   Future<void> _callMethod(String methodName) async {
     final webController = await _webController.future;
     webController.evaluateJavascript(source: methodName);
@@ -231,10 +219,10 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
               widget.callbacks?.onEnd?.call();
               break;
             case 1:
-            /// As workaround for this issue https://updaymedia.atlassian.net/browse/ESC-768?focusedCommentId=73895
-            /// we need callbacks or some other implementation
-            ///
-            /// Send only once this callback if playing, it works like `onPlayTap` feature
+              /// As workaround for this issue https://updaymedia.atlassian.net/browse/ESC-768?focusedCommentId=73895
+              /// we need callbacks or some other implementation
+              ///
+              /// Send only once this callback if playing, it works like `onPlayTap` feature
               if (_value.playerState != PlayerState.playing) {
                 _debounceTime().then((value) {
                   widget.callbacks?.onPlay?.call();
@@ -304,9 +292,19 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
             buffered: buffered.toDouble(),
           );
           controller.add(_value);
-          controller.add(_value);
         },
       );
+  }
+
+  /// As it might happen on first play that duration is not yet initialized we
+  /// need some debounce time to give some space for this issue
+  Future<void> _debounceTime() async {
+    final duration = _value.metaData.duration.inMilliseconds;
+    await Future<void>.delayed(
+      Duration(
+        milliseconds: duration == 0 ? 1000 : 0,
+      ),
+    );
   }
 
   String get player => '''

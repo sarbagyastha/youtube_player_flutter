@@ -5,13 +5,14 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:youtube_player_iframe/src/callbacks.dart';
 
 import 'src/controller.dart';
 import 'src/helpers/youtube_value_provider.dart';
-
 import 'src/players/youtube_player_mobile.dart'
     if (dart.library.html) 'src/players/youtube_player_web.dart';
 
+export 'src/callbacks.dart';
 export 'src/controller.dart';
 export 'src/enums/playback_rate.dart';
 export 'src/enums/player_state.dart';
@@ -30,6 +31,10 @@ class YoutubePlayerIFrame extends StatelessWidget {
 
   /// Aspect ratio for the player.
   final double aspectRatio;
+
+  /// As workaround for this issue https://updaymedia.atlassian.net/browse/ESC-768?focusedCommentId=73895
+  /// we need callbacks or some other implementation
+  final YoutubeCallbacks? callbacks;
 
   /// Which gestures should be consumed by the youtube player.
   ///
@@ -50,6 +55,7 @@ class YoutubePlayerIFrame extends StatelessWidget {
     this.controller,
     this.aspectRatio = 16 / 9,
     this.gestureRecognizers,
+    this.callbacks,
   }) : super(key: key);
 
   @override
@@ -59,6 +65,7 @@ class YoutubePlayerIFrame extends StatelessWidget {
       child: RawYoutubePlayer(
         controller: controller ?? context.ytController,
         gestureRecognizers: gestureRecognizers,
+        callbacks: callbacks,
       ),
     );
   }
