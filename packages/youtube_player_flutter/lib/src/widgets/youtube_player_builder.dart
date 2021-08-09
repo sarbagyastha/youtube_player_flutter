@@ -12,16 +12,16 @@ class YoutubePlayerBuilder extends StatefulWidget {
   final Widget Function(BuildContext, Widget) builder;
 
   /// Callback to notify that the player has entered fullscreen.
-  final VoidCallback onEnterFullScreen;
+  final VoidCallback? onEnterFullScreen;
 
   /// Callback to notify that the player has exited fullscreen.
-  final VoidCallback onExitFullScreen;
+  final VoidCallback? onExitFullScreen;
 
   /// Builder for [YoutubePlayer] that supports switching between fullscreen and normal mode.
   const YoutubePlayerBuilder({
-    Key key,
-    @required this.player,
-    @required this.builder,
+    Key? key,
+    required this.player,
+    required this.builder,
     this.onEnterFullScreen,
     this.onExitFullScreen,
   }) : super(key: key);
@@ -37,27 +37,27 @@ class _YoutubePlayerBuilderState extends State<YoutubePlayerBuilder>
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance?.addObserver(this);
   }
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
+    WidgetsBinding.instance?.removeObserver(this);
     super.dispose();
   }
 
   @override
   void didChangeMetrics() {
-    final physicalSize = SchedulerBinding.instance.window.physicalSize;
+    final physicalSize = SchedulerBinding.instance?.window.physicalSize;
     final controller = widget.player.controller;
-    if (physicalSize.width > physicalSize.height) {
+    if (physicalSize != null && physicalSize.width > physicalSize.height) {
       controller.updateValue(controller.value.copyWith(isFullScreen: true));
       SystemChrome.setEnabledSystemUIOverlays([]);
-      if (widget.onEnterFullScreen != null) widget.onEnterFullScreen();
+      widget.onEnterFullScreen?.call();
     } else {
       controller.updateValue(controller.value.copyWith(isFullScreen: false));
       SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
-      if (widget.onExitFullScreen != null) widget.onExitFullScreen();
+      widget.onExitFullScreen?.call();
     }
     super.didChangeMetrics();
   }

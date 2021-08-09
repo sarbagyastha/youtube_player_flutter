@@ -57,7 +57,7 @@ class YoutubePlayerValue {
   bool get hasError => error != YoutubeError.none;
 
   /// Reports the current playback quality.
-  final String playbackQuality;
+  final String? playbackQuality;
 
   /// Returns meta data of the currently loaded/cued video.
   final YoutubeMetaData metaData;
@@ -65,17 +65,17 @@ class YoutubePlayerValue {
   /// Creates new [YoutubePlayerValue] with assigned parameters and overrides
   /// the old one.
   YoutubePlayerValue copyWith({
-    bool isReady,
-    bool hasPlayed,
-    Duration position,
-    double buffered,
-    bool isFullScreen,
-    double volume,
-    PlayerState playerState,
-    double playbackRate,
-    String playbackQuality,
-    YoutubeError error,
-    YoutubeMetaData metaData,
+    bool? isReady,
+    bool? hasPlayed,
+    Duration? position,
+    double? buffered,
+    bool? isFullScreen,
+    int? volume,
+    PlayerState? playerState,
+    double? playbackRate,
+    String? playbackQuality,
+    YoutubeError? error,
+    YoutubeMetaData? metaData,
   }) {
     return YoutubePlayerValue(
       isReady: isReady ?? this.isReady,

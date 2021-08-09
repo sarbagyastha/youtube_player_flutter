@@ -10,10 +10,10 @@ import '../utils/youtube_player_controller.dart';
 /// A widget to display playback speed changing button.
 class PlaybackSpeedButton extends StatefulWidget {
   /// Overrides the default [YoutubePlayerController].
-  final YoutubePlayerController controller;
+  final YoutubePlayerController? controller;
 
   /// Defines icon for the button.
-  final Widget icon;
+  final Widget? icon;
 
   /// Creates [PlaybackSpeedButton] widget.
   const PlaybackSpeedButton({
@@ -26,19 +26,21 @@ class PlaybackSpeedButton extends StatefulWidget {
 }
 
 class _PlaybackSpeedButtonState extends State<PlaybackSpeedButton> {
-  YoutubePlayerController _controller;
+  late YoutubePlayerController _controller;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _controller = YoutubePlayerController.of(context);
-    if (_controller == null) {
+    final controller = YoutubePlayerController.of(context);
+    if (controller == null) {
       assert(
         widget.controller != null,
         '\n\nNo controller could be found in the provided context.\n\n'
         'Try passing the controller explicitly.',
       );
-      _controller = widget.controller;
+      _controller = widget.controller!;
+    } else {
+      _controller = controller;
     }
   }
 
@@ -71,7 +73,7 @@ class _PlaybackSpeedButtonState extends State<PlaybackSpeedButton> {
     );
   }
 
-  Widget _popUpItem(String text, double rate) {
+  PopupMenuEntry<double> _popUpItem(String text, double rate) {
     return CheckedPopupMenuItem(
       checked: _controller.value.playbackRate == rate,
       child: Text(text),

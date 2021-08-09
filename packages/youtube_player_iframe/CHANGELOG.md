@@ -1,3 +1,23 @@
+# 2.2.1
+- Removed `YoutubePlayerController.setWebDebuggingInAndroid`
+
+# 2.2.0
+**Contains Breaking Changes**
+- Fixed issue iOS redirection issue
+- `YoutubePlayerController` is no more Stream.
+- Added `YoutubePlayerController.setWebDebuggingInAndroid`
+- Added `buildWhen` to **YoutubeValueBuilder**
+- Fixed issue where metadata weren't updated correctly
+- Fixed `desktopMode` flag.
+
+# 2.1.0
+- Updated dependencies to latest version.
+
+# 2.0.0
+- Migrated to null safety
+- Added `useHybridComposition` param.
+- Updated dependencies to latest version.
+
 ## 1.2.0+2
 - Added `YoutubePlayerParams.privacyEnhanced` flag.
 - Exposed `gestureRecognizers` through `YoutubePlayerIFrame` widget.
