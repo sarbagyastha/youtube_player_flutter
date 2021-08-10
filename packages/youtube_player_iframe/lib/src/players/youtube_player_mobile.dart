@@ -139,7 +139,7 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
         ),
       ),
       shouldOverrideUrlLoading: (_, detail) async {
-        if(Platform.isIOS && !_shouldOverrideUrlOnIosInitialLoad){
+        if(!_shouldOverrideUrlOnIosInitialLoad && Platform.isIOS){
           _shouldOverrideUrlOnIosInitialLoad = true;
           return NavigationActionPolicy.ALLOW;
         }
