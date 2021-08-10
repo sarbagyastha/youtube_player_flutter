@@ -4,6 +4,7 @@
 
 import 'dart:async';
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
@@ -56,6 +57,7 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
   PlayerState? _cachedPlayerState;
   bool _isPlayerReady = false;
   bool _onLoadStopCalled = false;
+  bool _shouldOverrideUrlOnIosInitialLoad = false;
   late YoutubePlayerValue _value;
 
   @override
@@ -137,6 +139,10 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
         ),
       ),
       shouldOverrideUrlLoading: (_, detail) async {
+        if(Platform.isIOS && !_shouldOverrideUrlOnIosInitialLoad){
+          _shouldOverrideUrlOnIosInitialLoad = true;
+          return NavigationActionPolicy.ALLOW;
+        }
         final uri = detail.request.url;
         if (uri == null) return NavigationActionPolicy.CANCEL;
 
