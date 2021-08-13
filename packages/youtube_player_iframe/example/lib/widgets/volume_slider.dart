@@ -23,6 +23,7 @@ class VolumeSlider extends StatelessWidget {
             builder: (context, volume, _) {
               return Slider(
                 inactiveColor: Colors.transparent,
+                activeColor: Theme.of(context).colorScheme.onSurface,
                 value: volume.toDouble(),
                 min: 0.0,
                 max: 100.0,

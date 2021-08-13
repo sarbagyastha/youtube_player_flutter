@@ -30,23 +30,15 @@ class _SourceInputSectionState extends State<SourceInputSection> {
           children: [
             DropdownButton<String>(
               isExpanded: true,
-              hint: Text(
+              hint: const Text(
                 ' -- Choose playlist type',
-                style: TextStyle(
-                  color: Theme.of(context).primaryColor,
-                  fontWeight: FontWeight.w400,
-                ),
+                style: TextStyle(fontWeight: FontWeight.w400),
               ),
               value: _playlistType,
               items: PlaylistType.all
                   .map(
                     (type) => DropdownMenuItem(
-                      child: Text(
-                        type,
-                        style: TextStyle(
-                          color: Theme.of(context).primaryColor,
-                        ),
-                      ),
+                      child: Text(type),
                       value: type,
                     ),
                   )
@@ -66,10 +58,7 @@ class _SourceInputSectionState extends State<SourceInputSection> {
                 helperText: _helperText,
                 fillColor: Theme.of(context).primaryColor.withAlpha(20),
                 filled: true,
-                hintStyle: TextStyle(
-                  fontWeight: FontWeight.w300,
-                  color: Theme.of(context).primaryColor,
-                ),
+                hintStyle: const TextStyle(fontWeight: FontWeight.w300),
                 suffixIcon: IconButton(
                   icon: const Icon(Icons.clear),
                   onPressed: () => _textController.clear(),
@@ -210,8 +199,6 @@ class _Button extends StatelessWidget {
               onTap?.call();
               FocusScope.of(context).unfocus();
             },
-      disabledColor: Colors.grey,
-      disabledTextColor: Colors.black,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 14.0),
         child: Text(
