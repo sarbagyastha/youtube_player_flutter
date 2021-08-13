@@ -28,25 +28,8 @@ class _SourceInputSectionState extends State<SourceInputSection> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            DropdownButton<String>(
-              isExpanded: true,
-              hint: const Text(
-                ' -- Choose playlist type',
-                style: TextStyle(fontWeight: FontWeight.w400),
-              ),
-              value: _playlistType,
-              items: PlaylistType.all
-                  .map(
-                    (type) => DropdownMenuItem(
-                      child: Text(type),
-                      value: type,
-                    ),
-                  )
-                  .toList(),
-              onChanged: (value) {
-                _playlistType = value;
-                setState(() {});
-              },
+            _PlaylistTypeDropDown(
+              onChanged: (type) => _playlistType = type,
             ),
             const SizedBox(height: 10),
             TextField(
@@ -77,15 +60,17 @@ class _SourceInputSectionState extends State<SourceInputSection> {
                 _Button(
                   action: 'LOAD',
                   onTap: () {
-                    context.ytController
-                        .load(_cleanId(_textController.text) ?? '');
+                    context.ytController.load(
+                      _cleanId(_textController.text) ?? '',
+                    );
                   },
                 ),
                 _Button(
                   action: 'CUE',
                   onTap: () {
-                    context.ytController
-                        .cue(_cleanId(_textController.text) ?? '');
+                    context.ytController.cue(
+                      _cleanId(_textController.text) ?? '',
+                    );
                   },
                 ),
                 _Button(
@@ -176,6 +161,44 @@ class _SourceInputSectionState extends State<SourceInputSection> {
   void dispose() {
     _textController.dispose();
     super.dispose();
+  }
+}
+
+class _PlaylistTypeDropDown extends StatefulWidget {
+  const _PlaylistTypeDropDown({
+    Key? key,
+    required this.onChanged,
+  }) : super(key: key);
+
+  final ValueChanged<String> onChanged;
+
+  @override
+  _PlaylistTypeDropDownState createState() => _PlaylistTypeDropDownState();
+}
+
+class _PlaylistTypeDropDownState extends State<_PlaylistTypeDropDown> {
+  String? _playlistType;
+
+  @override
+  Widget build(BuildContext context) {
+    return DropdownButton<String>(
+      isExpanded: true,
+      hint: const Text(
+        ' -- Choose playlist type',
+        style: TextStyle(fontWeight: FontWeight.w400),
+      ),
+      value: _playlistType,
+      items: PlaylistType.all
+          .map(
+            (type) => DropdownMenuItem(child: Text(type), value: type),
+          )
+          .toList(),
+      onChanged: (value) {
+        _playlistType = value;
+        setState(() {});
+        if (value != null) widget.onChanged(value);
+      },
+    );
   }
 }
 
