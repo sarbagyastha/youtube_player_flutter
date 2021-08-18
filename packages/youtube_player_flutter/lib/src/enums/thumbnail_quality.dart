@@ -14,7 +14,7 @@ class ThumbnailQuality {
   static const String high = 'hqdefault';
 
   /// 640*480
-  static const String standard = 'sddefault';
+  static const String standard = 'default';
 
   /// Unscaled thumbnail
   static const String max = 'maxresdefault';
