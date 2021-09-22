@@ -95,6 +95,19 @@ YoutubePlayerControllerProvider( // Provides controller to all the widget below 
 // Access the controller as: `YoutubePlayerControllerProvider.of(context)` or `controller.ytController`.
 ```
 
+#### Using the player
+
+```dart
+YoutubePlayerController _controller = YoutubePlayerController(
+    initialVideoId: 'NpEaa2P7qZI',
+    channelId: 'UCLA_DiR1FfKNvjuUpBHmylQ',
+    params: YoutubePlayerParams(
+        showControls: true,
+        showFullscreenButton: true,
+    ),
+);
+```
+
 ## Want to customize the player?
 The package provides `YoutubeValueBuilder`, which can be used to create any custom controls.
 
