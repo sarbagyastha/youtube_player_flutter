@@ -9,18 +9,11 @@ import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import 'package:youtube_player_iframe/src/callbacks.dart';
-import 'package:youtube_player_iframe/src/enums/youtube_error.dart';
+import 'package:url_launcher/url_launcher.dart' as url_launcher;
 import 'package:youtube_player_iframe/src/helpers/player_fragments.dart';
 import 'package:youtube_player_iframe/src/player_value.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
-import 'package:url_launcher/url_launcher.dart' as url_launcher;
-
-import '../controller.dart';
-import '../enums/player_state.dart';
-import '../meta_data.dart';
 
 /// A youtube player widget which interacts with the underlying webview inorder to play YouTube videos.
 ///
@@ -76,12 +69,6 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
   }
 
   @override
-  void dispose() {
-    WidgetsBinding.instance?.removeObserver(this);
-    super.dispose();
-  }
-
-  @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.resumed:
@@ -106,13 +93,11 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
       key: ValueKey(controller.hashCode),
       initialData: InAppWebViewInitialData(
         data: player,
-        baseUrl: Uri.parse(controller.params.privacyEnhanced
-            ? 'https://www.youtube-nocookie.com'
-            : 'https://www.youtube.com'),
+        baseUrl: _baseUrl,
         encoding: 'utf-8',
         mimeType: 'text/html',
       ),
-      gestureRecognizers: widget.gestureRecognizers,
+      gestureRecognizers: _gestureRecognizers,
       initialOptions: InAppWebViewGroupOptions(
         crossPlatform: InAppWebViewOptions(
           userAgent: userAgent,
@@ -135,36 +120,7 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
           useHybridComposition: true,
         ),
       ),
-      shouldOverrideUrlLoading: (_, detail) async {
-        final uri = detail.request.url;
-        if (uri == null) return NavigationActionPolicy.CANCEL;
-
-        final params = uri.queryParameters;
-        final host = uri.host;
-
-        String? featureName;
-        if (host.contains('facebook') || uri.host.contains('twitter')) {
-          featureName = 'social';
-        } else {
-          featureName = params['feature'];
-        }
-
-        switch (featureName) {
-          case 'emb_title':
-          case 'emb_rel_pause':
-          case 'emb_rel_end':
-            final videoId = params['v'];
-            if (videoId != null) controller.load(videoId);
-            break;
-          case 'emb_logo':
-          case 'social':
-          case 'wl_button':
-            url_launcher.launch(uri.toString());
-            break;
-        }
-
-        return NavigationActionPolicy.CANCEL;
-      },
+      shouldOverrideUrlLoading: _decideNavigationActionPolicy,
       onWebViewCreated: (webController) {
         if (!_webController.isCompleted) {
           _webController.complete(webController);
@@ -179,13 +135,27 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
           controller.add(_value);
         }
       },
-      onConsoleMessage: (_, message) {
-        log(message.message);
-      },
+      onConsoleMessage: (_, message) => log(message.message),
       onEnterFullscreen: (_) => controller.onEnterFullscreen?.call(),
       onExitFullscreen: (_) => controller.onExitFullscreen?.call(),
     );
   }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance?.removeObserver(this);
+    super.dispose();
+  }
+
+  Uri get _baseUrl {
+    return Uri.parse(
+      controller.params.privacyEnhanced
+          ? 'https://www.youtube-nocookie.com'
+          : 'https://www.youtube.com',
+    );
+  }
+
+  Set<Factory<OneSequenceGestureRecognizer>>? get _gestureRecognizers => widget.gestureRecognizers;
 
   Future<void> _callMethod(String methodName) async {
     final webController = await _webController.future;
@@ -305,6 +275,42 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
         milliseconds: duration == 0 ? 1000 : 0,
       ),
     );
+  }
+
+  Future<NavigationActionPolicy?> _decideNavigationActionPolicy(
+    _,
+    NavigationAction action,
+  ) async {
+    final uri = action.request.url;
+    if (uri == null) return NavigationActionPolicy.CANCEL;
+
+    final params = uri.queryParameters;
+    final host = uri.host;
+
+    String? featureName;
+    if (host.contains('facebook') || uri.host.contains('twitter')) {
+      featureName = 'social';
+    } else if (params.containsKey('feature')) {
+      featureName = params['feature'];
+    } else if (defaultTargetPlatform == TargetPlatform.iOS) {
+      return NavigationActionPolicy.ALLOW;
+    }
+
+    switch (featureName) {
+      case 'emb_title':
+      case 'emb_rel_pause':
+      case 'emb_rel_end':
+        final videoId = params['v'];
+        if (videoId != null) controller.load(videoId);
+        break;
+      case 'emb_logo':
+      case 'social':
+      case 'wl_button':
+        url_launcher.launch(uri.toString());
+        break;
+    }
+
+    return NavigationActionPolicy.CANCEL;
   }
 
   String get player => '''
