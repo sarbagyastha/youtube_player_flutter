@@ -10,6 +10,7 @@ String youtubeIFrameTag(YoutubePlayerController controller) {
     'enablejsapi': _boolean(controller.params.enableJavaScript),
     'fs': _boolean(controller.params.showFullscreenButton),
     'rel': _boolean(!controller.params.strictRelatedVideos),
+    'showinfo': '0',
     'iv_load_policy': '${controller.params.showVideoAnnotations ? 1 : 3}',
     'modestbranding': '1',
     'cc_load_policy': _boolean(controller.params.enableCaption),

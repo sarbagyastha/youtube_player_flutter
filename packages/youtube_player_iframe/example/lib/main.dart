@@ -27,8 +27,9 @@ class YoutubeApp extends StatelessWidget {
     return MaterialApp(
       title: 'Youtube Player IFrame Demo',
       theme: ThemeData(
+        brightness: Brightness.dark,
         primarySwatch: Colors.deepPurple,
-        iconTheme: const IconThemeData(color: Colors.deepPurpleAccent),
+        scaffoldBackgroundColor: Colors.black,
       ),
       debugShowCheckedModeBanner: false,
       home: YoutubeAppDemo(),
@@ -89,9 +90,6 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
       // Passing controller to widgets below.
       controller: _controller,
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Youtube Player IFrame'),
-        ),
         body: LayoutBuilder(
           builder: (context, constraints) {
             if (kIsWeb && constraints.maxWidth > 800) {

@@ -28,33 +28,8 @@ class _SourceInputSectionState extends State<SourceInputSection> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            DropdownButton<String>(
-              isExpanded: true,
-              hint: Text(
-                ' -- Choose playlist type',
-                style: TextStyle(
-                  color: Theme.of(context).primaryColor,
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
-              value: _playlistType,
-              items: PlaylistType.all
-                  .map(
-                    (type) => DropdownMenuItem(
-                      child: Text(
-                        type,
-                        style: TextStyle(
-                          color: Theme.of(context).primaryColor,
-                        ),
-                      ),
-                      value: type,
-                    ),
-                  )
-                  .toList(),
-              onChanged: (value) {
-                _playlistType = value;
-                setState(() {});
-              },
+            _PlaylistTypeDropDown(
+              onChanged: (type) => _playlistType = type,
             ),
             const SizedBox(height: 10),
             TextField(
@@ -66,10 +41,7 @@ class _SourceInputSectionState extends State<SourceInputSection> {
                 helperText: _helperText,
                 fillColor: Theme.of(context).primaryColor.withAlpha(20),
                 filled: true,
-                hintStyle: TextStyle(
-                  fontWeight: FontWeight.w300,
-                  color: Theme.of(context).primaryColor,
-                ),
+                hintStyle: const TextStyle(fontWeight: FontWeight.w300),
                 suffixIcon: IconButton(
                   icon: const Icon(Icons.clear),
                   onPressed: () => _textController.clear(),
@@ -88,15 +60,17 @@ class _SourceInputSectionState extends State<SourceInputSection> {
                 _Button(
                   action: 'LOAD',
                   onTap: () {
-                    context.ytController
-                        .load(_cleanId(_textController.text) ?? '');
+                    context.ytController.load(
+                      _cleanId(_textController.text) ?? '',
+                    );
                   },
                 ),
                 _Button(
                   action: 'CUE',
                   onTap: () {
-                    context.ytController
-                        .cue(_cleanId(_textController.text) ?? '');
+                    context.ytController.cue(
+                      _cleanId(_textController.text) ?? '',
+                    );
                   },
                 ),
                 _Button(
@@ -190,6 +164,44 @@ class _SourceInputSectionState extends State<SourceInputSection> {
   }
 }
 
+class _PlaylistTypeDropDown extends StatefulWidget {
+  const _PlaylistTypeDropDown({
+    Key? key,
+    required this.onChanged,
+  }) : super(key: key);
+
+  final ValueChanged<String> onChanged;
+
+  @override
+  _PlaylistTypeDropDownState createState() => _PlaylistTypeDropDownState();
+}
+
+class _PlaylistTypeDropDownState extends State<_PlaylistTypeDropDown> {
+  String? _playlistType;
+
+  @override
+  Widget build(BuildContext context) {
+    return DropdownButton<String>(
+      isExpanded: true,
+      hint: const Text(
+        ' -- Choose playlist type',
+        style: TextStyle(fontWeight: FontWeight.w400),
+      ),
+      value: _playlistType,
+      items: PlaylistType.all
+          .map(
+            (type) => DropdownMenuItem(child: Text(type), value: type),
+          )
+          .toList(),
+      onChanged: (value) {
+        _playlistType = value;
+        setState(() {});
+        if (value != null) widget.onChanged(value);
+      },
+    );
+  }
+}
+
 class _Button extends StatelessWidget {
   final VoidCallback? onTap;
   final String action;
@@ -210,8 +222,6 @@ class _Button extends StatelessWidget {
               onTap?.call();
               FocusScope.of(context).unfocus();
             },
-      disabledColor: Colors.grey,
-      disabledTextColor: Colors.black,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 14.0),
         child: Text(

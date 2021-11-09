@@ -1,3 +1,7 @@
+# 2.2.2
+- Fixed inline playback issue iOS. See [#525](https://github.com/sarbagyastha/youtube_player_flutter/issues/525)
+- UI update to example app
+
 # 2.2.1
 - Removed `YoutubePlayerController.setWebDebuggingInAndroid`
 

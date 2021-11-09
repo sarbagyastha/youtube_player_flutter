@@ -43,8 +43,7 @@ class MetaDataSection extends StatelessWidget {
                             (rate) => DropdownMenuItem(
                               child: Text(
                                 '${rate}x',
-                                style: TextStyle(
-                                  color: Theme.of(context).primaryColor,
+                                style: const TextStyle(
                                   fontWeight: FontWeight.w300,
                                 ),
                               ),
@@ -80,15 +79,13 @@ class _Text extends StatelessWidget {
     return RichText(
       text: TextSpan(
         text: '$title : ',
-        style: TextStyle(
-          color: Theme.of(context).primaryColor,
+        style: const TextStyle(
           fontWeight: FontWeight.bold,
         ),
         children: [
           TextSpan(
             text: value,
-            style: TextStyle(
-              color: Theme.of(context).primaryColor,
+            style: const TextStyle(
               fontWeight: FontWeight.w300,
             ),
           ),

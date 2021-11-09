@@ -15,7 +15,7 @@ class PlayerStateSection extends StatelessWidget {
           duration: const Duration(milliseconds: 800),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20.0),
-            color: _getStateColor(value.playerState),
+            color: _getStateColor(value.playerState).withAlpha(50),
           ),
           width: double.infinity,
           padding: const EdgeInsets.all(8.0),
