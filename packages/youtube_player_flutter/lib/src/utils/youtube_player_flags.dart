@@ -34,11 +34,11 @@ class YoutubePlayerFlags {
   /// Default is false.
   final bool hideThumbnail;
   
-  /// Hides popover advertisments if true.
+  /// Hides popover advertisements if true.
   ///
-  /// Default is false
+  /// Default is false.
   ///
-  /// DISCLAIMER: Enabling this option may violete YouTube's ToS. Use at your own risk!
+  /// DISCLAIMER: Enabling this option may violate YouTube's TOS. Use at your own risk!
   final bool hideAds;
 
   /// Disables seeking video position when dragging horizontally.
