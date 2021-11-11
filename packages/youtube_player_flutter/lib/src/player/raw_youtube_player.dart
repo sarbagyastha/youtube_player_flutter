@@ -254,7 +254,8 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
             }
         </style>
         <style id="yt-css">
-            .video-ads, .ytp-ad-module {
+            .ytp-ce-element, 
+            .ytp-pause-overlay {
               display: none !important;
             }
         </style>
