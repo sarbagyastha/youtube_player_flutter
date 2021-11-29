@@ -96,6 +96,13 @@ class YoutubePlayer extends StatefulWidget {
   /// {@endtemplate}
   final void Function(YoutubeMetaData metaData)? onEnded;
 
+  /// {@template youtube_player_flutter.onPaused}
+  /// Called when player had paused playing a video.
+  ///
+  /// Returns [YoutubeMetaData] for the video that has just ended playing in paused state.
+  /// {@endtemplate}
+  final void Function(YoutubeMetaData metaData)? onPaused;
+
   /// {@template youtube_player_flutter.liveUIColor}
   /// Overrides color of Live UI when enabled.
   /// {@endtemplate}
@@ -144,6 +151,7 @@ class YoutubePlayer extends StatefulWidget {
     ProgressBarColors? progressColors,
     this.onReady,
     this.onEnded,
+    this.onPaused,
     this.liveUIColor = Colors.red,
     this.topActions,
     this.bottomActions,
@@ -311,6 +319,15 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                 }
 
                 widget.onEnded?.call(metaData);
+              },
+              onPaused: (YoutubeMetaData metaData) {
+                if (controller.flags.loop) {
+                  controller.load(controller.metadata.videoId,
+                      startAt: controller.value.position.inSeconds,
+                      endAt: controller.flags.endAt);
+                }
+
+                widget.onPaused?.call(metaData);
               },
             ),
           ),

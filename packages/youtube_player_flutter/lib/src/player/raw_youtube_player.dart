@@ -20,10 +20,14 @@ class RawYoutubePlayer extends StatefulWidget {
   /// {@macro youtube_player_flutter.onEnded}
   final void Function(YoutubeMetaData metaData)? onEnded;
 
+  /// {@macro youtube_player_flutter.onPaused}
+  final void Function(YoutubeMetaData metaData)? onPaused;
+
   /// Creates a [RawYoutubePlayer] widget.
   RawYoutubePlayer({
     this.key,
     this.onEnded,
+    this.onPaused,
   });
 
   @override
@@ -149,6 +153,7 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
                     );
                     break;
                   case 2:
+                    widget.onPaused?.call(controller!.metadata);
                     controller!.updateValue(
                       controller!.value.copyWith(
                         playerState: PlayerState.paused,
