@@ -1,3 +1,6 @@
+## 8.1.0
+* Added `onPaused` callback for `YoutubePlayer` widget.
+
 ## 8.0.0
 * Null Safety Release
 * Added `useHybridComposition` flag
