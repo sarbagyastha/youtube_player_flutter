@@ -382,6 +382,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                             ? const EdgeInsets.all(0.0)
                             : widget.actionsPadding,
                         child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: widget.bottomActions ??
                               [
                                 const SizedBox(width: 14.0),
