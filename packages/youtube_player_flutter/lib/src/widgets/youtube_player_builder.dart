@@ -52,11 +52,14 @@ class _YoutubePlayerBuilderState extends State<YoutubePlayerBuilder>
     final controller = widget.player.controller;
     if (physicalSize != null && physicalSize.width > physicalSize.height) {
       controller.updateValue(controller.value.copyWith(isFullScreen: true));
-      SystemChrome.setEnabledSystemUIOverlays([]);
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
       widget.onEnterFullScreen?.call();
     } else {
       controller.updateValue(controller.value.copyWith(isFullScreen: false));
-      SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
+      SystemChrome.setEnabledSystemUIMode(
+        SystemUiMode.manual,
+        overlays: SystemUiOverlay.values,
+      );
       widget.onExitFullScreen?.call();
     }
     super.didChangeMetrics();
