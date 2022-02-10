@@ -117,7 +117,7 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
         android: AndroidInAppWebViewOptions(
           useWideViewPort: false,
           offscreenPreRaster: true,
-          useHybridComposition: true,
+          useHybridComposition: controller.params.useHybridComposition,
         ),
       ),
       shouldOverrideUrlLoading: _decideNavigationActionPolicy,
