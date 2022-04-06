@@ -2,7 +2,7 @@
     package="np.com.sarbagyastha.youtube_player_iframe_example">
     <uses-permission android:name="android.permission.INTERNET"/>
     <application
-        android:name="io.flutter.app.FlutterApplication"
+        android:name="${applicationName}"
         android:label="Youtube Player IFrame Demo"
         android:icon="@mipmap/ic_launcher">
         <activity
