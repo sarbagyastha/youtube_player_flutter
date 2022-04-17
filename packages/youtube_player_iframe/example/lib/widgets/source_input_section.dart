@@ -68,8 +68,11 @@ class _SourceInputSectionState extends State<SourceInputSection> {
                 _Button(
                   action: 'CUE',
                   onTap: () {
-                    context.ytController.cue(
-                      _cleanId(_textController.text) ?? '',
+                    // context.ytController.cue(
+                    //   _cleanId(_textController.text) ?? '',
+                    // );
+                    context.ytController.seekTo(
+                      const Duration(seconds: 5),
                     );
                   },
                 ),

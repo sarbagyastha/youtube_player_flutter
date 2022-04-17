@@ -91,7 +91,8 @@ function setVolume(volume) {
   return '';
 }
 function seekTo(position, seekAhead) {
-  player.seekTo(position, seekAhead);
+  // player.seekTo(position, seekAhead);
+  player.currentTime = position;
   return '';
 }
 function setSize(width, height) {
