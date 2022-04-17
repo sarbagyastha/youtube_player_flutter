@@ -146,11 +146,11 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
   }
 
   Uri get _baseUrl {
-    return Uri.parse(
-      controller.params.privacyEnhanced
-          ? 'https://www.youtube-nocookie.com'
-          : 'https://www.youtube.com',
-    );
+    return Uri.parse('videodelivery.net'
+        // controller.params.privacyEnhanced
+        //     ? 'https://www.youtube-nocookie.com'
+        //     : 'https://www.youtube.com',
+        );
   }
 
   Set<Factory<OneSequenceGestureRecognizer>> get _gestureRecognizers {
@@ -302,46 +302,59 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
     <!DOCTYPE html>
     <body>
          ${youtubeIFrameTag(controller)}
+         <script src="https://embed.videodelivery.net/embed/sdk.latest.js"></script>
+
         <script>
             $initPlayerIFrame
-            var player;
-            var timerId;
-            function onYouTubeIframeAPIReady() {
-                player = new YT.Player('player', {
-                    events: {
-                        onReady: function(event) { window.flutter_inappwebview.callHandler('Ready'); },
-                        onStateChange: function(event) { sendPlayerStateChange(event.data); },
-                        onPlaybackQualityChange: function(event) { window.flutter_inappwebview.callHandler('PlaybackQualityChange', event.data); },
-                        onPlaybackRateChange: function(event) { window.flutter_inappwebview.callHandler('PlaybackRateChange', event.data); },
-                        onError: function(error) { window.flutter_inappwebview.callHandler('Errors', error.data); }
-                    },
-                });
-            }
+            //var player;
+            //var timerId;
+            // function onYouTubeIframeAPIReady() {
+            //     player = new YT.Player('player', {
+            //         events: {
+            //             onReady: function(event) { window.flutter_inappwebview.callHandler('Ready'); },
+            //             onStateChange: function(event) { sendPlayerStateChange(event.data); },
+            //             onPlaybackQualityChange: function(event) { window.flutter_inappwebview.callHandler('PlaybackQualityChange', event.data); },
+            //             onPlaybackRateChange: function(event) { window.flutter_inappwebview.callHandler('PlaybackRateChange', event.data); },
+            //             onError: function(error) { window.flutter_inappwebview.callHandler('Errors', error.data); }
+            //         },
+            //     });
+            // }
 
-            function sendPlayerStateChange(playerState) {
-                clearTimeout(timerId);
-                window.flutter_inappwebview.callHandler('StateChange', playerState);
-                if (playerState == 1) {
-                    startSendCurrentTimeInterval();
-                    sendVideoData(player);
-                }
-            }
+            // function sendPlayerStateChange(playerState) {
+            //     clearTimeout(timerId);
+            //     window.flutter_inappwebview.callHandler('StateChange', playerState);
+            //     if (playerState == 1) {
+            //         startSendCurrentTimeInterval();
+            //         sendVideoData(player);
+            //     }
+            // }
 
-            function sendVideoData(player) {
-                var videoData = {
-                    'duration': player.getDuration(),
-                    'title': player.getVideoData().title,
-                    'author': player.getVideoData().author,
-                    'videoId': player.getVideoData().video_id
-                };
-                window.flutter_inappwebview.callHandler('VideoData', videoData);
-            }
+            // function sendVideoData(player) {
+            //     var videoData = {
+            //         'duration': player.getDuration(),
+            //         'title': player.getVideoData().title,
+            //         'author': player.getVideoData().author,
+            //         'videoId': player.getVideoData().video_id
+            //     };
+            //     window.flutter_inappwebview.callHandler('VideoData', videoData);
+            // }
 
-            function startSendCurrentTimeInterval() {
-                timerId = setInterval(function () {
-                    window.flutter_inappwebview.callHandler('VideoTime', player.getCurrentTime(), player.getVideoLoadedFraction());
-                }, 100);
-            }
+            // function startSendCurrentTimeInterval() {
+            //     timerId = setInterval(function () {
+            //         window.flutter_inappwebview.callHandler('VideoTime', player.getCurrentTime(), player.getVideoLoadedFraction());
+            //     }, 100);
+            // }
+
+            const player = Stream(document.getElementById('stream-player'));
+  player.addEventListener('play', () => {
+    console.log('playing!');
+    window.flutter_inappwebview.callHandler('StateChange', 1);
+  });
+  player.play().catch(() => {
+    console.log('playback failed, muting to try again');
+    player.muted = true;
+    player.play();
+  });
 
             $youtubeIFrameFunctions
         </script>

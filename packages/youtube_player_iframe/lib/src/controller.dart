@@ -323,8 +323,9 @@ class YoutubePlayerController {
     String quality = ThumbnailQuality.standard,
     bool webp = true,
   }) {
-    return webp
-        ? 'https://i3.ytimg.com/vi_webp/$videoId/$quality.webp'
-        : 'https://i3.ytimg.com/vi/$videoId/$quality.jpg';
+    return 'https://videodelivery.net/e55c36a9456b01863b92787aae247ea3/thumbnails/thumbnail.jpg?time=0s&height=270';
+    // return webp
+    //     ? 'https://i3.ytimg.com/vi_webp/$videoId/$quality.webp'
+    //     : 'https://i3.ytimg.com/vi/$videoId/$quality.jpg';
   }
 }

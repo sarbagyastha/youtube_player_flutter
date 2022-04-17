@@ -25,18 +25,31 @@ String youtubeIFrameTag(YoutubePlayerController controller) {
     if (controller.params.playlist.isNotEmpty)
       'playlist': '${controller.params.playlist.join(',')}'
   };
-  final youtubeAuthority = controller.params.privacyEnhanced
-      ? 'www.youtube-nocookie.com'
-      : 'www.youtube.com';
+  final youtubeAuthority =
+      // controller.params.privacyEnhanced
+      // ? 'www.youtube-nocookie.com'
+      // : 'www.youtube.com';
+      'iframe.videodelivery.net';
   final sourceUri = Uri.https(
     youtubeAuthority,
-    'embed/${controller.initialVideoId}',
+    // 'embed/${controller.initialVideoId}',
+    // '${controller.initialVideoId}/manifest/video.m3u8',
+    controller.initialVideoId,
     params,
   );
-  return '<iframe id="player" type="text/html"'
-      ' style="position:absolute; top:0px; left:0px; bottom:0px; right:10px;'
-      ' width:100%; height:100%; border:none; margin:0; padding:0; overflow:hidden; z-index:999999;"'
-      ' src="$sourceUri" frameborder="0" allowfullscreen></iframe>';
+  // return '<iframe id="player" type="text/html"'
+  //     ' style="position:absolute; top:0px; left:0px; bottom:0px; right:10px;'
+  //     ' width:100%; height:100%; border:none; margin:0; padding:0; overflow:hidden; z-index:999999;"'
+  //     ' src="$sourceUri" frameborder="0" allowfullscreen></iframe>';
+  return '''<iframe
+  src="https://iframe.videodelivery.net/73c7746d08ba74b8f6821ea68055b853"
+  style="position:absolute; top:0px; left:0px; bottom:0px; right:10px;width:100%; height:100%; border:none; margin:0; padding:0; overflow:hidden; z-index:999999;"
+  height="100%"
+  width="100%"
+  allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+  allowfullscreen="true"
+  id="stream-player"
+></iframe>''';
 }
 
 ///
@@ -129,7 +142,7 @@ function hidePauseOverlay() {
 ///
 String get initPlayerIFrame => '''
 var tag = document.createElement('script');
-tag.src = "https://www.youtube.com/iframe_api";
+tag.src = "https://iframe.videodelivery.net";
 var firstScriptTag = document.getElementsByTagName('script')[0];
 firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 ''';

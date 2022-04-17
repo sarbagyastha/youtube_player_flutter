@@ -53,15 +53,16 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
       initialVideoId: 'tcodrIK2P_I',
       params: const YoutubePlayerParams(
         playlist: [
-          'nPt8bK2gbaU',
-          'K18cpp_-gP8',
-          'iLnmTe5Q2Qw',
-          '_WoCV4c6XOE',
-          'KmzdUe0RSJo',
-          '6jZDSSZZxjQ',
-          'p2lYr3vM_1w',
-          '7QUtEmBT_-w',
-          '34_PXCzGw1M',
+          'e55c36a9456b01863b92787aae247ea3',
+          // 'nPt8bK2gbaU',
+          // 'K18cpp_-gP8',
+          // 'iLnmTe5Q2Qw',
+          // '_WoCV4c6XOE',
+          // 'KmzdUe0RSJo',
+          // '6jZDSSZZxjQ',
+          // 'p2lYr3vM_1w',
+          // '7QUtEmBT_-w',
+          // '34_PXCzGw1M',
         ],
         startAt: const Duration(minutes: 1, seconds: 36),
         showControls: true,
@@ -136,7 +137,7 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
                                 ),
                               ),
                             ),
-                            crossFadeState: value.isReady
+                            crossFadeState: value.isReady || 1 == 1
                                 ? CrossFadeState.showFirst
                                 : CrossFadeState.showSecond,
                             duration: const Duration(milliseconds: 300),
