@@ -2,7 +2,6 @@ import 'dart:developer';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
@@ -27,15 +26,20 @@ class YoutubePlayerDemoApp extends StatelessWidget {
       title: 'Youtube Player Flutter',
       theme: ThemeData(
         primarySwatch: Colors.blue,
-        appBarTheme: const AppBarTheme(
-          color: Colors.blueAccent,
-          textTheme: TextTheme(
+        appBarTheme: AppBarTheme(
+          color: Colors.blueAccent, toolbarTextStyle: const TextTheme(
             headline6: TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.w300,
               fontSize: 20.0,
             ),
-          ),
+          ).bodyText2, titleTextStyle: const TextTheme(
+            headline6: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w300,
+              fontSize: 20.0,
+            ),
+          ).headline6,
         ),
         iconTheme: const IconThemeData(
           color: Colors.blueAccent,

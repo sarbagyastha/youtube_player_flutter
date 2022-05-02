@@ -176,8 +176,8 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
     }
   }
 
-  // ignore: use_setters_to_change_properties
   /// Updates the old [YoutubePlayerValue] with new one provided.
+  // ignore: use_setters_to_change_properties
   void updateValue(YoutubePlayerValue newValue) => value = newValue;
 
   /// Plays the video.

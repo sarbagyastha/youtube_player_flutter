@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:ui' show window;
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
