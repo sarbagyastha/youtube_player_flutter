@@ -4,16 +4,9 @@
 
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
-import 'enums/player_state.dart';
-import 'enums/playlist_type.dart';
-import 'enums/thumbnail_quality.dart';
-import 'enums/youtube_error.dart';
-import 'meta_data.dart';
-import 'player_params.dart';
 import 'player_value.dart';
 
 /// Controls a youtube player, and provides updates when the state is changing.
