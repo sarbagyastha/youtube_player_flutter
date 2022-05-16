@@ -153,12 +153,12 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
 
   Set<Factory<OneSequenceGestureRecognizer>> get _gestureRecognizers {
     return widget.gestureRecognizers ??
-        {
+        const {
           Factory<VerticalDragGestureRecognizer>(
-            () => VerticalDragGestureRecognizer(),
+            VerticalDragGestureRecognizer.new,
           ),
           Factory<HorizontalDragGestureRecognizer>(
-            () => HorizontalDragGestureRecognizer(),
+            HorizontalDragGestureRecognizer.new,
           ),
         };
   }
