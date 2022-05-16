@@ -1,3 +1,7 @@
+# 2.3.0
+- Upgraded minimum flutter version to `3.0.0`
+- Upgraded example app
+
 # 2.2.2
 - Fixed inline playback issue iOS. See [#525](https://github.com/sarbagyastha/youtube_player_flutter/issues/525)
 - UI update to example app
