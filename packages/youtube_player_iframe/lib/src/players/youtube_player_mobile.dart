@@ -8,17 +8,15 @@ import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import 'package:youtube_player_iframe/src/enums/youtube_error.dart';
-import 'package:youtube_player_iframe/src/helpers/player_fragments.dart';
-import 'package:youtube_player_iframe/src/player_value.dart';
-import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 import 'package:url_launcher/url_launcher.dart' as url_launcher;
 
 import '../controller.dart';
 import '../enums/player_state.dart';
+import '../enums/youtube_error.dart';
+import '../helpers/player_fragments.dart';
 import '../meta_data.dart';
+import '../player_value.dart';
 
 /// A youtube player widget which interacts with the underlying webview inorder to play YouTube videos.
 ///
@@ -64,7 +62,7 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
     _webController = Completer();
     controller = widget.controller;
     _value = controller.value;
-    WidgetsBinding.instance?.addObserver(this);
+    WidgetsBinding.instance.addObserver(this);
   }
 
   @override
@@ -141,7 +139,7 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
 
   @override
   void dispose() {
-    WidgetsBinding.instance?.removeObserver(this);
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
@@ -291,7 +289,7 @@ class _MobileYoutubePlayerState extends State<RawYoutubePlayer>
       case 'emb_logo':
       case 'social':
       case 'wl_button':
-        url_launcher.launch(uri.toString());
+        url_launcher.launchUrl(uri);
         break;
     }
 
