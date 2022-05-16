@@ -229,19 +229,24 @@ class _ProgressBarPainter extends CustomPainter {
 
     final startPoint = Offset(handleRadius, centerY);
     final endPoint = Offset(size.width - handleRadius, centerY);
-    final progressPoint =
-        Offset(barLength * playedValue + handleRadius, centerY);
-    final secondProgressPoint =
-        Offset(barLength * bufferedValue + handleRadius, centerY);
+    final progressPoint = Offset(
+      barLength * playedValue + handleRadius,
+      centerY,
+    );
+    final secondProgressPoint = Offset(
+      barLength * bufferedValue + handleRadius,
+      centerY,
+    );
 
-    paint.color =
-        colors?.backgroundColor ?? themeData.accentColor.withOpacity(0.38);
+    final secondaryColor = themeData.colorScheme.secondary;
+
+    paint.color = colors?.backgroundColor ?? secondaryColor.withOpacity(0.38);
     canvas.drawLine(startPoint, endPoint, paint);
 
     paint.color = colors?.bufferedColor ?? Colors.white70;
     canvas.drawLine(startPoint, secondProgressPoint, paint);
 
-    paint.color = colors?.playedColor ?? themeData.accentColor;
+    paint.color = colors?.playedColor ?? secondaryColor;
     canvas.drawLine(startPoint, progressPoint, paint);
 
     final handlePaint = Paint()..isAntiAlias = true;
@@ -249,7 +254,7 @@ class _ProgressBarPainter extends CustomPainter {
     handlePaint.color = Colors.transparent;
     canvas.drawCircle(progressPoint, centerY, handlePaint);
 
-    final _handleColor = colors?.handleColor ?? themeData.accentColor;
+    final _handleColor = colors?.handleColor ?? secondaryColor;
 
     if (touchDown) {
       handlePaint.color = _handleColor.withOpacity(0.4);
