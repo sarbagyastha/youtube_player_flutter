@@ -23,6 +23,7 @@ class YoutubePlayerController {
   /// Creates [YoutubePlayerController].
   YoutubePlayerController({
     required this.initialVideoId,
+    this.channelId,
     this.params = const YoutubePlayerParams(),
   }) {
     invokeJavascript = (_) async {};
@@ -30,6 +31,9 @@ class YoutubePlayerController {
 
   /// The Youtube video id for initial video to be loaded.
   final String initialVideoId;
+
+  /// The optional channel id to display a live stream from a channel.
+  final String? channelId;
 
   /// Defines default parameters for the player.
   final YoutubePlayerParams params;
