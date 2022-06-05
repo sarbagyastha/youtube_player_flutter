@@ -112,7 +112,7 @@ abstract class QueueingFunctions {
 }
 
 enum ListType {
-  /// The list pecifies the playlist ID or an array of video IDs.
+  /// The list specifies the playlist ID or an array of video IDs.
   /// In the YouTube Data API, the playlist resource's id property identifies a playlist's ID,
   /// and the video resource's id property specifies a video ID.
   playlist('playlist'),

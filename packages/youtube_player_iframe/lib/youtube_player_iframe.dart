@@ -59,7 +59,6 @@ class _YoutubePlayerIFrameState extends State<YoutubePlayerIFrame> {
   void initState() {
     super.initState();
     _controller = widget.controller ?? YoutubePlayerController();
-    _controller.loadVideoById(videoId: 'HoCwa6gnmM0');
   }
 
   @override

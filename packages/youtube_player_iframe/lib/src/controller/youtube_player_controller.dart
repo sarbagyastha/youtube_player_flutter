@@ -44,7 +44,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     return _run(
       'cuePlaylist',
       data: {
-        'list': list,
+        list.length == 1 ? 'list' : 'playlist': list,
         'listType': listType?.value,
         'index': index,
         'startSeconds': startSeconds,
@@ -94,7 +94,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     return _run(
       'loadPlaylist',
       data: {
-        'list': list,
+        list.length == 1 ? 'list' : 'playlist': list,
         'listType': listType?.value,
         'index': index,
         'startSeconds': startSeconds,
@@ -165,6 +165,8 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
 
     final controller = await _webViewControllerCompleter.future;
     final varArgs = data == null ? '' : jsonEncode(data);
+
+    print('player.$functionName($varArgs);');
 
     return controller.runJavascript('player.$functionName($varArgs);');
   }
