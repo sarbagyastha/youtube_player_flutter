@@ -15,7 +15,8 @@ import 'package:youtube_player_iframe/src/helpers/player_fragments.dart';
 
 import '../controller.dart';
 import '../meta_data.dart';
-import 'platform_view_stub.dart' if (dart.library.html) 'dart:ui' as ui;
+import '../overrides/platform_view_stub.dart' if (dart.library.html) 'dart:ui'
+    as ui;
 
 /// A youtube player widget which interacts with the underlying iframe inorder to play YouTube videos.
 ///

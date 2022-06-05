@@ -28,7 +28,7 @@ class YoutubePlayerEventHandler {
   final Completer<void> _readyCompleter = Completer();
 
   void onReady(JavascriptMessage data) {
-    _readyCompleter.complete();
+    if (!_readyCompleter.isCompleted) _readyCompleter.complete();
   }
 
   void onStateChange(JavascriptMessage data) {

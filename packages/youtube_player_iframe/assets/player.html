@@ -47,31 +47,41 @@
           playerVars: <<playerVars>>,
           events: {
             onReady: function (event) {
-              Ready.postMessage(JSON.stringify(event));
+              sendMessage('Ready', event);
             },
             onStateChange: function (event) {
-              StateChange.postMessage(event.data);
+              sendMessage('StateChange', event.data);
             },
             onPlaybackQualityChange: function (event) {
-              PlaybackQualityChange.postMessage(event.data);
+              sendMessage('PlaybackQualityChange', event.data);
             },
             onPlaybackRateChange: function (event) {
-              PlaybackRateChange.postMessage(event.data);
+              sendMessage('PlaybackRateChange', event.data);
             },
             onApiChange: function (event) {
-              ApiChange.postMessage(event.data);
+              sendMessage('ApiChange', event.data);
             },
             onError: function (event) {
-              PlayerError.postMessage(event.data);
+              sendMessage('PlayerError', event.data);
             },
           },
         });
         player.setSize(window.innerWidth, window.innerHeight);
       }
 
+      window.addEventListener('message', (event) => {
+        try { eval(event.data) } catch (e) {}
+      }, false);
+
       window.onresize = function () {
         player.setSize(window.innerWidth, window.innerHeight);
       };
+
+      function sendMessage(key, data) {
+         var message = {}
+         message[key] = data
+         window.parent.postMessage(JSON.stringify(message) , '*');
+      }
     </script>
   </body>
 </html>
