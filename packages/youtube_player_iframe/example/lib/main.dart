@@ -46,27 +46,13 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
   void initState() {
     super.initState();
     _controller = YoutubePlayerController(
-        // initialVideoId: 'tcodrIK2P_I',
-        // params: const YoutubePlayerParams(
-        //   /*   playlist: [
-        //     'nPt8bK2gbaU',
-        //     'K18cpp_-gP8',
-        //     'iLnmTe5Q2Qw',
-        //     '_WoCV4c6XOE',
-        //     'KmzdUe0RSJo',
-        //     '6jZDSSZZxjQ',
-        //     'p2lYr3vM_1w',
-        //     '7QUtEmBT_-w',
-        //     '34_PXCzGw1M',
-        //   ],*/
-        //   startAt: const Duration(minutes: 1, seconds: 36),
-        //   showControls: true,
-        //   showFullscreenButton: true,
-        //   desktopMode: false,
-        //   privacyEnhanced: true,
-        //   useHybridComposition: true,
-        // ),
-        );
+      params: const YoutubePlayerParams(
+        showControls: true,
+        mute: false,
+        showFullscreenButton: true,
+      ),
+    );
+
     _controller.loadPlaylist(
       list: [
         'tcodrIK2P_I',

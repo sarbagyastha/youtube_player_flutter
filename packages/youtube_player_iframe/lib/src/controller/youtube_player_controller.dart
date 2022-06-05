@@ -14,11 +14,15 @@ import 'youtube_player_event_handler.dart';
 
 class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   ///
-  YoutubePlayerController() {
+  YoutubePlayerController({
+    this.params = const YoutubePlayerParams(),
+  }) {
     registerWebViewWebImplementation();
     _eventHandler = YoutubePlayerEventHandler(this);
     javaScriptChannels = _eventHandler.javascriptChannels;
   }
+
+  final YoutubePlayerParams params;
 
   final Completer<WebViewController> _webViewControllerCompleter = Completer();
 
@@ -139,7 +143,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   Future<void> init(WebViewController controller) async {
     await controller.runJavascript('var isWeb = $kIsWeb;');
     _webViewControllerCompleter.complete(controller);
-    await load(params: const YoutubePlayerParams());
+    await load(params: params);
   }
 
   Future<void> load({

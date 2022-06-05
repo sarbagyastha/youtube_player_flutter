@@ -103,7 +103,7 @@ class YoutubePlayerParams {
   /// This parameter provides an extra security measure for the IFrame API and is only supported for IFrame embeds.
   ///
   /// Specify your domain as the value.
-  final String origin;
+  final String? origin;
 
   /// This parameter controls whether videos play inline or fullscreen in an HTML5 player on iOS.
   ///
@@ -122,27 +122,6 @@ class YoutubePlayerParams {
   /// This means that sometimes the play head may seek to just before the requested time, usually no more than around two seconds.
   final Duration startAt;
 
-  /// Enabling desktop mode.
-  ///
-  /// The player controls will be like the one seen on youtube.com
-  ///
-  /// Only effective on mobile devices.
-  final bool desktopMode;
-
-  /// Enables privacy enhanced embedding mode.
-  ///
-  /// More detail at https://support.google.com/youtube/answer/171780?hl=en
-  ///
-  /// Default is false.
-  final bool privacyEnhanced;
-
-  /// Set to `true` to enable Flutter's new Hybrid Composition. The default value is `true`.
-  /// Hybrid Composition is supported starting with Flutter v1.20+.
-  ///
-  /// **NOTE**: It is recommended to use Hybrid Composition only on Android 10+ for a release app,
-  /// as it can cause framerate drops on animations in Android 9 and lower (see [Hybrid-Composition#performance](https://github.com/flutter/flutter/wiki/Hybrid-Composition#performance)).
-  final bool useHybridComposition;
-
   /// Defines player parameters for [YoutubePlayer].
   const YoutubePlayerParams({
     this.autoPlay = true,
@@ -158,18 +137,36 @@ class YoutubePlayerParams {
     this.interfaceLanguage = 'en',
     this.showVideoAnnotations = true,
     this.loop = false,
-    this.origin = 'https://www.youtube.com',
+    this.origin,
     this.playsInline = true,
     this.strictRelatedVideos = false,
     this.startAt = Duration.zero,
-    this.desktopMode = false,
-    this.privacyEnhanced = false,
-    this.useHybridComposition = true,
   });
 
   Map<String, dynamic> toMap() {
-    return {};
+    return {
+      'autoplay': _boolean(autoPlay),
+      'mute': _boolean(mute),
+      'cc_lang_pref': captionLanguage,
+      'cc_load_policy': _boolean(enableCaption),
+      'color': color,
+      'controls': _boolean(showControls),
+      'disablekb': _boolean(!enableKeyboard),
+      'enablejsapi': _boolean(enableJavaScript),
+      if (endAt != null) 'end': endAt!.inSeconds,
+      'fs': _boolean(showFullscreenButton),
+      'hl': interfaceLanguage,
+      'iv_load_policy': showVideoAnnotations ? 1 : 3,
+      'loop': _boolean(loop),
+      'modestbranding': '1',
+      if (origin != null) 'origin': origin,
+      'playsinline': _boolean(playsInline),
+      'rel': _boolean(strictRelatedVideos),
+      'start': startAt.inSeconds,
+    };
   }
 
   String toJson() => jsonEncode(toMap());
+
+  int _boolean(bool value) => value ? 1 : 0;
 }
