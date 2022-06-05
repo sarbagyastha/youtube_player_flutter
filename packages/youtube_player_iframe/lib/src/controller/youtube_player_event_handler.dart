@@ -1,23 +1,33 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:youtube_player_iframe/src/iframe_api/src/functions/playback_status.dart';
+import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 import 'youtube_player_controller.dart';
 
 class YoutubePlayerEventHandler {
+  ///
   YoutubePlayerEventHandler(this.controller) {
+    final _events = <String, void Function(Object)>{
+      'Ready': onReady,
+      'StateChange': onStateChange,
+      'PlaybackQualityChange': onPlaybackQualityChange,
+      'PlaybackRateChange': onPlaybackRateChange,
+      'ApiChange': onApiChange,
+      'PlayerError': onError,
+    };
+
     javascriptChannels = {
-      JavascriptChannel(name: 'Ready', onMessageReceived: onReady),
-      JavascriptChannel(name: 'StateChange', onMessageReceived: onStateChange),
-      JavascriptChannel(name: 'ApiChange', onMessageReceived: onApiChange),
-      JavascriptChannel(name: 'PlayerError', onMessageReceived: onError),
       JavascriptChannel(
-        name: 'PlaybackQualityChange',
-        onMessageReceived: onPlaybackQualityChange,
-      ),
-      JavascriptChannel(
-        name: 'PlaybackRateChange',
-        onMessageReceived: onPlaybackRateChange,
+        name: 'YoutubePlayer',
+        onMessageReceived: (channel) {
+          final data = Map.from(jsonDecode(channel.message));
+          for (final entry in data.entries) {
+            _events[entry.key]?.call(entry.value);
+          }
+        },
       ),
     };
   }
@@ -27,27 +37,38 @@ class YoutubePlayerEventHandler {
 
   final Completer<void> _readyCompleter = Completer();
 
-  void onReady(JavascriptMessage data) {
+  void onReady(Object data) {
     if (!_readyCompleter.isCompleted) _readyCompleter.complete();
   }
 
-  void onStateChange(JavascriptMessage data) {
-    // TODO: implement onStateChange
+  void onStateChange(Object data) {
+    final stateCode = data as int;
+
+    final playerState = PlayerState.values.firstWhere(
+      (state) => state.code == stateCode,
+      orElse: () => PlayerState.unknown,
+    );
+
+    if (playerState == PlayerState.playing) {
+      controller.update(playerState: playerState, error: YoutubeError.none);
+    } else {
+      controller.update(playerState: playerState);
+    }
   }
 
-  void onPlaybackQualityChange(JavascriptMessage data) {
+  void onPlaybackQualityChange(Object data) {
     // TODO: implement onPlaybackQualityChange
   }
 
-  void onPlaybackRateChange(JavascriptMessage data) {
+  void onPlaybackRateChange(Object data) {
     // TODO: implement onPlaybackRateChange
   }
 
-  void onApiChange(JavascriptMessage data) {
+  void onApiChange(Object data) {
     // TODO: implement onApiChange
   }
 
-  void onError(JavascriptMessage data) {
+  void onError(Object data) {
     // TODO: implement onError
   }
 

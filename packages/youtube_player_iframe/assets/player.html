@@ -41,6 +41,7 @@
       var firstScriptTag = document.getElementsByTagName("script")[0];
       firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
+      var isWeb = <<isWeb>>;
       var player;
       function onYouTubeIframeAPIReady() {
         player = new YT.Player("player", {
@@ -80,7 +81,13 @@
       function sendMessage(key, data) {
          var message = {}
          message[key] = data
-         window.parent.postMessage(JSON.stringify(message) , '*');
+         var messageString = JSON.stringify(message);
+
+         if(isWeb) {
+           window.parent.postMessage(messageString , '*');
+         } else {
+           YoutubePlayer.postMessage(messageString, '*');
+         }
       }
     </script>
   </body>

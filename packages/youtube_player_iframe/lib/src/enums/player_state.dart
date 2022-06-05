@@ -27,7 +27,7 @@ enum PlayerState {
   /// Denotes state when player loads video and is ready to be played.
   cued(5);
 
-  const PlayerState(this.value);
+  const PlayerState(this.code);
 
-  final int value;
+  final int code;
 }

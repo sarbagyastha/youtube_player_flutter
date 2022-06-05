@@ -85,7 +85,7 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
 
   @override
   Widget build(BuildContext context) {
-    const player = YoutubePlayerIFrame();
+    final player = YoutubePlayerIFrame(controller: _controller);
     return YoutubePlayerControllerProvider(
       // Passing controller to widgets below.
       controller: _controller,
@@ -96,7 +96,7 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
               return Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Expanded(child: player),
+                  Expanded(child: player),
                   const SizedBox(
                     width: 500,
                     child: SingleChildScrollView(

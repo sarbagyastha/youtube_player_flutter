@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
@@ -134,6 +135,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   }
 
   Future<void> init(WebViewController controller) async {
+    await controller.runJavascript('var isWeb = $kIsWeb;');
     _webViewControllerCompleter.complete(controller);
     await load(params: const YoutubePlayerParams());
   }
@@ -148,7 +150,9 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
 
     final controller = await _webViewControllerCompleter.future;
     await controller.loadHtmlString(
-      playerHtml.replaceFirst('<<playerVars>>', params.toJson()),
+      playerHtml
+          .replaceFirst('<<playerVars>>', params.toJson())
+          .replaceFirst('<<isWeb>>', kIsWeb.toString()),
       baseUrl: baseUrl,
     );
   }
@@ -167,6 +171,41 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
 
   /// MetaData for the currently loaded or cued video.
   YoutubeMetaData get metadata => _value.metaData;
+
+  /// Creates new [YoutubePlayerValue] with assigned parameters and overrides
+  /// the old one.
+  void update({
+    bool? isReady,
+    bool? hasPlayed,
+    Duration? position,
+    double? buffered,
+    bool? isFullScreen,
+    int? volume,
+    PlayerState? playerState,
+    double? playbackRate,
+    String? playbackQuality,
+    YoutubeError? error,
+    YoutubeMetaData? metaData,
+  }) {
+    final updatedValue = YoutubePlayerValue(
+      isReady: isReady ?? value.isReady,
+      hasPlayed: hasPlayed ?? value.hasPlayed,
+      position: position ?? value.position,
+      buffered: buffered ?? value.buffered,
+      isFullScreen: isFullScreen ?? value.isFullScreen,
+      volume: volume ?? value.volume,
+      playerState: playerState ?? value.playerState,
+      playbackRate: playbackRate ?? value.playbackRate,
+      playbackQuality: playbackQuality ?? value.playbackQuality,
+      error: error ?? value.error,
+      metaData: metaData ?? value.metaData,
+    );
+
+    _valueController.add(updatedValue);
+    _valueController.onListen = () {
+      print(';o');
+    };
+  }
 
   /// Listen to updates in [YoutubePlayerController].
   StreamSubscription<YoutubePlayerValue> listen(

@@ -62,36 +62,6 @@ class YoutubePlayerValue {
   /// Returns meta data of the currently loaded/cued video.
   final YoutubeMetaData metaData;
 
-  /// Creates new [YoutubePlayerValue] with assigned parameters and overrides
-  /// the old one.
-  YoutubePlayerValue copyWith({
-    bool? isReady,
-    bool? hasPlayed,
-    Duration? position,
-    double? buffered,
-    bool? isFullScreen,
-    int? volume,
-    PlayerState? playerState,
-    double? playbackRate,
-    String? playbackQuality,
-    YoutubeError? error,
-    YoutubeMetaData? metaData,
-  }) {
-    return YoutubePlayerValue(
-      isReady: isReady ?? this.isReady,
-      hasPlayed: hasPlayed ?? this.hasPlayed,
-      position: position ?? this.position,
-      buffered: buffered ?? this.buffered,
-      isFullScreen: isFullScreen ?? this.isFullScreen,
-      volume: volume ?? this.volume,
-      playerState: playerState ?? this.playerState,
-      playbackRate: playbackRate ?? this.playbackRate,
-      playbackQuality: playbackQuality ?? this.playbackQuality,
-      error: error ?? this.error,
-      metaData: metaData ?? this.metaData,
-    );
-  }
-
   @override
   String toString() {
     return '$runtimeType('
