@@ -4,8 +4,6 @@ import 'dart:convert';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
-import 'youtube_player_controller.dart';
-
 class YoutubePlayerEventHandler {
   ///
   YoutubePlayerEventHandler(this.controller) {

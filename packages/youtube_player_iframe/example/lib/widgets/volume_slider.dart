@@ -31,7 +31,7 @@ class VolumeSlider extends StatelessWidget {
                 label: '$volume',
                 onChanged: (value) {
                   _volume.value = value.round();
-                  //context.ytController.setVolume(volume);
+                  context.ytController.setVolume(volume);
                 },
               );
             },
