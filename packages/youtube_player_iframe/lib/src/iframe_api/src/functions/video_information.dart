@@ -5,11 +5,11 @@ abstract class VideoInformation {
 
   Future<VideoData> get videoData;
 
-  double get videoEmbedCode;
+  Future<double> get videoEmbedCode;
 
-  List<String> get playlist;
+  Future<List<String>> get playlist;
 
-  int get playlistIndex;
+  Future<int> get playlistIndex;
 }
 
 class VideoData {

@@ -180,6 +180,13 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     );
   }
 
+  Future<String> _eval(String javascript) async {
+    await _eventHandler.isReady;
+
+    final controller = await _webViewControllerCompleter.future;
+    return controller.runJavascriptReturningResult(javascript);
+  }
+
   Future<String> _prepareData(Map<String, dynamic>? data) async {
     await _eventHandler.isReady;
     return data == null ? '' : jsonEncode(data);
@@ -278,28 +285,26 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   }
 
   @override
-  // TODO: implement playlist
-  List<String> get playlist => throw UnimplementedError();
+  Future<List<String>> get playlist async {
+    final playlist = await _eval('getPlaylist()');
+
+    return List.from(jsonDecode(playlist));
+  }
 
   @override
   // TODO: implement playlistIndex
-  int get playlistIndex => throw UnimplementedError();
+  Future<int> get playlistIndex => throw UnimplementedError();
 
   @override
   Future<VideoData> get videoData async {
-    await _eventHandler.isReady;
-
-    final controller = await _webViewControllerCompleter.future;
-    final videoData = await controller.runJavascriptReturningResult(
-      'getVideoData()',
-    );
+    final videoData = await _eval('getVideoData()');
 
     return VideoData.fromMap(jsonDecode(videoData));
   }
 
   @override
   // TODO: implement videoEmbedCode
-  double get videoEmbedCode => throw UnimplementedError();
+  Future<double> get videoEmbedCode => throw UnimplementedError();
 
   @override
   // TODO: implement videoUrl
