@@ -180,7 +180,14 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     );
   }
 
-  Future<String> _eval(String javascript) async {
+  Future<void> _eval(String javascript) async {
+    await _eventHandler.isReady;
+
+    final controller = await _webViewControllerCompleter.future;
+    return controller.runJavascript(javascript);
+  }
+
+  Future<String> _evalWithResult(String javascript) async {
     await _eventHandler.isReady;
 
     final controller = await _webViewControllerCompleter.future;
@@ -286,7 +293,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
 
   @override
   Future<List<String>> get playlist async {
-    final playlist = await _eval('getPlaylist()');
+    final playlist = await _evalWithResult('getPlaylist()');
 
     return List.from(jsonDecode(playlist));
   }
@@ -300,7 +307,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
 
   @override
   Future<VideoData> get videoData async {
-    final videoData = await _eval('getVideoData()');
+    final videoData = await _evalWithResult('getVideoData()');
 
     return VideoData.fromMap(jsonDecode(videoData));
   }
@@ -313,5 +320,41 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   @override
   Future<String> get videoUrl {
     return _runWithResult('getVideoUrl');
+  }
+
+  @override
+  Future<List<double>> get availablePlaybackRates async {
+    final rates = await _evalWithResult('getAvailablePlaybackRates()');
+
+    return List<num>.from(jsonDecode(rates))
+        .map((r) => r.toDouble())
+        .toList(growable: false);
+  }
+
+  @override
+  Future<double> get playbackRate async {
+    final rate = await _runWithResult('getPlaybackRate');
+
+    return double.tryParse(rate) ?? 0;
+  }
+
+  @override
+  Future<void> setLoop({required bool loopPlaylists}) {
+    return _eval('player.setLoop($loopPlaylists)');
+  }
+
+  @override
+  Future<void> setPlaybackRate(double suggestedRate) {
+    return _eval('player.setPlaybackRate($suggestedRate)');
+  }
+
+  @override
+  Future<void> setShuffle({required bool shufflePlaylists}) {
+    return _eval('player.setShuffle($shufflePlaylists)');
+  }
+
+  @override
+  Future<void> setSize(double width, double height) {
+    return _eval('player.setSize($width, $height)');
   }
 }
