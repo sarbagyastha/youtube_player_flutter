@@ -1,11 +1,39 @@
 abstract class VideoInformation {
-  double get duration;
+  Future<double> get duration;
 
-  double get videoUrl;
+  Future<String> get videoUrl;
+
+  Future<VideoData> get videoData;
 
   double get videoEmbedCode;
 
   List<String> get playlist;
 
   int get playlistIndex;
+}
+
+class VideoData {
+  VideoData({
+    required this.videoId,
+    required this.author,
+    required this.title,
+    required this.videoQuality,
+    required this.videoQualityFeatures,
+  });
+
+  final String videoId;
+  final String author;
+  final String title;
+  final String videoQuality;
+  final List<Object> videoQualityFeatures;
+
+  factory VideoData.fromMap(Map<String, dynamic> map) {
+    return VideoData(
+      videoId: map['video_id'] ?? '',
+      author: map['author'] ?? '',
+      title: map['title'] ?? '',
+      videoQuality: map['videoQuality'] ?? '',
+      videoQualityFeatures: List.from(map['videoQualityFeatures'] ?? []),
+    );
+  }
 }

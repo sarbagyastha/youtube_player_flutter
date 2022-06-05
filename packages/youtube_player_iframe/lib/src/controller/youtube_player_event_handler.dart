@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:webview_flutter/webview_flutter.dart';
-import 'package:youtube_player_iframe/src/iframe_api/src/functions/playback_status.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 import 'youtube_player_controller.dart';
@@ -41,7 +40,7 @@ class YoutubePlayerEventHandler {
     if (!_readyCompleter.isCompleted) _readyCompleter.complete();
   }
 
-  void onStateChange(Object data) {
+  Future<void> onStateChange(Object data) async {
     final stateCode = data as int;
 
     final playerState = PlayerState.values.firstWhere(
@@ -51,6 +50,18 @@ class YoutubePlayerEventHandler {
 
     if (playerState == PlayerState.playing) {
       controller.update(playerState: playerState, error: YoutubeError.none);
+
+      final duration = await controller.duration;
+      final videoData = await controller.videoData;
+
+      final metaData = YoutubeMetaData(
+        duration: Duration(milliseconds: (duration * 1000).truncate()),
+        videoId: videoData.videoId,
+        author: videoData.author,
+        title: videoData.title,
+      );
+
+      controller.update(metaData: metaData);
     } else {
       controller.update(playerState: playerState);
     }
@@ -61,15 +72,20 @@ class YoutubePlayerEventHandler {
   }
 
   void onPlaybackRateChange(Object data) {
-    // TODO: implement onPlaybackRateChange
+    controller.update(playbackRate: (data as num).toDouble());
   }
 
   void onApiChange(Object data) {
-    // TODO: implement onApiChange
+    print(data);
   }
 
   void onError(Object data) {
-    // TODO: implement onError
+    final error = YoutubeError.values.firstWhere(
+      (error) => error.code == data,
+      orElse: () => YoutubeError.unknown,
+    );
+
+    controller.update(error: error);
   }
 
   Future<void> get isReady => _readyCompleter.future;

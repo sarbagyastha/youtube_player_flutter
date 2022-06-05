@@ -89,6 +89,10 @@
            YoutubePlayer.postMessage(messageString, '*');
          }
       }
+
+      function getVideoData() {
+        return JSON.stringify(player.getVideoData());
+      }
     </script>
   </body>
 </html>

@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:youtube_player_iframe/src/iframe_api/src/functions/video_information.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 import '../player_value.dart';
@@ -161,14 +162,27 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     String functionName, {
     Map<String, dynamic>? data,
   }) async {
-    await _eventHandler.isReady;
-
+    final varArgs = await _prepareData(data);
     final controller = await _webViewControllerCompleter.future;
-    final varArgs = data == null ? '' : jsonEncode(data);
-
-    print('player.$functionName($varArgs);');
 
     return controller.runJavascript('player.$functionName($varArgs);');
+  }
+
+  Future<String> _runWithResult(
+    String functionName, {
+    Map<String, dynamic>? data,
+  }) async {
+    final varArgs = await _prepareData(data);
+    final controller = await _webViewControllerCompleter.future;
+
+    return controller.runJavascriptReturningResult(
+      'player.$functionName($varArgs);',
+    );
+  }
+
+  Future<String> _prepareData(Map<String, dynamic>? data) async {
+    await _eventHandler.isReady;
+    return data == null ? '' : jsonEncode(data);
   }
 
   /// MetaData for the currently loaded or cued video.
@@ -259,4 +273,38 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
         ? 'https://i3.ytimg.com/vi_webp/$videoId/$quality.webp'
         : 'https://i3.ytimg.com/vi/$videoId/$quality.jpg';
   }
+
+  @override
+  Future<double> get duration async {
+    final duration = await _runWithResult('getDuration');
+    return double.tryParse(duration) ?? 0;
+  }
+
+  @override
+  // TODO: implement playlist
+  List<String> get playlist => throw UnimplementedError();
+
+  @override
+  // TODO: implement playlistIndex
+  int get playlistIndex => throw UnimplementedError();
+
+  @override
+  Future<VideoData> get videoData async {
+    await _eventHandler.isReady;
+
+    final controller = await _webViewControllerCompleter.future;
+    final videoData = await controller.runJavascriptReturningResult(
+      'getVideoData()',
+    );
+
+    return VideoData.fromMap(jsonDecode(videoData));
+  }
+
+  @override
+  // TODO: implement videoEmbedCode
+  double get videoEmbedCode => throw UnimplementedError();
+
+  @override
+  // TODO: implement videoUrl
+  Future<String> get videoUrl => throw UnimplementedError();
 }
