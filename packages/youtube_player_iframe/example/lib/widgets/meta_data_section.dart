@@ -79,8 +79,8 @@ class _Text extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return RichText(
-      text: TextSpan(
+    return Text.rich(
+      TextSpan(
         text: '$title : ',
         style: const TextStyle(
           fontWeight: FontWeight.bold,

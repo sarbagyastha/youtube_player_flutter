@@ -100,67 +100,15 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
 
   @override
   Widget build(BuildContext context) {
-    final player = YoutubePlayerIFrame(controller: _controller);
     return YoutubePlayerControllerProvider(
       // Passing controller to widgets below.
       controller: _controller,
       child: Scaffold(
         body: LayoutBuilder(
           builder: (context, constraints) {
-            if (kIsWeb && constraints.maxWidth > 800) {
-              return Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(child: player),
-                  const SizedBox(
-                    width: 500,
-                    child: SingleChildScrollView(
-                      child: Controls(),
-                    ),
-                  ),
-                ],
-              );
-            }
             return ListView(
               children: [
-                Stack(
-                  children: [
-                    player,
-                    /*Positioned.fill(
-                      child: YoutubeValueBuilder(
-                        controller: _controller,
-                        builder: (context, value) {
-                          return AnimatedCrossFade(
-                            firstChild: const SizedBox.shrink(),
-                            secondChild: Material(
-                              child: DecoratedBox(
-                                decoration: BoxDecoration(
-                                  image: DecorationImage(
-                                    image: NetworkImage(
-                                      YoutubePlayerController.getThumbnail(
-                                        videoId:
-                                            _controller.params.playlist.first,
-                                        quality: ThumbnailQuality.medium,
-                                      ),
-                                    ),
-                                    fit: BoxFit.fitWidth,
-                                  ),
-                                ),
-                                child: const Center(
-                                  child: CircularProgressIndicator(),
-                                ),
-                              ),
-                            ),
-                            crossFadeState: value.isReady
-                                ? CrossFadeState.showFirst
-                                : CrossFadeState.showSecond,
-                            duration: const Duration(milliseconds: 300),
-                          );
-                        },
-                      ),
-                    ),*/
-                  ].take(1).toList(),
-                ),
+                YoutubePlayerIFrame(controller: _controller),
                 const Controls(),
               ],
             );

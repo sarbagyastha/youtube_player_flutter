@@ -79,9 +79,7 @@ class YoutubePlayerEventHandler {
     controller.update(playbackRate: (data as num).toDouble());
   }
 
-  void onApiChange(Object? data) {
-    print(data);
-  }
+  void onApiChange(Object? data) {}
 
   void onError(Object data) {
     final error = YoutubeError.values.firstWhere(
