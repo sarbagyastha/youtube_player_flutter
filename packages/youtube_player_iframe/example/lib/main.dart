@@ -84,6 +84,7 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
         '34_PXCzGw1M',
       ],
       listType: ListType.playlist,
+      startSeconds: 136,
     );
     // _controller.onEnterFullscreen = () {
     //   SystemChrome.setPreferredOrientations([

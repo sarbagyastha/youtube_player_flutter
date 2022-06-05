@@ -57,7 +57,7 @@ class YoutubePlayerEventHandler {
   }
 
   void onPlaybackQualityChange(Object data) {
-    // TODO: implement onPlaybackQualityChange
+    controller.update(playbackQuality: data as String);
   }
 
   void onPlaybackRateChange(Object data) {
