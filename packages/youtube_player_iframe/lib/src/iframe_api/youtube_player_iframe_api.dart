@@ -1,4 +1,5 @@
 import 'package:youtube_player_iframe/src/iframe_api/src/functions/playback_controls.dart';
+import 'package:youtube_player_iframe/src/iframe_api/src/functions/playback_status.dart';
 import 'package:youtube_player_iframe/src/iframe_api/src/functions/player_settings.dart';
 import 'package:youtube_player_iframe/src/iframe_api/src/functions/video_information.dart';
 
@@ -11,4 +12,5 @@ abstract class YoutubePlayerIFrameAPI
         QueueingFunctions,
         VideoInformation,
         PlayerSettings,
-        PlaybackControls {}
+        PlaybackControls,
+        PlaybackStatus {}

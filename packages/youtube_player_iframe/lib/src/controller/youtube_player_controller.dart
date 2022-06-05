@@ -421,4 +421,28 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
 
     return int.tryParse(volume) ?? 0;
   }
+
+  @override
+  Future<double> get currentTime async {
+    final time = await _runWithResult('getCurrentTime');
+
+    return double.tryParse(time) ?? 0;
+  }
+
+  @override
+  Future<PlayerState> get playerState async {
+    final stateCode = await _runWithResult('getPlayerState');
+
+    return PlayerState.values.firstWhere(
+      (state) => state.code.toString() == stateCode,
+      orElse: () => PlayerState.unknown,
+    );
+  }
+
+  @override
+  Future<double> get videoLoadedFraction async {
+    final loadedFraction = await _runWithResult('getVideoLoadedFraction');
+
+    return double.tryParse(loadedFraction) ?? 0;
+  }
 }
