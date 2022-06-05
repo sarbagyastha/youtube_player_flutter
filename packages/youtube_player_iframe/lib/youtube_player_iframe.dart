@@ -5,12 +5,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-
-import 'src/controller.dart';
-import 'src/helpers/youtube_value_provider.dart';
-
-import 'src/players/youtube_player_mobile.dart'
-    if (dart.library.html) 'src/players/youtube_player_web.dart';
+import 'package:webview_flutter/webview_flutter.dart';
+import 'package:youtube_player_iframe/src/controller/youtube_player_controller.dart';
 
 export 'src/controller.dart';
 export 'src/enums/playback_rate.dart';
@@ -24,7 +20,7 @@ export 'src/meta_data.dart';
 export 'src/player_params.dart';
 
 /// A widget to play or stream Youtube Videos.
-class YoutubePlayerIFrame extends StatelessWidget {
+class YoutubePlayerIFrame extends StatefulWidget {
   /// The [controller] for this player.
   final YoutubePlayerController? controller;
 
@@ -53,12 +49,31 @@ class YoutubePlayerIFrame extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<YoutubePlayerIFrame> createState() => _YoutubePlayerIFrameState();
+}
+
+class _YoutubePlayerIFrameState extends State<YoutubePlayerIFrame> {
+  late final YoutubePlayerController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = widget.controller ?? YoutubePlayerController();
+    _controller.loadVideoById(videoId: 'HoCwa6gnmM0');
+  }
+
+  @override
   Widget build(BuildContext context) {
     return AspectRatio(
-      aspectRatio: aspectRatio,
-      child: RawYoutubePlayer(
-        controller: controller ?? context.ytController,
-        gestureRecognizers: gestureRecognizers,
+      aspectRatio: widget.aspectRatio,
+      child: WebView(
+        javascriptMode: JavascriptMode.unrestricted,
+        allowsInlineMediaPlayback: true,
+        initialMediaPlaybackPolicy: AutoMediaPlaybackPolicy.always_allow,
+        onWebResourceError: print,
+        onWebViewCreated: _controller.load,
+        javascriptChannels: _controller.javaScriptChannels,
+        zoomEnabled: false,
       ),
     );
   }

@@ -12,9 +12,13 @@ dependencies:
   flutter:
     sdk: flutter
 
-  flutter_inappwebview: ^5.4.3+7
+  webview_flutter:
   url_launcher: ^6.1.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
+flutter:
+  assets:
+    - assets/player.html

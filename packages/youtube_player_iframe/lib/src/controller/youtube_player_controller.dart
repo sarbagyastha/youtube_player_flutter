@@ -126,7 +126,9 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     String? baseUrl,
   }) async {
     _webViewControllerCompleter.complete(controller);
-    final playerHtml = await rootBundle.loadString('assets/player.html');
+    final playerHtml = await rootBundle.loadString(
+      'packages/youtube_player_iframe/assets/player.html',
+    );
 
     await controller.loadHtmlString(
       playerHtml.replaceFirst('<<playerVars>>', "{'playsinline': 1}"),

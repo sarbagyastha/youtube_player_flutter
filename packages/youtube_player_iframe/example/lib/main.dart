@@ -144,7 +144,7 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
                         },
                       ),
                     ),
-                  ],
+                  ].take(1).toList(),
                 ),
                 const Controls(),
               ],
