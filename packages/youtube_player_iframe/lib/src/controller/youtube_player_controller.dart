@@ -206,7 +206,6 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   /// Creates new [YoutubePlayerValue] with assigned parameters and overrides
   /// the old one.
   void update({
-    bool? isReady,
     bool? hasPlayed,
     Duration? position,
     double? buffered,
@@ -219,7 +218,6 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     YoutubeMetaData? metaData,
   }) {
     final updatedValue = YoutubePlayerValue(
-      isReady: isReady ?? value.isReady,
       hasPlayed: hasPlayed ?? value.hasPlayed,
       position: position ?? value.position,
       buffered: buffered ?? value.buffered,

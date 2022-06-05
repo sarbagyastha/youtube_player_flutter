@@ -56,7 +56,7 @@ class MetaDataSection extends StatelessWidget {
                           .toList(),
                       onChanged: (double? newValue) {
                         if (newValue != null) {
-                          //context.ytController.setPlaybackRate(newValue);
+                          context.ytController.setPlaybackRate(newValue);
                         }
                       },
                     );

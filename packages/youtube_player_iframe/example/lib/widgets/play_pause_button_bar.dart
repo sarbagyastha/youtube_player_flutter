@@ -10,8 +10,7 @@ class PlayPauseButtonBar extends StatelessWidget {
   final ValueNotifier<bool> _isMuted = ValueNotifier(false);
   @override
   Widget build(BuildContext context) {
-    return Container();
-    /*return Row(
+    return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         IconButton(
@@ -26,13 +25,11 @@ class PlayPauseButtonBar extends StatelessWidget {
                     ? Icons.pause
                     : Icons.play_arrow,
               ),
-              onPressed: value.isReady
-                  ? () {
-                      value.playerState == PlayerState.playing
-                          ? context.ytController.pause()
-                          : context.ytController.play();
-                    }
-                  : null,
+              onPressed: () {
+                value.playerState == PlayerState.playing
+                    ? context.ytController.pauseVideo()
+                    : context.ytController.playVideo();
+              },
             );
           },
         ),
@@ -55,6 +52,6 @@ class PlayPauseButtonBar extends StatelessWidget {
           onPressed: context.ytController.nextVideo,
         ),
       ],
-    );*/
+    );
   }
 }

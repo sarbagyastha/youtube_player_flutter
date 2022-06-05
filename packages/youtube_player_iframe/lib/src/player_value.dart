@@ -11,7 +11,6 @@ class YoutubePlayerValue {
   /// The duration, current position, buffering state, error state and settings
   /// of a [YoutubePlayerController].
   YoutubePlayerValue({
-    this.isReady = false,
     this.hasPlayed = false,
     this.position = const Duration(),
     this.buffered = 0.0,
@@ -23,9 +22,6 @@ class YoutubePlayerValue {
     this.error = YoutubeError.none,
     this.metaData = const YoutubeMetaData(),
   });
-
-  /// Returns true when the player is ready to play videos.
-  final bool isReady;
 
   /// Returns true once the video start playing for the first time.
   final bool hasPlayed;
@@ -66,7 +62,6 @@ class YoutubePlayerValue {
   String toString() {
     return '$runtimeType('
         'metaData: ${metaData.toString()}, '
-        'isReady: $isReady, '
         'position: ${position.inSeconds} sec. , '
         'buffered: $buffered , '
         'volume: $volume, '
