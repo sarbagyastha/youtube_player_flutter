@@ -4,7 +4,7 @@
 
 import 'package:flutter/widgets.dart';
 
-import '../controller.dart';
+import '../controller/youtube_player_controller.dart';
 
 /// An inherited widget to provide [YoutubePlayerController] to it's descendants.
 class YoutubePlayerControllerProvider extends InheritedWidget {

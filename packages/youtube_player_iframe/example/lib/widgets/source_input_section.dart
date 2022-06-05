@@ -13,7 +13,7 @@ class SourceInputSection extends StatefulWidget {
 
 class _SourceInputSectionState extends State<SourceInputSection> {
   late TextEditingController _textController;
-  String? _playlistType;
+  ListType? _playlistType;
 
   @override
   void initState() {
@@ -60,16 +60,16 @@ class _SourceInputSectionState extends State<SourceInputSection> {
                 _Button(
                   action: 'LOAD',
                   onTap: () {
-                    context.ytController.load(
-                      _cleanId(_textController.text) ?? '',
+                    context.ytController.loadVideoById(
+                      videoId: _cleanId(_textController.text) ?? '',
                     );
                   },
                 ),
                 _Button(
                   action: 'CUE',
                   onTap: () {
-                    context.ytController.cue(
-                      _cleanId(_textController.text) ?? '',
+                    context.ytController.cueVideoById(
+                      videoId: _cleanId(_textController.text) ?? '',
                     );
                   },
                 ),
@@ -79,7 +79,7 @@ class _SourceInputSectionState extends State<SourceInputSection> {
                       ? null
                       : () {
                           context.ytController.loadPlaylist(
-                            _textController.text,
+                            list: [_textController.text],
                             listType: _playlistType!,
                           );
                         },
@@ -90,7 +90,7 @@ class _SourceInputSectionState extends State<SourceInputSection> {
                       ? null
                       : () {
                           context.ytController.cuePlaylist(
-                            _textController.text,
+                            list: [_textController.text],
                             listType: _playlistType!,
                           );
                         },
@@ -105,26 +105,24 @@ class _SourceInputSectionState extends State<SourceInputSection> {
 
   String? get _helperText {
     switch (_playlistType) {
-      case PlaylistType.search:
-        return '"avengers trailer", "nepali songs"';
-      case PlaylistType.playlist:
+      case ListType.playlist:
         return '"PLj0L3ZL0ijTdhFSueRKK-mLFAtDuvzdje", ...';
-      case PlaylistType.channel:
+      case ListType.userUploads:
         return '"pewdiepie", "tseries"';
+      default:
+        return null;
     }
-    return null;
   }
 
   String get _hint {
     switch (_playlistType) {
-      case PlaylistType.search:
-        return 'Enter keywords to search';
-      case PlaylistType.playlist:
+      case ListType.playlist:
         return 'Enter playlist id';
-      case PlaylistType.channel:
+      case ListType.userUploads:
         return 'Enter channel name';
+      default:
+        return 'Enter youtube \<video id\> or \<link\>';
     }
-    return 'Enter youtube \<video id\> or \<link\>';
   }
 
   String? _cleanId(String source) {
@@ -170,27 +168,27 @@ class _PlaylistTypeDropDown extends StatefulWidget {
     required this.onChanged,
   }) : super(key: key);
 
-  final ValueChanged<String> onChanged;
+  final ValueChanged<ListType> onChanged;
 
   @override
   _PlaylistTypeDropDownState createState() => _PlaylistTypeDropDownState();
 }
 
 class _PlaylistTypeDropDownState extends State<_PlaylistTypeDropDown> {
-  String? _playlistType;
+  ListType? _playlistType;
 
   @override
   Widget build(BuildContext context) {
-    return DropdownButton<String>(
+    return DropdownButton<ListType>(
       isExpanded: true,
       hint: const Text(
         ' -- Choose playlist type',
         style: TextStyle(fontWeight: FontWeight.w400),
       ),
       value: _playlistType,
-      items: PlaylistType.all
+      items: ListType.values
           .map(
-            (type) => DropdownMenuItem(child: Text(type), value: type),
+            (type) => DropdownMenuItem(child: Text(type.value), value: type),
           )
           .toList(),
       onChanged: (value) {

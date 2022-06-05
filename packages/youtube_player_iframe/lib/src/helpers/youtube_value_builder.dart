@@ -7,7 +7,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 
-import '../controller.dart';
+import '../controller/youtube_player_controller.dart';
 import '../player_value.dart';
 import 'youtube_value_provider.dart';
 

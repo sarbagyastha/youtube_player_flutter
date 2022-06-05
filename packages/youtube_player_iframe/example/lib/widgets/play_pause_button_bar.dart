@@ -10,7 +10,8 @@ class PlayPauseButtonBar extends StatelessWidget {
   final ValueNotifier<bool> _isMuted = ValueNotifier(false);
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Container();
+    /*return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         IconButton(
@@ -54,6 +55,6 @@ class PlayPauseButtonBar extends StatelessWidget {
           onPressed: context.ytController.nextVideo,
         ),
       ],
-    );
+    );*/
   }
 }

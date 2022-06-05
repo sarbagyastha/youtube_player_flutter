@@ -8,10 +8,10 @@ import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:youtube_player_iframe/src/controller/youtube_player_controller.dart';
 
-export 'src/controller.dart';
+export 'package:youtube_player_iframe/src/controller/youtube_player_controller.dart';
+export 'package:youtube_player_iframe/src/iframe_api/youtube_player_iframe_api.dart';
 export 'src/enums/playback_rate.dart';
 export 'src/enums/player_state.dart';
-export 'src/enums/playlist_type.dart';
 export 'src/enums/thumbnail_quality.dart';
 export 'src/enums/youtube_error.dart';
 export 'src/helpers/youtube_value_builder.dart';
@@ -71,7 +71,7 @@ class _YoutubePlayerIFrameState extends State<YoutubePlayerIFrame> {
         allowsInlineMediaPlayback: true,
         initialMediaPlaybackPolicy: AutoMediaPlaybackPolicy.always_allow,
         onWebResourceError: print,
-        onWebViewCreated: _controller.load,
+        onWebViewCreated: _controller.init,
         javascriptChannels: _controller.javaScriptChannels,
         zoomEnabled: false,
       ),

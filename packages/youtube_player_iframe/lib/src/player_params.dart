@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
-import 'package:youtube_player_iframe/src/controller.dart';
 
 /// Defines player parameters for [YoutubePlayer].
 class YoutubePlayerParams {
@@ -104,12 +105,6 @@ class YoutubePlayerParams {
   /// Specify your domain as the value.
   final String origin;
 
-  /// This parameter specifies a list of video IDs to play.
-  ///
-  /// If you specify a value, the first video that plays will be the [YoutubePlayerController.initialVideoId],
-  /// and the videos specified in the playlist parameter will play thereafter.
-  final List<String> playlist;
-
   /// This parameter controls whether videos play inline or fullscreen in an HTML5 player on iOS.
   ///
   /// Default is true.
@@ -164,7 +159,6 @@ class YoutubePlayerParams {
     this.showVideoAnnotations = true,
     this.loop = false,
     this.origin = 'https://www.youtube.com',
-    this.playlist = const [],
     this.playsInline = true,
     this.strictRelatedVideos = false,
     this.startAt = Duration.zero,
@@ -172,4 +166,10 @@ class YoutubePlayerParams {
     this.privacyEnhanced = false,
     this.useHybridComposition = true,
   });
+
+  Map<String, dynamic> toMap() {
+    return {};
+  }
+
+  String toJson() => jsonEncode(toMap());
 }
