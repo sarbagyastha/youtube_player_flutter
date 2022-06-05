@@ -88,15 +88,11 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
       // Passing controller to widgets below.
       controller: _controller,
       child: Scaffold(
-        body: LayoutBuilder(
-          builder: (context, constraints) {
-            return ListView(
-              children: [
-                YoutubePlayerIFrame(controller: _controller),
-                const Controls(),
-              ],
-            );
-          },
+        body: ListView(
+          children: [
+            YoutubePlayerIFrame(controller: _controller),
+            const Controls(),
+          ],
         ),
       ),
     );
