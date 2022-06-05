@@ -22,7 +22,8 @@ class WebWebViewPlatform implements WebViewPlatform {
         ..id = 'webview-$viewId'
         ..width = '100%'
         ..height = '100%'
-        ..style.border = 'none',
+        ..style.border = 'none'
+        ..allow = 'autoplay;fullscreen',
     );
   }
 
