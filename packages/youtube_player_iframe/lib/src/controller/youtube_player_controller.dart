@@ -13,6 +13,7 @@ import '../web_registrar/register_web_webview_stub.dart'
 import 'youtube_player_event_handler.dart';
 
 class YoutubePlayerController implements YoutubePlayerIFrameAPI {
+  ///
   YoutubePlayerController() {
     registerWebViewWebImplementation();
     _eventHandler = YoutubePlayerEventHandler(this);
@@ -356,5 +357,68 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   @override
   Future<void> setSize(double width, double height) {
     return _eval('player.setSize($width, $height)');
+  }
+
+  @override
+  Future<bool> get isMuted async {
+    final isMuted = await _runWithResult('isMuted');
+    return isMuted == '1';
+  }
+
+  @override
+  Future<void> mute() {
+    return _run('mute');
+  }
+
+  @override
+  Future<void> nextVideo() {
+    return _run('nextVideo');
+  }
+
+  @override
+  Future<void> pauseVideo() {
+    return _run('pauseVideo');
+  }
+
+  @override
+  Future<void> playVideo() {
+    return _run('playVideo');
+  }
+
+  @override
+  Future<void> playVideoAt(int index) {
+    return _eval('player.playVideoAt($index)');
+  }
+
+  @override
+  Future<void> previousVideo() {
+    return _run('previousVideo');
+  }
+
+  @override
+  Future<void> seekTo({required double seconds, bool allowSeekAhead = false}) {
+    return _eval('player.seekTo($seconds, $allowSeekAhead)');
+  }
+
+  @override
+  Future<void> setVolume(int volume) {
+    return _eval('player.setVolume($volume)');
+  }
+
+  @override
+  Future<void> stopVideo() {
+    return _run('stopVideo');
+  }
+
+  @override
+  Future<void> unMute() {
+    return _run('unMute');
+  }
+
+  @override
+  Future<int> get volume async {
+    final volume = await _runWithResult('getVolume');
+
+    return int.tryParse(volume) ?? 0;
   }
 }

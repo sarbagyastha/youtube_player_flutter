@@ -57,7 +57,8 @@ class YoutubePlayerEventHandler {
 
       final duration = await controller.duration;
       final videoData = await controller.videoData;
-      await controller.setSize(50, 50);
+      await controller.setVolume(20);
+      print(await controller.volume);
 
       final metaData = YoutubeMetaData(
         duration: Duration(milliseconds: (duration * 1000).truncate()),
