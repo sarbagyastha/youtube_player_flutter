@@ -1,3 +1,10 @@
+# 3.0.0-beta.1
+**Breaking Change**
+- Switched to `webview_flutter`.
+- Better web support.
+- APIs are now identical to that of Youtube Player Iframe API.
+- Exposed all the supported iFrame APIs.
+
 # 2.3.0
 - Upgraded minimum flutter version to `3.0.0`
 - Upgraded example app
