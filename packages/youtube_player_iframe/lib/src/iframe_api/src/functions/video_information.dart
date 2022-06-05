@@ -5,7 +5,7 @@ abstract class VideoInformation {
 
   Future<VideoData> get videoData;
 
-  Future<double> get videoEmbedCode;
+  Future<String> get videoEmbedCode;
 
   Future<List<String>> get playlist;
 

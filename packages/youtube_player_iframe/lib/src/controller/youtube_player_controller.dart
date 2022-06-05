@@ -292,8 +292,11 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   }
 
   @override
-  // TODO: implement playlistIndex
-  Future<int> get playlistIndex => throw UnimplementedError();
+  Future<int> get playlistIndex async {
+    final index = await _runWithResult('getPlaylistIndex');
+
+    return int.tryParse(index) ?? 0;
+  }
 
   @override
   Future<VideoData> get videoData async {
@@ -303,10 +306,12 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   }
 
   @override
-  // TODO: implement videoEmbedCode
-  Future<double> get videoEmbedCode => throw UnimplementedError();
+  Future<String> get videoEmbedCode {
+    return _runWithResult('getVideoEmbedCode');
+  }
 
   @override
-  // TODO: implement videoUrl
-  Future<String> get videoUrl => throw UnimplementedError();
+  Future<String> get videoUrl {
+    return _runWithResult('getVideoUrl');
+  }
 }
