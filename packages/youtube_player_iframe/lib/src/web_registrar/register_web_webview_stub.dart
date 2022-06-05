@@ -1,0 +1,1 @@
+void registerWebViewWebImplementation() {/*no-op*/}

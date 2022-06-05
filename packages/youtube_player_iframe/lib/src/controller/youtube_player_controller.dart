@@ -3,11 +3,15 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+
 import '../iframe_api/youtube_player_iframe_api.dart';
+import '../web_registrar/register_web_webview_stub.dart'
+    if (dart.library.html) '../web_registrar/register_web_webview.dart';
 import 'youtube_player_event_handler.dart';
 
 class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   YoutubePlayerController() {
+    registerWebViewWebImplementation();
     _eventHandler = YoutubePlayerEventHandler(this);
     javaScriptChannels = _eventHandler.javascriptChannels;
   }
