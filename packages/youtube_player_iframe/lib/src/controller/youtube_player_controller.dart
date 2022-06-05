@@ -218,9 +218,6 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     );
 
     _valueController.add(updatedValue);
-    _valueController.onListen = () {
-      print(';o');
-    };
   }
 
   /// Listen to updates in [YoutubePlayerController].

@@ -71,7 +71,22 @@
       }
 
       window.addEventListener('message', (event) => {
-        try { eval(event.data) } catch (e) {}
+        try {
+          var data = JSON.parse(event.data);
+
+          if(data.function){
+            var rawFunction = data.function.replaceAll('<<quote>>', '"');
+            var result = eval(rawFunction);
+
+            if(data.key) {
+              var message = {}
+              message[data.key] = result
+              var messageString = JSON.stringify(message);
+
+              event.source.postMessage(messageString , '*');
+            }
+          }
+        } catch (e) { }
       }, false);
 
       window.onresize = function () {

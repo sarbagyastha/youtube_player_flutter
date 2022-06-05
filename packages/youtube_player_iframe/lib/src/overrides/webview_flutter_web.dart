@@ -1,10 +1,7 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 import 'dart:async';
 import 'dart:convert';
 import 'dart:html';
+import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
@@ -54,16 +51,14 @@ class WebWebViewPlatform implements WebViewPlatform {
           element,
         ));
 
-        window.onMessage.listen((event) {
-          final data = Map.from(jsonDecode(event.data));
-
-          for (final entry in data.entries) {
+        window.onMessage.listen(
+          (event) {
             javascriptChannelRegistry?.onJavascriptChannelMessage(
-              entry.key,
-              jsonEncode(entry.value),
+              'YoutubePlayer',
+              event.data,
             );
-          }
-        });
+          },
+        );
       },
     );
   }
@@ -163,12 +158,39 @@ class WebWebViewPlatformController implements WebViewPlatformController {
 
   @override
   Future<void> runJavascript(String javascript) async {
-    _element.contentWindow?.postMessage(javascript, '*');
+    final function = javascript.replaceAll('"', '<<quote>>');
+    _element.contentWindow?.postMessage(
+      '{"key": null, "function": "$function"}',
+      '*',
+    );
   }
 
   @override
-  Future<String> runJavascriptReturningResult(String javascript) {
-    throw UnimplementedError();
+  Future<String> runJavascriptReturningResult(String javascript) async {
+    final contentWindow = _element.contentWindow;
+    final key = DateTime.now().millisecondsSinceEpoch.toString();
+    final function = javascript.replaceAll('"', '<<quote>>');
+
+    final completer = Completer<String>();
+    final subscription = window.onMessage.listen(
+      (event) {
+        final data = jsonDecode(event.data);
+
+        if (data is Map && data.containsKey(key)) {
+          completer.complete(data[key].toString());
+        }
+      },
+    );
+
+    contentWindow?.postMessage(
+      '{"key": "$key", "function": "$function"}',
+      '*',
+    );
+
+    final result = await completer.future;
+    subscription.cancel();
+
+    return result;
   }
 
   @override
@@ -182,9 +204,7 @@ class WebWebViewPlatformController implements WebViewPlatformController {
   }
 
   @override
-  Future<void> updateSettings(WebSettings setting) {
-    throw UnimplementedError();
-  }
+  Future<void> updateSettings(WebSettings setting) async {}
 
   @override
   Future<void> loadFile(String absoluteFilePath) {

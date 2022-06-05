@@ -14,7 +14,6 @@ class YoutubePlayerEventHandler {
       'StateChange': onStateChange,
       'PlaybackQualityChange': onPlaybackQualityChange,
       'PlaybackRateChange': onPlaybackRateChange,
-      'ApiChange': onApiChange,
       'PlayerError': onError,
     };
 
@@ -23,8 +22,13 @@ class YoutubePlayerEventHandler {
         name: 'YoutubePlayer',
         onMessageReceived: (channel) {
           final data = Map.from(jsonDecode(channel.message));
+
           for (final entry in data.entries) {
-            _events[entry.key]?.call(entry.value);
+            if (entry.key == 'ApiChange') {
+              onApiChange(entry.value);
+            } else {
+              _events[entry.key]?.call(entry.value);
+            }
           }
         },
       ),
@@ -75,7 +79,7 @@ class YoutubePlayerEventHandler {
     controller.update(playbackRate: (data as num).toDouble());
   }
 
-  void onApiChange(Object data) {
+  void onApiChange(Object? data) {
     print(data);
   }
 
