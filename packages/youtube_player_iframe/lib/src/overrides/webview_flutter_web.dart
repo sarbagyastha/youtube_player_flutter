@@ -17,9 +17,9 @@ class WebWebViewPlatform implements WebViewPlatform {
   /// Constructs a new instance of [WebWebViewPlatform].
   WebWebViewPlatform() {
     ui.platformViewRegistry.registerViewFactory(
-      'webview-iframe',
+      'youtube-iframe',
       (int viewId) => IFrameElement()
-        ..id = 'webview-$viewId'
+        ..id = 'youtube-$viewId'
         ..width = '100%'
         ..height = '100%'
         ..style.border = 'none'
@@ -37,21 +37,19 @@ class WebWebViewPlatform implements WebViewPlatform {
     Set<Factory<OneSequenceGestureRecognizer>>? gestureRecognizers,
   }) {
     return HtmlElementView(
-      viewType: 'webview-iframe',
+      viewType: 'youtube-iframe',
       onPlatformViewCreated: (int viewId) {
-        if (onWebViewPlatformCreated == null) {
-          return;
-        }
+        if (onWebViewPlatformCreated == null) return;
+
         final element = document.getElementById(
-          'webview-$viewId',
+          'youtube-$viewId',
         )! as IFrameElement;
+
         if (creationParams.initialUrl != null) {
           // ignore: unsafe_html
           element.src = creationParams.initialUrl;
         }
-        onWebViewPlatformCreated(WebWebViewPlatformController(
-          element,
-        ));
+        onWebViewPlatformCreated(WebWebViewPlatformController(element));
 
         window.onMessage.listen(
           (event) {
