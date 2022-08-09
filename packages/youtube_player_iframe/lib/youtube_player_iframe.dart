@@ -5,11 +5,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart' as uri_launcher;
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:youtube_player_iframe/src/controller/youtube_player_controller.dart';
 
 export 'package:youtube_player_iframe/src/controller/youtube_player_controller.dart';
 export 'package:youtube_player_iframe/src/iframe_api/youtube_player_iframe_api.dart';
+
 export 'src/enums/playback_rate.dart';
 export 'src/enums/player_state.dart';
 export 'src/enums/thumbnail_quality.dart';
@@ -73,7 +75,50 @@ class _YoutubePlayerIFrameState extends State<YoutubePlayerIFrame> {
         onWebViewCreated: _controller.init,
         javascriptChannels: _controller.javaScriptChannels,
         zoomEnabled: false,
+        gestureNavigationEnabled: false,
+        navigationDelegate: (request) {
+          final uri = Uri.tryParse(request.url);
+
+          return _decideNavigation(uri);
+        },
       ),
     );
+  }
+
+  NavigationDecision _decideNavigation(Uri? uri) {
+    if (uri == null) return NavigationDecision.prevent;
+
+    final params = uri.queryParameters;
+    final host = uri.host;
+    final path = uri.path;
+
+    String? featureName;
+    if (host.contains('facebook') ||
+        host.contains('twitter') ||
+        host == 'youtu') {
+      featureName = 'social';
+    } else if (params.containsKey('feature')) {
+      featureName = params['feature'];
+    } else if (path == '/watch') {
+      featureName = 'emb_info';
+    } else if (defaultTargetPlatform == TargetPlatform.iOS) {
+      return NavigationDecision.navigate;
+    }
+
+    switch (featureName) {
+      case 'emb_rel_pause':
+      case 'emb_rel_end':
+      case 'emb_info':
+        final videoId = params['v'];
+        if (videoId != null) _controller.loadVideoById(videoId: videoId);
+        break;
+      case 'emb_logo':
+      case 'social':
+      case 'wl_button':
+        uri_launcher.launchUrl(uri);
+        break;
+    }
+
+    return NavigationDecision.prevent;
   }
 }
