@@ -155,10 +155,12 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     );
 
     final controller = await _webViewControllerCompleter.future;
+    final platform = kIsWeb ? 'web' : defaultTargetPlatform.name.toLowerCase();
+
     await controller.loadHtmlString(
       playerHtml
           .replaceFirst('<<playerVars>>', params.toJson())
-          .replaceFirst('<<isWeb>>', kIsWeb.toString()),
+          .replaceFirst('<<platform>>', platform),
       baseUrl: baseUrl,
     );
   }

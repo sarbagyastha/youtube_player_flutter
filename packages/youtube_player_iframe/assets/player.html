@@ -41,7 +41,7 @@
       var firstScriptTag = document.getElementsByTagName("script")[0];
       firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
-      var isWeb = <<isWeb>>;
+      var platform = "<<platform>>";
       var player;
       function onYouTubeIframeAPIReady() {
         player = new YT.Player("player", {
@@ -98,23 +98,35 @@
          message[key] = data
          var messageString = JSON.stringify(message);
 
-         if(isWeb) {
-           window.parent.postMessage(messageString , '*');
-         } else {
-           YoutubePlayer.postMessage(messageString, '*');
+         switch(platform) {
+           case 'android':
+             YoutubePlayer.postMessage(messageString);
+             break;
+           case 'ios':
+             YoutubePlayer.postMessage(messageString, '*');
+             break;
+           case 'web':
+             window.parent.postMessage(messageString, '*');
+             break;
          }
       }
 
       function getVideoData() {
-        return JSON.stringify(player.getVideoData());
+        return prepareDataForPlatform(player.getVideoData());
       }
 
       function getPlaylist() {
-        return JSON.stringify(player.getPlaylist());
+        return prepareDataForPlatform(player.getPlaylist());
       }
 
       function getAvailablePlaybackRates(){
-        return JSON.stringify(player.getAvailablePlaybackRates());
+        return prepareDataForPlatform(player.getAvailablePlaybackRates());
+      }
+
+      function prepareDataForPlatform(data) {
+        if(platform == 'android') return data;
+
+        return JSON.stringify(data);
       }
     </script>
   </body>
