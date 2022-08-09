@@ -1,3 +1,6 @@
+# 3.0.0-beta.2
+- Fixed issue with videos not playing on Android. 
+
 # 3.0.0-beta.1
 **Breaking Change**
 - Switched to `webview_flutter`.
