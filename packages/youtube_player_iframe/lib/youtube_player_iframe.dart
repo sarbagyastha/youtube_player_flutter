@@ -70,36 +70,22 @@ class _YoutubePlayerScaffoldState extends State<YoutubePlayerScaffold> {
 
     return YoutubePlayerControllerProvider(
       controller: widget.controller,
-      child: Stack(
-        children: [
-          YoutubeValueBuilder(
-            controller: widget.controller,
-            buildWhen: (o, n) => o.fullScreenOption != n.fullScreenOption,
-            builder: (context, value) {
-              return _FullScreen(
-                defaultOrientations: widget.defaultOrientations,
-                fullScreenOption: value.fullScreenOption,
-                child: Builder(
-                  builder: (context) {
-                    if (value.fullScreenOption.enabled) return player;
+      child: YoutubeValueBuilder(
+        controller: widget.controller,
+        buildWhen: (o, n) => o.fullScreenOption != n.fullScreenOption,
+        builder: (context, value) {
+          return _FullScreen(
+            defaultOrientations: widget.defaultOrientations,
+            fullScreenOption: value.fullScreenOption,
+            child: Builder(
+              builder: (context) {
+                if (value.fullScreenOption.enabled) return player;
 
-                    return widget.builder(context, player);
-                  },
-                ),
-              );
-            },
-          ),
-          Center(
-            child: Material(
-              child: IconButton(
-                onPressed: () {
-                  widget.controller.toggleFullScreen();
-                },
-                icon: const Icon(Icons.fullscreen),
-              ),
+                return widget.builder(context, player);
+              },
             ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
@@ -146,14 +132,17 @@ class _FullScreenState extends State<_FullScreen> with WidgetsBindingObserver {
 
     final orientation = MediaQuery.of(context).orientation;
     final controller = YoutubePlayerControllerProvider.of(context);
+    final isFullScreen = controller.value.fullScreenOption.enabled;
 
-    if (orientation == Orientation.landscape) {
+    if (isFullScreen && orientation == Orientation.landscape) {
       controller.enterFullScreen(lock: false);
       Future.delayed(
         const Duration(milliseconds: 500),
         () => SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive),
       );
-    } else {
+    }
+
+    if (!isFullScreen && orientation == Orientation.portrait) {
       controller.exitFullScreen(lock: false);
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     }
@@ -251,22 +240,42 @@ class _YoutubePlayerIFrameState extends State<YoutubePlayerIFrame> {
 
   @override
   Widget build(BuildContext context) {
-    final player = WebView(
-      javascriptMode: JavascriptMode.unrestricted,
-      allowsInlineMediaPlayback: true,
-      initialMediaPlaybackPolicy: AutoMediaPlaybackPolicy.always_allow,
-      onWebResourceError: print,
-      onWebViewCreated: _controller.init,
-      javascriptChannels: _controller.javaScriptChannels,
-      zoomEnabled: false,
-      gestureNavigationEnabled: false,
-      gestureRecognizers: widget.gestureRecognizers,
-      navigationDelegate: (request) {
-        final uri = Uri.tryParse(request.url);
-
-        return _decideNavigation(uri);
-      },
+    Widget player = GestureDetector(
+      onVerticalDragUpdate: _fullscreenGesture,
+      child: WebView(
+        javascriptMode: JavascriptMode.unrestricted,
+        allowsInlineMediaPlayback: true,
+        initialMediaPlaybackPolicy: AutoMediaPlaybackPolicy.always_allow,
+        onWebResourceError: print,
+        onWebViewCreated: _controller.init,
+        javascriptChannels: _controller.javaScriptChannels,
+        zoomEnabled: false,
+        gestureNavigationEnabled: false,
+        gestureRecognizers: widget.gestureRecognizers,
+        navigationDelegate: (request) {
+          final uri = Uri.tryParse(request.url);
+          return _decideNavigation(uri);
+        },
+      ),
     );
+
+    if (_controller.params.showFullscreenButton) {
+      player = Stack(
+        children: [
+          Positioned.fill(child: player),
+          Positioned(
+            bottom: 2,
+            right: 16,
+            width: 40,
+            height: 40,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: _controller.toggleFullScreen,
+            ),
+          ),
+        ],
+      );
+    }
 
     return OrientationBuilder(
       builder: (context, orientation) {
@@ -278,6 +287,16 @@ class _YoutubePlayerIFrameState extends State<YoutubePlayerIFrame> {
         );
       },
     );
+  }
+
+  void _fullscreenGesture(DragUpdateDetails details) {
+    final delta = details.delta.dy;
+
+    if (delta.abs() > 10) {
+      delta.isNegative
+          ? _controller.enterFullScreen()
+          : _controller.exitFullScreen();
+    }
   }
 
   NavigationDecision _decideNavigation(Uri? uri) {
