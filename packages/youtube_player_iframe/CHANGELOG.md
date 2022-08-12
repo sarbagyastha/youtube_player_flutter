@@ -1,3 +1,6 @@
+# 3.0.2
+- Improved pub score.
+
 # 3.0.1
 - Fixed the supported platform in pub.dev
 
