@@ -12,7 +12,7 @@ class YoutubePlayerParams {
   ///
   /// Default is true.
   ///
-  /// Note: auto play might not always work on mobile devices.
+  /// Note: auto play might not always work on mobile devices or when video is not muted at start.
   final bool autoPlay;
 
   /// Mutes the player.
