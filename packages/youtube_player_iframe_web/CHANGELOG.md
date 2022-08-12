@@ -1,3 +1,6 @@
+## 1.0.2
+- Fixed the supported platform.
+
 ## 1.0.1
 - Fixed the supported platform.
 

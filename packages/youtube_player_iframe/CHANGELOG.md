@@ -1,3 +1,6 @@
+# 3.0.1
+- Fixed the supported platform in pub.dev
+
 # 3.0.0
 **Breaking Change**
 - Switched to `webview_flutter`.
