@@ -264,10 +264,18 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     if (!url.contains("http") && (url.length == 11)) return url;
     if (trimWhitespaces) url = url.trim();
 
+    const contentUrlPattern = r'^https:\/\/(?:www\.|m\.)?youtube\.com\/watch\?';
+    const embedUrlPattern =
+        r'^https:\/\/(?:www\.|m\.)?youtube(?:-nocookie)?\.com\/embed\/';
+    const altUrlPattern = r'^https:\/\/youtu\.be\/';
+    const shortsUrlPattern = r'^https:\/\/(?:www\.|m\.)?youtube\.com\/shorts\/';
+    const idPattern = r'([_\-a-zA-Z0-9]{11}).*$';
+
     for (var regex in [
-      r'^https:\/\/(?:www\.|m\.)?youtube\.com\/watch\?v=([_\-a-zA-Z0-9]{11}).*$',
-      r'^https:\/\/(?:www\.|m\.)?youtube(?:-nocookie)?\.com\/embed\/([_\-a-zA-Z0-9]{11}).*$',
-      r'^https:\/\/youtu\.be\/([_\-a-zA-Z0-9]{11}).*$',
+      '${contentUrlPattern}v=$idPattern',
+      '$embedUrlPattern$idPattern',
+      '$altUrlPattern$idPattern',
+      '$shortsUrlPattern$idPattern',
     ]) {
       Match? match = RegExp(regex).firstMatch(url);
       if (match != null && match.groupCount >= 1) return match.group(1);
