@@ -5,10 +5,13 @@ on:
     branches: [ v3 ]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  web-deploy:
+    name: Web Deploy
+    runs-on: macos-latest
 
     steps:
       - uses: actions/checkout@v3
       - uses: subosito/flutter-action@v2
       - uses: AlienKevin/flutter-gh-pages@v11
+        with:
+          workingDir: packages/youtube_player_iframe/example
