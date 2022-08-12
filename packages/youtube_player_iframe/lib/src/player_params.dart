@@ -5,6 +5,7 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 /// Defines player parameters for [YoutubePlayer].
 class YoutubePlayerParams {
@@ -122,7 +123,7 @@ class YoutubePlayerParams {
   /// This means that sometimes the play head may seek to just before the requested time, usually no more than around two seconds.
   final Duration startAt;
 
-  /// Defines player parameters for [YoutubePlayer].
+  /// Defines player parameters for the youtube player.
   const YoutubePlayerParams({
     this.autoPlay = true,
     this.mute = false,
@@ -143,6 +144,7 @@ class YoutubePlayerParams {
     this.startAt = Duration.zero,
   });
 
+  /// Creates [Map] representation of [YoutubePlayerParams].
   Map<String, dynamic> toMap() {
     return {
       'autoplay': _boolean(autoPlay),
@@ -166,6 +168,7 @@ class YoutubePlayerParams {
     };
   }
 
+  /// The serialized JSON representation of the [YoutubePlayerParams].
   String toJson() => jsonEncode(toMap());
 
   int _boolean(bool value) => value ? 1 : 0;

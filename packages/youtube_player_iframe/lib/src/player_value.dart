@@ -72,13 +72,18 @@ class YoutubePlayerValue {
   }
 }
 
+/// The fullscreen option.
 class FullScreenOption {
+  /// Creates [FullScreenOption].
   const FullScreenOption({
     required this.enabled,
     this.locked = false,
   });
 
+  /// Denotes that the fullscreen mode is currently enabled.
   final bool enabled;
+
+  /// Denotes that the fullscreen mode is currently locked for auto update.
   final bool locked;
 
   @override

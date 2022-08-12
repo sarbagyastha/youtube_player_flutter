@@ -111,6 +111,7 @@ abstract class QueueingFunctions {
   });
 }
 
+/// The type of playlist.
 enum ListType {
   /// The list specifies the playlist ID or an array of video IDs.
   /// In the YouTube Data API, the playlist resource's id property identifies a playlist's ID,
@@ -120,7 +121,9 @@ enum ListType {
   /// The list identifies the user whose uploaded videos will be returned.
   userUploads('user_uploads');
 
+  /// The type of playlist.
   const ListType(this.value);
 
+  /// The actual value of the type.
   final String value;
 }
