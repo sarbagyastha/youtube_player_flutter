@@ -1,3 +1,4 @@
+/// The skeleton for playback controls methods.
 abstract class PlaybackControls {
   /// Plays the currently cued/loaded video.
   /// The final player state after this function executes will be playing (1).
@@ -45,19 +46,28 @@ abstract class PlaybackControls {
     bool allowSeekAhead = false,
   });
 
+  /// This function loads and plays the next video in the playlist.
   Future<void> nextVideo();
 
+  /// This function loads and plays the previous video in the playlist.
   Future<void> previousVideo();
 
+  /// This function loads and plays the specified video in the playlist.
   Future<void> playVideoAt(int index);
 
+  /// Mutes the player.
   Future<void> mute();
 
+  /// Unmutes the player.
   Future<void> unMute();
 
+  /// Sets the [volume]. Accepts an integer between 0 and 100.
   Future<void> setVolume(int volume);
 
+  /// Returns true if the player is muted, false if not.
   Future<bool> get isMuted;
 
+  /// Returns the player's current volume, an integer between 0 and 100.
+  /// Note that it will return the volume even if the player is muted.
   Future<int> get volume;
 }

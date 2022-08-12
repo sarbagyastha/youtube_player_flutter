@@ -31,8 +31,10 @@ enum YoutubeError {
   /// Unknown Error
   unknown(-1);
 
+  /// Returns the [YoutubeError] from the given code.
   const YoutubeError(this.code);
 
+  /// Code of the error.
   final int code;
 }
 
