@@ -12,8 +12,13 @@ import '../web_registrar/register_web_webview_stub.dart'
     if (dart.library.html) '../web_registrar/register_web_webview.dart';
 import 'youtube_player_event_handler.dart';
 
+/// Controls the youtube player, and provides updates when the state is changing.
+///
+/// The video is displayed in a Flutter app by creating a [YoutubePlayerIFrame] widget.
+///
+/// After [YoutubePlayerController.close] all further calls are ignored.
 class YoutubePlayerController implements YoutubePlayerIFrameAPI {
-  ///
+  /// Creates [YoutubePlayerController].
   YoutubePlayerController({
     this.params = const YoutubePlayerParams(),
   }) {
@@ -22,11 +27,14 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     javaScriptChannels = _eventHandler.javascriptChannels;
   }
 
+  /// Defines player parameters for the youtube player.
   final YoutubePlayerParams params;
 
   final Completer<WebViewController> _webViewControllerCompleter = Completer();
 
   late final YoutubePlayerEventHandler _eventHandler;
+
+  /// The set of [JavascriptChannel]s available to JavaScript code running in the player iframe.
   late final Set<JavascriptChannel> javaScriptChannels;
 
   final StreamController<YoutubePlayerValue> _valueController =
@@ -36,6 +44,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   /// The [YoutubePlayerValue].
   YoutubePlayerValue get value => _value;
 
+  /// Gets the [WebViewController] for the iframe player.
   Future<WebViewController> get webViewController {
     return _webViewControllerCompleter.future;
   }
@@ -140,12 +149,16 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     );
   }
 
+  /// Loads the player with default [params].
   Future<void> init(WebViewController controller) async {
     await controller.runJavascript('var isWeb = $kIsWeb;');
     _webViewControllerCompleter.complete(controller);
     await load(params: params);
   }
 
+  /// Loads the player with the given [params].
+  ///
+  /// [baseUrl] sets the origin for the iframe player.
   Future<void> load({
     required YoutubePlayerParams params,
     String? baseUrl,
@@ -458,14 +471,23 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     return double.tryParse(loadedFraction) ?? 0;
   }
 
+  /// Enters fullscreen mode.
+  ///
+  /// If [lock] is true, auto rotate will be disabled.
   void enterFullScreen({bool lock = true}) {
     update(fullScreenOption: FullScreenOption(enabled: true, locked: lock));
   }
 
+  /// Exits fullscreen mode.
+  ///
+  /// If [lock] is true, auto rotate will be disabled.
   void exitFullScreen({bool lock = true}) {
     update(fullScreenOption: FullScreenOption(enabled: false, locked: lock));
   }
 
+  /// Toggles fullscreen mode.
+  ///
+  /// If [lock] is true, auto rotate will be disabled.
   void toggleFullScreen({bool lock = true}) {
     if (value.fullScreenOption.enabled) {
       exitFullScreen(lock: lock);
@@ -474,5 +496,6 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     }
   }
 
+  /// Disposes the resources created by [YoutubePlayerController].
   void close() => _valueController.close();
 }
