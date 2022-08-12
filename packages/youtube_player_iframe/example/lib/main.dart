@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
@@ -78,11 +79,30 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
       controller: _controller,
       builder: (context, player) {
         return Scaffold(
-          body: ListView(
-            children: [
-              player,
-              const Controls(),
-            ],
+          body: LayoutBuilder(
+            builder: (context, constraints) {
+              if (kIsWeb && constraints.maxWidth > 750) {
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(flex: 3, child: player),
+                    const Expanded(
+                      flex: 2,
+                      child: SingleChildScrollView(
+                        child: Controls(),
+                      ),
+                    ),
+                  ],
+                );
+              }
+
+              return ListView(
+                children: [
+                  player,
+                  const Controls(),
+                ],
+              );
+            },
           ),
         );
       },
