@@ -14,7 +14,7 @@ class YoutubePlayerValue {
     this.hasPlayed = false,
     this.position = const Duration(),
     this.buffered = 0.0,
-    this.isFullScreen = false,
+    this.fullScreenOption = const FullScreenOption(enabled: false),
     this.volume = 100,
     this.playerState = PlayerState.unknown,
     this.playbackRate = PlaybackRate.normal,
@@ -32,8 +32,8 @@ class YoutubePlayerValue {
   /// The position up to which the video is buffered.i
   final double buffered;
 
-  /// Reports true if video is fullscreen.
-  final bool isFullScreen;
+  /// The initial fullscreen option.
+  final FullScreenOption fullScreenOption;
 
   /// The current volume assigned for the player.
   final int volume;
@@ -70,4 +70,26 @@ class YoutubePlayerValue {
         'playbackQuality: $playbackQuality, '
         'error: $error)';
   }
+}
+
+class FullScreenOption {
+  const FullScreenOption({
+    required this.enabled,
+    this.locked = false,
+  });
+
+  final bool enabled;
+  final bool locked;
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        other is FullScreenOption &&
+            runtimeType == other.runtimeType &&
+            enabled == other.enabled &&
+            locked == other.locked;
+  }
+
+  @override
+  int get hashCode => enabled.hashCode ^ locked.hashCode;
 }

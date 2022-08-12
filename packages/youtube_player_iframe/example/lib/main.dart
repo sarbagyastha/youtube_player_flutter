@@ -70,31 +70,22 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
       listType: ListType.playlist,
       startSeconds: 136,
     );
-    // _controller.onEnterFullscreen = () {
-    //   SystemChrome.setPreferredOrientations([
-    //     DeviceOrientation.landscapeLeft,
-    //     DeviceOrientation.landscapeRight,
-    //   ]);
-    //   log('Entered Fullscreen');
-    // };
-    // _controller.onExitFullscreen = () {
-    //   log('Exited Fullscreen');
-    // };
   }
 
   @override
   Widget build(BuildContext context) {
-    return YoutubePlayerControllerProvider(
-      // Passing controller to widgets below.
+    return YoutubePlayerScaffold(
       controller: _controller,
-      child: Scaffold(
-        body: ListView(
-          children: [
-            YoutubePlayerIFrame(controller: _controller),
-            const Controls(),
-          ],
-        ),
-      ),
+      builder: (context, player) {
+        return Scaffold(
+          body: ListView(
+            children: [
+              player,
+              const Controls(),
+            ],
+          ),
+        );
+      },
     );
   }
 

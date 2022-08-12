@@ -215,7 +215,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     bool? hasPlayed,
     Duration? position,
     double? buffered,
-    bool? isFullScreen,
+    FullScreenOption? fullScreenOption,
     int? volume,
     PlayerState? playerState,
     double? playbackRate,
@@ -227,7 +227,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
       hasPlayed: hasPlayed ?? value.hasPlayed,
       position: position ?? value.position,
       buffered: buffered ?? value.buffered,
-      isFullScreen: isFullScreen ?? value.isFullScreen,
+      fullScreenOption: fullScreenOption ?? value.fullScreenOption,
       volume: volume ?? value.volume,
       playerState: playerState ?? value.playerState,
       playbackRate: playbackRate ?? value.playbackRate,
@@ -448,5 +448,21 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     final loadedFraction = await _runWithResult('getVideoLoadedFraction');
 
     return double.tryParse(loadedFraction) ?? 0;
+  }
+
+  void enterFullScreen({bool lock = true}) {
+    update(fullScreenOption: FullScreenOption(enabled: true, locked: lock));
+  }
+
+  void exitFullScreen({bool lock = true}) {
+    update(fullScreenOption: FullScreenOption(enabled: false, locked: lock));
+  }
+
+  void toggleFullScreen({bool lock = true}) {
+    if (value.fullScreenOption.enabled) {
+      exitFullScreen(lock: lock);
+    } else {
+      enterFullScreen(lock: lock);
+    }
   }
 }

@@ -29,6 +29,14 @@ class YoutubePlayerControllerProvider extends InheritedWidget {
     return controllerProvider!.controller;
   }
 
+  /// Finds the most recent [YoutubePlayerController] in its ancestors.
+  static YoutubePlayerController? maybeOf(BuildContext context) {
+    final controllerProvider = context
+        .dependOnInheritedWidgetOfExactType<YoutubePlayerControllerProvider>();
+
+    return controllerProvider?.controller;
+  }
+
   @override
   bool updateShouldNotify(YoutubePlayerControllerProvider old) =>
       old.controller.hashCode != controller.hashCode;
