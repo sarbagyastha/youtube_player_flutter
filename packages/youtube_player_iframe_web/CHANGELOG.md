@@ -1,3 +1,6 @@
+## 1.0.3
+- Fixed unsupported platform warning.
+
 ## 1.0.2
 - Fixed the supported platform.
 
