@@ -12,6 +12,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: subosito/flutter-action@v2
-      - uses: sarbagyastha/flutter-gh-pages
+      - uses: sarbagyastha/flutter-gh-pages@main
         with:
           workingDir: packages/youtube_player_iframe/example
