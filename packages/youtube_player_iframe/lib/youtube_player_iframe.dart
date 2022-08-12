@@ -24,25 +24,40 @@ export 'src/helpers/youtube_value_provider.dart';
 export 'src/meta_data.dart';
 export 'src/player_params.dart';
 
+/// A widget the scaffolds the [YoutubePlayerIFrame]so that it can be moved around easily in the view
+/// and handles the fullscreen functionality.
 class YoutubePlayerScaffold extends StatefulWidget {
+  /// Creates [YoutubePlayerScaffold].
   const YoutubePlayerScaffold({
     super.key,
-    required this.controller,
     required this.builder,
-    this.defaultOrientations = DeviceOrientation.values,
+    required this.controller,
     this.aspectRatio = 16 / 9,
     this.autoFullScreen = true,
+    this.defaultOrientations = DeviceOrientation.values,
     this.gestureRecognizers,
   });
 
-  final Widget Function(
-    BuildContext context,
-    Widget player,
-  ) builder;
+  /// Builds the child widget.
+  final Widget Function(BuildContext context, Widget player) builder;
+
+  /// The player controller.
   final YoutubePlayerController controller;
-  final List<DeviceOrientation> defaultOrientations;
+
+  /// The aspect ratio of the player.
+  ///
+  /// The value is ignored on fullscreen mode.
   final double aspectRatio;
+
+  /// Whether the player should be fullscreen on device orientation changes.
   final bool autoFullScreen;
+
+  /// The default orientations for the device.
+  final List<DeviceOrientation> defaultOrientations;
+
+  /// Which gestures should be consumed by the youtube player.
+  ///
+  /// This property is ignored in web.
   final Set<Factory<OneSequenceGestureRecognizer>>? gestureRecognizers;
 
   @override
