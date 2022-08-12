@@ -111,7 +111,7 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
 
   @override
   void dispose() {
-    //_controller.close();
+    _controller.close();
     super.dispose();
   }
 }

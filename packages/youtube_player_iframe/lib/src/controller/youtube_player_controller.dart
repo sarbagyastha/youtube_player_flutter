@@ -465,4 +465,6 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
       enterFullScreen(lock: lock);
     }
   }
+
+  void close() => _valueController.close();
 }
