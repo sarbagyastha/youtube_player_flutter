@@ -72,24 +72,26 @@ class _YoutubePlayerScaffoldState extends State<YoutubePlayerScaffold> {
 
     return YoutubePlayerControllerProvider(
       controller: widget.controller,
-      child: YoutubeValueBuilder(
-        controller: widget.controller,
-        buildWhen: (o, n) => o.fullScreenOption != n.fullScreenOption,
-        builder: (context, value) {
-          return _FullScreen(
-            auto: widget.autoFullScreen,
-            defaultOrientations: widget.defaultOrientations,
-            fullScreenOption: value.fullScreenOption,
-            child: Builder(
-              builder: (context) {
-                if (value.fullScreenOption.enabled) return player;
+      child: kIsWeb
+          ? widget.builder(context, player)
+          : YoutubeValueBuilder(
+              controller: widget.controller,
+              buildWhen: (o, n) => o.fullScreenOption != n.fullScreenOption,
+              builder: (context, value) {
+                return _FullScreen(
+                  auto: widget.autoFullScreen,
+                  defaultOrientations: widget.defaultOrientations,
+                  fullScreenOption: value.fullScreenOption,
+                  child: Builder(
+                    builder: (context) {
+                      if (value.fullScreenOption.enabled) return player;
 
-                return widget.builder(context, player);
+                      return widget.builder(context, player);
+                    },
+                  ),
+                );
               },
             ),
-          );
-        },
-      ),
     );
   }
 }
