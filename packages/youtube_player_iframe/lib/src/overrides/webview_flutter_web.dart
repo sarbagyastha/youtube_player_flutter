@@ -20,9 +20,9 @@ class WebWebViewPlatform implements WebViewPlatform {
       'youtube-iframe',
       (int viewId) => IFrameElement()
         ..id = 'youtube-$viewId'
-        ..width = '100%'
-        ..height = '100%'
         ..style.border = 'none'
+        ..style.height = '100%'
+        ..style.width = '100%'
         ..allow = 'autoplay;fullscreen',
     );
   }
