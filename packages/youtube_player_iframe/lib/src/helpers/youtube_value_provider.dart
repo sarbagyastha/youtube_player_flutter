@@ -4,7 +4,7 @@
 
 import 'package:flutter/widgets.dart';
 
-import '../controller.dart';
+import '../controller/youtube_player_controller.dart';
 
 /// An inherited widget to provide [YoutubePlayerController] to it's descendants.
 class YoutubePlayerControllerProvider extends InheritedWidget {
@@ -27,6 +27,14 @@ class YoutubePlayerControllerProvider extends InheritedWidget {
       'Cannot find YoutubePlayerControllerProvider above. Please wrap parent widget with YoutubePlayerControllerProvider.',
     );
     return controllerProvider!.controller;
+  }
+
+  /// Finds the most recent [YoutubePlayerController] in its ancestors.
+  static YoutubePlayerController? maybeOf(BuildContext context) {
+    final controllerProvider = context
+        .dependOnInheritedWidgetOfExactType<YoutubePlayerControllerProvider>();
+
+    return controllerProvider?.controller;
   }
 
   @override

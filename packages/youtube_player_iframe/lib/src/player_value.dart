@@ -11,11 +11,10 @@ class YoutubePlayerValue {
   /// The duration, current position, buffering state, error state and settings
   /// of a [YoutubePlayerController].
   YoutubePlayerValue({
-    this.isReady = false,
     this.hasPlayed = false,
     this.position = const Duration(),
     this.buffered = 0.0,
-    this.isFullScreen = false,
+    this.fullScreenOption = const FullScreenOption(enabled: false),
     this.volume = 100,
     this.playerState = PlayerState.unknown,
     this.playbackRate = PlaybackRate.normal,
@@ -23,9 +22,6 @@ class YoutubePlayerValue {
     this.error = YoutubeError.none,
     this.metaData = const YoutubeMetaData(),
   });
-
-  /// Returns true when the player is ready to play videos.
-  final bool isReady;
 
   /// Returns true once the video start playing for the first time.
   final bool hasPlayed;
@@ -36,8 +32,8 @@ class YoutubePlayerValue {
   /// The position up to which the video is buffered.i
   final double buffered;
 
-  /// Reports true if video is fullscreen.
-  final bool isFullScreen;
+  /// The initial fullscreen option.
+  final FullScreenOption fullScreenOption;
 
   /// The current volume assigned for the player.
   final int volume;
@@ -62,41 +58,10 @@ class YoutubePlayerValue {
   /// Returns meta data of the currently loaded/cued video.
   final YoutubeMetaData metaData;
 
-  /// Creates new [YoutubePlayerValue] with assigned parameters and overrides
-  /// the old one.
-  YoutubePlayerValue copyWith({
-    bool? isReady,
-    bool? hasPlayed,
-    Duration? position,
-    double? buffered,
-    bool? isFullScreen,
-    int? volume,
-    PlayerState? playerState,
-    double? playbackRate,
-    String? playbackQuality,
-    YoutubeError? error,
-    YoutubeMetaData? metaData,
-  }) {
-    return YoutubePlayerValue(
-      isReady: isReady ?? this.isReady,
-      hasPlayed: hasPlayed ?? this.hasPlayed,
-      position: position ?? this.position,
-      buffered: buffered ?? this.buffered,
-      isFullScreen: isFullScreen ?? this.isFullScreen,
-      volume: volume ?? this.volume,
-      playerState: playerState ?? this.playerState,
-      playbackRate: playbackRate ?? this.playbackRate,
-      playbackQuality: playbackQuality ?? this.playbackQuality,
-      error: error ?? this.error,
-      metaData: metaData ?? this.metaData,
-    );
-  }
-
   @override
   String toString() {
     return '$runtimeType('
         'metaData: ${metaData.toString()}, '
-        'isReady: $isReady, '
         'position: ${position.inSeconds} sec. , '
         'buffered: $buffered , '
         'volume: $volume, '
@@ -105,4 +70,31 @@ class YoutubePlayerValue {
         'playbackQuality: $playbackQuality, '
         'error: $error)';
   }
+}
+
+/// The fullscreen option.
+class FullScreenOption {
+  /// Creates [FullScreenOption].
+  const FullScreenOption({
+    required this.enabled,
+    this.locked = false,
+  });
+
+  /// Denotes that the fullscreen mode is currently enabled.
+  final bool enabled;
+
+  /// Denotes that the fullscreen mode is currently locked for auto update.
+  final bool locked;
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        other is FullScreenOption &&
+            runtimeType == other.runtimeType &&
+            enabled == other.enabled &&
+            locked == other.locked;
+  }
+
+  @override
+  int get hashCode => enabled.hashCode ^ locked.hashCode;
 }

@@ -2,11 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'dart:developer';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 import 'widgets/meta_data_section.dart';
@@ -50,108 +47,65 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
   void initState() {
     super.initState();
     _controller = YoutubePlayerController(
-      initialVideoId: 'tcodrIK2P_I',
       params: const YoutubePlayerParams(
-        playlist: [
-          'nPt8bK2gbaU',
-          'K18cpp_-gP8',
-          'iLnmTe5Q2Qw',
-          '_WoCV4c6XOE',
-          'KmzdUe0RSJo',
-          '6jZDSSZZxjQ',
-          'p2lYr3vM_1w',
-          '7QUtEmBT_-w',
-          '34_PXCzGw1M',
-        ],
-        startAt: const Duration(minutes: 1, seconds: 36),
         showControls: true,
+        mute: false,
         showFullscreenButton: true,
-        desktopMode: false,
-        privacyEnhanced: true,
-        useHybridComposition: true,
+        autoPlay: true,
       ),
     );
-    _controller.onEnterFullscreen = () {
-      SystemChrome.setPreferredOrientations([
-        DeviceOrientation.landscapeLeft,
-        DeviceOrientation.landscapeRight,
-      ]);
-      log('Entered Fullscreen');
-    };
-    _controller.onExitFullscreen = () {
-      log('Exited Fullscreen');
-    };
+
+    _controller.loadPlaylist(
+      list: [
+        'tcodrIK2P_I',
+        'nPt8bK2gbaU',
+        'K18cpp_-gP8',
+        'iLnmTe5Q2Qw',
+        '_WoCV4c6XOE',
+        'KmzdUe0RSJo',
+        '6jZDSSZZxjQ',
+        'p2lYr3vM_1w',
+        '7QUtEmBT_-w',
+        '34_PXCzGw1M',
+      ],
+      listType: ListType.playlist,
+      startSeconds: 136,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    const player = YoutubePlayerIFrame();
-    return YoutubePlayerControllerProvider(
-      // Passing controller to widgets below.
+    return YoutubePlayerScaffold(
       controller: _controller,
-      child: Scaffold(
-        body: LayoutBuilder(
-          builder: (context, constraints) {
-            if (kIsWeb && constraints.maxWidth > 800) {
-              return Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Expanded(child: player),
-                  const SizedBox(
-                    width: 500,
-                    child: SingleChildScrollView(
-                      child: Controls(),
-                    ),
-                  ),
-                ],
-              );
-            }
-            return ListView(
-              children: [
-                Stack(
+      builder: (context, player) {
+        return Scaffold(
+          body: LayoutBuilder(
+            builder: (context, constraints) {
+              if (kIsWeb && constraints.maxWidth > 750) {
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    player,
-                    Positioned.fill(
-                      child: YoutubeValueBuilder(
-                        controller: _controller,
-                        builder: (context, value) {
-                          return AnimatedCrossFade(
-                            firstChild: const SizedBox.shrink(),
-                            secondChild: Material(
-                              child: DecoratedBox(
-                                decoration: BoxDecoration(
-                                  image: DecorationImage(
-                                    image: NetworkImage(
-                                      YoutubePlayerController.getThumbnail(
-                                        videoId:
-                                            _controller.params.playlist.first,
-                                        quality: ThumbnailQuality.medium,
-                                      ),
-                                    ),
-                                    fit: BoxFit.fitWidth,
-                                  ),
-                                ),
-                                child: const Center(
-                                  child: CircularProgressIndicator(),
-                                ),
-                              ),
-                            ),
-                            crossFadeState: value.isReady
-                                ? CrossFadeState.showFirst
-                                : CrossFadeState.showSecond,
-                            duration: const Duration(milliseconds: 300),
-                          );
-                        },
+                    Expanded(flex: 3, child: player),
+                    const Expanded(
+                      flex: 2,
+                      child: SingleChildScrollView(
+                        child: Controls(),
                       ),
                     ),
                   ],
-                ),
-                const Controls(),
-              ],
-            );
-          },
-        ),
-      ),
+                );
+              }
+
+              return ListView(
+                children: [
+                  player,
+                  const Controls(),
+                ],
+              );
+            },
+          ),
+        );
+      },
     );
   }
 

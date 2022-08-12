@@ -1,3 +1,20 @@
+# 3.0.2
+- Improved pub score.
+
+# 3.0.1
+- Fixed the supported platform in pub.dev
+
+# 3.0.0
+**Breaking Change**
+- Switched to `webview_flutter`.
+- Better web support.
+- APIs are now identical to that of Youtube Player Iframe API.
+- Exposed all the supported iFrame APIs.
+- Fixed issue with videos not playing on Android.
+- Added support for FullScreen gestures like on Youtube Mobile App.
+- Added support for YouTube Shorts URL.
+- Added `YoutubePlayerScaffold` to better handle the fullscreen mode.
+
 # 2.3.0
 - Upgraded minimum flutter version to `3.0.0`
 - Upgraded example app

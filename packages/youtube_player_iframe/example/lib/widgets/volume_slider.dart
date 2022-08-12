@@ -6,7 +6,12 @@ import 'package:flutter/material.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 ///
-class VolumeSlider extends StatelessWidget {
+class VolumeSlider extends StatefulWidget {
+  @override
+  State<VolumeSlider> createState() => _VolumeSliderState();
+}
+
+class _VolumeSliderState extends State<VolumeSlider> {
   final _volume = ValueNotifier<int>(100);
 
   @override
@@ -14,7 +19,7 @@ class VolumeSlider extends StatelessWidget {
     return Row(
       children: <Widget>[
         const Text(
-          "Volume",
+          'Volume',
           style: TextStyle(fontWeight: FontWeight.w300),
         ),
         Expanded(
