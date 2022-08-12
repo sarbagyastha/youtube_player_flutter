@@ -11,11 +11,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_web_plugins:
-    sdk: flutter
   webview_flutter: ^3.0.4
-  webview_flutter_platform_interface: ^1.9.1
   url_launcher: ^6.1.5
+  youtube_player_iframe_web: ^1.0.0
 
 dev_dependencies:
   flutter_test:

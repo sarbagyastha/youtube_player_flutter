@@ -1,3 +1,9 @@
+// Copyright 2022 Sarbagya Dhaubanjar. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+library youtube_player_iframe_web;
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:html';
@@ -13,9 +19,9 @@ import 'platform_view_stub.dart' if (dart.library.html) 'dart:ui' as ui;
 /// Builds an iframe based WebView.
 ///
 /// This is used as the default implementation for [WebView.platform] on web.
-class WebWebViewPlatform implements WebViewPlatform {
-  /// Constructs a new instance of [WebWebViewPlatform].
-  WebWebViewPlatform() {
+class YoutubePlayerIframeWeb implements WebViewPlatform {
+  /// Constructs a new instance of [YoutubePlayerIframeWeb].
+  YoutubePlayerIframeWeb() {
     ui.platformViewRegistry.registerViewFactory(
       'youtube-iframe',
       (int viewId) => IFrameElement()

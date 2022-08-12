@@ -5,11 +5,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:youtube_player_iframe/src/iframe_api/src/functions/video_information.dart';
+import 'package:youtube_player_iframe/src/player_value.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
+import 'package:youtube_player_iframe_web/youtube_player_iframe_web.dart';
 
-import '../player_value.dart';
-import '../web_registrar/register_web_webview_stub.dart'
-    if (dart.library.html) '../web_registrar/register_web_webview.dart';
 import 'youtube_player_event_handler.dart';
 
 /// Controls the youtube player, and provides updates when the state is changing.
@@ -22,7 +21,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   YoutubePlayerController({
     this.params = const YoutubePlayerParams(),
   }) {
-    registerWebViewWebImplementation();
+    registerYoutubePlayerIframeWeb();
     _eventHandler = YoutubePlayerEventHandler(this);
     javaScriptChannels = _eventHandler.javascriptChannels;
   }
