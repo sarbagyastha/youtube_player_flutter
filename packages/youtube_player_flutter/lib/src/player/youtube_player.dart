@@ -163,7 +163,8 @@ class YoutubePlayer extends StatefulWidget {
           r"^https:\/\/(?:www\.|m\.)?youtube\.com\/watch\?v=([_\-a-zA-Z0-9]{11}).*$"),
       RegExp(
           r"^https:\/\/(?:www\.|m\.)?youtube(?:-nocookie)?\.com\/embed\/([_\-a-zA-Z0-9]{11}).*$"),
-      RegExp(r"^https:\/\/youtu\.be\/([_\-a-zA-Z0-9]{11}).*$")
+      RegExp(r"^https:\/\/youtu\.be\/([_\-a-zA-Z0-9]{11}).*$"),
+      RegExp(r"^https:\/\/youtube\.com\/shorts\/([_\-a-zA-Z0-9]{11}).*$"),
     ]) {
       Match? match = exp.firstMatch(url);
       if (match != null && match.groupCount >= 1) return match.group(1);
