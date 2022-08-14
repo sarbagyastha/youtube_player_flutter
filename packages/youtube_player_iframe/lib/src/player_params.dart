@@ -162,7 +162,7 @@ class YoutubePlayerParams {
       'iv_load_policy': showVideoAnnotations ? 1 : 3,
       'loop': _boolean(loop),
       'modestbranding': '1',
-      if (origin != null) 'origin': origin,
+      if (origin != null && !kIsWeb) 'origin': origin,
       'playsinline': _boolean(playsInline),
       'rel': _boolean(strictRelatedVideos),
       'start': startAt.inSeconds,

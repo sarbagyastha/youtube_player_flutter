@@ -49,13 +49,15 @@
           playerVars: <<playerVars>>,
           events: {
             onReady: function (event) {
-              var ytFrame = document.getElementsByTagName('iframe')[0].contentWindow.document;
-              var fsButton = ytFrame.getElementsByClassName('ytp-fullscreen-button ytp-button')[0];
-              var fsButtonCopy = fsButton.cloneNode(true);
-              fsButton.replaceWith(fsButtonCopy);
-              fsButtonCopy.onclick = function() {
-                sendMessage('FullscreenButtonPressed', '');
-              };
+              if(platform != 'web') {
+                var ytFrame = document.getElementsByTagName('iframe')[0].contentWindow.document;
+                var fsButton = ytFrame.getElementsByClassName('ytp-fullscreen-button ytp-button')[0];
+                var fsButtonCopy = fsButton.cloneNode(true);
+                fsButton.replaceWith(fsButtonCopy);
+                fsButtonCopy.onclick = function() {
+                  sendMessage('FullscreenButtonPressed', '');
+                };
+              }
 
               sendMessage('Ready', event);
             },
