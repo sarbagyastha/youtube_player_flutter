@@ -14,6 +14,7 @@ class YoutubePlayerParams {
   /// Default is true.
   ///
   /// Note: auto play might not always work on mobile devices or when video is not muted at start.
+  @Deprecated('Use load or cue methods instead.')
   final bool autoPlay;
 
   /// Mutes the player.
@@ -147,7 +148,7 @@ class YoutubePlayerParams {
   /// Creates [Map] representation of [YoutubePlayerParams].
   Map<String, dynamic> toMap() {
     return {
-      'autoplay': _boolean(autoPlay),
+      'autoplay': 1,
       'mute': _boolean(mute),
       'cc_lang_pref': captionLanguage,
       'cc_load_policy': _boolean(enableCaption),

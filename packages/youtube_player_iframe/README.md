@@ -23,13 +23,65 @@ The package exposes almost all the API provided by **iFrame Player API**. So, it
 * Retrieves video meta data
 * Supports Live Stream videos
 * Supports changing playback rate
-* Support for both Android and iOS
-* Adapts to quality as per the bandwidth
 * Exposes builders for building custom controls
 * Playlist Support (Both custom and Youtube's playlist)
+* Supports Fullscreen Gestures(Swipe up/down to enter/exit fullscreen mode)
 
 This package uses [webview_flutter](https://pub.dev/packages/webview_flutter) under-the-hood.
 
+## Migrating to v3
+v3 introduces `YoutubePlayerScaffold` to handle the fullscreen mode consistently in all platform.
+So, upgrading to v3 will break the fullscreen player unless the following changes are made.
+
+```dart
+
+
+// Before
+final _controller = YoutubePlayerController(
+  initialVideoId: 'K18cpp_-gP8',
+  params: YoutubePlayerParams(
+    startAt: Duration(seconds: 30),
+    autoPlay: true,
+  ),
+);
+
+Scaffold(
+  appbar: AppBar(
+    title: Text('YouTube Player'),
+  ),
+  body: YoutubePlayerIFrame(
+    controller: _controller,
+    aspectRatio: 16 / 9,
+  ),
+);
+
+// After
+bool autoPlay;
+
+final _controller = YoutubePlayerController()..onInit = (){
+  if(autoPlay) {
+    _controller.loadVideoById(videoId: 'K18cpp_-gP8', startSeconds: 30);
+  } else {
+    _controller.cueVideoById(videoId: 'K18cpp_-gP8', startSeconds: 30);
+  }
+};
+
+YoutubePlayerScaffold(
+  controller: _controller,
+  aspectRatio: 16 / 9,
+  builder: (context, player) {
+    return Scaffold(
+      appbar: AppBar(
+        title: Text('YouTube Player'),
+      ),
+      body: player,
+    ),
+  },
+),
+
+```
+
+**Note:** The `YoutubePlayerScaffold` should be top-most widget in the page.
 
 ## Setup
 See [**webview_flutter**'s doc](https://pub.dev/packages/webview_flutter) for the requirements.
@@ -42,7 +94,6 @@ final _controller = YoutubePlayerController(
     mute: false,
     showControls: true,
     showFullscreenButton: true,
-    autoPlay: true,
   ),
 );
 ```
@@ -66,6 +117,7 @@ YoutubePlayerScaffold(
   },
 ),
 ```
+
 
 #### Using `YoutubePlayerIFrame`
 This widget can be used when fullscreen support is not required.
