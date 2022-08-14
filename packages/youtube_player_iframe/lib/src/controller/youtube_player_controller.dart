@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:meta/meta.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:youtube_player_iframe/src/iframe_api/src/functions/video_information.dart';
 import 'package:youtube_player_iframe/src/player_value.dart';
@@ -29,7 +30,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   /// Defines player parameters for the youtube player.
   final YoutubePlayerParams params;
 
-  final Completer<WebViewController> _webViewControllerCompleter = Completer();
+  Completer<WebViewController> _webViewControllerCompleter = Completer();
 
   late final YoutubePlayerEventHandler _eventHandler;
 
@@ -149,10 +150,15 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   }
 
   /// Loads the player with default [params].
+  @internal
   Future<void> init(WebViewController controller) async {
+    _webViewControllerCompleter = Completer();
     await controller.runJavascript('var isWeb = $kIsWeb;');
     _webViewControllerCompleter.complete(controller);
     await load(params: params, baseUrl: params.origin);
+
+    _eventHandler.reset();
+    await onInit();
   }
 
   /// Loads the player with the given [params].
@@ -494,6 +500,9 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
       enterFullScreen(lock: lock);
     }
   }
+
+  /// Called when the player is created.
+  FutureOr<void> Function() onInit = () {};
 
   /// Disposes the resources created by [YoutubePlayerController].
   void close() => _valueController.close();

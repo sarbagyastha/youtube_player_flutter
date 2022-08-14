@@ -53,24 +53,24 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
         showFullscreenButton: true,
         autoPlay: true,
       ),
-    );
-
-    _controller.loadPlaylist(
-      list: [
-        'tcodrIK2P_I',
-        'nPt8bK2gbaU',
-        'K18cpp_-gP8',
-        'iLnmTe5Q2Qw',
-        '_WoCV4c6XOE',
-        'KmzdUe0RSJo',
-        '6jZDSSZZxjQ',
-        'p2lYr3vM_1w',
-        '7QUtEmBT_-w',
-        '34_PXCzGw1M',
-      ],
-      listType: ListType.playlist,
-      startSeconds: 136,
-    );
+    )..onInit = () {
+        _controller.loadPlaylist(
+          list: [
+            'tcodrIK2P_I',
+            'nPt8bK2gbaU',
+            'K18cpp_-gP8',
+            'iLnmTe5Q2Qw',
+            '_WoCV4c6XOE',
+            'KmzdUe0RSJo',
+            '6jZDSSZZxjQ',
+            'p2lYr3vM_1w',
+            '7QUtEmBT_-w',
+            '34_PXCzGw1M',
+          ],
+          listType: ListType.playlist,
+          startSeconds: 136,
+        );
+      };
   }
 
   @override
