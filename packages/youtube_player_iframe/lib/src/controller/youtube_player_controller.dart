@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:meta/meta.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:youtube_player_iframe/src/iframe_api/src/functions/video_information.dart';
 import 'package:youtube_player_iframe/src/player_value.dart';
@@ -29,7 +30,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   /// Defines player parameters for the youtube player.
   final YoutubePlayerParams params;
 
-  final Completer<WebViewController> _webViewControllerCompleter = Completer();
+  Completer<WebViewController> _webViewControllerCompleter = Completer();
 
   late final YoutubePlayerEventHandler _eventHandler;
 
@@ -149,10 +150,15 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   }
 
   /// Loads the player with default [params].
+  @internal
   Future<void> init(WebViewController controller) async {
+    _webViewControllerCompleter = Completer();
     await controller.runJavascript('var isWeb = $kIsWeb;');
     _webViewControllerCompleter.complete(controller);
-    await load(params: params);
+    await load(params: params, baseUrl: params.origin);
+
+    _eventHandler.reset();
+    await onInit();
   }
 
   /// Loads the player with the given [params].
@@ -224,9 +230,6 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   /// Creates new [YoutubePlayerValue] with assigned parameters and overrides
   /// the old one.
   void update({
-    bool? hasPlayed,
-    Duration? position,
-    double? buffered,
     FullScreenOption? fullScreenOption,
     int? volume,
     PlayerState? playerState,
@@ -236,9 +239,6 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     YoutubeMetaData? metaData,
   }) {
     final updatedValue = YoutubePlayerValue(
-      hasPlayed: hasPlayed ?? value.hasPlayed,
-      position: position ?? value.position,
-      buffered: buffered ?? value.buffered,
       fullScreenOption: fullScreenOption ?? value.fullScreenOption,
       volume: volume ?? value.volume,
       playerState: playerState ?? value.playerState,
@@ -475,6 +475,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   /// If [lock] is true, auto rotate will be disabled.
   void enterFullScreen({bool lock = true}) {
     update(fullScreenOption: FullScreenOption(enabled: true, locked: lock));
+    onFullscreenChange(true);
   }
 
   /// Exits fullscreen mode.
@@ -482,7 +483,11 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   /// If [lock] is true, auto rotate will be disabled.
   void exitFullScreen({bool lock = true}) {
     update(fullScreenOption: FullScreenOption(enabled: false, locked: lock));
+    onFullscreenChange(false);
   }
+
+  /// Called when full screen mode for the player changes.
+  void Function(bool isFullscreen) onFullscreenChange = (_) {};
 
   /// Toggles fullscreen mode.
   ///
@@ -494,6 +499,9 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
       enterFullScreen(lock: lock);
     }
   }
+
+  /// Called when the player is created.
+  FutureOr<void> Function() onInit = () {};
 
   /// Disposes the resources created by [YoutubePlayerController].
   void close() => _valueController.close();

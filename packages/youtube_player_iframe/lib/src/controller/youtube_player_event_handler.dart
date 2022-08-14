@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:meta/meta.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
@@ -14,6 +15,7 @@ class YoutubePlayerEventHandler {
       'PlaybackQualityChange': onPlaybackQualityChange,
       'PlaybackRateChange': onPlaybackRateChange,
       'PlayerError': onError,
+      'FullscreenButtonPressed': onFullscreenButtonPressed,
     };
 
     javascriptChannels = {
@@ -40,7 +42,7 @@ class YoutubePlayerEventHandler {
   /// The [JavascriptChannels] to be used by the player iframe.
   late final Set<JavascriptChannel> javascriptChannels;
 
-  final Completer<void> _readyCompleter = Completer();
+  Completer<void> _readyCompleter = Completer();
 
   /// This event fires whenever a player has finished loading and is ready to begin receiving API calls.
   /// Your application should implement this function if you want to automatically execute certain operations,
@@ -105,6 +107,11 @@ class YoutubePlayerEventHandler {
   /// Your application can then retrieve or update the existing settings for those options.
   void onApiChange(Object? data) {}
 
+  /// This event is fired to indicate that the fullscreen button was clicked.
+  void onFullscreenButtonPressed(Object data) {
+    controller.toggleFullScreen();
+  }
+
   /// This event fires if an error occurs in the player.
   /// The API will pass an event object to the event listener function.
   /// That [data] property will specify an integer that identifies the type of error that occurred.
@@ -119,4 +126,8 @@ class YoutubePlayerEventHandler {
 
   /// Returns a [Future] that completes when the player is ready.
   Future<void> get isReady => _readyCompleter.future;
+
+  /// Resets the [isReady] future.
+  @internal
+  void reset() => _readyCompleter = Completer();
 }

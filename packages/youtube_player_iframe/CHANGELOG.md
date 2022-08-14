@@ -1,3 +1,11 @@
+# 3.0.3
+- Fixed issues related to Fullscreen.
+- Added `onInit` & `onFullscreenChange` callbacks to **YoutubePlayerController**.
+- Added **Migrating to v3** section in the docs.
+- Listed `Swipe up/down to enter/exit fullscreen mode` as a feature in the docs.
+- Deprecated `autoPlay` param in **YoutubePlayerParams**, as it's no longer used.
+- Removed `hasPlayed`, `position` & `buffered` from **YoutubePlayerValue**, as these values can be accessed through **YoutubePlayerController**.
+
 # 3.0.2
 - Improved pub score.
 

@@ -14,6 +14,7 @@ class YoutubePlayerParams {
   /// Default is true.
   ///
   /// Note: auto play might not always work on mobile devices or when video is not muted at start.
+  @Deprecated('Use load or cue methods instead.')
   final bool autoPlay;
 
   /// Mutes the player.
@@ -138,7 +139,7 @@ class YoutubePlayerParams {
     this.interfaceLanguage = 'en',
     this.showVideoAnnotations = true,
     this.loop = false,
-    this.origin,
+    this.origin = 'https://www.youtube.com',
     this.playsInline = true,
     this.strictRelatedVideos = false,
     this.startAt = Duration.zero,
@@ -147,7 +148,7 @@ class YoutubePlayerParams {
   /// Creates [Map] representation of [YoutubePlayerParams].
   Map<String, dynamic> toMap() {
     return {
-      'autoplay': _boolean(autoPlay),
+      'autoplay': 1,
       'mute': _boolean(mute),
       'cc_lang_pref': captionLanguage,
       'cc_load_policy': _boolean(enableCaption),
@@ -161,7 +162,7 @@ class YoutubePlayerParams {
       'iv_load_policy': showVideoAnnotations ? 1 : 3,
       'loop': _boolean(loop),
       'modestbranding': '1',
-      if (origin != null) 'origin': origin,
+      if (origin != null && !kIsWeb) 'origin': origin,
       'playsinline': _boolean(playsInline),
       'rel': _boolean(strictRelatedVideos),
       'start': startAt.inSeconds,

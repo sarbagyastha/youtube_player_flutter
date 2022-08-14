@@ -105,24 +105,6 @@ class _YoutubePlayerIFrameState extends State<YoutubePlayerIFrame> {
       ),
     );
 
-    if (_controller.params.showFullscreenButton) {
-      player = Stack(
-        children: [
-          Positioned.fill(child: player),
-          Positioned(
-            bottom: 2,
-            right: 16,
-            width: 40,
-            height: 40,
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: _controller.toggleFullScreen,
-            ),
-          ),
-        ],
-      );
-    }
-
     return OrientationBuilder(
       builder: (context, orientation) {
         return AspectRatio(
