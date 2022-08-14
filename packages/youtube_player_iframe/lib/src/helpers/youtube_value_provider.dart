@@ -13,10 +13,10 @@ class YoutubePlayerControllerProvider extends InheritedWidget {
 
   /// An inherited widget that provide [YoutubePlayerController] to it's descendants.
   const YoutubePlayerControllerProvider({
-    Key? key,
+    super.key,
     required this.controller,
-    required Widget child,
-  }) : super(key: key, child: child);
+    required super.child,
+  });
 
   /// Finds the most recent [YoutubePlayerController] in its ancestors.
   static YoutubePlayerController of(BuildContext context) {
@@ -38,13 +38,15 @@ class YoutubePlayerControllerProvider extends InheritedWidget {
   }
 
   @override
-  bool updateShouldNotify(YoutubePlayerControllerProvider old) =>
-      old.controller.hashCode != controller.hashCode;
+  bool updateShouldNotify(YoutubePlayerControllerProvider old) {
+    return old.controller.hashCode != controller.hashCode;
+  }
 }
 
 /// YoutubePlayerControllerExtension
 extension YoutubePlayerControllerExtension on BuildContext {
   /// Finds the most recent [YoutubePlayerController] in its ancestors.
-  YoutubePlayerController get ytController =>
-      YoutubePlayerControllerProvider.of(this);
+  YoutubePlayerController get ytController {
+    return YoutubePlayerControllerProvider.of(this);
+  }
 }
