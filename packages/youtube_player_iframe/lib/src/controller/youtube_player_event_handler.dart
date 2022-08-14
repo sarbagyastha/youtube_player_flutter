@@ -14,6 +14,7 @@ class YoutubePlayerEventHandler {
       'PlaybackQualityChange': onPlaybackQualityChange,
       'PlaybackRateChange': onPlaybackRateChange,
       'PlayerError': onError,
+      'FullscreenButtonPressed': onFullscreenButtonPressed,
     };
 
     javascriptChannels = {
@@ -104,6 +105,11 @@ class YoutubePlayerEventHandler {
   /// which options are exposed for the recently loaded module.
   /// Your application can then retrieve or update the existing settings for those options.
   void onApiChange(Object? data) {}
+
+  /// This event is fired to indicate that the fullscreen button was clicked.
+  void onFullscreenButtonPressed(Object data) {
+    controller.toggleFullScreen();
+  }
 
   /// This event fires if an error occurs in the player.
   /// The API will pass an event object to the event listener function.

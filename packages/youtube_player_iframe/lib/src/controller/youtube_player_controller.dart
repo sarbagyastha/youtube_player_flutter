@@ -152,7 +152,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   Future<void> init(WebViewController controller) async {
     await controller.runJavascript('var isWeb = $kIsWeb;');
     _webViewControllerCompleter.complete(controller);
-    await load(params: params);
+    await load(params: params, baseUrl: params.origin);
   }
 
   /// Loads the player with the given [params].
