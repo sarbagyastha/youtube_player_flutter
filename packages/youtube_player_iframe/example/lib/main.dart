@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:developer';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
@@ -53,7 +55,8 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
         showFullscreenButton: true,
         autoPlay: true,
       ),
-    )..onInit = () {
+    )
+      ..onInit = () {
         _controller.loadPlaylist(
           list: [
             'tcodrIK2P_I',
@@ -70,6 +73,9 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
           listType: ListType.playlist,
           startSeconds: 136,
         );
+      }
+      ..onFullscreenChange = (isFullScreen) {
+        log('${isFullScreen ? 'Entered' : 'Exited'} Fullscreen.');
       };
   }
 

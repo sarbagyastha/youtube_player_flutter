@@ -481,6 +481,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   /// If [lock] is true, auto rotate will be disabled.
   void enterFullScreen({bool lock = true}) {
     update(fullScreenOption: FullScreenOption(enabled: true, locked: lock));
+    onFullscreenChange(true);
   }
 
   /// Exits fullscreen mode.
@@ -488,7 +489,11 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   /// If [lock] is true, auto rotate will be disabled.
   void exitFullScreen({bool lock = true}) {
     update(fullScreenOption: FullScreenOption(enabled: false, locked: lock));
+    onFullscreenChange(false);
   }
+
+  /// Called when full screen mode for the player changes.
+  void Function(bool isFullscreen) onFullscreenChange = (_) {};
 
   /// Toggles fullscreen mode.
   ///
