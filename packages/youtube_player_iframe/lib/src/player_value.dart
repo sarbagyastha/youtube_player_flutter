@@ -11,9 +11,6 @@ class YoutubePlayerValue {
   /// The duration, current position, buffering state, error state and settings
   /// of a [YoutubePlayerController].
   YoutubePlayerValue({
-    this.hasPlayed = false,
-    this.position = const Duration(),
-    this.buffered = 0.0,
     this.fullScreenOption = const FullScreenOption(enabled: false),
     this.volume = 100,
     this.playerState = PlayerState.unknown,
@@ -22,15 +19,6 @@ class YoutubePlayerValue {
     this.error = YoutubeError.none,
     this.metaData = const YoutubeMetaData(),
   });
-
-  /// Returns true once the video start playing for the first time.
-  final bool hasPlayed;
-
-  /// The current position of the video.
-  final Duration position;
-
-  /// The position up to which the video is buffered.i
-  final double buffered;
 
   /// The initial fullscreen option.
   final FullScreenOption fullScreenOption;
@@ -62,12 +50,11 @@ class YoutubePlayerValue {
   String toString() {
     return '$runtimeType('
         'metaData: ${metaData.toString()}, '
-        'position: ${position.inSeconds} sec. , '
-        'buffered: $buffered , '
         'volume: $volume, '
         'playerState: $playerState, '
         'playbackRate: $playbackRate, '
         'playbackQuality: $playbackQuality, '
+        'isFullScreen: ${fullScreenOption.enabled}, '
         'error: $error)';
   }
 }
