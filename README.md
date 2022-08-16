@@ -116,8 +116,8 @@ YoutubeValueBuilder(
          onPressed: value.isReady
             ? () {
                   value.playerState == PlayerState.playing
-                    ? context.ytController.pause()
-                    : context.ytController.play();
+                    ? context.ytController.pauseVideo()
+                    : context.ytController.playVideo();
                  }
             : null,
       );
