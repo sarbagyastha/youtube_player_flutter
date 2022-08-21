@@ -55,7 +55,7 @@ class _SourceInputSectionState extends State<SourceInputSection> {
         GridView.count(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          childAspectRatio: 20 / 6,
+          childAspectRatio: 4,
           crossAxisSpacing: 10,
           mainAxisSpacing: 10,
           crossAxisCount: 2,
@@ -227,16 +227,8 @@ class _Button extends StatelessWidget {
               FocusScope.of(context).unfocus();
             },
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 14.0),
-        child: Text(
-          action,
-          style: const TextStyle(
-            fontSize: 18.0,
-            color: Colors.white,
-            fontWeight: FontWeight.w300,
-          ),
-          textAlign: TextAlign.center,
-        ),
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Text(action),
       ),
     );
   }
