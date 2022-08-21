@@ -82,15 +82,14 @@ class _Text extends StatelessWidget {
     return Text.rich(
       TextSpan(
         text: '$title : ',
-        style: const TextStyle(
-          fontWeight: FontWeight.bold,
-        ),
+        style: Theme.of(context).textTheme.labelLarge,
         children: [
           TextSpan(
             text: value,
-            style: const TextStyle(
-              fontWeight: FontWeight.w300,
-            ),
+            style: Theme.of(context)
+                .textTheme
+                .labelMedium!
+                .copyWith(fontWeight: FontWeight.w300),
           ),
         ],
       ),

@@ -14,7 +14,6 @@ class YoutubePlayerParams {
   /// Default is true.
   ///
   /// Note: auto play might not always work on mobile devices or when video is not muted at start.
-  @Deprecated('Use load or cue methods instead.')
   final bool autoPlay;
 
   /// Mutes the player.
@@ -126,7 +125,7 @@ class YoutubePlayerParams {
 
   /// Defines player parameters for the youtube player.
   const YoutubePlayerParams({
-    this.autoPlay = true,
+    @Deprecated('Use load or cue methods instead.') this.autoPlay = true,
     this.mute = false,
     this.captionLanguage = 'en',
     this.enableCaption = true,
