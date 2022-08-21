@@ -200,7 +200,7 @@ class VideoPositionIndicator extends StatelessWidget {
       stream: controller.getCurrentPositionStream(),
       initialData: Duration.zero,
       builder: (context, snapshot) {
-        final position = snapshot.data!.inMilliseconds;
+        final position = snapshot.data?.inMilliseconds ?? 0;
         final duration = controller.metadata.duration.inMilliseconds;
 
         return LinearProgressIndicator(
