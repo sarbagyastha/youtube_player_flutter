@@ -26,9 +26,13 @@ export 'src/player_params.dart';
 export 'src/youtube_player_scaffold.dart';
 
 /// A widget to play or stream Youtube Videos.
-class YoutubePlayerIFrame extends StatefulWidget {
+@Deprecated('Use YoutubePlayer instead')
+typedef YoutubePlayerIFrame = YoutubePlayer;
+
+/// A widget to play or stream Youtube Videos.
+class YoutubePlayer extends StatefulWidget {
   /// A widget to play or stream Youtube Videos.
-  const YoutubePlayerIFrame({
+  const YoutubePlayer({
     super.key,
     this.controller,
     this.aspectRatio = 16 / 9,
@@ -73,10 +77,10 @@ class YoutubePlayerIFrame extends StatefulWidget {
   final bool enableFullScreenOnVerticalDrag;
 
   @override
-  State<YoutubePlayerIFrame> createState() => _YoutubePlayerIFrameState();
+  State<YoutubePlayer> createState() => _YoutubePlayerState();
 }
 
-class _YoutubePlayerIFrameState extends State<YoutubePlayerIFrame> {
+class _YoutubePlayerState extends State<YoutubePlayer> {
   late final YoutubePlayerController _controller;
 
   @override

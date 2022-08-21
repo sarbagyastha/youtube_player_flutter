@@ -49,7 +49,7 @@ class _VideoListPageState extends State<VideoListPage> {
           return Card(
             child: Padding(
               padding: const EdgeInsets.all(8),
-              child: YoutubePlayerIFrame(
+              child: YoutubePlayer(
                 key: ObjectKey(controller),
                 aspectRatio: 16 / 9,
                 enableFullScreenOnVerticalDrag: false,

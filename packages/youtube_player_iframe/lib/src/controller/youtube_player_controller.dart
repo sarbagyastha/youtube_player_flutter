@@ -14,7 +14,7 @@ import 'youtube_player_event_handler.dart';
 
 /// Controls the youtube player, and provides updates when the state is changing.
 ///
-/// The video is displayed in a Flutter app by creating a [YoutubePlayerIFrame] widget.
+/// The video is displayed in a Flutter app by creating a [YoutubePlayer] widget.
 ///
 /// After [YoutubePlayerController.close] all further calls are ignored.
 class YoutubePlayerController implements YoutubePlayerIFrameAPI {

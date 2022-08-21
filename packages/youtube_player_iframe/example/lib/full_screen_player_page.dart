@@ -51,7 +51,7 @@ class _FullScreenPlayerPageState extends State<FullScreenPlayerPage> {
         Navigator.pop(context, await _controller.currentTime);
         return false;
       },
-      child: YoutubePlayerIFrame(
+      child: YoutubePlayer(
         controller: _controller,
         aspectRatio: MediaQuery.of(context).size.aspectRatio,
         backgroundColor: Theme.of(context).colorScheme.background,

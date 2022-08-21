@@ -10,7 +10,7 @@ import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 import 'player_value.dart';
 
-/// A widget the scaffolds the [YoutubePlayerIFrame]so that it can be moved around easily in the view
+/// A widget the scaffolds the [YoutubePlayer]so that it can be moved around easily in the view
 /// and handles the fullscreen functionality.
 class YoutubePlayerScaffold extends StatefulWidget {
   /// Creates [YoutubePlayerScaffold].
@@ -76,7 +76,7 @@ class _YoutubePlayerScaffoldState extends State<YoutubePlayerScaffold> {
   Widget build(BuildContext context) {
     final player = KeyedSubtree(
       key: _playerKey,
-      child: YoutubePlayerIFrame(
+      child: YoutubePlayer(
         controller: widget.controller,
         aspectRatio: widget.aspectRatio,
         gestureRecognizers: widget.gestureRecognizers,
