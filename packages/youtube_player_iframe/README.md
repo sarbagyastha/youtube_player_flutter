@@ -119,13 +119,13 @@ YoutubePlayerScaffold(
 ```
 
 
-#### Using `YoutubePlayerIFrame`
+#### Using `YoutubePlayer`
 This widget can be used when fullscreen support is not required.
 
 ```dart
 YoutubePlayerControllerProvider(
   controller: _controller,
-  child: YoutubePlayerIFrame(
+  child: YoutubePlayer(
     aspectRatio: 16 / 9,
   ),
 );

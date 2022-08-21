@@ -1,3 +1,13 @@
+# 3.0.4
+- Fixed video not loading on non-web platform when controls were disabled
+- Added `YoutubePlayerController.fromVideoId`.
+- Added `enableFullScreenOnVerticalDrag` property to **YoutubePlayer**.
+- Fixed issue with `videoUrl` getter.
+- Added video list and manual fullscreen examples.
+- Added `getCurrentPositionStream` to **YoutubePlayerController**.
+- Deprecated `YoutubePlayerIFrame` in favor of `YoutubePlayer`.
+- Deprecated `autoPlay` param in **YoutubePlayerParams**, as it's no longer used.
+
 # 3.0.3
 - Fixed issues related to Fullscreen.
 - Added `onInit` & `onFullscreenChange` callbacks to **YoutubePlayerController**.
