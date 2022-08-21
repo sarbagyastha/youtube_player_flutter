@@ -27,10 +27,11 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     javaScriptChannels = _eventHandler.javascriptChannels;
   }
 
-  /// Creates [YoutubePlayerController] and initializes it with the given [videoId].
+  /// Creates a [YoutubePlayerController] and initializes the player with [videoId].
   factory YoutubePlayerController.fromVideoId({
     required String videoId,
     YoutubePlayerParams params = const YoutubePlayerParams(),
+    bool autoPlay = false,
     double? startSeconds,
     double? endSeconds,
   }) {
@@ -38,11 +39,19 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
 
     return controller
       ..onInit = () {
-        controller.loadVideoById(
-          videoId: videoId,
-          startSeconds: startSeconds,
-          endSeconds: endSeconds,
-        );
+        if (autoPlay) {
+          controller.loadVideoById(
+            videoId: videoId,
+            startSeconds: startSeconds,
+            endSeconds: endSeconds,
+          );
+        } else {
+          controller.cueVideoById(
+            videoId: videoId,
+            startSeconds: startSeconds,
+            endSeconds: endSeconds,
+          );
+        }
       };
   }
 
@@ -165,6 +174,30 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
         'startSeconds': startSeconds,
         'endSeconds': endSeconds,
       },
+    );
+  }
+
+  /// Loads the video with the given [url].
+  ///
+  /// The [url] must be a valid youtube video watch url.
+  /// i.e. https://www.youtube.com/watch?v=VIDEO_ID
+  Future<void> loadVideo(String url) {
+    assert(
+      RegExp(r'^https://(?:www\.|m\.)?youtube\.com/watch.*').hasMatch(url),
+      'Only YouTube watch URLs are supported.',
+    );
+
+    final params = Uri.parse(url).queryParameters;
+    final videoId = params['v'];
+
+    assert(
+      videoId != null && videoId.isNotEmpty,
+      'Video ID is missing from the provided url.',
+    );
+
+    return loadVideoById(
+      videoId: videoId!,
+      startSeconds: double.tryParse(params['t'] ?? ''),
     );
   }
 
@@ -362,8 +395,14 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   }
 
   @override
-  Future<String> get videoUrl {
-    return _runWithResult('getVideoUrl');
+  Future<String> get videoUrl async {
+    final videoUrl = await _runWithResult('getVideoUrl');
+
+    if (videoUrl.startsWith('"')) {
+      return videoUrl.substring(1, videoUrl.length - 1);
+    }
+
+    return videoUrl;
   }
 
   @override
