@@ -27,6 +27,25 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     javaScriptChannels = _eventHandler.javascriptChannels;
   }
 
+  /// Creates [YoutubePlayerController] and initializes it with the given [videoId].
+  factory YoutubePlayerController.fromVideoId({
+    required String videoId,
+    YoutubePlayerParams params = const YoutubePlayerParams(),
+    double? startSeconds,
+    double? endSeconds,
+  }) {
+    final controller = YoutubePlayerController(params: params);
+
+    return controller
+      ..onInit = () {
+        controller.loadVideoById(
+          videoId: videoId,
+          startSeconds: startSeconds,
+          endSeconds: endSeconds,
+        );
+      };
+  }
+
   /// Defines player parameters for the youtube player.
   final YoutubePlayerParams params;
 
