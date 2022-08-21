@@ -64,7 +64,7 @@ class _SourceInputSectionState extends State<SourceInputSection> {
           crossAxisCount: 2,
           children: [
             _Button(
-              action: 'LOAD',
+              action: 'Load',
               onTap: () {
                 context.ytController.loadVideoById(
                   videoId: _cleanId(_textController.text) ?? '',
@@ -72,7 +72,7 @@ class _SourceInputSectionState extends State<SourceInputSection> {
               },
             ),
             _Button(
-              action: 'CUE',
+              action: 'Cue',
               onTap: () {
                 context.ytController.cueVideoById(
                   videoId: _cleanId(_textController.text) ?? '',
@@ -80,7 +80,7 @@ class _SourceInputSectionState extends State<SourceInputSection> {
               },
             ),
             _Button(
-              action: 'LOAD PLAYLIST',
+              action: 'Load Playlist',
               onTap: _playlistType == null
                   ? null
                   : () {
@@ -91,7 +91,7 @@ class _SourceInputSectionState extends State<SourceInputSection> {
                     },
             ),
             _Button(
-              action: 'CUE PLAYLIST',
+              action: 'Cue Playlist',
               onTap: _playlistType == null
                   ? null
                   : () {

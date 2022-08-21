@@ -97,7 +97,15 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
                 return Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(flex: 3, child: player),
+                    Expanded(
+                      flex: 3,
+                      child: Column(
+                        children: [
+                          player,
+                          const VideoPositionIndicator(),
+                        ],
+                      ),
+                    ),
                     const Expanded(
                       flex: 2,
                       child: SingleChildScrollView(
@@ -111,6 +119,7 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
               return ListView(
                 children: [
                   player,
+                  const VideoPositionIndicator(),
                   const Controls(),
                 ],
               );
@@ -174,6 +183,31 @@ class VideoPlaylistIconButton extends StatelessWidget {
         );
       },
       icon: const Icon(Icons.playlist_play_sharp),
+    );
+  }
+}
+
+///
+class VideoPositionIndicator extends StatelessWidget {
+  ///
+  const VideoPositionIndicator({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = context.ytController;
+
+    return StreamBuilder<Duration>(
+      stream: controller.getCurrentPositionStream(),
+      initialData: Duration.zero,
+      builder: (context, snapshot) {
+        final position = snapshot.data!.inMilliseconds;
+        final duration = controller.metadata.duration.inMilliseconds;
+
+        return LinearProgressIndicator(
+          value: duration == 0 ? 0 : position / duration,
+          minHeight: 1,
+        );
+      },
     );
   }
 }

@@ -558,6 +558,23 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     }
   }
 
+  /// Creates a stream that repeatedly emits current time at [period] intervals.
+  Stream<Duration> getCurrentPositionStream({
+    Duration period = const Duration(seconds: 1),
+  }) async* {
+    yield _getDurationFrom(seconds: await currentTime);
+
+    yield* Stream.periodic(period).asyncMap(
+      (_) async => _getDurationFrom(seconds: await currentTime),
+    );
+  }
+
+  Duration _getDurationFrom({required double seconds}) {
+    final timeInMs = (seconds * 1000).truncate();
+
+    return Duration(milliseconds: timeInMs);
+  }
+
   /// Called when the player is created.
   FutureOr<void> Function() onInit = () {};
 
