@@ -69,6 +69,10 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
       StreamController.broadcast();
   YoutubePlayerValue _value = YoutubePlayerValue();
 
+  /// A Stream of [YoutubePlayerValue], which allows you to subscribe to changes
+  /// in the controller value.
+  Stream<YoutubePlayerValue> get stream => _valueController.stream;
+
   /// The [YoutubePlayerValue].
   YoutubePlayerValue get value => _value;
 
