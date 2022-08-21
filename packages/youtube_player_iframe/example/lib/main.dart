@@ -55,7 +55,6 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
         showControls: true,
         mute: false,
         showFullscreenButton: true,
-        autoPlay: true,
         loop: false,
       ),
     )
