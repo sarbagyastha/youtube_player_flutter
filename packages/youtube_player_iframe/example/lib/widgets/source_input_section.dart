@@ -23,82 +23,84 @@ class _SourceInputSectionState extends State<SourceInputSection> {
 
   @override
   Widget build(BuildContext context) {
-    return YoutubeValueBuilder(
-      builder: (context, value) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _PlaylistTypeDropDown(
+          onChanged: (type) {
+            _playlistType = type;
+            setState(() {});
+          },
+        ),
+        const SizedBox(height: 10),
+        TextField(
+          controller: _textController,
+          decoration: InputDecoration(
+            border: InputBorder.none,
+            hintText: _hint,
+            helperText: _helperText,
+            fillColor: Theme.of(context).colorScheme.surfaceVariant,
+            filled: true,
+            hintStyle: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w300,
+                ),
+            suffixIcon: IconButton(
+              icon: const Icon(Icons.clear),
+              onPressed: () => _textController.clear(),
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
+        GridView.count(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          childAspectRatio: 20 / 6,
+          crossAxisSpacing: 10,
+          mainAxisSpacing: 10,
+          crossAxisCount: 2,
           children: [
-            _PlaylistTypeDropDown(
-              onChanged: (type) => _playlistType = type,
+            _Button(
+              action: 'LOAD',
+              onTap: () {
+                context.ytController.loadVideoById(
+                  videoId: _cleanId(_textController.text) ?? '',
+                );
+              },
             ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: _textController,
-              decoration: InputDecoration(
-                border: InputBorder.none,
-                hintText: _hint,
-                helperText: _helperText,
-                fillColor: Theme.of(context).primaryColor.withAlpha(20),
-                filled: true,
-                hintStyle: const TextStyle(fontWeight: FontWeight.w300),
-                suffixIcon: IconButton(
-                  icon: const Icon(Icons.clear),
-                  onPressed: () => _textController.clear(),
-                ),
-              ),
+            _Button(
+              action: 'CUE',
+              onTap: () {
+                context.ytController.cueVideoById(
+                  videoId: _cleanId(_textController.text) ?? '',
+                );
+              },
             ),
-            const SizedBox(height: 10),
-            GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              childAspectRatio: 20 / 6,
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
-              crossAxisCount: 2,
-              children: [
-                _Button(
-                  action: 'LOAD',
-                  onTap: () {
-                    context.ytController.loadVideoById(
-                      videoId: _cleanId(_textController.text) ?? '',
-                    );
-                  },
-                ),
-                _Button(
-                  action: 'CUE',
-                  onTap: () {
-                    context.ytController.cueVideoById(
-                      videoId: _cleanId(_textController.text) ?? '',
-                    );
-                  },
-                ),
-                _Button(
-                  action: 'LOAD PLAYLIST',
-                  onTap: _playlistType == null
-                      ? null
-                      : () {
-                          context.ytController.loadPlaylist(
-                            list: [_textController.text],
-                            listType: _playlistType!,
-                          );
-                        },
-                ),
-                _Button(
-                  action: 'CUE PLAYLIST',
-                  onTap: _playlistType == null
-                      ? null
-                      : () {
-                          context.ytController.cuePlaylist(
-                            list: [_textController.text],
-                            listType: _playlistType!,
-                          );
-                        },
-                ),
-              ],
+            _Button(
+              action: 'LOAD PLAYLIST',
+              onTap: _playlistType == null
+                  ? null
+                  : () {
+                      context.ytController.loadPlaylist(
+                        list: [_textController.text],
+                        listType: _playlistType!,
+                      );
+                    },
+            ),
+            _Button(
+              action: 'CUE PLAYLIST',
+              onTap: _playlistType == null
+                  ? null
+                  : () {
+                      context.ytController.cuePlaylist(
+                        list: [_textController.text],
+                        listType: _playlistType!,
+                      );
+                    },
             ),
           ],
-        );
-      },
+        ),
+      ],
     );
   }
 
@@ -120,7 +122,7 @@ class _SourceInputSectionState extends State<SourceInputSection> {
       case ListType.userUploads:
         return 'Enter channel name';
       default:
-        return 'Enter youtube \<video id\> or \<link\>';
+        return r'Enter youtube <video id> or <link>';
     }
   }
 
@@ -139,16 +141,12 @@ class _SourceInputSectionState extends State<SourceInputSection> {
         content: Text(
           message,
           textAlign: TextAlign.center,
-          style: const TextStyle(
-            fontWeight: FontWeight.w300,
-            fontSize: 16.0,
-          ),
+          style: const TextStyle(fontWeight: FontWeight.w300, fontSize: 16),
         ),
-        backgroundColor: Theme.of(context).primaryColor,
         behavior: SnackBarBehavior.floating,
-        elevation: 1.0,
+        elevation: 1,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(50.0),
+          borderRadius: BorderRadius.circular(50),
         ),
       ),
     );
@@ -167,7 +165,7 @@ class _PlaylistTypeDropDown extends StatefulWidget {
     required this.onChanged,
   }) : super(key: key);
 
-  final ValueChanged<ListType> onChanged;
+  final ValueChanged<ListType?> onChanged;
 
   @override
   _PlaylistTypeDropDownState createState() => _PlaylistTypeDropDownState();
@@ -178,22 +176,32 @@ class _PlaylistTypeDropDownState extends State<_PlaylistTypeDropDown> {
 
   @override
   Widget build(BuildContext context) {
-    return DropdownButton<ListType>(
-      isExpanded: true,
-      hint: const Text(
-        ' -- Choose playlist type',
-        style: TextStyle(fontWeight: FontWeight.w400),
+    return DropdownButtonFormField<ListType>(
+      decoration: InputDecoration(
+        border: InputBorder.none,
+        fillColor: Theme.of(context).colorScheme.surfaceVariant,
+        filled: true,
       ),
+      isExpanded: true,
       value: _playlistType,
-      items: ListType.values
-          .map(
-            (type) => DropdownMenuItem(child: Text(type.value), value: type),
-          )
-          .toList(),
+      items: [
+        DropdownMenuItem(
+          child: Text(
+            'Select playlist type',
+            style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w300,
+                ),
+          ),
+        ),
+        ...ListType.values.map(
+          (type) => DropdownMenuItem(child: Text(type.value), value: type),
+        ),
+      ],
       onChanged: (value) {
         _playlistType = value;
         setState(() {});
-        if (value != null) widget.onChanged(value);
+        widget.onChanged(value);
       },
     );
   }
@@ -211,8 +219,7 @@ class _Button extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialButton(
-      color: Theme.of(context).primaryColor,
+    return ElevatedButton(
       onPressed: onTap == null
           ? null
           : () {

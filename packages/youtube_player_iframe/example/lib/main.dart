@@ -7,6 +7,7 @@ import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
+import 'package:youtube_player_iframe_example/video_list_page.dart';
 
 import 'widgets/meta_data_section.dart';
 import 'widgets/play_pause_button_bar.dart';
@@ -15,7 +16,6 @@ import 'widgets/source_input_section.dart';
 import 'widgets/volume_slider.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
   runApp(YoutubeApp());
 }
 
@@ -25,10 +25,12 @@ class YoutubeApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Youtube Player IFrame Demo',
-      theme: ThemeData(
-        brightness: Brightness.dark,
-        primarySwatch: Colors.deepPurple,
-        scaffoldBackgroundColor: Colors.black,
+      theme: ThemeData.from(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.deepPurple,
+          brightness: Brightness.dark,
+        ),
+        useMaterial3: true,
       ),
       debugShowCheckedModeBanner: false,
       home: YoutubeAppDemo(),
@@ -54,6 +56,7 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
         mute: false,
         showFullscreenButton: true,
         autoPlay: true,
+        loop: false,
       ),
     )
       ..onInit = () {
@@ -85,6 +88,10 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
       controller: _controller,
       builder: (context, player) {
         return Scaffold(
+          appBar: AppBar(
+            title: const Text('Youtube Player IFrame Demo'),
+            actions: const [VideoPlaylistIconButton()],
+          ),
           body: LayoutBuilder(
             builder: (context, constraints) {
               if (kIsWeb && constraints.maxWidth > 750) {
@@ -150,4 +157,25 @@ class Controls extends StatelessWidget {
   }
 
   Widget get _space => const SizedBox(height: 10);
+}
+
+///
+class VideoPlaylistIconButton extends StatelessWidget {
+  ///
+  const VideoPlaylistIconButton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const VideoListPage(),
+          ),
+        );
+      },
+      icon: const Icon(Icons.playlist_play_sharp),
+    );
+  }
 }
