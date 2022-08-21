@@ -173,14 +173,18 @@ class VideoPlaylistIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final controller = context.ytController;
+
     return IconButton(
-      onPressed: () {
-        Navigator.push(
+      onPressed: () async {
+        controller.pauseVideo();
+        await Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => const VideoListPage(),
           ),
         );
+        controller.playVideo();
       },
       icon: const Icon(Icons.playlist_play_sharp),
     );
