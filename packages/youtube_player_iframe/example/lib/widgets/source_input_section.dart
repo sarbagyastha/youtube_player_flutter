@@ -33,21 +33,24 @@ class _SourceInputSectionState extends State<SourceInputSection> {
           },
         ),
         const SizedBox(height: 10),
-        TextField(
-          controller: _textController,
-          decoration: InputDecoration(
-            border: InputBorder.none,
-            hintText: _hint,
-            helperText: _helperText,
-            fillColor: Theme.of(context).colorScheme.surfaceVariant,
-            filled: true,
-            hintStyle: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  fontWeight: FontWeight.w300,
-                ),
-            suffixIcon: IconButton(
-              icon: const Icon(Icons.clear),
-              onPressed: () => _textController.clear(),
+        AnimatedSize(
+          duration: const Duration(milliseconds: 300),
+          child: TextField(
+            controller: _textController,
+            decoration: InputDecoration(
+              border: InputBorder.none,
+              hintText: _hint,
+              helperText: _helperText,
+              fillColor: Theme.of(context).colorScheme.surfaceVariant,
+              filled: true,
+              hintStyle: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w300,
+                  ),
+              suffixIcon: IconButton(
+                icon: const Icon(Icons.clear),
+                onPressed: () => _textController.clear(),
+              ),
             ),
           ),
         ),
