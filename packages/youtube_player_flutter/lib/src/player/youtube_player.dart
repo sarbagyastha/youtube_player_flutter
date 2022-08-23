@@ -5,9 +5,9 @@
 import 'package:flutter/material.dart';
 
 import '../enums/thumbnail_quality.dart';
-import '../utils/errors.dart';
 import '../utils/youtube_meta_data.dart';
 import '../utils/youtube_player_controller.dart';
+import '../utils/youtube_player_errors.dart';
 import '../utils/youtube_player_flags.dart';
 import '../widgets/widgets.dart';
 import 'raw_youtube_player.dart';
@@ -261,7 +261,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                       const SizedBox(width: 5.0),
                       Expanded(
                         child: Text(
-                          errorString(
+                          YoutubePlayerErrors.description(
                             controller.value.errorCode,
                             videoId: controller.metadata.videoId.isNotEmpty
                                 ? controller.metadata.videoId

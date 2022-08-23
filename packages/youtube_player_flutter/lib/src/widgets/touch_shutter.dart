@@ -6,8 +6,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../utils/duration_formatter.dart';
 import '../utils/youtube_player_controller.dart';
+import '../utils/youtube_player_duration_formatter.dart';
 
 /// A widget to display darkened translucent overlay, when video area is touched.
 ///
@@ -111,10 +111,11 @@ class _TouchShutterState extends State<TouchShutter> {
                       .round();
               setState(() {
                 seekDuration = (delta < 0 ? "- " : "+ ") +
-                    durationFormatter(
+                    YoutubePlayerDurationFormatter.format(
                         (delta < 0 ? -1 : 1) * (delta * 1000).round());
                 if (seekToPosition < 0) seekToPosition = 0;
-                seekPosition = durationFormatter(seekToPosition);
+                seekPosition =
+                    YoutubePlayerDurationFormatter.format(seekToPosition);
               });
             },
             onHorizontalDragEnd: (_) {
