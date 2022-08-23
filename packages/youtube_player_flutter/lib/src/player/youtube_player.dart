@@ -38,11 +38,17 @@ import 'raw_youtube_player.dart';
 ///)
 /// ```
 ///
-class YoutubePlayer extends StatefulWidget {
+
+mixin IYoutubePlayer on Widget {
+  YoutubePlayerController get controller;
+}
+
+class YoutubePlayer extends StatefulWidget with IYoutubePlayer {
   /// Sets [Key] as an identification to underlying web view associated to the player.
   final Key? key;
 
   /// A [YoutubePlayerController] to control the player.
+  @override
   final YoutubePlayerController controller;
 
   /// {@template youtube_player_flutter.width}

@@ -6,7 +6,7 @@ import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 /// A wrapper for [YoutubePlayer].
 class YoutubePlayerBuilder extends StatefulWidget {
   /// The actual [YoutubePlayer].
-  final YoutubePlayer player;
+  final IYoutubePlayer player;
 
   /// Builds the widget below this [builder].
   final Widget Function(BuildContext, Widget) builder;
