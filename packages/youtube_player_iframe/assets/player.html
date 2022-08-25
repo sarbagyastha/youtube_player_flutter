@@ -43,9 +43,11 @@
       firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
       var platform = "<<platform>>";
+      var host = "<<host>>";
       var player;
       function onYouTubeIframeAPIReady() {
         player = new YT.Player("player", {
+          host: host,
           playerVars: <<playerVars>>,
           events: {
             onReady: function (event) {
