@@ -7,12 +7,21 @@ import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 ///
 class VolumeSlider extends StatefulWidget {
+  ///
+  const VolumeSlider({super.key});
+
   @override
   State<VolumeSlider> createState() => _VolumeSliderState();
 }
 
 class _VolumeSliderState extends State<VolumeSlider> {
-  final _volume = ValueNotifier<int>(100);
+  int? _volume;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _initVolume();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,24 +32,25 @@ class _VolumeSliderState extends State<VolumeSlider> {
           style: TextStyle(fontWeight: FontWeight.w300),
         ),
         Expanded(
-          child: ValueListenableBuilder<int>(
-            valueListenable: _volume,
-            builder: (context, volume, _) {
-              return Slider(
-                value: volume.toDouble(),
-                min: 0.0,
-                max: 100.0,
-                divisions: 10,
-                label: '$volume',
-                onChanged: (value) {
-                  _volume.value = value.round();
-                  context.ytController.setVolume(volume);
-                },
-              );
+          child: Slider(
+            value: _volume?.toDouble() ?? 100,
+            min: 0.0,
+            max: 100.0,
+            divisions: 10,
+            label: '$_volume',
+            onChanged: (value) {
+              _volume = value.round();
+              setState(() {});
+
+              context.ytController.setVolume(_volume!);
             },
           ),
         ),
       ],
     );
+  }
+
+  Future<void> _initVolume() async {
+    _volume ??= await context.ytController.volume;
   }
 }
