@@ -133,7 +133,7 @@ class YoutubePlayerParams {
     this.showControls = true,
     this.enableKeyboard = kIsWeb,
     this.enableJavaScript = true,
-    this.endAt,
+    @Deprecated('Use load or cue methods instead.') this.endAt,
     this.showFullscreenButton = false,
     this.interfaceLanguage = 'en',
     this.showVideoAnnotations = true,
@@ -141,7 +141,8 @@ class YoutubePlayerParams {
     this.origin = 'https://www.youtube.com',
     this.playsInline = true,
     this.strictRelatedVideos = false,
-    this.startAt = Duration.zero,
+    @Deprecated('Use load or cue methods instead.')
+        this.startAt = Duration.zero,
   });
 
   /// Creates [Map] representation of [YoutubePlayerParams].
@@ -155,7 +156,6 @@ class YoutubePlayerParams {
       'controls': _boolean(showControls),
       'disablekb': _boolean(!enableKeyboard),
       'enablejsapi': _boolean(enableJavaScript),
-      if (endAt != null) 'end': endAt!.inSeconds,
       'fs': _boolean(showFullscreenButton),
       'hl': interfaceLanguage,
       'iv_load_policy': showVideoAnnotations ? 1 : 3,
@@ -164,7 +164,6 @@ class YoutubePlayerParams {
       if (origin != null && !kIsWeb) 'origin': origin,
       'playsinline': _boolean(playsInline),
       'rel': _boolean(!strictRelatedVideos),
-      'start': startAt.inSeconds,
     };
   }
 
