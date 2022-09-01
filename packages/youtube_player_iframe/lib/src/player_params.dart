@@ -163,7 +163,7 @@ class YoutubePlayerParams {
       'modestbranding': '1',
       if (origin != null && !kIsWeb) 'origin': origin,
       'playsinline': _boolean(playsInline),
-      'rel': _boolean(strictRelatedVideos),
+      'rel': _boolean(!strictRelatedVideos),
       'start': startAt.inSeconds,
     };
   }
