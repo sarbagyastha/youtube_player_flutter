@@ -155,7 +155,7 @@ class Controls extends StatelessWidget {
           _space,
           PlayPauseButtonBar(),
           _space,
-          VolumeSlider(),
+          const VolumeSlider(),
           _space,
           const VideoPositionSeeker(),
           _space,
