@@ -288,7 +288,6 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   /// the old one.
   void update({
     FullScreenOption? fullScreenOption,
-    int? volume,
     PlayerState? playerState,
     double? playbackRate,
     String? playbackQuality,
@@ -297,7 +296,6 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   }) {
     final updatedValue = YoutubePlayerValue(
       fullScreenOption: fullScreenOption ?? value.fullScreenOption,
-      volume: volume ?? value.volume,
       playerState: playerState ?? value.playerState,
       playbackRate: playbackRate ?? value.playbackRate,
       playbackQuality: playbackQuality ?? value.playbackQuality,
