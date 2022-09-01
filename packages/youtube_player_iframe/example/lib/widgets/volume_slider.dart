@@ -17,7 +17,7 @@ class _VolumeSliderState extends State<VolumeSlider> {
   @override
   Widget build(BuildContext context) {
     return Row(
-      children: <Widget>[
+      children: [
         const Text(
           'Volume',
           style: TextStyle(fontWeight: FontWeight.w300),
@@ -27,8 +27,6 @@ class _VolumeSliderState extends State<VolumeSlider> {
             valueListenable: _volume,
             builder: (context, volume, _) {
               return Slider(
-                inactiveColor: Colors.transparent,
-                activeColor: Theme.of(context).colorScheme.onSurface,
                 value: volume.toDouble(),
                 min: 0.0,
                 max: 100.0,

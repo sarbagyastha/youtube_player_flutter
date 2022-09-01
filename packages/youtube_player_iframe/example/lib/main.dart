@@ -157,6 +157,8 @@ class Controls extends StatelessWidget {
           _space,
           VolumeSlider(),
           _space,
+          const VideoPositionSeeker(),
+          _space,
           PlayerStateSection(),
         ],
       ),
@@ -212,6 +214,58 @@ class VideoPositionIndicator extends StatelessWidget {
           minHeight: 1,
         );
       },
+    );
+  }
+}
+
+///
+class VideoPositionSeeker extends StatelessWidget {
+  ///
+  const VideoPositionSeeker({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    var value = 0.0;
+
+    return Row(
+      children: [
+        const Text(
+          'Seek',
+          style: TextStyle(fontWeight: FontWeight.w300),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: StreamBuilder<Duration>(
+            stream: context.ytController.getCurrentPositionStream(),
+            initialData: Duration.zero,
+            builder: (context, snapshot) {
+              final position = snapshot.data?.inSeconds ?? 0;
+              final duration = context.ytController.metadata.duration.inSeconds;
+
+              value = position == 0 || duration == 0 ? 0 : position / duration;
+
+              return StatefulBuilder(
+                builder: (context, setState) {
+                  return Slider(
+                    value: value,
+                    onChanged: (positionFraction) {
+                      value = positionFraction;
+                      setState(() {});
+
+                      context.ytController.seekTo(
+                        seconds: (value * duration).toDouble(),
+                        allowSeekAhead: true,
+                      );
+                    },
+                    min: 0,
+                    max: 1,
+                  );
+                },
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }
