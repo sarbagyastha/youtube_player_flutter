@@ -65,8 +65,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   /// The set of [JavascriptChannel]s available to JavaScript code running in the player iframe.
   late final Set<JavascriptChannel> javaScriptChannels;
 
-  final StreamController<YoutubePlayerValue> _valueController =
-      StreamController.broadcast();
+  final StreamController<YoutubePlayerValue> _valueController = StreamController.broadcast();
   YoutubePlayerValue _value = YoutubePlayerValue();
 
   /// A Stream of [YoutubePlayerValue], which allows you to subscribe to changes
@@ -334,8 +333,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     if (trimWhitespaces) url = url.trim();
 
     const contentUrlPattern = r'^https:\/\/(?:www\.|m\.)?youtube\.com\/watch\?';
-    const embedUrlPattern =
-        r'^https:\/\/(?:www\.|m\.)?youtube(?:-nocookie)?\.com\/embed\/';
+    const embedUrlPattern = r'^https:\/\/(?:www\.|m\.)?youtube(?:-nocookie)?\.com\/embed\/';
     const altUrlPattern = r'^https:\/\/youtu\.be\/';
     const shortsUrlPattern = r'^https:\/\/(?:www\.|m\.)?youtube\.com\/shorts\/';
     const idPattern = r'([_\-a-zA-Z0-9]{11}).*$';
@@ -362,9 +360,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     String quality = ThumbnailQuality.standard,
     bool webp = true,
   }) {
-    return webp
-        ? 'https://i3.ytimg.com/vi_webp/$videoId/$quality.webp'
-        : 'https://i3.ytimg.com/vi/$videoId/$quality.jpg';
+    return webp ? 'https://i3.ytimg.com/vi_webp/$videoId/$quality.webp' : 'https://i3.ytimg.com/vi/$videoId/$quality.jpg';
   }
 
   @override
@@ -414,9 +410,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   Future<List<double>> get availablePlaybackRates async {
     final rates = await _evalWithResult('getAvailablePlaybackRates()');
 
-    return List<num>.from(jsonDecode(rates))
-        .map((r) => r.toDouble())
-        .toList(growable: false);
+    return List<num>.from(jsonDecode(rates)).map((r) => r.toDouble()).toList(growable: false);
   }
 
   @override
@@ -561,6 +555,14 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     } else {
       enterFullScreen(lock: lock);
     }
+  }
+
+  /// Called when mute mode for the player changes.
+  void Function(bool isMuted) onMuteChange = (_) {};
+
+  /// Toggles mute mode.
+  void toggleMute({required bool isMuted}) {
+    onMuteChange(isMuted);
   }
 
   /// Creates a stream that repeatedly emits current time at [period] intervals.
