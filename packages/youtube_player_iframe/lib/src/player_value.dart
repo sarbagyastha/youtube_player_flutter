@@ -12,7 +12,6 @@ class YoutubePlayerValue {
   /// of a [YoutubePlayerController].
   YoutubePlayerValue({
     this.fullScreenOption = const FullScreenOption(enabled: false),
-    this.volume = 100,
     this.playerState = PlayerState.unknown,
     this.playbackRate = PlaybackRate.normal,
     this.playbackQuality,
@@ -22,9 +21,6 @@ class YoutubePlayerValue {
 
   /// The initial fullscreen option.
   final FullScreenOption fullScreenOption;
-
-  /// The current volume assigned for the player.
-  final int volume;
 
   /// The current state of the player defined as [PlayerState].
   final PlayerState playerState;
@@ -50,7 +46,6 @@ class YoutubePlayerValue {
   String toString() {
     return '$runtimeType('
         'metaData: ${metaData.toString()}, '
-        'volume: $volume, '
         'playerState: $playerState, '
         'playbackRate: $playbackRate, '
         'playbackQuality: $playbackQuality, '
