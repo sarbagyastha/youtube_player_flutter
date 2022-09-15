@@ -1,3 +1,6 @@
+## 1.0.4
+- Bumped dependencies.
+
 ## 1.0.3
 - Fixed unsupported platform warning.
 
