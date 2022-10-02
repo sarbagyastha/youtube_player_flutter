@@ -5,13 +5,15 @@ repository: https://github.com/sarbagyastha/youtube_player_flutter
 homepage: https://github.com/sarbagyastha/youtube_player_flutter/tree/master/packages/youtube_player_flutter
 
 environment:
-  sdk: '>=2.17.0 <3.0.0'
-  flutter: '>=3.0.0'
+  sdk: ">=2.17.0 <3.0.0"
+  flutter: ">=3.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  flutter_inappwebview: ^5.4.3+7
+  flutter_inappwebview:
+    git:
+      url: https://github.com/admin-gomedialy/flutter_inappwebview.git
 
 dev_dependencies:
   flutter_test:
