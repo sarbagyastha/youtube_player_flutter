@@ -44,11 +44,12 @@
 
       var platform = "<<platform>>";
       var host = "<<host>>";
+      var playerVars = "<<playerVars>>"
       var player;
       function onYouTubeIframeAPIReady() {
         player = new YT.Player("player", {
           host: host,
-          playerVars: <<playerVars>>,
+          playerVars: playerVars,
           events: {
             onReady: function (event) {
               handleFullScreenForMobilePlatform();
