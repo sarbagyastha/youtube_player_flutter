@@ -80,6 +80,7 @@ class _YoutubePlayerScaffoldState extends State<YoutubePlayerScaffold> {
         controller: widget.controller,
         aspectRatio: widget.aspectRatio,
         gestureRecognizers: widget.gestureRecognizers,
+        backgroundColor: widget.backgroundColor,
       ),
     );
 
