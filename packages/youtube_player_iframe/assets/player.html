@@ -45,6 +45,7 @@
       var platform = "<<platform>>";
       var host = "<<host>>";
       var player;
+      var muted = false;
       function onYouTubeIframeAPIReady() {
         player = new YT.Player("player", {
           host: host,
@@ -52,6 +53,7 @@
           events: {
             onReady: function (event) {
               handleFullScreenForMobilePlatform();
+              handleMute();
               sendMessage('Ready', event);
             },
             onStateChange: function (event) {
@@ -146,6 +148,15 @@
             };
           }
         }
+      }
+
+      function handleMute() {
+        setInterval(() => {
+          if (muted != player.isMuted()) {
+            sendMessage('MuteButtonPressed', player.isMuted());
+            muted = player.isMuted();
+          }
+        }, 500);
       }
     </script>
   </body>

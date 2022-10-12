@@ -16,6 +16,7 @@ class YoutubePlayerEventHandler {
       'PlaybackRateChange': onPlaybackRateChange,
       'PlayerError': onError,
       'FullscreenButtonPressed': onFullscreenButtonPressed,
+      'MuteButtonPressed': onMuteButtonPressed,
     };
 
     javascriptChannels = {
@@ -110,6 +111,11 @@ class YoutubePlayerEventHandler {
   /// This event is fired to indicate that the fullscreen button was clicked.
   void onFullscreenButtonPressed(Object data) {
     controller.toggleFullScreen();
+  }
+
+  /// This event is fired to indicate that the mute button was clicked.
+  void onMuteButtonPressed(Object data) {
+    controller.toggleMute(isMuted: data as bool);
   }
 
   /// This event fires if an error occurs in the player.
