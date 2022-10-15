@@ -5,9 +5,9 @@
 import 'package:flutter/material.dart';
 
 import '../enums/thumbnail_quality.dart';
-import '../utils/errors.dart';
 import '../utils/youtube_meta_data.dart';
 import '../utils/youtube_player_controller.dart';
+import '../utils/youtube_player_errors.dart';
 import '../utils/youtube_player_flags.dart';
 import '../widgets/widgets.dart';
 import 'raw_youtube_player.dart';
@@ -38,11 +38,17 @@ import 'raw_youtube_player.dart';
 ///)
 /// ```
 ///
-class YoutubePlayer extends StatefulWidget {
+
+mixin IYoutubePlayer on Widget {
+  YoutubePlayerController get controller;
+}
+
+class YoutubePlayer extends StatefulWidget with IYoutubePlayer {
   /// Sets [Key] as an identification to underlying web view associated to the player.
   final Key? key;
 
   /// A [YoutubePlayerController] to control the player.
+  @override
   final YoutubePlayerController controller;
 
   /// {@template youtube_player_flutter.width}
@@ -255,7 +261,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                       const SizedBox(width: 5.0),
                       Expanded(
                         child: Text(
-                          errorString(
+                          YoutubePlayerErrors.description(
                             controller.value.errorCode,
                             videoId: controller.metadata.videoId.isNotEmpty
                                 ? controller.metadata.videoId

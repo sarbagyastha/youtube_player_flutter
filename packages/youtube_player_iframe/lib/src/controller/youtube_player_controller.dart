@@ -233,6 +233,10 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
 
     await controller.loadHtmlString(
       playerHtml
+          .replaceFirst(
+            '<<disablePlayerGestures>>',
+            params.showControls ? 'all' : 'none',
+          )
           .replaceFirst('<<playerVars>>', params.toJson())
           .replaceFirst('<<platform>>', platform)
           .replaceFirst('<<host>>', params.origin ?? 'https://www.youtube.com'),
