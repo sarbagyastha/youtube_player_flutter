@@ -582,5 +582,5 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   FutureOr<void> Function() onInit = () {};
 
   /// Disposes the resources created by [YoutubePlayerController].
-  void close() => _valueController.close();
+  Future<void> close() async => await _valueController.close();
 }
