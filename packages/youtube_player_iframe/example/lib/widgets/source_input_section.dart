@@ -13,7 +13,7 @@ class SourceInputSection extends StatefulWidget {
 
 class _SourceInputSectionState extends State<SourceInputSection> {
   late TextEditingController _textController;
-  String? _playlistType;
+  ListType? _playlistType;
 
   @override
   void initState() {
@@ -23,108 +23,110 @@ class _SourceInputSectionState extends State<SourceInputSection> {
 
   @override
   Widget build(BuildContext context) {
-    return YoutubeValueBuilder(
-      builder: (context, value) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _PlaylistTypeDropDown(
-              onChanged: (type) => _playlistType = type,
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              enabled: value.isReady,
-              controller: _textController,
-              decoration: InputDecoration(
-                border: InputBorder.none,
-                hintText: _hint,
-                helperText: _helperText,
-                fillColor: Theme.of(context).primaryColor.withAlpha(20),
-                filled: true,
-                hintStyle: const TextStyle(fontWeight: FontWeight.w300),
-                suffixIcon: IconButton(
-                  icon: const Icon(Icons.clear),
-                  onPressed: () => _textController.clear(),
-                ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _PlaylistTypeDropDown(
+          onChanged: (type) {
+            _playlistType = type;
+            setState(() {});
+          },
+        ),
+        const SizedBox(height: 10),
+        AnimatedSize(
+          duration: const Duration(milliseconds: 300),
+          child: TextField(
+            controller: _textController,
+            decoration: InputDecoration(
+              border: InputBorder.none,
+              hintText: _hint,
+              helperText: _helperText,
+              fillColor: Theme.of(context).colorScheme.surfaceVariant,
+              filled: true,
+              hintStyle: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w300,
+                  ),
+              suffixIcon: IconButton(
+                icon: const Icon(Icons.clear),
+                onPressed: () => _textController.clear(),
               ),
             ),
-            const SizedBox(height: 10),
-            GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              childAspectRatio: 20 / 6,
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
-              crossAxisCount: 2,
-              children: [
-                _Button(
-                  action: 'LOAD',
-                  onTap: () {
-                    context.ytController.load(
-                      _cleanId(_textController.text) ?? '',
-                    );
-                  },
-                ),
-                _Button(
-                  action: 'CUE',
-                  onTap: () {
-                    context.ytController.cue(
-                      _cleanId(_textController.text) ?? '',
-                    );
-                  },
-                ),
-                _Button(
-                  action: 'LOAD PLAYLIST',
-                  onTap: _playlistType == null
-                      ? null
-                      : () {
-                          context.ytController.loadPlaylist(
-                            _textController.text,
-                            listType: _playlistType!,
-                          );
-                        },
-                ),
-                _Button(
-                  action: 'CUE PLAYLIST',
-                  onTap: _playlistType == null
-                      ? null
-                      : () {
-                          context.ytController.cuePlaylist(
-                            _textController.text,
-                            listType: _playlistType!,
-                          );
-                        },
-                ),
-              ],
+          ),
+        ),
+        const SizedBox(height: 10),
+        GridView.count(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          childAspectRatio: 4,
+          crossAxisSpacing: 10,
+          mainAxisSpacing: 10,
+          crossAxisCount: 2,
+          children: [
+            _Button(
+              action: 'Load',
+              onTap: () {
+                context.ytController.loadVideoById(
+                  videoId: _cleanId(_textController.text) ?? '',
+                );
+              },
+            ),
+            _Button(
+              action: 'Cue',
+              onTap: () {
+                context.ytController.cueVideoById(
+                  videoId: _cleanId(_textController.text) ?? '',
+                );
+              },
+            ),
+            _Button(
+              action: 'Load Playlist',
+              onTap: _playlistType == null
+                  ? null
+                  : () {
+                      context.ytController.loadPlaylist(
+                        list: [_textController.text],
+                        listType: _playlistType!,
+                      );
+                    },
+            ),
+            _Button(
+              action: 'Cue Playlist',
+              onTap: _playlistType == null
+                  ? null
+                  : () {
+                      context.ytController.cuePlaylist(
+                        list: [_textController.text],
+                        listType: _playlistType!,
+                      );
+                    },
             ),
           ],
-        );
-      },
+        ),
+      ],
     );
   }
 
   String? get _helperText {
     switch (_playlistType) {
-      case PlaylistType.search:
-        return '"avengers trailer", "nepali songs"';
-      case PlaylistType.playlist:
+      case ListType.playlist:
         return '"PLj0L3ZL0ijTdhFSueRKK-mLFAtDuvzdje", ...';
-      case PlaylistType.channel:
+      case ListType.userUploads:
         return '"pewdiepie", "tseries"';
+      default:
+        return null;
     }
-    return null;
   }
 
   String get _hint {
     switch (_playlistType) {
-      case PlaylistType.search:
-        return 'Enter keywords to search';
-      case PlaylistType.playlist:
+      case ListType.playlist:
         return 'Enter playlist id';
-      case PlaylistType.channel:
+      case ListType.userUploads:
         return 'Enter channel name';
+      default:
+        return r'Enter youtube <video id> or <link>';
     }
-    return 'Enter youtube \<video id\> or \<link\>';
   }
 
   String? _cleanId(String source) {
@@ -142,16 +144,12 @@ class _SourceInputSectionState extends State<SourceInputSection> {
         content: Text(
           message,
           textAlign: TextAlign.center,
-          style: const TextStyle(
-            fontWeight: FontWeight.w300,
-            fontSize: 16.0,
-          ),
+          style: const TextStyle(fontWeight: FontWeight.w300, fontSize: 16),
         ),
-        backgroundColor: Theme.of(context).primaryColor,
         behavior: SnackBarBehavior.floating,
-        elevation: 1.0,
+        elevation: 1,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(50.0),
+          borderRadius: BorderRadius.circular(50),
         ),
       ),
     );
@@ -170,33 +168,43 @@ class _PlaylistTypeDropDown extends StatefulWidget {
     required this.onChanged,
   }) : super(key: key);
 
-  final ValueChanged<String> onChanged;
+  final ValueChanged<ListType?> onChanged;
 
   @override
   _PlaylistTypeDropDownState createState() => _PlaylistTypeDropDownState();
 }
 
 class _PlaylistTypeDropDownState extends State<_PlaylistTypeDropDown> {
-  String? _playlistType;
+  ListType? _playlistType;
 
   @override
   Widget build(BuildContext context) {
-    return DropdownButton<String>(
-      isExpanded: true,
-      hint: const Text(
-        ' -- Choose playlist type',
-        style: TextStyle(fontWeight: FontWeight.w400),
+    return DropdownButtonFormField<ListType>(
+      decoration: InputDecoration(
+        border: InputBorder.none,
+        fillColor: Theme.of(context).colorScheme.surfaceVariant,
+        filled: true,
       ),
+      isExpanded: true,
       value: _playlistType,
-      items: PlaylistType.all
-          .map(
-            (type) => DropdownMenuItem(child: Text(type), value: type),
-          )
-          .toList(),
+      items: [
+        DropdownMenuItem(
+          child: Text(
+            'Select playlist type',
+            style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w300,
+                ),
+          ),
+        ),
+        ...ListType.values.map(
+          (type) => DropdownMenuItem(child: Text(type.value), value: type),
+        ),
+      ],
       onChanged: (value) {
         _playlistType = value;
         setState(() {});
-        if (value != null) widget.onChanged(value);
+        widget.onChanged(value);
       },
     );
   }
@@ -214,8 +222,7 @@ class _Button extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialButton(
-      color: Theme.of(context).primaryColor,
+    return ElevatedButton(
       onPressed: onTap == null
           ? null
           : () {
@@ -223,16 +230,8 @@ class _Button extends StatelessWidget {
               FocusScope.of(context).unfocus();
             },
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 14.0),
-        child: Text(
-          action,
-          style: const TextStyle(
-            fontSize: 18.0,
-            color: Colors.white,
-            fontWeight: FontWeight.w300,
-          ),
-          textAlign: TextAlign.center,
-        ),
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Text(action),
       ),
     );
   }

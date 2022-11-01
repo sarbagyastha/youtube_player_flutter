@@ -1,3 +1,63 @@
+# Changelog
+
+## 3.1.0
+**Sep 15, 2022**
+- Fixed issues with example app
+- Fixed `strictRelatedVideos` flag working incorrectly. Thanks to [@ChisatoMatsuzaki](https://github.com/ChisatoMatsuzaki).
+- Deprecated `startAt` & `endAt` from *YoutubePlayerParams*.
+- Removed `volume` from *YoutubePlayerValue* as it's no longer used.
+
+## 3.0.4
+**Aug 21, 2022**
+
+- Fixed video not loading on non-web platform when controls were disabled
+- Added `YoutubePlayerController.fromVideoId`.
+- Added `enableFullScreenOnVerticalDrag` property to **YoutubePlayer**.
+- Fixed issue with `videoUrl` getter.
+- Added video list and manual fullscreen examples.
+- Added `getCurrentPositionStream` to **YoutubePlayerController**.
+- Deprecated `YoutubePlayerIFrame` in favor of `YoutubePlayer`.
+- Deprecated `autoPlay` param in **YoutubePlayerParams**, as it's no longer used.
+
+## 3.0.3
+**Aug 14, 2022**
+
+- Fixed issues related to Fullscreen.
+- Added `onInit` & `onFullscreenChange` callbacks to **YoutubePlayerController**.
+- Added **Migrating to v3** section in the docs.
+- Listed `Swipe up/down to enter/exit fullscreen mode` as a feature in the docs.
+- Deprecated `autoPlay` param in **YoutubePlayerParams**, as it's no longer used.
+- Removed `hasPlayed`, `position` & `buffered` from **YoutubePlayerValue**, as these values can be accessed through **YoutubePlayerController**.
+
+## 3.0.2
+**Aug 12, 2022**
+
+- Improved pub score.
+
+## 3.0.1
+**Aug 12, 2022**
+
+- Fixed the supported platform in pub.dev
+
+## 3.0.0
+**Aug 12, 2022**
+
+**Breaking Change**
+- Switched to `webview_flutter`.
+- Better web support.
+- APIs are now identical to that of Youtube Player Iframe API.
+- Exposed all the supported iFrame APIs.
+- Fixed issue with videos not playing on Android.
+- Added support for FullScreen gestures like on Youtube Mobile App.
+- Added support for YouTube Shorts URL.
+- Added `YoutubePlayerScaffold` to better handle the fullscreen mode.
+
+## 2.3.0
+**May 16, 2022**
+
+- Upgraded minimum flutter version to `3.0.0`
+- Upgraded example app
+
 # 2.2.2
 - Fixed inline playback issue iOS. See [#525](https://github.com/sarbagyastha/youtube_player_flutter/issues/525)
 - UI update to example app

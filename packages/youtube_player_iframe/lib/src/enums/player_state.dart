@@ -1,4 +1,4 @@
-// Copyright 2020 Sarbagya Dhaubanjar. All rights reserved.
+// Copyright 2022 Sarbagya Dhaubanjar. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,23 +7,29 @@
 /// Find more about it [here](https://developers.google.com/youtube/iframe_api_reference#Playback_status).
 enum PlayerState {
   /// Denotes State when player is not loaded with video.
-  unknown,
+  unknown(-2),
 
   /// Denotes state when player loads first video.
-  unStarted,
+  unStarted(-1),
 
   /// Denotes state when player has ended playing a video.
-  ended,
+  ended(0),
 
   /// Denotes state when player is playing video.
-  playing,
+  playing(1),
 
   /// Denotes state when player is paused.
-  paused,
+  paused(2),
 
   /// Denotes state when player is buffering bytes from the internet.
-  buffering,
+  buffering(3),
 
   /// Denotes state when player loads video and is ready to be played.
-  cued,
+  cued(5);
+
+  /// Returns the [PlayerState] from the given code.
+  const PlayerState(this.code);
+
+  /// Code of the player state.
+  final int code;
 }

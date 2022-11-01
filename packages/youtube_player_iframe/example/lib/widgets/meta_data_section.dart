@@ -10,7 +10,10 @@ class MetaDataSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return YoutubeValueBuilder(
-      buildWhen: (o, n) => o.metaData != n.metaData,
+      buildWhen: (o, n) {
+        return o.metaData != n.metaData ||
+            o.playbackQuality != n.playbackQuality;
+      },
       builder: (context, value) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -76,18 +79,17 @@ class _Text extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return RichText(
-      text: TextSpan(
+    return Text.rich(
+      TextSpan(
         text: '$title : ',
-        style: const TextStyle(
-          fontWeight: FontWeight.bold,
-        ),
+        style: Theme.of(context).textTheme.labelLarge,
         children: [
           TextSpan(
             text: value,
-            style: const TextStyle(
-              fontWeight: FontWeight.w300,
-            ),
+            style: Theme.of(context)
+                .textTheme
+                .labelMedium!
+                .copyWith(fontWeight: FontWeight.w300),
           ),
         ],
       ),

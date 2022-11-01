@@ -1,0 +1,18 @@
+name: Deploy to Web
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  web-deploy:
+    name: Web Deploy
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: subosito/flutter-action@v2
+      - uses: sarbagyastha/flutter-gh-pages@main
+        with:
+          workingDir: packages/youtube_player_iframe/example
+          baseHref: /youtube_player_flutter/

@@ -4,7 +4,7 @@
 
 import 'package:flutter/widgets.dart';
 
-import '../controller.dart';
+import '../controller/youtube_player_controller.dart';
 
 /// An inherited widget to provide [YoutubePlayerController] to it's descendants.
 class YoutubePlayerControllerProvider extends InheritedWidget {
@@ -13,10 +13,10 @@ class YoutubePlayerControllerProvider extends InheritedWidget {
 
   /// An inherited widget that provide [YoutubePlayerController] to it's descendants.
   const YoutubePlayerControllerProvider({
-    Key? key,
+    super.key,
     required this.controller,
-    required Widget child,
-  }) : super(key: key, child: child);
+    required super.child,
+  });
 
   /// Finds the most recent [YoutubePlayerController] in its ancestors.
   static YoutubePlayerController of(BuildContext context) {
@@ -29,14 +29,24 @@ class YoutubePlayerControllerProvider extends InheritedWidget {
     return controllerProvider!.controller;
   }
 
+  /// Finds the most recent [YoutubePlayerController] in its ancestors.
+  static YoutubePlayerController? maybeOf(BuildContext context) {
+    final controllerProvider = context
+        .dependOnInheritedWidgetOfExactType<YoutubePlayerControllerProvider>();
+
+    return controllerProvider?.controller;
+  }
+
   @override
-  bool updateShouldNotify(YoutubePlayerControllerProvider old) =>
-      old.controller.hashCode != controller.hashCode;
+  bool updateShouldNotify(YoutubePlayerControllerProvider old) {
+    return old.controller.hashCode != controller.hashCode;
+  }
 }
 
 /// YoutubePlayerControllerExtension
 extension YoutubePlayerControllerExtension on BuildContext {
   /// Finds the most recent [YoutubePlayerController] in its ancestors.
-  YoutubePlayerController get ytController =>
-      YoutubePlayerControllerProvider.of(this);
+  YoutubePlayerController get ytController {
+    return YoutubePlayerControllerProvider.of(this);
+  }
 }

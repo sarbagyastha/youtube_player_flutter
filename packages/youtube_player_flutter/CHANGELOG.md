@@ -1,3 +1,11 @@
+## 8.1.1
+* Bumped `flutter_inappwebview` to latest version.
+* Fixed cast error in YouTube error.
+
+## 8.1.0
+* Upgraded minimum flutter version to `3.0.0`
+* Upgraded example app
+
 ## 8.0.0
 * Null Safety Release
 * Added `useHybridComposition` flag
