@@ -169,15 +169,13 @@ class _FullScreenState extends State<_FullScreen> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: _handleFullScreenBackAction,
-      child: widget.child,
-    );
+    return widget.child;
   }
 
   @override
   void dispose() {
     if (widget.auto) WidgetsBinding.instance.removeObserver(this);
+    _handleFullScreenBackAction();
     super.dispose();
   }
 
