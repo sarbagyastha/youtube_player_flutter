@@ -196,7 +196,7 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
               handlerName: 'Errors',
               callback: (args) {
                 controller!.updateValue(
-                  controller!.value.copyWith(errorCode: args.first as int),
+                  controller!.value.copyWith(errorCode: int.parse(args.first)),
                 );
               },
             )
