@@ -34,6 +34,12 @@ class YoutubePlayerParams {
   /// Default is true.
   final bool enableCaption;
 
+  /// Settings the parameter's value to false will disable any gestures to be propagated to the iframe
+  /// by passing 'none' to the `pointer-events` param in `player.html`
+  ///
+  /// Useful especially for iOS where the gesture propagates even with the use of `IgnorePointer` widget
+  final bool enablePointerEvents;
+
   /// This parameter specifies the color that will be used in the player's video progress bar to highlight the amount of the video that the viewer has already seen.
   /// Valid parameter values are red and white, and, by default, the player uses the color red in the video progress bar.
   ///
@@ -129,6 +135,7 @@ class YoutubePlayerParams {
     this.mute = false,
     this.captionLanguage = 'en',
     this.enableCaption = true,
+    this.enablePointerEvents = true,
     this.color = 'white',
     this.showControls = true,
     this.enableKeyboard = kIsWeb,
