@@ -602,14 +602,14 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   Stream<Duration> getCurrentPositionStream({
     Duration period = const Duration(seconds: 1),
   }) async* {
-    yield _getDurationFrom(seconds: await currentTime);
+    yield* currentTime.then(_getDurationFrom).asStream();
 
     yield* Stream.periodic(period).asyncMap(
-      (_) async => _getDurationFrom(seconds: await currentTime),
+      (_) => currentTime.then(_getDurationFrom),
     );
   }
 
-  Duration _getDurationFrom({required double seconds}) {
+  Duration _getDurationFrom(double seconds) {
     final timeInMs = (seconds * 1000).truncate();
 
     return Duration(milliseconds: timeInMs);
