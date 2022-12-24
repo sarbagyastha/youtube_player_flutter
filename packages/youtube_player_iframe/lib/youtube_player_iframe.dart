@@ -2,12 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'dart:developer';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart' as uri_launcher;
 import 'package:webview_flutter/webview_flutter.dart';
 
 import 'youtube_player_iframe.dart';
@@ -36,7 +33,7 @@ class YoutubePlayer extends StatefulWidget {
     super.key,
     this.controller,
     this.aspectRatio = 16 / 9,
-    this.gestureRecognizers,
+    this.gestureRecognizers = const <Factory<OneSequenceGestureRecognizer>>{},
     this.backgroundColor,
     this.userAgent,
     this.enableFullScreenOnVerticalDrag = true,
@@ -59,7 +56,7 @@ class YoutubePlayer extends StatefulWidget {
   /// Passing an empty set will ignore the defaults.
   ///
   /// This is ignored on web.
-  final Set<Factory<OneSequenceGestureRecognizer>>? gestureRecognizers;
+  final Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers;
 
   /// The background color of the [WebView].
   final Color? backgroundColor;
@@ -91,25 +88,9 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
 
   @override
   Widget build(BuildContext context) {
-    Widget player = WebView(
-      javascriptMode: JavascriptMode.unrestricted,
-      allowsInlineMediaPlayback: true,
-      initialMediaPlaybackPolicy: AutoMediaPlaybackPolicy.always_allow,
-      onWebResourceError: (error) => log(
-        error.description,
-        name: error.errorCode.toString(),
-      ),
-      onWebViewCreated: _controller.init,
-      javascriptChannels: _controller.javaScriptChannels,
-      zoomEnabled: false,
-      gestureNavigationEnabled: false,
+    Widget player = WebViewWidget(
+      controller: _controller.webViewController,
       gestureRecognizers: widget.gestureRecognizers,
-      navigationDelegate: (request) {
-        final uri = Uri.tryParse(request.url);
-        return _decideNavigation(uri);
-      },
-      backgroundColor: widget.backgroundColor,
-      userAgent: widget.userAgent,
     );
 
     if (widget.enableFullScreenOnVerticalDrag) {
@@ -139,42 +120,5 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
           ? _controller.enterFullScreen()
           : _controller.exitFullScreen();
     }
-  }
-
-  NavigationDecision _decideNavigation(Uri? uri) {
-    if (uri == null) return NavigationDecision.prevent;
-
-    final params = uri.queryParameters;
-    final host = uri.host;
-    final path = uri.path;
-
-    String? featureName;
-    if (host.contains('facebook') ||
-        host.contains('twitter') ||
-        host == 'youtu') {
-      featureName = 'social';
-    } else if (params.containsKey('feature')) {
-      featureName = params['feature'];
-    } else if (path == '/watch') {
-      featureName = 'emb_info';
-    } else if (defaultTargetPlatform == TargetPlatform.iOS) {
-      return NavigationDecision.navigate;
-    }
-
-    switch (featureName) {
-      case 'emb_rel_pause':
-      case 'emb_rel_end':
-      case 'emb_info':
-        final videoId = params['v'];
-        if (videoId != null) _controller.loadVideoById(videoId: videoId);
-        break;
-      case 'emb_logo':
-      case 'social':
-      case 'wl_button':
-        uri_launcher.launchUrl(uri);
-        break;
-    }
-
-    return NavigationDecision.prevent;
   }
 }

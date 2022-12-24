@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:meta/meta.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
@@ -9,7 +10,7 @@ import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 class YoutubePlayerEventHandler {
   /// Creates [YoutubePlayerEventHandler] with the provided [controller].
   YoutubePlayerEventHandler(this.controller) {
-    final _events = <String, void Function(Object)>{
+    _events = {
       'Ready': onReady,
       'StateChange': onStateChange,
       'PlaybackQualityChange': onPlaybackQualityChange,
@@ -17,30 +18,25 @@ class YoutubePlayerEventHandler {
       'PlayerError': onError,
       'FullscreenButtonPressed': onFullscreenButtonPressed,
     };
-
-    javascriptChannels = {
-      JavascriptChannel(
-        name: 'YoutubePlayer',
-        onMessageReceived: (channel) {
-          final data = Map.from(jsonDecode(channel.message));
-
-          for (final entry in data.entries) {
-            if (entry.key == 'ApiChange') {
-              onApiChange(entry.value);
-            } else {
-              _events[entry.key]?.call(entry.value);
-            }
-          }
-        },
-      ),
-    };
   }
 
   /// The [YoutubePlayerController].
   final YoutubePlayerController controller;
 
-  /// The [JavascriptChannels] to be used by the player iframe.
-  late final Set<JavascriptChannel> javascriptChannels;
+  late final Map<String, ValueChanged<Object>> _events;
+
+  /// Handles the [javaScriptMessage] from the player iframe and create events.
+  void call(JavaScriptMessage javaScriptMessage) {
+    final data = Map.from(jsonDecode(javaScriptMessage.message));
+
+    for (final entry in data.entries) {
+      if (entry.key == 'ApiChange') {
+        onApiChange(entry.value);
+      } else {
+        _events[entry.key]?.call(entry.value);
+      }
+    }
+  }
 
   Completer<void> _readyCompleter = Completer();
 

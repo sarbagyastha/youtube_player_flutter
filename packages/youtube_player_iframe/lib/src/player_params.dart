@@ -5,6 +5,7 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/painting.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 /// Defines player parameters for [YoutubePlayer].
@@ -123,6 +124,12 @@ class YoutubePlayerParams {
   /// This means that sometimes the play head may seek to just before the requested time, usually no more than around two seconds.
   final Duration startAt;
 
+  /// The user agent for the player.
+  final String? userAgent;
+
+  /// The background color of the player.
+  final Color? backgroundColor;
+
   /// Defines player parameters for the youtube player.
   const YoutubePlayerParams({
     @Deprecated('Use load or cue methods instead.') this.autoPlay = true,
@@ -143,6 +150,8 @@ class YoutubePlayerParams {
     this.strictRelatedVideos = false,
     @Deprecated('Use load or cue methods instead.')
         this.startAt = Duration.zero,
+    this.userAgent,
+    this.backgroundColor,
   });
 
   /// Creates [Map] representation of [YoutubePlayerParams].

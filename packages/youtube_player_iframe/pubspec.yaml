@@ -12,9 +12,10 @@ dependencies:
   flutter:
     sdk: flutter
   meta: '>=1.7.0 <2.0.0'
-  webview_flutter: ^3.0.4
-  url_launcher: ^6.1.5
-  youtube_player_iframe_web: ^1.0.4
+  webview_flutter: ^4.0.1
+  url_launcher: ^6.1.7
+  youtube_player_iframe_web:
+    path: ../youtube_player_iframe_web
 
 dev_dependencies:
   flutter_test:
