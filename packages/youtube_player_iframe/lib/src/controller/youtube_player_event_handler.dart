@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
-import 'package:meta/meta.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
@@ -38,7 +37,7 @@ class YoutubePlayerEventHandler {
     }
   }
 
-  Completer<void> _readyCompleter = Completer();
+  final Completer<void> _readyCompleter = Completer();
 
   /// This event fires whenever a player has finished loading and is ready to begin receiving API calls.
   /// Your application should implement this function if you want to automatically execute certain operations,
@@ -122,8 +121,4 @@ class YoutubePlayerEventHandler {
 
   /// Returns a [Future] that completes when the player is ready.
   Future<void> get isReady => _readyCompleter.future;
-
-  /// Resets the [isReady] future.
-  @internal
-  void reset() => _readyCompleter = Completer();
 }

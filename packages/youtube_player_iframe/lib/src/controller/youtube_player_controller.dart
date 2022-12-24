@@ -4,7 +4,6 @@ import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:meta/meta.dart';
 import 'package:url_launcher/url_launcher.dart' as uri_launcher;
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
@@ -70,7 +69,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
       webViewPlatform.setAllowsBackForwardNavigationGestures(false);
     }
 
-    init(webViewController);
+    _init();
   }
 
   /// Creates a [YoutubePlayerController] and initializes the player with [videoId].
@@ -83,22 +82,21 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   }) {
     final controller = YoutubePlayerController(params: params);
 
-    return controller
-      ..onInit = () {
-        if (autoPlay) {
-          controller.loadVideoById(
-            videoId: videoId,
-            startSeconds: startSeconds,
-            endSeconds: endSeconds,
-          );
-        } else {
-          controller.cueVideoById(
-            videoId: videoId,
-            startSeconds: startSeconds,
-            endSeconds: endSeconds,
-          );
-        }
-      };
+    if (autoPlay) {
+      controller.loadVideoById(
+        videoId: videoId,
+        startSeconds: startSeconds,
+        endSeconds: endSeconds,
+      );
+    } else {
+      controller.cueVideoById(
+        videoId: videoId,
+        startSeconds: startSeconds,
+        endSeconds: endSeconds,
+      );
+    }
+
+    return controller;
   }
 
   /// Defines player parameters for the youtube player.
@@ -108,6 +106,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   late final WebViewController webViewController;
 
   late final YoutubePlayerEventHandler _eventHandler;
+  final Completer<void> _initCompleter = Completer();
 
   final StreamController<YoutubePlayerValue> _valueController =
       StreamController.broadcast();
@@ -245,13 +244,11 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   }
 
   /// Loads the player with default [params].
-  @internal
-  Future<void> init(WebViewController controller) async {
-    await controller.runJavaScript('var isWeb = $kIsWeb;');
+  Future<void> _init() async {
+    await webViewController.runJavaScript('var isWeb = $kIsWeb;');
     await load(params: params, baseUrl: params.origin);
 
-    _eventHandler.reset();
-    await onInit();
+    _initCompleter.complete();
   }
 
   /// Loads the player with the given [params].
@@ -280,6 +277,8 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     String functionName, {
     Map<String, dynamic>? data,
   }) async {
+    await _initCompleter.future;
+
     final varArgs = await _prepareData(data);
 
     return webViewController.runJavaScript('player.$functionName($varArgs);');
@@ -289,6 +288,8 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     String functionName, {
     Map<String, dynamic>? data,
   }) async {
+    await _initCompleter.future;
+
     final varArgs = await _prepareData(data);
 
     final result = await webViewController.runJavaScriptReturningResult(
@@ -651,9 +652,6 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
 
     return NavigationDecision.prevent;
   }
-
-  /// Called when the player is created.
-  FutureOr<void> Function() onInit = () {};
 
   /// Disposes the resources created by [YoutubePlayerController].
   void close() => _valueController.close();

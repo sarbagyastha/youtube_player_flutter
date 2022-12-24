@@ -13,7 +13,6 @@ import 'widgets/meta_data_section.dart';
 import 'widgets/play_pause_button_bar.dart';
 import 'widgets/player_state_section.dart';
 import 'widgets/source_input_section.dart';
-import 'widgets/volume_slider.dart';
 
 Future<void> main() async {
   runApp(YoutubeApp());
@@ -56,29 +55,28 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
         mute: false,
         showFullscreenButton: true,
         loop: false,
+        backgroundColor: Colors.black,
       ),
-    )
-      ..onInit = () {
-        _controller.loadPlaylist(
-          list: [
-            'tcodrIK2P_I',
-            'nPt8bK2gbaU',
-            'K18cpp_-gP8',
-            'iLnmTe5Q2Qw',
-            '_WoCV4c6XOE',
-            'KmzdUe0RSJo',
-            '6jZDSSZZxjQ',
-            'p2lYr3vM_1w',
-            '7QUtEmBT_-w',
-            '34_PXCzGw1M',
-          ],
-          listType: ListType.playlist,
-          startSeconds: 136,
-        );
-      }
-      ..onFullscreenChange = (isFullScreen) {
+    )..onFullscreenChange = (isFullScreen) {
         log('${isFullScreen ? 'Entered' : 'Exited'} Fullscreen.');
       };
+
+    _controller.loadPlaylist(
+      list: [
+        'tcodrIK2P_I',
+        'nPt8bK2gbaU',
+        'K18cpp_-gP8',
+        'iLnmTe5Q2Qw',
+        '_WoCV4c6XOE',
+        'KmzdUe0RSJo',
+        '6jZDSSZZxjQ',
+        'p2lYr3vM_1w',
+        '7QUtEmBT_-w',
+        '34_PXCzGw1M',
+      ],
+      listType: ListType.playlist,
+      startSeconds: 136,
+    );
   }
 
   @override
@@ -154,8 +152,6 @@ class Controls extends StatelessWidget {
           SourceInputSection(),
           _space,
           PlayPauseButtonBar(),
-          _space,
-          const VolumeSlider(),
           _space,
           const VideoPositionSeeker(),
           _space,
