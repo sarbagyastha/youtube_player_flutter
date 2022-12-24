@@ -10,7 +10,7 @@ import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 import 'player_value.dart';
 
-/// A widget the scaffolds the [YoutubePlayer]so that it can be moved around easily in the view
+/// A widget the scaffolds the [YoutubePlayer] so that it can be moved around easily in the view
 /// and handles the fullscreen functionality.
 class YoutubePlayerScaffold extends StatefulWidget {
   /// Creates [YoutubePlayerScaffold].
@@ -21,6 +21,15 @@ class YoutubePlayerScaffold extends StatefulWidget {
     this.aspectRatio = 16 / 9,
     this.autoFullScreen = true,
     this.defaultOrientations = DeviceOrientation.values,
+    this.fullscreenOrientations = const [
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ],
+    this.lockedOrientations = const [
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ],
+    this.enableFullScreenOnVerticalDrag = true,
     this.gestureRecognizers,
     this.backgroundColor,
     this.userAgent,
@@ -42,6 +51,17 @@ class YoutubePlayerScaffold extends StatefulWidget {
 
   /// The default orientations for the device.
   final List<DeviceOrientation> defaultOrientations;
+
+  /// The orientations that are used when in fullscreen.
+  final List<DeviceOrientation> fullscreenOrientations;
+
+  /// The orientations that are used when not in fullscreen and auto rotate is disabled.
+  final List<DeviceOrientation> lockedOrientations;
+
+  /// Enables switching full screen mode on vertical drag in the player.
+  ///
+  /// Default is true.
+  final bool enableFullScreenOnVerticalDrag;
 
   /// Which gestures should be consumed by the youtube player.
   ///
@@ -81,6 +101,7 @@ class _YoutubePlayerScaffoldState extends State<YoutubePlayerScaffold> {
         aspectRatio: widget.aspectRatio,
         gestureRecognizers: widget.gestureRecognizers,
         backgroundColor: widget.backgroundColor,
+        enableFullScreenOnVerticalDrag: widget.enableFullScreenOnVerticalDrag,
       ),
     );
 
@@ -95,6 +116,8 @@ class _YoutubePlayerScaffoldState extends State<YoutubePlayerScaffold> {
                 return _FullScreen(
                   auto: widget.autoFullScreen,
                   defaultOrientations: widget.defaultOrientations,
+                  fullscreenOrientations: widget.fullscreenOrientations,
+                  lockedOrientations: widget.lockedOrientations,
                   fullScreenOption: value.fullScreenOption,
                   child: Builder(
                     builder: (context) {
@@ -114,12 +137,16 @@ class _FullScreen extends StatefulWidget {
   const _FullScreen({
     required this.fullScreenOption,
     required this.defaultOrientations,
+    required this.fullscreenOrientations,
+    required this.lockedOrientations,
     required this.child,
     required this.auto,
   });
 
   final FullScreenOption fullScreenOption;
   final List<DeviceOrientation> defaultOrientations;
+  final List<DeviceOrientation> fullscreenOrientations;
+  final List<DeviceOrientation> lockedOrientations;
   final Widget child;
   final bool auto;
 
@@ -185,15 +212,9 @@ class _FullScreenState extends State<_FullScreen> with WidgetsBindingObserver {
     final fullscreen = widget.fullScreenOption;
 
     if (!fullscreen.enabled && fullscreen.locked) {
-      return [
-        DeviceOrientation.portraitUp,
-        DeviceOrientation.portraitDown,
-      ];
+      return widget.lockedOrientations;
     } else if (fullscreen.enabled) {
-      return [
-        DeviceOrientation.landscapeLeft,
-        DeviceOrientation.landscapeRight,
-      ];
+      return widget.fullscreenOrientations;
     }
 
     return widget.defaultOrientations;
