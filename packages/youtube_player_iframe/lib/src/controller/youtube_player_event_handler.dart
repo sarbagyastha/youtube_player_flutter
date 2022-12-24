@@ -16,12 +16,18 @@ class YoutubePlayerEventHandler {
       'PlaybackRateChange': onPlaybackRateChange,
       'PlayerError': onError,
       'FullscreenButtonPressed': onFullscreenButtonPressed,
+      'VideoState': onVideoState,
     };
   }
 
   /// The [YoutubePlayerController].
   final YoutubePlayerController controller;
 
+  /// The [YoutubeVideoState] stream controller.
+  final StreamController<YoutubeVideoState> videoStateController =
+      StreamController.broadcast();
+
+  final Completer<void> _readyCompleter = Completer();
   late final Map<String, ValueChanged<Object>> _events;
 
   /// Handles the [javaScriptMessage] from the player iframe and create events.
@@ -36,8 +42,6 @@ class YoutubePlayerEventHandler {
       }
     }
   }
-
-  final Completer<void> _readyCompleter = Completer();
 
   /// This event fires whenever a player has finished loading and is ready to begin receiving API calls.
   /// Your application should implement this function if you want to automatically execute certain operations,
@@ -117,6 +121,11 @@ class YoutubePlayerEventHandler {
     );
 
     controller.update(error: error);
+  }
+
+  /// This event fires when the player receives information about video states.
+  void onVideoState(Object data) {
+    videoStateController.add(YoutubeVideoState.fromJson(data.toString()));
   }
 
   /// Returns a [Future] that completes when the player is ready.

@@ -45,6 +45,8 @@
       var platform = "<<platform>>";
       var host = "<<host>>";
       var player;
+      var timerId;
+
       function onYouTubeIframeAPIReady() {
         player = new YT.Player("player", {
           host: host,
@@ -55,7 +57,19 @@
               sendMessage('Ready', event);
             },
             onStateChange: function (event) {
+              clearTimeout(timerId);
               sendMessage('StateChange', event.data);
+              console.log(event.data);
+              if (event.data == 1) {
+                timerId = setInterval(function () {
+                  var state = {
+                    'currentTime': player.getCurrentTime(),
+                    'loadedFraction': player.getVideoLoadedFraction()
+                  };
+
+                  sendMessage('VideoState', JSON.stringify(state));
+                }, 100);
+              }
             },
             onPlaybackQualityChange: function (event) {
               sendMessage('PlaybackQualityChange', event.data);

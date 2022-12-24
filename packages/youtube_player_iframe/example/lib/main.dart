@@ -198,11 +198,11 @@ class VideoPositionIndicator extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = context.ytController;
 
-    return StreamBuilder<Duration>(
-      stream: controller.getCurrentPositionStream(),
-      initialData: Duration.zero,
+    return StreamBuilder<YoutubeVideoState>(
+      stream: controller.videoStateStream,
+      initialData: const YoutubeVideoState(),
       builder: (context, snapshot) {
-        final position = snapshot.data?.inMilliseconds ?? 0;
+        final position = snapshot.data?.position.inMilliseconds ?? 0;
         final duration = controller.metadata.duration.inMilliseconds;
 
         return LinearProgressIndicator(
@@ -231,11 +231,11 @@ class VideoPositionSeeker extends StatelessWidget {
         ),
         const SizedBox(width: 14),
         Expanded(
-          child: StreamBuilder<Duration>(
-            stream: context.ytController.getCurrentPositionStream(),
-            initialData: Duration.zero,
+          child: StreamBuilder<YoutubeVideoState>(
+            stream: context.ytController.videoStateStream,
+            initialData: const YoutubeVideoState(),
             builder: (context, snapshot) {
-              final position = snapshot.data?.inSeconds ?? 0;
+              final position = snapshot.data?.position.inSeconds ?? 0;
               final duration = context.ytController.metadata.duration.inSeconds;
 
               value = position == 0 || duration == 0 ? 0 : position / duration;

@@ -599,21 +599,18 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     }
   }
 
-  /// Creates a stream that repeatedly emits current time at [period] intervals.
-  Stream<Duration> getCurrentPositionStream({
-    Duration period = const Duration(seconds: 1),
-  }) async* {
-    yield* currentTime.then(_getDurationFrom).asStream();
-
-    yield* Stream.periodic(period).asyncMap(
-      (_) => currentTime.then(_getDurationFrom),
-    );
+  /// The stream for [YoutubeVideoState] changes.
+  Stream<YoutubeVideoState> get videoStateStream {
+    return _eventHandler.videoStateController.stream;
   }
 
-  Duration _getDurationFrom(double seconds) {
-    final timeInMs = (seconds * 1000).truncate();
-
-    return Duration(milliseconds: timeInMs);
+  /// Creates a stream that repeatedly emits current time at [period] intervals.
+  @Deprecated('Use videoStateStream instead')
+  Stream<Duration> getCurrentPositionStream({
+    // Unused
+    Duration period = const Duration(seconds: 1),
+  }) {
+    return videoStateStream.map((state) => state.position);
   }
 
   NavigationDecision _decideNavigation(Uri? uri) {
@@ -654,5 +651,35 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   }
 
   /// Disposes the resources created by [YoutubePlayerController].
-  void close() => _valueController.close();
+  void close() {
+    _valueController.close();
+    _eventHandler.videoStateController.close();
+  }
+}
+
+/// The current state of the Youtube video.
+class YoutubeVideoState {
+  /// Creates a new instance of [YoutubeVideoState].
+  const YoutubeVideoState({
+    this.position = Duration.zero,
+    this.loadedFraction = 0,
+  });
+
+  /// Creates a new instance of [YoutubeVideoState] from the given [json].
+  factory YoutubeVideoState.fromJson(String json) {
+    final state = jsonDecode(json);
+    final currentTime = state['currentTime'] as num? ?? 0;
+    final positionInMs = (currentTime * 1000).truncate();
+
+    return YoutubeVideoState(
+      position: Duration(milliseconds: positionInMs),
+      loadedFraction: state['loadedFraction'],
+    );
+  }
+
+  /// The current position of the video.
+  final Duration position;
+
+  /// The fraction of the video that has been buffered.
+  final double loadedFraction;
 }
