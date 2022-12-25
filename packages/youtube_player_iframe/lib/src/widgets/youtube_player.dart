@@ -7,10 +7,15 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:youtube_player_iframe/src/widgets/fullscreen_youtube_player.dart';
 
-import 'controller/youtube_player_controller.dart';
+import '../controller/youtube_player_controller.dart';
 
 /// A widget to play or stream Youtube Videos.
+///
+/// See also:
+///
+///  * [FullscreenYoutubePlayer], which play or stream Youtube Videos in fullscreen mode.
 class YoutubePlayer extends StatefulWidget {
   /// A widget to play or stream Youtube Videos.
   const YoutubePlayer({

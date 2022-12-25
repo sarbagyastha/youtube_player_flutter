@@ -250,7 +250,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     await webViewController.runJavaScript('var isWeb = $kIsWeb;');
     await load(params: params, baseUrl: params.origin);
 
-    _initCompleter.complete();
+    if (!_initCompleter.isCompleted) _initCompleter.complete();
   }
 
   /// Loads the player with the given [params].

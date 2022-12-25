@@ -12,6 +12,7 @@
 - `YoutubePlayerController.getCurrentPositionStream` has been deprecated in favor of `YoutubePlayerController.videoStateStream`.
 - `YoutubePlayerController.onFullscreenChange` has been deprecated in favor of `YoutubePlayerController.setFullScreenListener`.
 - Added support for specifying `YoutubePlayerParams.pointerEvents`. Thanks to [@keithcwk](https://github.com/keithcwk).
+- Added [FullscreenYoutubePlayer].
 - Upgraded dependencies.
 
 ## 3.1.0

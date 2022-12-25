@@ -7,10 +7,10 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'controller/youtube_player_controller.dart';
-import 'helpers/youtube_value_builder.dart';
-import 'helpers/youtube_value_provider.dart';
-import 'player_value.dart';
+import '../controller/youtube_player_controller.dart';
+import '../helpers/youtube_value_builder.dart';
+import '../helpers/youtube_value_provider.dart';
+import '../player_value.dart';
 import 'youtube_player.dart';
 
 /// A widget the scaffolds the [YoutubePlayer] so that it can be moved around easily in the view
