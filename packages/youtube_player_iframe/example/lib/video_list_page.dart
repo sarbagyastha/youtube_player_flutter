@@ -64,8 +64,6 @@ class _VideoListPageState extends State<VideoListPage> {
                         startSeconds: startSeconds,
                       );
 
-                      print(currentTime);
-
                       if (currentTime != null) {
                         controller.seekTo(seconds: currentTime);
                       }
