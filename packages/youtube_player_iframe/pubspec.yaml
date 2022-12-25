@@ -14,8 +14,7 @@ dependencies:
   meta: '>=1.7.0 <2.0.0'
   webview_flutter: ^4.0.1
   url_launcher: ^6.1.7
-  youtube_player_iframe_web:
-    path: ../youtube_player_iframe_web
+  youtube_player_iframe_web: ^2.0.0
 
 dev_dependencies:
   flutter_test:

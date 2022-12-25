@@ -1,0 +1,5 @@
+name: youtube_player
+repository: https://github.com/sarbagyastha/youtube_player_flutter
+
+packages:
+  - packages/**
