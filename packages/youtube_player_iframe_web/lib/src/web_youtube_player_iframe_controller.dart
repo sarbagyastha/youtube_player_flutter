@@ -6,8 +6,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:html';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:webview_flutter_platform_interface/webview_flutter_platform_interface.dart';
+
 import 'platform_view_stub.dart' if (dart.library.html) 'dart:ui' as ui;
 
 /// An implementation of [PlatformWebViewControllerCreationParams] using Flutter
@@ -15,8 +17,6 @@ import 'platform_view_stub.dart' if (dart.library.html) 'dart:ui' as ui;
 @immutable
 class WebYoutubePlayerIframeControllerCreationParams
     extends PlatformWebViewControllerCreationParams {
-  /// Creates a new [AndroidWebViewControllerCreationParams] instance.
-
   /// Creates a [WebYoutubePlayerIframeControllerCreationParams] instance based on [PlatformWebViewControllerCreationParams].
   WebYoutubePlayerIframeControllerCreationParams.fromPlatformWebViewControllerCreationParams(
     // Recommended placeholder to prevent being broken by platform interface.
@@ -55,33 +55,28 @@ class WebYoutubePlayerIframeController extends PlatformWebViewController {
   late final JavaScriptChannelParams _javaScriptChannelParams;
 
   @override
-  Future<void> loadHtmlString(String html, {String? baseUrl}) async {
-    // ignore: unsafe_html
+  Future<void> loadHtmlString(String html, {String? baseUrl}) {
+    _params.ytiFrame.srcdoc = html;
+
+    // Fallback for browser that doesn't support srcdoc.
     _params.ytiFrame.src = Uri.dataFromString(
       html,
       mimeType: 'text/html',
       encoding: utf8,
     ).toString();
+
+    return SynchronousFuture(null);
   }
 
   @override
-  Future<void> loadRequest(LoadRequestParams params) async {
-    if (!params.uri.hasScheme) {
-      throw ArgumentError(
-          'LoadRequestParams#uri is required to have a scheme.');
-    }
-
-    // ignore: unsafe_html
-    _params.ytiFrame.src = params.uri.toString();
-  }
-
-  @override
-  Future<void> runJavaScript(String javaScript) async {
+  Future<void> runJavaScript(String javaScript) {
     final function = javaScript.replaceAll('"', '<<quote>>');
     _params.ytiFrame.contentWindow?.postMessage(
       '{"key": null, "function": "$function"}',
       '*',
     );
+
+    return SynchronousFuture(null);
   }
 
   @override
@@ -118,6 +113,33 @@ class WebYoutubePlayerIframeController extends PlatformWebViewController {
   ) async {
     _javaScriptChannelParams = javaScriptChannelParams;
   }
+
+  @override
+  Future<void> setJavaScriptMode(JavaScriptMode javaScriptMode) async {
+    // no-op
+  }
+
+  @override
+  Future<void> setPlatformNavigationDelegate(
+    PlatformNavigationDelegate handler,
+  ) async {
+    // no-op
+  }
+
+  @override
+  Future<void> setUserAgent(String? userAgent) async {
+    // no-op
+  }
+
+  @override
+  Future<void> enableZoom(bool enabled) async {
+    // no-op
+  }
+
+  @override
+  Future<void> setBackgroundColor(Color color) async {
+    // no-op
+  }
 }
 
 /// An implementation of [PlatformWebViewWidget] using Flutter the for Web API.
@@ -147,7 +169,9 @@ class YoutubePlayerIframeWeb extends PlatformWebViewWidget {
         window.onMessage.listen(
           (event) {
             if (channelParams.name == 'YoutubePlayer') {
-              channelParams.onMessageReceived(event.data);
+              channelParams.onMessageReceived(
+                JavaScriptMessage(message: event.data),
+              );
             }
           },
         );

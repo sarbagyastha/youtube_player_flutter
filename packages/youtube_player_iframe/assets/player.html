@@ -59,7 +59,6 @@
             onStateChange: function (event) {
               clearTimeout(timerId);
               sendMessage('StateChange', event.data);
-              console.log(event.data);
               if (event.data == 1) {
                 timerId = setInterval(function () {
                   var state = {

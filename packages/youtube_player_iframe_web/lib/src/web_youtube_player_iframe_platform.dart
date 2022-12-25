@@ -22,6 +22,30 @@ class WebYoutubePlayerIframePlatform extends WebViewPlatform {
     return YoutubePlayerIframeWeb(params);
   }
 
+  @override
+  PlatformNavigationDelegate createPlatformNavigationDelegate(
+    PlatformNavigationDelegateCreationParams params,
+  ) {
+    return WebNavigationDelegate(params);
+  }
+
   /// Gets called when the plugin is registered.
   static void registerWith(Registrar registrar) {}
+}
+
+/// An implementation of [PlatformNavigationDelegate] using Flutter for Web API.
+class WebNavigationDelegate extends PlatformNavigationDelegate {
+  /// Creates a new [WebNavigationDelegate] instance.
+  WebNavigationDelegate(PlatformNavigationDelegateCreationParams params)
+      : super.implementation(params);
+
+  @override
+  Future<void> setOnNavigationRequest(
+    NavigationRequestCallback onNavigationRequest,
+  ) async {}
+
+  @override
+  Future<void> setOnWebResourceError(
+    WebResourceErrorCallback onWebResourceError,
+  ) async {}
 }
