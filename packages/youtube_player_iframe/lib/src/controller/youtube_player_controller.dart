@@ -16,6 +16,9 @@ import 'package:youtube_player_iframe_web/youtube_player_iframe_web.dart';
 
 import 'youtube_player_event_handler.dart';
 
+/// The Web Resource Error.
+typedef YoutubeWebResourceError = WebResourceError;
+
 /// Controls the youtube player, and provides updates when the state is changing.
 ///
 /// The video is displayed in a Flutter app by creating a [YoutubePlayer] widget.
@@ -25,6 +28,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   /// Creates [YoutubePlayerController].
   YoutubePlayerController({
     this.params = const YoutubePlayerParams(),
+    ValueChanged<YoutubeWebResourceError>? onWebResourceError,
   }) {
     registerYoutubePlayerIframeWeb();
     _eventHandler = YoutubePlayerEventHandler(this);
@@ -41,7 +45,8 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
 
     final navigationDelegate = NavigationDelegate(
       onWebResourceError: (error) {
-        log(error.description, name: error.errorCode.toString());
+        log(error.description, name: error.errorType.toString());
+        onWebResourceError?.call(error);
       },
       onNavigationRequest: (request) {
         final uri = Uri.tryParse(request.url);
