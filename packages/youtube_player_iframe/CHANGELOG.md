@@ -10,6 +10,7 @@
 - `YoutubePlayer.controller` is now required.
 - `YoutubePlayerController.onInit` has been removed. As unlike before, the controller is available as soon as it's created.
 - `YoutubePlayerController.getCurrentPositionStream` has been deprecated in favor of `YoutubePlayerController.videoStateStream`.
+- Added support for specifying `YoutubePlayerParams.pointerEvents`. Thanks to [@keithcwk](https://github.com/keithcwk).
 - Upgraded dependencies.
 
 ## 3.1.0

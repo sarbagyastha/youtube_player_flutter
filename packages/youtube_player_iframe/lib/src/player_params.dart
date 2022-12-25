@@ -27,11 +27,10 @@ class YoutubePlayerParams {
   /// Default is true.
   final bool enableCaption;
 
-  /// Settings the parameter's value to false will disable any gestures to be propagated to the iframe
-  /// by passing 'none' to the `pointer-events` param in `player.html`
+  /// Defines whether or not the player reacts to pointer events.
   ///
-  /// Useful especially for iOS where the gesture propagates even with the use of `IgnorePointer` widget
-  final bool enablePointerEvents;
+  /// See the [Mozilla Docs](https://developer.mozilla.org/en-US/docs/Web/CSS/pointer-events) for detail.
+  final PointerEvents pointerEvents;
 
   /// This parameter specifies the color that will be used in the player's video progress bar to highlight the amount of the video that the viewer has already seen.
   /// Valid parameter values are red and white, and, by default, the player uses the color red in the video progress bar.
@@ -116,7 +115,7 @@ class YoutubePlayerParams {
     this.mute = false,
     this.captionLanguage = 'en',
     this.enableCaption = true,
-    this.enablePointerEvents = true,
+    this.pointerEvents = PointerEvents.initial,
     this.color = 'white',
     this.showControls = true,
     this.enableKeyboard = kIsWeb,
@@ -157,4 +156,24 @@ class YoutubePlayerParams {
   String toJson() => jsonEncode(toMap());
 
   int _boolean(bool value) => value ? 1 : 0;
+}
+
+/// The pointer events.
+enum PointerEvents {
+  /// The player reacts to pointer events, like hover and click.
+  auto('auto'),
+
+  /// The initial configuration for pointer event.
+  ///
+  /// In most cases, this resolves to [PointerEvents.auto].
+  initial('initial'),
+
+  /// The player does not react to any pointer events.
+  none('none');
+
+  /// Creates a [PointerEvents] for the [name].
+  const PointerEvents(this.name);
+
+  /// The name of the [PointerEvents].
+  final String name;
 }
