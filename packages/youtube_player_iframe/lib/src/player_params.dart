@@ -10,13 +10,6 @@ import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 /// Defines player parameters for [YoutubePlayer].
 class YoutubePlayerParams {
-  /// Specifies whether the initial video will automatically start to play when the player loads.
-  ///
-  /// Default is true.
-  ///
-  /// Note: auto play might not always work on mobile devices or when video is not muted at start.
-  final bool autoPlay;
-
   /// Mutes the player.
   ///
   /// Default is false.
@@ -68,13 +61,6 @@ class YoutubePlayerParams {
   /// Default true.
   final bool enableJavaScript;
 
-  /// This parameter specifies the time, measured in seconds from the start of the video,
-  /// when the player should stop playing the video.
-  ///
-  /// Note that the time is measured from the beginning of the video and not from either the value of the start player parameter or the startSeconds parameter,
-  /// which is used in YouTube Player API functions for loading or queueing a video.
-  final Duration? endAt;
-
   /// Setting this parameter to false prevents the fullscreen button from displaying in the player.
   ///
   /// Default false.
@@ -117,13 +103,6 @@ class YoutubePlayerParams {
   /// Default is false.
   final bool strictRelatedVideos;
 
-  /// This parameter causes the player to begin playing the video at the given number of seconds from the start of the video.
-  ///
-  /// Note that similar to the [YoutubePlayerController.seekTo] function,
-  /// the player will look for the closest keyframe to the time you specify.
-  /// This means that sometimes the play head may seek to just before the requested time, usually no more than around two seconds.
-  final Duration startAt;
-
   /// The user agent for the player.
   final String? userAgent;
 
@@ -132,7 +111,6 @@ class YoutubePlayerParams {
 
   /// Defines player parameters for the youtube player.
   const YoutubePlayerParams({
-    @Deprecated('Use load or cue methods instead.') this.autoPlay = true,
     this.mute = false,
     this.captionLanguage = 'en',
     this.enableCaption = true,
@@ -140,7 +118,6 @@ class YoutubePlayerParams {
     this.showControls = true,
     this.enableKeyboard = kIsWeb,
     this.enableJavaScript = true,
-    @Deprecated('Use load or cue methods instead.') this.endAt,
     this.showFullscreenButton = false,
     this.interfaceLanguage = 'en',
     this.showVideoAnnotations = true,
@@ -148,8 +125,6 @@ class YoutubePlayerParams {
     this.origin = 'https://www.youtube.com',
     this.playsInline = true,
     this.strictRelatedVideos = false,
-    @Deprecated('Use load or cue methods instead.')
-        this.startAt = Duration.zero,
     this.userAgent,
     this.backgroundColor,
   });
