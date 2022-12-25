@@ -9,6 +9,7 @@ class FullScreenPlayerPage extends StatefulWidget {
     super.key,
     required this.videoId,
     required this.startSeconds,
+    this.backgroundColor,
   });
 
   ///
@@ -16,6 +17,9 @@ class FullScreenPlayerPage extends StatefulWidget {
 
   ///
   final double startSeconds;
+
+  ///
+  final Color? backgroundColor;
 
   @override
   State<FullScreenPlayerPage> createState() => _FullScreenPlayerPageState();
@@ -54,7 +58,7 @@ class _FullScreenPlayerPageState extends State<FullScreenPlayerPage> {
       child: YoutubePlayer(
         controller: _controller,
         aspectRatio: MediaQuery.of(context).size.aspectRatio,
-        backgroundColor: Theme.of(context).colorScheme.background,
+        backgroundColor: widget.backgroundColor,
       ),
     );
   }

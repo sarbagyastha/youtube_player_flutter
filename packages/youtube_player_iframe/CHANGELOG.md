@@ -1,5 +1,17 @@
 # Changelog
 
+## 4.0.0
+**Dec 25, 2022**
+
+**Breaking Change**
+- Fixed video playback issues in web for some videos.
+- Deprecated params in v3 has been removed.
+- Deprecated `YoutubePlayerIFrame` has been removed.
+- `YoutubePlayer.controller` is now required.
+- `YoutubePlayerController.onInit` has been removed. As unlike before, the controller is available as soon as it's created.
+- `YoutubePlayerController.getCurrentPositionStream` has been deprecated in favor of `YoutubePlayerController.videoStateStream`.
+- Upgraded dependencies.
+
 ## 3.1.0
 **Sep 15, 2022**
 - Fixed issues with example app

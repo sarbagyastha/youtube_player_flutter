@@ -5,7 +5,6 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/painting.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 /// Defines player parameters for [YoutubePlayer].
@@ -106,9 +105,6 @@ class YoutubePlayerParams {
   /// The user agent for the player.
   final String? userAgent;
 
-  /// The background color of the player.
-  final Color? backgroundColor;
-
   /// Defines player parameters for the youtube player.
   const YoutubePlayerParams({
     this.mute = false,
@@ -126,7 +122,6 @@ class YoutubePlayerParams {
     this.playsInline = true,
     this.strictRelatedVideos = false,
     this.userAgent,
-    this.backgroundColor,
   });
 
   /// Creates [Map] representation of [YoutubePlayerParams].

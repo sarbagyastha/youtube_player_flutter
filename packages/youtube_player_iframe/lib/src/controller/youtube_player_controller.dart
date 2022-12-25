@@ -63,10 +63,6 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
       ..addJavaScriptChannel('YoutubePlayer', onMessageReceived: _eventHandler)
       ..enableZoom(false);
 
-    if (params.backgroundColor != null) {
-      webViewController.setBackgroundColor(params.backgroundColor!);
-    }
-
     final webViewPlatform = webViewController.platform;
     if (webViewPlatform is AndroidWebViewController) {
       AndroidWebViewController.enableDebugging(false);
@@ -74,8 +70,6 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     } else if (webViewPlatform is WebKitWebViewController) {
       webViewPlatform.setAllowsBackForwardNavigationGestures(false);
     }
-
-    _init();
   }
 
   /// Creates a [YoutubePlayerController] and initializes the player with [videoId].
@@ -251,7 +245,8 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   }
 
   /// Loads the player with default [params].
-  Future<void> _init() async {
+  @internal
+  Future<void> init() async {
     await webViewController.runJavaScript('var isWeb = $kIsWeb;');
     await load(params: params, baseUrl: params.origin);
 

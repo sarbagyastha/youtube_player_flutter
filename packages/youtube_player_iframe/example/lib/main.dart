@@ -55,7 +55,6 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
         mute: false,
         showFullscreenButton: true,
         loop: false,
-        backgroundColor: Colors.black,
       ),
     )..onFullscreenChange = (isFullScreen) {
         log('${isFullScreen ? 'Entered' : 'Exited'} Fullscreen.');
