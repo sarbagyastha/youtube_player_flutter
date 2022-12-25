@@ -33,6 +33,7 @@
 /dev/integration_tests/**/Pods
 /packages/flutter/coverage/
 version
+pubspec_overrides.yaml
 
 # packages file containing multi-root paths
 .packages.generated
