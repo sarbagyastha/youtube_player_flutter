@@ -660,9 +660,9 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   }
 
   /// Disposes the resources created by [YoutubePlayerController].
-  void close() {
-    _valueController.close();
-    _eventHandler.videoStateController.close();
+  Future<void> close() async {
+    await _eventHandler.videoStateController.close();
+    await _valueController.close();
   }
 }
 
