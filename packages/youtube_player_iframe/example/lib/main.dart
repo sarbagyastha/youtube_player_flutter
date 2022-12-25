@@ -13,7 +13,20 @@ import 'widgets/meta_data_section.dart';
 import 'widgets/play_pause_button_bar.dart';
 import 'widgets/player_state_section.dart';
 import 'widgets/source_input_section.dart';
-import 'widgets/volume_slider.dart';
+
+const List<String> _videoIds = [
+  'tcodrIK2P_I',
+  'H5v3kku4y6Q',
+  'nPt8bK2gbaU',
+  'K18cpp_-gP8',
+  'iLnmTe5Q2Qw',
+  '_WoCV4c6XOE',
+  'KmzdUe0RSJo',
+  '6jZDSSZZxjQ',
+  'p2lYr3vM_1w',
+  '7QUtEmBT_-w',
+  '34_PXCzGw1M'
+];
 
 Future<void> main() async {
   runApp(YoutubeApp());
@@ -57,28 +70,19 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
         showFullscreenButton: true,
         loop: false,
       ),
-    )
-      ..onInit = () {
-        _controller.loadPlaylist(
-          list: [
-            'tcodrIK2P_I',
-            'nPt8bK2gbaU',
-            'K18cpp_-gP8',
-            'iLnmTe5Q2Qw',
-            '_WoCV4c6XOE',
-            'KmzdUe0RSJo',
-            '6jZDSSZZxjQ',
-            'p2lYr3vM_1w',
-            '7QUtEmBT_-w',
-            '34_PXCzGw1M',
-          ],
-          listType: ListType.playlist,
-          startSeconds: 136,
-        );
-      }
-      ..onFullscreenChange = (isFullScreen) {
+    );
+
+    _controller.setFullScreenListener(
+      (isFullScreen) {
         log('${isFullScreen ? 'Entered' : 'Exited'} Fullscreen.');
-      };
+      },
+    );
+
+    _controller.loadPlaylist(
+      list: _videoIds,
+      listType: ListType.playlist,
+      startSeconds: 136,
+    );
   }
 
   @override
@@ -155,8 +159,6 @@ class Controls extends StatelessWidget {
           _space,
           PlayPauseButtonBar(),
           _space,
-          const VolumeSlider(),
-          _space,
           const VideoPositionSeeker(),
           _space,
           PlayerStateSection(),
@@ -202,11 +204,11 @@ class VideoPositionIndicator extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = context.ytController;
 
-    return StreamBuilder<Duration>(
-      stream: controller.getCurrentPositionStream(),
-      initialData: Duration.zero,
+    return StreamBuilder<YoutubeVideoState>(
+      stream: controller.videoStateStream,
+      initialData: const YoutubeVideoState(),
       builder: (context, snapshot) {
-        final position = snapshot.data?.inMilliseconds ?? 0;
+        final position = snapshot.data?.position.inMilliseconds ?? 0;
         final duration = controller.metadata.duration.inMilliseconds;
 
         return LinearProgressIndicator(
@@ -235,11 +237,11 @@ class VideoPositionSeeker extends StatelessWidget {
         ),
         const SizedBox(width: 14),
         Expanded(
-          child: StreamBuilder<Duration>(
-            stream: context.ytController.getCurrentPositionStream(),
-            initialData: Duration.zero,
+          child: StreamBuilder<YoutubeVideoState>(
+            stream: context.ytController.videoStateStream,
+            initialData: const YoutubeVideoState(),
             builder: (context, snapshot) {
-              final position = snapshot.data?.inSeconds ?? 0;
+              final position = snapshot.data?.position.inSeconds ?? 0;
               final duration = context.ytController.metadata.duration.inSeconds;
 
               value = position == 0 || duration == 0 ? 0 : position / duration;

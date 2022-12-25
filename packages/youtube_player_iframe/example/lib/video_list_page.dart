@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
-import 'package:youtube_player_iframe_example/full_screen_player_page.dart';
 
 const List<String> _videoIds = [
   'dHuYBB05bYU',
@@ -54,24 +53,22 @@ class _VideoListPageState extends State<VideoListPage> {
                 aspectRatio: 16 / 9,
                 enableFullScreenOnVerticalDrag: false,
                 controller: controller
-                  ..onFullscreenChange = (_) async {
-                    final videoData = await controller.videoData;
-                    final startSeconds = await controller.currentTime;
+                  ..setFullScreenListener(
+                    (_) async {
+                      final videoData = await controller.videoData;
+                      final startSeconds = await controller.currentTime;
 
-                    final currentTime = await Navigator.push<double>(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => FullScreenPlayerPage(
-                          videoId: videoData.videoId,
-                          startSeconds: startSeconds,
-                        ),
-                      ),
-                    );
+                      final currentTime = await FullscreenYoutubePlayer.launch(
+                        context,
+                        videoId: videoData.videoId,
+                        startSeconds: startSeconds,
+                      );
 
-                    if (currentTime != null) {
-                      controller.seekTo(seconds: currentTime);
-                    }
-                  },
+                      if (currentTime != null) {
+                        controller.seekTo(seconds: currentTime);
+                      }
+                    },
+                  ),
               ),
             ),
           );

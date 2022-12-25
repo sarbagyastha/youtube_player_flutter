@@ -9,13 +9,6 @@ import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 /// Defines player parameters for [YoutubePlayer].
 class YoutubePlayerParams {
-  /// Specifies whether the initial video will automatically start to play when the player loads.
-  ///
-  /// Default is true.
-  ///
-  /// Note: auto play might not always work on mobile devices or when video is not muted at start.
-  final bool autoPlay;
-
   /// Mutes the player.
   ///
   /// Default is false.
@@ -33,6 +26,11 @@ class YoutubePlayerParams {
   ///
   /// Default is true.
   final bool enableCaption;
+
+  /// Defines whether or not the player reacts to pointer events.
+  ///
+  /// See the [Mozilla Docs](https://developer.mozilla.org/en-US/docs/Web/CSS/pointer-events) for detail.
+  final PointerEvents pointerEvents;
 
   /// This parameter specifies the color that will be used in the player's video progress bar to highlight the amount of the video that the viewer has already seen.
   /// Valid parameter values are red and white, and, by default, the player uses the color red in the video progress bar.
@@ -66,13 +64,6 @@ class YoutubePlayerParams {
   ///
   /// Default true.
   final bool enableJavaScript;
-
-  /// This parameter specifies the time, measured in seconds from the start of the video,
-  /// when the player should stop playing the video.
-  ///
-  /// Note that the time is measured from the beginning of the video and not from either the value of the start player parameter or the startSeconds parameter,
-  /// which is used in YouTube Player API functions for loading or queueing a video.
-  final Duration? endAt;
 
   /// Setting this parameter to false prevents the fullscreen button from displaying in the player.
   ///
@@ -116,24 +107,19 @@ class YoutubePlayerParams {
   /// Default is false.
   final bool strictRelatedVideos;
 
-  /// This parameter causes the player to begin playing the video at the given number of seconds from the start of the video.
-  ///
-  /// Note that similar to the [YoutubePlayerController.seekTo] function,
-  /// the player will look for the closest keyframe to the time you specify.
-  /// This means that sometimes the play head may seek to just before the requested time, usually no more than around two seconds.
-  final Duration startAt;
+  /// The user agent for the player.
+  final String? userAgent;
 
   /// Defines player parameters for the youtube player.
   const YoutubePlayerParams({
-    @Deprecated('Use load or cue methods instead.') this.autoPlay = true,
     this.mute = false,
     this.captionLanguage = 'en',
     this.enableCaption = true,
+    this.pointerEvents = PointerEvents.initial,
     this.color = 'white',
     this.showControls = true,
     this.enableKeyboard = kIsWeb,
     this.enableJavaScript = true,
-    @Deprecated('Use load or cue methods instead.') this.endAt,
     this.showFullscreenButton = false,
     this.interfaceLanguage = 'en',
     this.showVideoAnnotations = true,
@@ -141,8 +127,7 @@ class YoutubePlayerParams {
     this.origin = 'https://www.youtube.com',
     this.playsInline = true,
     this.strictRelatedVideos = false,
-    @Deprecated('Use load or cue methods instead.')
-        this.startAt = Duration.zero,
+    this.userAgent,
   });
 
   /// Creates [Map] representation of [YoutubePlayerParams].
@@ -171,4 +156,24 @@ class YoutubePlayerParams {
   String toJson() => jsonEncode(toMap());
 
   int _boolean(bool value) => value ? 1 : 0;
+}
+
+/// The pointer events.
+enum PointerEvents {
+  /// The player reacts to pointer events, like hover and click.
+  auto('auto'),
+
+  /// The initial configuration for pointer event.
+  ///
+  /// In most cases, this resolves to [PointerEvents.auto].
+  initial('initial'),
+
+  /// The player does not react to any pointer events.
+  none('none');
+
+  /// Creates a [PointerEvents] for the [name].
+  const PointerEvents(this.name);
+
+  /// The name of the [PointerEvents].
+  final String name;
 }
