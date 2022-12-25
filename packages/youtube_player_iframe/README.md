@@ -29,64 +29,11 @@ The package exposes almost all the API provided by **iFrame Player API**. So, it
 
 This package uses [webview_flutter](https://pub.dev/packages/webview_flutter) under-the-hood.
 
-## Migrating to v3
-v3 introduces `YoutubePlayerScaffold` to handle the fullscreen mode consistently in all platform.
-So, upgrading to v3 will break the fullscreen player unless the following changes are made.
-
-```dart
-
-
-// Before
-final _controller = YoutubePlayerController(
-  initialVideoId: 'K18cpp_-gP8',
-  params: YoutubePlayerParams(
-    startAt: Duration(seconds: 30),
-    autoPlay: true,
-  ),
-);
-
-Scaffold(
-  appbar: AppBar(
-    title: Text('YouTube Player'),
-  ),
-  body: YoutubePlayerIFrame(
-    controller: _controller,
-    aspectRatio: 16 / 9,
-  ),
-);
-
-// After
-bool autoPlay;
-
-final _controller = YoutubePlayerController()..onInit = (){
-  if(autoPlay) {
-    _controller.loadVideoById(videoId: 'K18cpp_-gP8', startSeconds: 30);
-  } else {
-    _controller.cueVideoById(videoId: 'K18cpp_-gP8', startSeconds: 30);
-  }
-};
-
-YoutubePlayerScaffold(
-  controller: _controller,
-  aspectRatio: 16 / 9,
-  builder: (context, player) {
-    return Scaffold(
-      appbar: AppBar(
-        title: Text('YouTube Player'),
-      ),
-      body: player,
-    ),
-  },
-),
-
-```
-
-**Note:** The `YoutubePlayerScaffold` should be top-most widget in the page.
-
 ## Setup
 See [**webview_flutter**'s doc](https://pub.dev/packages/webview_flutter) for the requirements.
 
 ### Using the player
+Start by creating a controller.
 
 ```dart
 final _controller = YoutubePlayerController(
@@ -96,9 +43,32 @@ final _controller = YoutubePlayerController(
     showFullscreenButton: true,
   ),
 );
+
+_controller.loadVideoById(...); // Auto Play
+_controller.cueVideoById(...); // Manual Play
+_controller.loadPlaylist(...); // Auto Play with playlist
+_controller.cuePlaylist(...); // Manual Play with playlist
+
+// If the requirement is just to play a single video.
+final _controller = YoutubePlayerController.fromVideoId(
+  videoId: '<video-id>',
+  autoPlay: false,
+  params: const YoutubePlayerParams(showFullscreenButton: true),
+);
 ```
 
-The player can be used in two ways:
+Then the player can be used in two ways:
+
+#### Using `YoutubePlayer`
+This widget can be used when fullscreen support is not required.
+
+```dart
+YoutubePlayer(
+  controller: _controller,
+  aspectRatio: 16 / 9,
+);
+
+```
 
 #### Using `YoutubePlayerScaffold`
 This widget can be used when fullscreen support for the player is required.
@@ -118,19 +88,22 @@ YoutubePlayerScaffold(
 ),
 ```
 
+See the [example app](example/lib/main.dart) for detailed usage.
 
-#### Using `YoutubePlayer`
-This widget can be used when fullscreen support is not required.
+## Inherit the controller to descendant widgets
+The package provides `YoutubePlayerControllerProvider`.
 
 ```dart
 YoutubePlayerControllerProvider(
   controller: _controller,
-  child: YoutubePlayer(
-    aspectRatio: 16 / 9,
+  child: Builder(
+    builder: (context){
+      // Access the controller as: 
+      // `YoutubePlayerControllerProvider.of(context)` 
+      // or `controller.ytController`.
+    },
   ),
 );
-
-// Access the controller as: `YoutubePlayerControllerProvider.of(context)` or `controller.ytController`.
 ```
 
 ## Want to customize the player?
@@ -143,16 +116,16 @@ YoutubeValueBuilder(
    builder: (context, value) {
       return IconButton(
          icon: Icon( 
-                  value.playerState == PlayerState.playing
-                    ? Icons.pause
-                    : Icons.play_arrow,
+           value.playerState == PlayerState.playing
+             ? Icons.pause
+             : Icons.play_arrow,
          ),
          onPressed: value.isReady
             ? () {
-                  value.playerState == PlayerState.playing
-                    ? context.ytController.pause()
-                    : context.ytController.play();
-                 }
+              value.playerState == PlayerState.playing
+                ? context.ytController.pause()
+                : context.ytController.play();
+              }
             : null,
       );
    },

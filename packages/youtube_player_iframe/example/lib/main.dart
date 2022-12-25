@@ -14,6 +14,20 @@ import 'widgets/play_pause_button_bar.dart';
 import 'widgets/player_state_section.dart';
 import 'widgets/source_input_section.dart';
 
+const List<String> _videoIds = [
+  'tcodrIK2P_I',
+  'H5v3kku4y6Q',
+  'nPt8bK2gbaU',
+  'K18cpp_-gP8',
+  'iLnmTe5Q2Qw',
+  '_WoCV4c6XOE',
+  'KmzdUe0RSJo',
+  '6jZDSSZZxjQ',
+  'p2lYr3vM_1w',
+  '7QUtEmBT_-w',
+  '34_PXCzGw1M'
+];
+
 Future<void> main() async {
   runApp(YoutubeApp());
 }
@@ -61,19 +75,7 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
       };
 
     _controller.loadPlaylist(
-      list: [
-        'tcodrIK2P_I',
-        'H5v3kku4y6Q',
-        'nPt8bK2gbaU',
-        'K18cpp_-gP8',
-        'iLnmTe5Q2Qw',
-        '_WoCV4c6XOE',
-        'KmzdUe0RSJo',
-        '6jZDSSZZxjQ',
-        'p2lYr3vM_1w',
-        '7QUtEmBT_-w',
-        '34_PXCzGw1M',
-      ],
+      list: _videoIds,
       listType: ListType.playlist,
       startSeconds: 136,
     );
