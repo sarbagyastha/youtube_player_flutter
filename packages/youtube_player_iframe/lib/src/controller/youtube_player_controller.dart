@@ -381,6 +381,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
         r'^https:\/\/(?:www\.|m\.)?youtube(?:-nocookie)?\.com\/embed\/';
     const altUrlPattern = r'^https:\/\/youtu\.be\/';
     const shortsUrlPattern = r'^https:\/\/(?:www\.|m\.)?youtube\.com\/shorts\/';
+    const musicUrlPattern = r'^https:\/\/(?:music\.)?youtube\.com\/watch\?';
     const idPattern = r'([_\-a-zA-Z0-9]{11}).*$';
 
     for (var regex in [
@@ -388,6 +389,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
       '$embedUrlPattern$idPattern',
       '$altUrlPattern$idPattern',
       '$shortsUrlPattern$idPattern',
+      '$musicUrlPattern?v=$idPattern',
     ]) {
       Match? match = RegExp(regex).firstMatch(url);
       if (match != null && match.groupCount >= 1) return match.group(1);
