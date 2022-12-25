@@ -579,7 +579,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   /// If [lock] is true, auto rotate will be disabled.
   void enterFullScreen({bool lock = true}) {
     update(fullScreenOption: FullScreenOption(enabled: true, locked: lock));
-    onFullscreenChange(true);
+    _onFullscreenChanged?.call(true);
   }
 
   /// Exits fullscreen mode.
@@ -587,10 +587,23 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   /// If [lock] is true, auto rotate will be disabled.
   void exitFullScreen({bool lock = true}) {
     update(fullScreenOption: FullScreenOption(enabled: false, locked: lock));
-    onFullscreenChange(false);
+    _onFullscreenChanged?.call(false);
+  }
+
+  ValueChanged<bool>? _onFullscreenChanged;
+
+  /// Sets the full screen listener.
+  // ignore: use_setters_to_change_properties
+  void setFullScreenListener(ValueChanged<bool> callback) {
+    assert(
+      _onFullscreenChanged == null,
+      'Cannot set fullscreen listener more than once',
+    );
+    _onFullscreenChanged = callback;
   }
 
   /// Called when full screen mode for the player changes.
+  @Deprecated('Use setFullScreenListener instead')
   void Function(bool isFullscreen) onFullscreenChange = (_) {};
 
   /// Toggles fullscreen mode.

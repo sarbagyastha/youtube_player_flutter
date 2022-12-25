@@ -70,9 +70,13 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
         showFullscreenButton: true,
         loop: false,
       ),
-    )..onFullscreenChange = (isFullScreen) {
+    );
+
+    _controller.setFullScreenListener(
+      (isFullScreen) {
         log('${isFullScreen ? 'Entered' : 'Exited'} Fullscreen.');
-      };
+      },
+    );
 
     _controller.loadPlaylist(
       list: _videoIds,
