@@ -64,8 +64,6 @@ class _FullScreenPlayerPageState extends State<FullScreenPlayerPage> {
     SystemChrome.setPreferredOrientations([]);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
-    _controller.close();
-
     super.dispose();
   }
 }
