@@ -54,7 +54,7 @@ class _VideoListPageState extends State<VideoListPage> {
                 aspectRatio: 16 / 9,
                 enableFullScreenOnVerticalDrag: false,
                 controller: controller
-                  ..onFullscreenChange = (_) async {
+                  ..setFullScreenListener((_) async {
                     final videoData = await controller.videoData;
                     final startSeconds = await controller.currentTime;
 
@@ -71,7 +71,7 @@ class _VideoListPageState extends State<VideoListPage> {
                     if (currentTime != null) {
                       controller.seekTo(seconds: currentTime);
                     }
-                  },
+                  }),
               ),
             ),
           );

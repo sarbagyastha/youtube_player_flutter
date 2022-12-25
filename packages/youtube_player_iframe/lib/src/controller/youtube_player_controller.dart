@@ -595,10 +595,6 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   /// Sets the full screen listener.
   // ignore: use_setters_to_change_properties
   void setFullScreenListener(ValueChanged<bool> callback) {
-    assert(
-      _onFullscreenChanged == null,
-      'Cannot set fullscreen listener more than once',
-    );
     _onFullscreenChanged = callback;
   }
 

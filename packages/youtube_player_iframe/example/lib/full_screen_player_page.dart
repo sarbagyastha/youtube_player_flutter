@@ -37,14 +37,16 @@ class _FullScreenPlayerPageState extends State<FullScreenPlayerPage> {
       startSeconds: widget.startSeconds,
       autoPlay: true,
       params: const YoutubePlayerParams(showFullscreenButton: true),
-    )..onFullscreenChange = (_) async {
+    )..setFullScreenListener((_) async {
         Navigator.pop(context, await _controller.currentTime);
-      };
+      });
 
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-    ]);
+    SystemChrome.setPreferredOrientations(
+      [
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+      ],
+    );
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
   }
 
