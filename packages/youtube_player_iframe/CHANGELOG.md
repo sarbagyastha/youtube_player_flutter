@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.0.1
+**Dec 26, 2022**
+- Fixed video playback issue in web release.
+
 ## 4.0.0
 **Dec 25, 2022**
 
