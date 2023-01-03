@@ -1,16 +1,23 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:meta/meta.dart';
+import 'package:url_launcher/url_launcher.dart' as uri_launcher;
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_flutter_android/webview_flutter_android.dart';
+import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 import 'package:youtube_player_iframe/src/iframe_api/src/functions/video_information.dart';
 import 'package:youtube_player_iframe/src/player_value.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 import 'package:youtube_player_iframe_web/youtube_player_iframe_web.dart';
 
 import 'youtube_player_event_handler.dart';
+
+/// The Web Resource Error.
+typedef YoutubeWebResourceError = WebResourceError;
 
 /// Controls the youtube player, and provides updates when the state is changing.
 ///
@@ -21,10 +28,48 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   /// Creates [YoutubePlayerController].
   YoutubePlayerController({
     this.params = const YoutubePlayerParams(),
+    ValueChanged<YoutubeWebResourceError>? onWebResourceError,
   }) {
     registerYoutubePlayerIframeWeb();
     _eventHandler = YoutubePlayerEventHandler(this);
-    javaScriptChannels = _eventHandler.javascriptChannels;
+
+    late final PlatformWebViewControllerCreationParams webViewParams;
+    if (WebViewPlatform.instance is WebKitWebViewPlatform) {
+      webViewParams = WebKitWebViewControllerCreationParams(
+        allowsInlineMediaPlayback: true,
+        mediaTypesRequiringUserAction: const <PlaybackMediaTypes>{},
+      );
+    } else {
+      webViewParams = const PlatformWebViewControllerCreationParams();
+    }
+
+    final navigationDelegate = NavigationDelegate(
+      onWebResourceError: (error) {
+        log(error.description, name: error.errorType.toString());
+        onWebResourceError?.call(error);
+      },
+      onNavigationRequest: (request) {
+        final uri = Uri.tryParse(request.url);
+        return _decideNavigation(uri);
+      },
+    );
+
+    webViewController = WebViewController.fromPlatformCreationParams(
+      webViewParams,
+    )
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setNavigationDelegate(navigationDelegate)
+      ..setUserAgent(params.userAgent)
+      ..addJavaScriptChannel('YoutubePlayer', onMessageReceived: _eventHandler)
+      ..enableZoom(false);
+
+    final webViewPlatform = webViewController.platform;
+    if (webViewPlatform is AndroidWebViewController) {
+      AndroidWebViewController.enableDebugging(false);
+      webViewPlatform.setMediaPlaybackRequiresUserGesture(false);
+    } else if (webViewPlatform is WebKitWebViewController) {
+      webViewPlatform.setAllowsBackForwardNavigationGestures(false);
+    }
   }
 
   /// Creates a [YoutubePlayerController] and initializes the player with [videoId].
@@ -37,33 +82,32 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   }) {
     final controller = YoutubePlayerController(params: params);
 
-    return controller
-      ..onInit = () {
-        if (autoPlay) {
-          controller.loadVideoById(
-            videoId: videoId,
-            startSeconds: startSeconds,
-            endSeconds: endSeconds,
-          );
-        } else {
-          controller.cueVideoById(
-            videoId: videoId,
-            startSeconds: startSeconds,
-            endSeconds: endSeconds,
-          );
-        }
-      };
+    if (autoPlay) {
+      controller.loadVideoById(
+        videoId: videoId,
+        startSeconds: startSeconds,
+        endSeconds: endSeconds,
+      );
+    } else {
+      controller.cueVideoById(
+        videoId: videoId,
+        startSeconds: startSeconds,
+        endSeconds: endSeconds,
+      );
+    }
+
+    return controller;
   }
 
   /// Defines player parameters for the youtube player.
   final YoutubePlayerParams params;
 
-  Completer<WebViewController> _webViewControllerCompleter = Completer();
+  /// The [WebViewController] that drives the player
+  @internal
+  late final WebViewController webViewController;
 
   late final YoutubePlayerEventHandler _eventHandler;
-
-  /// The set of [JavascriptChannel]s available to JavaScript code running in the player iframe.
-  late final Set<JavascriptChannel> javaScriptChannels;
+  final Completer<void> _initCompleter = Completer();
 
   final StreamController<YoutubePlayerValue> _valueController =
       StreamController.broadcast();
@@ -75,11 +119,6 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
 
   /// The [YoutubePlayerValue].
   YoutubePlayerValue get value => _value;
-
-  /// Gets the [WebViewController] for the iframe player.
-  Future<WebViewController> get webViewController {
-    return _webViewControllerCompleter.future;
-  }
 
   @override
   Future<void> cuePlaylist({
@@ -207,14 +246,10 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
 
   /// Loads the player with default [params].
   @internal
-  Future<void> init(WebViewController controller) async {
-    _webViewControllerCompleter = Completer();
-    await controller.runJavascript('var isWeb = $kIsWeb;');
-    _webViewControllerCompleter.complete(controller);
+  Future<void> init() async {
     await load(params: params, baseUrl: params.origin);
 
-    _eventHandler.reset();
-    await onInit();
+    if (!_initCompleter.isCompleted) _initCompleter.complete();
   }
 
   /// Loads the player with the given [params].
@@ -228,13 +263,12 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
       'packages/youtube_player_iframe/assets/player.html',
     );
 
-    final controller = await _webViewControllerCompleter.future;
     final platform = kIsWeb ? 'web' : defaultTargetPlatform.name.toLowerCase();
     final pointerEvents = getPointerEvent(params.pointerEvents);
 
-    await controller.loadHtmlString(
+    await webViewController.loadHtmlString(
       playerHtml
-          .replaceAll('<<pointerEvents>>', pointerEvents)
+          .replaceFirst('<<pointerEvents>>', params.pointerEvents.name)
           .replaceFirst('<<playerVars>>', params.toJson())
           .replaceFirst('<<platform>>', platform)
           .replaceFirst('<<host>>', params.origin ?? 'https://www.youtube.com'),
@@ -246,36 +280,41 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     String functionName, {
     Map<String, dynamic>? data,
   }) async {
-    final varArgs = await _prepareData(data);
-    final controller = await _webViewControllerCompleter.future;
+    await _initCompleter.future;
 
-    return controller.runJavascript('player.$functionName($varArgs);');
+    final varArgs = await _prepareData(data);
+
+    return webViewController.runJavaScript('player.$functionName($varArgs);');
   }
 
   Future<String> _runWithResult(
     String functionName, {
     Map<String, dynamic>? data,
   }) async {
-    final varArgs = await _prepareData(data);
-    final controller = await _webViewControllerCompleter.future;
+    await _initCompleter.future;
 
-    return controller.runJavascriptReturningResult(
+    final varArgs = await _prepareData(data);
+
+    final result = await webViewController.runJavaScriptReturningResult(
       'player.$functionName($varArgs);',
     );
+    return result.toString();
   }
 
   Future<void> _eval(String javascript) async {
     await _eventHandler.isReady;
 
-    final controller = await _webViewControllerCompleter.future;
-    return controller.runJavascript(javascript);
+    return webViewController.runJavaScript(javascript);
   }
 
   Future<String> _evalWithResult(String javascript) async {
     await _eventHandler.isReady;
 
-    final controller = await _webViewControllerCompleter.future;
-    return controller.runJavascriptReturningResult(javascript);
+    final result = await webViewController.runJavaScriptReturningResult(
+      javascript,
+    );
+
+    return result.toString();
   }
 
   Future<String> _prepareData(Map<String, dynamic>? data) async {
@@ -338,6 +377,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
         r'^https:\/\/(?:www\.|m\.)?youtube(?:-nocookie)?\.com\/embed\/';
     const altUrlPattern = r'^https:\/\/youtu\.be\/';
     const shortsUrlPattern = r'^https:\/\/(?:www\.|m\.)?youtube\.com\/shorts\/';
+    const musicUrlPattern = r'^https:\/\/(?:music\.)?youtube\.com\/watch\?';
     const idPattern = r'([_\-a-zA-Z0-9]{11}).*$';
 
     for (var regex in [
@@ -345,6 +385,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
       '$embedUrlPattern$idPattern',
       '$altUrlPattern$idPattern',
       '$shortsUrlPattern$idPattern',
+      '$musicUrlPattern?v=$idPattern',
     ]) {
       Match? match = RegExp(regex).firstMatch(url);
       if (match != null && match.groupCount >= 1) return match.group(1);
@@ -538,7 +579,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   /// If [lock] is true, auto rotate will be disabled.
   void enterFullScreen({bool lock = true}) {
     update(fullScreenOption: FullScreenOption(enabled: true, locked: lock));
-    onFullscreenChange(true);
+    _onFullscreenChanged?.call(true);
   }
 
   /// Exits fullscreen mode.
@@ -546,10 +587,19 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   /// If [lock] is true, auto rotate will be disabled.
   void exitFullScreen({bool lock = true}) {
     update(fullScreenOption: FullScreenOption(enabled: false, locked: lock));
-    onFullscreenChange(false);
+    _onFullscreenChanged?.call(false);
+  }
+
+  ValueChanged<bool>? _onFullscreenChanged;
+
+  /// Sets the full screen listener.
+  // ignore: use_setters_to_change_properties
+  void setFullScreenListener(ValueChanged<bool> callback) {
+    _onFullscreenChanged = callback;
   }
 
   /// Called when full screen mode for the player changes.
+  @Deprecated('Use setFullScreenListener instead')
   void Function(bool isFullscreen) onFullscreenChange = (_) {};
 
   /// Toggles fullscreen mode.
@@ -563,26 +613,88 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     }
   }
 
-  /// Creates a stream that repeatedly emits current time at [period] intervals.
-  Stream<Duration> getCurrentPositionStream({
-    Duration period = const Duration(seconds: 1),
-  }) async* {
-    yield _getDurationFrom(seconds: await currentTime);
+  /// The stream for [YoutubeVideoState] changes.
+  Stream<YoutubeVideoState> get videoStateStream {
+    return _eventHandler.videoStateController.stream;
+  }
 
-    yield* Stream.periodic(period).asyncMap(
-      (_) async => _getDurationFrom(seconds: await currentTime),
+  /// Creates a stream that repeatedly emits current time at [period] intervals.
+  @Deprecated('Use videoStateStream instead')
+  Stream<Duration> getCurrentPositionStream({
+    // Unused
+    Duration period = const Duration(seconds: 1),
+  }) {
+    return videoStateStream.map((state) => state.position);
+  }
+
+  NavigationDecision _decideNavigation(Uri? uri) {
+    if (uri == null) return NavigationDecision.prevent;
+
+    final params = uri.queryParameters;
+    final host = uri.host;
+    final path = uri.path;
+
+    String? featureName;
+    if (host.contains('facebook') ||
+        host.contains('twitter') ||
+        host == 'youtu') {
+      featureName = 'social';
+    } else if (params.containsKey('feature')) {
+      featureName = params['feature'];
+    } else if (path == '/watch') {
+      featureName = 'emb_info';
+    } else if (defaultTargetPlatform == TargetPlatform.iOS) {
+      return NavigationDecision.navigate;
+    }
+
+    switch (featureName) {
+      case 'emb_rel_pause':
+      case 'emb_rel_end':
+      case 'emb_info':
+        final videoId = params['v'];
+        if (videoId != null) loadVideoById(videoId: videoId);
+        break;
+      case 'emb_logo':
+      case 'social':
+      case 'wl_button':
+        uri_launcher.launchUrl(uri);
+        break;
+    }
+
+    return NavigationDecision.prevent;
+  }
+
+  /// Disposes the resources created by [YoutubePlayerController].
+  Future<void> close() async {
+    await _eventHandler.videoStateController.close();
+    await _valueController.close();
+  }
+}
+
+/// The current state of the Youtube video.
+class YoutubeVideoState {
+  /// Creates a new instance of [YoutubeVideoState].
+  const YoutubeVideoState({
+    this.position = Duration.zero,
+    this.loadedFraction = 0,
+  });
+
+  /// Creates a new instance of [YoutubeVideoState] from the given [json].
+  factory YoutubeVideoState.fromJson(String json) {
+    final state = jsonDecode(json);
+    final currentTime = state['currentTime'] as num? ?? 0;
+    final loadedFraction = state['loadedFraction'] as num? ?? 0;
+    final positionInMs = (currentTime * 1000).truncate();
+
+    return YoutubeVideoState(
+      position: Duration(milliseconds: positionInMs),
+      loadedFraction: loadedFraction.toDouble(),
     );
   }
 
-  Duration _getDurationFrom({required double seconds}) {
-    final timeInMs = (seconds * 1000).truncate();
+  /// The current position of the video.
+  final Duration position;
 
-    return Duration(milliseconds: timeInMs);
-  }
-
-  /// Called when the player is created.
-  FutureOr<void> Function() onInit = () {};
-
-  /// Disposes the resources created by [YoutubePlayerController].
-  void close() => _valueController.close();
+  /// The fraction of the video that has been buffered.
+  final double loadedFraction;
 }

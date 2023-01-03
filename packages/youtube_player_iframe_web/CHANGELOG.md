@@ -1,3 +1,7 @@
+## 2.0.0
+- Fixed video playback issues.
+- Bumped dependencies.
+
 ## 1.0.4
 - Bumped dependencies.
 

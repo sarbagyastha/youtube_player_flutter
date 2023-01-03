@@ -6,9 +6,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
-import 'player_value.dart';
+import '../controller/youtube_player_controller.dart';
+import '../helpers/youtube_value_builder.dart';
+import '../helpers/youtube_value_provider.dart';
+import '../player_value.dart';
+import 'youtube_player.dart';
 
 /// A widget the scaffolds the [YoutubePlayer] so that it can be moved around easily in the view
 /// and handles the fullscreen functionality.
@@ -21,6 +24,7 @@ class YoutubePlayerScaffold extends StatefulWidget {
     this.aspectRatio = 16 / 9,
     this.autoFullScreen = true,
     this.defaultOrientations = DeviceOrientation.values,
+    this.gestureRecognizers = const <Factory<OneSequenceGestureRecognizer>>{},
     this.fullscreenOrientations = const [
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
@@ -30,9 +34,9 @@ class YoutubePlayerScaffold extends StatefulWidget {
       DeviceOrientation.portraitDown,
     ],
     this.enableFullScreenOnVerticalDrag = true,
-    this.gestureRecognizers,
     this.backgroundColor,
-    this.userAgent,
+    @Deprecated('Unused parameter. Use `YoutubePlayerParam.userAgent` instead.')
+        this.userAgent,
   });
 
   /// Builds the child widget.
@@ -66,7 +70,7 @@ class YoutubePlayerScaffold extends StatefulWidget {
   /// Which gestures should be consumed by the youtube player.
   ///
   /// This property is ignored in web.
-  final Set<Factory<OneSequenceGestureRecognizer>>? gestureRecognizers;
+  final Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers;
 
   /// The background color of the [WebView].
   final Color? backgroundColor;
@@ -100,8 +104,8 @@ class _YoutubePlayerScaffoldState extends State<YoutubePlayerScaffold> {
         controller: widget.controller,
         aspectRatio: widget.aspectRatio,
         gestureRecognizers: widget.gestureRecognizers,
-        backgroundColor: widget.backgroundColor,
         enableFullScreenOnVerticalDrag: widget.enableFullScreenOnVerticalDrag,
+        backgroundColor: widget.backgroundColor,
       ),
     );
 
