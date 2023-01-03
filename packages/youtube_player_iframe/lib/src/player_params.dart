@@ -7,6 +7,8 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
+export 'package:youtube_player_iframe/src/enums/pointer_events.dart';
+
 /// Defines player parameters for [YoutubePlayer].
 class YoutubePlayerParams {
   /// Specifies whether the initial video will automatically start to play when the player loads.
@@ -34,11 +36,12 @@ class YoutubePlayerParams {
   /// Default is true.
   final bool enableCaption;
 
-  /// Settings the parameter's value to false will disable any gestures to be propagated to the iframe
-  /// by passing 'none' to the `pointer-events` param in `player.html`
+  /// Parameter that controls the `pointer-events` value in `player.html`
+  ///
+  /// Setting the parameter's value to `PointerEvents.none` will disable any gestures to be propagated to the iframe
   ///
   /// Useful especially for iOS where the gesture propagates even with the use of `IgnorePointer` widget
-  final bool enablePointerEvents;
+  final PointerEvents pointerEvents;
 
   /// This parameter specifies the color that will be used in the player's video progress bar to highlight the amount of the video that the viewer has already seen.
   /// Valid parameter values are red and white, and, by default, the player uses the color red in the video progress bar.
@@ -135,7 +138,7 @@ class YoutubePlayerParams {
     this.mute = false,
     this.captionLanguage = 'en',
     this.enableCaption = true,
-    this.enablePointerEvents = true,
+    this.pointerEvents = PointerEvents.initial,
     this.color = 'white',
     this.showControls = true,
     this.enableKeyboard = kIsWeb,

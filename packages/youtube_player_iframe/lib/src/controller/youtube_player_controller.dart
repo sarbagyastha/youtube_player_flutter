@@ -230,7 +230,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
 
     final controller = await _webViewControllerCompleter.future;
     final platform = kIsWeb ? 'web' : defaultTargetPlatform.name.toLowerCase();
-    final pointerEvents = params.enablePointerEvents ? 'auto' : 'none';
+    final pointerEvents = getPointerEvent(params.pointerEvents);
 
     await controller.loadHtmlString(
       playerHtml
