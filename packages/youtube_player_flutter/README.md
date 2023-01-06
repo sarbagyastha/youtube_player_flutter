@@ -57,7 +57,7 @@ For API < 20 devices, you might want to forward the video to be played using You
 #### Using Youtube Player
          
 ```dart
-YoutubePlayerController _contsroller = YoutubePlayerController(
+YoutubePlayerController _controller = YoutubePlayerController(
     initialVideoId: 'iLnmTe5Q2Qw',
     flags: YoutubePlayerFlags(
         autoPlay: true,
