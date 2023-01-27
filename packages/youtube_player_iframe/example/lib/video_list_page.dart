@@ -77,4 +77,13 @@ class _VideoListPageState extends State<VideoListPage> {
       ),
     );
   }
+
+  @override
+  void dispose() {
+    for (final controller in _controllers) {
+      controller.close();
+    }
+
+    super.dispose();
+  }
 }

@@ -128,6 +128,7 @@ class _FullscreenYoutubePlayerState extends State<FullscreenYoutubePlayer> {
   @override
   void dispose() {
     _resetOrientation();
+    _controller.close();
     super.dispose();
   }
 
