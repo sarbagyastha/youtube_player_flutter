@@ -10,9 +10,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 import 'package:youtube_player_iframe/src/iframe_api/src/functions/video_information.dart';
-import 'package:youtube_player_iframe/src/player_value.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
-import 'package:youtube_player_iframe_web/youtube_player_iframe_web.dart';
 
 import 'youtube_player_event_handler.dart';
 
@@ -30,7 +28,6 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     this.params = const YoutubePlayerParams(),
     ValueChanged<YoutubeWebResourceError>? onWebResourceError,
   }) {
-    registerYoutubePlayerIframeWeb();
     _eventHandler = YoutubePlayerEventHandler(this);
 
     late final PlatformWebViewControllerCreationParams webViewParams;
@@ -60,7 +57,10 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setNavigationDelegate(navigationDelegate)
       ..setUserAgent(params.userAgent)
-      ..addJavaScriptChannel('YoutubePlayer', onMessageReceived: _eventHandler)
+      ..addJavaScriptChannel(
+        _youtubeJSChannelName,
+        onMessageReceived: _eventHandler,
+      )
       ..enableZoom(false);
 
     final webViewPlatform = webViewController.platform;
@@ -98,6 +98,8 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
 
     return controller;
   }
+
+  final String _youtubeJSChannelName = 'YoutubePlayer';
 
   /// Defines player parameters for the youtube player.
   final YoutubePlayerParams params;
@@ -665,6 +667,8 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
 
   /// Disposes the resources created by [YoutubePlayerController].
   Future<void> close() async {
+    await stopVideo();
+    await webViewController.removeJavaScriptChannel(_youtubeJSChannelName);
     await _eventHandler.videoStateController.close();
     await _valueController.close();
   }

@@ -1,4 +1,9 @@
 # Changelog
+## 4.0.2
+**Jan 27, 2023**
+- Upgraded dependencies.
+- Fixed issue with `YoutubePlayerController.close`.
+- Exposed `YoutubePlayerValue`.
 
 ## 4.0.1
 **Dec 26, 2022**

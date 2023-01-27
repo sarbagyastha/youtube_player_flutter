@@ -30,7 +30,9 @@ class WebYoutubePlayerIframePlatform extends WebViewPlatform {
   }
 
   /// Gets called when the plugin is registered.
-  static void registerWith(Registrar registrar) {}
+  static void registerWith(Registrar registrar) {
+    WebViewPlatform.instance = WebYoutubePlayerIframePlatform();
+  }
 }
 
 /// An implementation of [PlatformNavigationDelegate] using Flutter for Web API.

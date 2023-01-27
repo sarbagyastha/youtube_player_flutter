@@ -1,3 +1,6 @@
+## 2.0.1
+-Adds auto registration of the `WebYoutubePlayerIframePlatform` implementation.
+
 ## 2.0.0
 - Fixed video playback issues.
 - Bumped dependencies.
