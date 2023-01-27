@@ -12,7 +12,6 @@ import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 import 'package:youtube_player_iframe/src/iframe_api/src/functions/video_information.dart';
 import 'package:youtube_player_iframe/src/player_value.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
-import 'package:youtube_player_iframe_web/youtube_player_iframe_web.dart';
 
 import 'youtube_player_event_handler.dart';
 
@@ -30,7 +29,6 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     this.params = const YoutubePlayerParams(),
     ValueChanged<YoutubeWebResourceError>? onWebResourceError,
   }) {
-    registerYoutubePlayerIframeWeb();
     _eventHandler = YoutubePlayerEventHandler(this);
 
     late final PlatformWebViewControllerCreationParams webViewParams;

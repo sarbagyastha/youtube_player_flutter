@@ -1,4 +1,7 @@
 # Changelog
+## 4.0.2
+**Jan 27, 2023**
+- Upgraded dependencies.
 
 ## 4.0.1
 **Dec 26, 2022**
