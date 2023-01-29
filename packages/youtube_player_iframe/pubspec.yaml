@@ -1,6 +1,6 @@
 name: youtube_player_iframe
 description: Flutter port of the official YouTube iFrame player API. Supports web & mobile platforms.
-version: 4.0.2
+version: 4.0.3
 repository: https://github.com/sarbagyastha/youtube_player_flutter
 homepage: https://github.com/sarbagyastha/youtube_player_flutter/tree/master/packages/youtube_player_iframe
 
@@ -26,7 +26,7 @@ flutter:
   assets:
     - assets/player.html
 
-platforms:
-  android:
-  ios:
-  web:
+  plugin:
+    platforms:
+      web:
+        default_package: youtube_player_iframe_web
