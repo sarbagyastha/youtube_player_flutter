@@ -1,4 +1,8 @@
 # Changelog
+## 4.0.4
+**Jan 29, 2023**
+- Fixed platform listing in pub.dev
+
 ## 4.0.3
 **Jan 29, 2023**
 - Endorse `youtube_player_iframe_web` as default web implementation package.
