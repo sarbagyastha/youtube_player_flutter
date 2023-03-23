@@ -110,6 +110,9 @@ class YoutubePlayerParams {
   /// The user agent for the player.
   final String? userAgent;
 
+  /// Any parameters that you would like to pass to youtube, eg. widget_referrer.
+  final Map? extraParams;
+
   /// Defines player parameters for the youtube player.
   const YoutubePlayerParams({
     this.mute = false,
@@ -128,6 +131,7 @@ class YoutubePlayerParams {
     this.playsInline = true,
     this.strictRelatedVideos = false,
     this.userAgent,
+    this.extraParams,
   });
 
   /// Creates [Map] representation of [YoutubePlayerParams].
@@ -149,6 +153,7 @@ class YoutubePlayerParams {
       if (origin != null && !kIsWeb) 'origin': origin,
       'playsinline': _boolean(playsInline),
       'rel': _boolean(!strictRelatedVideos),
+      if (extraParams != null) ...extraParams!,
     };
   }
 
