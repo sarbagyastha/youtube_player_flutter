@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 import 'package:flutter/material.dart';
-
 import '../utils/youtube_player_controller.dart';
+
+const double progressBarHandleRadius = 7.0;
 
 /// Defines different colors for [ProgressBar].
 class ProgressBarColors {
@@ -57,27 +58,26 @@ class ProgressBar extends StatefulWidget {
   final bool isExpanded;
 
   /// Creates [ProgressBar] widget.
-  ProgressBar({
+  const ProgressBar({
+    super.key,
     this.controller,
     this.colors,
     this.isExpanded = false,
   });
 
   @override
-  _ProgressBarState createState() {
-    return _ProgressBarState();
-  }
+  State<ProgressBar> createState() => _ProgressBarState();
 }
 
 class _ProgressBarState extends State<ProgressBar> {
   late YoutubePlayerController _controller;
+  bool _touchDown = false;
 
   Offset _touchPoint = Offset.zero;
 
   double _playedValue = 0.0;
   double _bufferedValue = 0.0;
 
-  bool _touchDown = false;
   late Duration _position;
 
   @override
@@ -101,15 +101,22 @@ class _ProgressBarState extends State<ProgressBar> {
   @override
   void dispose() {
     _controller.removeListener(positionListener);
+
     super.dispose();
   }
 
   void positionListener() {
-    var _totalDuration = _controller.metadata.duration.inMilliseconds;
-    if (mounted && !_totalDuration.isNaN && _totalDuration != 0) {
+    // in case there is no touch down
+    if (_touchDown == false) {
+      updatePosition(_controller.value.position);
+    }
+  }
+
+  void updatePosition(Duration position) {
+    var totalDuration = _controller.metadata.duration.inMilliseconds;
+    if (!totalDuration.isNaN && totalDuration != 0) {
       setState(() {
-        _playedValue =
-            _controller.value.position.inMilliseconds / _totalDuration;
+        _playedValue = position.inMilliseconds / totalDuration;
         _bufferedValue = _controller.value.buffered;
       });
     }
@@ -132,8 +139,11 @@ class _ProgressBarState extends State<ProgressBar> {
     final box = context.findRenderObject() as RenderBox;
     _touchPoint = box.globalToLocal(globalPosition);
     _checkTouchPoint();
+
     final relative = _touchPoint.dx / box.size.width;
     _position = _controller.metadata.duration * relative;
+    updatePosition(_position);
+
     _controller.seekTo(_position, allowSeekAhead: false);
   }
 
@@ -145,6 +155,7 @@ class _ProgressBarState extends State<ProgressBar> {
     setState(() {
       _touchDown = false;
     });
+
     _controller.play();
   }
 
@@ -156,7 +167,6 @@ class _ProgressBarState extends State<ProgressBar> {
         );
         _seekToRelativePosition(details.globalPosition);
         setState(() {
-          _setValue();
           _touchDown = true;
         });
       },
@@ -170,11 +180,12 @@ class _ProgressBarState extends State<ProgressBar> {
       onHorizontalDragCancel: _dragEndActions,
       child: Container(
         color: Colors.transparent,
-        constraints: const BoxConstraints.expand(height: 7.0 * 2),
+        constraints:
+            const BoxConstraints.expand(height: progressBarHandleRadius * 2),
         child: CustomPaint(
           painter: _ProgressBarPainter(
-            progressWidth: 2.0,
-            handleRadius: 7.0,
+            progressWidth: 3.0,
+            handleRadius: progressBarHandleRadius,
             playedValue: _playedValue,
             bufferedValue: _bufferedValue,
             colors: widget.colors,
@@ -187,8 +198,9 @@ class _ProgressBarState extends State<ProgressBar> {
   }
 
   @override
-  Widget build(BuildContext context) =>
-      widget.isExpanded ? Expanded(child: _buildBar()) : _buildBar();
+  Widget build(BuildContext context) {
+    return widget.isExpanded ? Expanded(child: _buildBar()) : _buildBar();
+  }
 }
 
 class _ProgressBarPainter extends CustomPainter {
@@ -254,14 +266,14 @@ class _ProgressBarPainter extends CustomPainter {
     handlePaint.color = Colors.transparent;
     canvas.drawCircle(progressPoint, centerY, handlePaint);
 
-    final _handleColor = colors?.handleColor ?? secondaryColor;
+    final handleColor = colors?.handleColor ?? secondaryColor;
 
     if (touchDown) {
-      handlePaint.color = _handleColor.withOpacity(0.4);
+      handlePaint.color = handleColor.withOpacity(0.4);
       canvas.drawCircle(progressPoint, handleRadius * 3, handlePaint);
     }
 
-    handlePaint.color = _handleColor;
+    handlePaint.color = handleColor;
     canvas.drawCircle(progressPoint, handleRadius, handlePaint);
   }
 }
