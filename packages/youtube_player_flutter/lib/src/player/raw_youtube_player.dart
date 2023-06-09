@@ -88,7 +88,6 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
           supportZoom: false,
           disableHorizontalScroll: false,
           disableVerticalScroll: false,
-          useShouldOverrideUrlLoading: true,
           allowsInlineMediaPlayback: true,
           allowsAirPlayForMediaPlayback: true,
           allowsPictureInPictureMediaPlayback: true,
