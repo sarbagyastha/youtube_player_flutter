@@ -377,8 +377,11 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                                   colors: widget.progressColors,
                                 ),
                                 RemainingDuration(),
-                                const PlaybackSpeedButton(),
-                                FullScreenButton(),
+                                VolumeMutedButton(
+                                  muteFlag: controller.flags.mute,
+                                ),
+                                // const PlaybackSpeedButton(),
+                                // FullScreenButton(),
                               ],
                         ),
                       ),

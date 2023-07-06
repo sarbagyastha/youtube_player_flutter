@@ -57,8 +57,10 @@ class _CurrentPositionState extends State<CurrentPosition> {
         _controller.value.position.inMilliseconds,
       ),
       style: const TextStyle(
+        letterSpacing: 0.2,
         color: Colors.white,
-        fontSize: 12.0,
+        fontSize: 11.0,
+        fontFamily: 'Pretendard',
       ),
     );
   }
@@ -115,8 +117,10 @@ class _RemainingDurationState extends State<RemainingDuration> {
             (_controller.value.position.inMilliseconds),
       )}",
       style: const TextStyle(
+        letterSpacing: 0.2,
         color: Colors.white,
-        fontSize: 12.0,
+        fontSize: 11.0,
+        fontFamily: 'Pretendard',
       ),
     );
   }
