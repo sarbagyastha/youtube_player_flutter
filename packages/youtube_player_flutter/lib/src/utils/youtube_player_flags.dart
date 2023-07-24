@@ -1,8 +1,3 @@
-// Copyright 2020 Sarbagya Dhaubanjar. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
-/// Defines player flags for [YoutubePlayer].
 class YoutubePlayerFlags {
   /// If set to true, hides the controls.
   ///
@@ -79,6 +74,11 @@ class YoutubePlayerFlags {
   /// Default is true.
   final bool showLiveFullscreenButton;
 
+  /// Defines whether to enable seek ahead of EndTime and below of StartTime.
+  ///
+  /// Default is true.
+  final bool enableSeekBeyondEndAndStart;
+
   /// Creates [YoutubePlayerFlags].
   const YoutubePlayerFlags({
     this.hideControls = false,
@@ -96,6 +96,7 @@ class YoutubePlayerFlags {
     this.endAt,
     this.useHybridComposition = true,
     this.showLiveFullscreenButton = true,
+    this.enableSeekBeyondEndAndStart = true,
   });
 
   /// Copies new values assigned to the [YoutubePlayerFlags].
@@ -116,6 +117,7 @@ class YoutubePlayerFlags {
     bool? controlsVisibleAtStart,
     bool? useHybridComposition,
     bool? showLiveFullscreenButton,
+    bool? enableSeekBeyondEndAndStart,
   }) {
     return YoutubePlayerFlags(
       autoPlay: autoPlay ?? this.autoPlay,
@@ -135,6 +137,8 @@ class YoutubePlayerFlags {
       useHybridComposition: useHybridComposition ?? this.useHybridComposition,
       showLiveFullscreenButton:
           showLiveFullscreenButton ?? this.showLiveFullscreenButton,
+      enableSeekBeyondEndAndStart:
+          enableSeekBeyondEndAndStart ?? this.enableSeekBeyondEndAndStart,
     );
   }
 }

@@ -179,6 +179,7 @@ strictRelatedVideos        | Enabling ensure that related videos will come from 
 startAt                    | Starts the video at specified time.
 desktopMode                | The controls will be alike Youtube Desktop's controls.
 useHybridComposition       | Enable [Hybrid Composition](https://github.com/flutter/flutter/wiki/Hybrid-Composition)
+enableSeekBeyondEndAndStart        | Enable seek ahead of endAt and below of startAt. **Default = true**
 
 
 ## Limitation 

@@ -134,6 +134,21 @@ class _ProgressBarState extends State<ProgressBar> {
     _checkTouchPoint();
     final relative = _touchPoint.dx / box.size.width;
     _position = _controller.metadata.duration * relative;
+
+    if(!_controller.flags.enableSeekBeyondEndAndStart) {
+      if (_position.inSeconds >
+          (_controller.flags.endAt ??
+              _controller.metadata.duration.inSeconds)) {
+        _position = Duration(
+            seconds: (_controller.flags.endAt ??
+                _controller.metadata.duration.inSeconds) -
+                2);
+      }
+      if (_position.inSeconds < _controller.flags.startAt) {
+        _position = Duration(seconds: _controller.flags.startAt);
+      }
+    }
+
     _controller.seekTo(_position, allowSeekAhead: false);
   }
 
@@ -141,6 +156,20 @@ class _ProgressBarState extends State<ProgressBar> {
     _controller.updateValue(
       _controller.value.copyWith(isControlsVisible: false, isDragging: false),
     );
+    if(!_controller.flags.enableSeekBeyondEndAndStart) {
+      if (_position.inSeconds >
+          (_controller.flags.endAt ??
+              _controller.metadata.duration.inSeconds)) {
+        _position = Duration(
+            seconds: (_controller.flags.endAt ??
+                    _controller.metadata.duration.inSeconds) -
+                2);
+      }
+      if (_position.inSeconds < _controller.flags.startAt) {
+        _position = Duration(seconds: _controller.flags.startAt);
+      }
+    }
+
     _controller.seekTo(_position, allowSeekAhead: true);
     setState(() {
       _touchDown = false;
