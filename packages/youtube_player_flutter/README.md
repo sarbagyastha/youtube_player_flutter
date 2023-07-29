@@ -68,13 +68,13 @@ YoutubePlayerController _controller = YoutubePlayerController(
 YoutubePlayer(
     controller: _controller,
     showVideoProgressIndicator: true,
-    videoProgressIndicatorColor: Colors.amber,
-    progressColors: ProgressColors(
-        playedColor: Colors.amber,
-        handleColor: Colors.amberAccent,
+    progressIndicatorColor: Colors.amber,
+    progressColors: const ProgressBarColors(
+      playedColor: Colors.amber,
+      handleColor: Colors.amberAccent,
     ),
-    onReady () {
-        _controller.addListener(listener);
+    onReady: () {
+      _controller.addListener(listener);
     },
 ),
 ```
