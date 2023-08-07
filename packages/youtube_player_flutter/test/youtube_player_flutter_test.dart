@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:ui' show window;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -84,7 +83,7 @@ class TestApp extends StatelessWidget {
         DefaultMaterialLocalizations.delegate,
       ],
       child: MediaQuery(
-        data: MediaQueryData.fromWindow(window),
+        data: MediaQueryData.fromView(View.of(context)),
         child: Directionality(
           textDirection: textDirection,
           child: child,
