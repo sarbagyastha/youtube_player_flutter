@@ -21,7 +21,7 @@ Supported Platforms:
 - **iOS**
 - **Web**
 
-![YOUTUBE PLAYER IFRAME](youtube_player_iframe.png)
+![YOUTUBE PLAYER IFRAME](packages/youtube_player_iframe/youtube_player_iframe.png)
 
 [Click here for WEB DEMO](https://sarbagyastha.github.io/youtube_player_flutter)
 
