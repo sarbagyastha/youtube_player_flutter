@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../utils/youtube_player_controller.dart';
 
@@ -48,6 +49,7 @@ class _FullScreenButtonState extends State<FullScreenButton> {
   @override
   void dispose() {
     _controller.removeListener(listener);
+    SystemChrome.setPreferredOrientations([]);
     super.dispose();
   }
 
