@@ -126,6 +126,12 @@ class _MyHomePageState extends State<MyHomePage> {
       },
       player: YoutubePlayer(
         controller: _controller,
+        enableSkipSecondsFromVideo:true,
+        sizeOfSkipIcon: 40,
+        rightIcon : Icons.fast_rewind,
+        textOfSkip : 'secs',
+        leftIcon : Icons.fast_forward,
+        colorOfSkipIcon : Colors.black,
         showVideoProgressIndicator: true,
         progressIndicatorColor: Colors.blueAccent,
         topActions: <Widget>[
@@ -161,6 +167,7 @@ class _MyHomePageState extends State<MyHomePage> {
           _showSnackBar('Next Video Started!');
         },
       ),
+
       builder: (context, player) => Scaffold(
         appBar: AppBar(
           leading: Padding(
