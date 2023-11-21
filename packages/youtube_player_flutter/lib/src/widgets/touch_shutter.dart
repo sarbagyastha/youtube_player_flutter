@@ -153,12 +153,14 @@ class _TouchShutterState extends State<TouchShutter> {
       onTap: _toggleControls,
       onDoubleTapDown: onDoubleTapAction,
       onHorizontalDragStart: (details) {
+        if (_controller.flags.disableDragSeek) return;
         setState(() {
           _dragging = true;
         });
         dragStartPos = details.globalPosition.dx;
       },
       onHorizontalDragUpdate: (details) {
+        if (_controller.flags.disableDragSeek) return;
         _controller.updateValue(
           _controller.value.copyWith(
             isControlsVisible: false,
@@ -175,6 +177,7 @@ class _TouchShutterState extends State<TouchShutter> {
         });
       },
       onHorizontalDragEnd: (_) {
+        if (_controller.flags.disableDragSeek) return;
         _controller.seekTo(Duration(milliseconds: seekToPosition));
         setState(() {
           _dragging = false;
