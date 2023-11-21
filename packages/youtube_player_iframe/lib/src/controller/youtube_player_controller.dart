@@ -182,7 +182,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     return _run(
       'loadPlaylist',
       data: {
-        list.length == 1 ? 'list' : 'playlist': list,
+        'playlist': list,
         'listType': listType?.value,
         'index': index,
         'startSeconds': startSeconds,
@@ -272,6 +272,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
           .replaceFirst('<<pointerEvents>>', params.pointerEvents.name)
           .replaceFirst('<<playerVars>>', params.toJson())
           .replaceFirst('<<platform>>', platform)
+          .replaceFirst('<<loop>>', params.loop.toString())
           .replaceFirst('<<host>>', params.origin ?? 'https://www.youtube.com'),
       baseUrl: baseUrl,
     );
