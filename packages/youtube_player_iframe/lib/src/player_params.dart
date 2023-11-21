@@ -14,6 +14,8 @@ class YoutubePlayerParams {
   /// Default is false.
   final bool mute;
 
+  final bool autoPlay;
+  
   /// Specifies the default language that the player will use to display captions.
   ///
   /// Set the parameter's value to an [ISO 639-1 two-letter language code](https://www.loc.gov/standards/iso639-2/php/code_list.php).
@@ -113,6 +115,7 @@ class YoutubePlayerParams {
   /// Defines player parameters for the youtube player.
   const YoutubePlayerParams({
     this.mute = false,
+    this.autoPlay = true,
     this.captionLanguage = 'en',
     this.enableCaption = true,
     this.pointerEvents = PointerEvents.initial,
@@ -133,7 +136,7 @@ class YoutubePlayerParams {
   /// Creates [Map] representation of [YoutubePlayerParams].
   Map<String, dynamic> toMap() {
     return {
-      'autoplay': 1,
+      'autoplay': _boolean(autoPlay),
       'mute': _boolean(mute),
       'cc_lang_pref': captionLanguage,
       'cc_load_policy': _boolean(enableCaption),
