@@ -44,8 +44,12 @@ class _TouchShutterState extends State<TouchShutter> {
   String seekPosition = "";
   bool _dragging = false;
   Timer? _timer;
+  int doubleTapPadding = 50; // this disable the double tap effect in the middle
+  bool doubleTapDetector = false;
+  bool? tappedSide; // true means right side false means left side
 
   late YoutubePlayerController _controller;
+  late bool _doubleTapSkip;
 
   @override
   void didChangeDependencies() {
@@ -60,6 +64,13 @@ class _TouchShutterState extends State<TouchShutter> {
       _controller = widget.controller!;
     } else {
       _controller = controller;
+    }
+
+    // initialize _doubleTapSkip
+    if (_controller.flags.doubleTapSkipTime == 0) {
+      _doubleTapSkip = false;
+    } else {
+      _doubleTapSkip = true;
     }
   }
 
@@ -87,81 +98,143 @@ class _TouchShutterState extends State<TouchShutter> {
     });
   }
 
+  void onDoubleTapAction(TapDownDetails details) {
+    if (!_doubleTapSkip) return;
+    if (details.globalPosition.dx >
+        (MediaQuery.of(context).size.width / 2) + doubleTapPadding) {
+      // touch on right side
+      setState(() {
+        doubleTapDetector = true;
+        tappedSide = true;
+      });
+      _controller.seekTo(
+        Duration(
+            seconds: _controller.value.position.inSeconds +
+                _controller.flags.doubleTapSkipTime),
+      );
+      Future.delayed(const Duration(seconds: 2), () {
+        setState(() {
+          doubleTapDetector = false;
+        });
+      });
+    } else if (details.globalPosition.dx <
+        (MediaQuery.of(context).size.width / 2) - doubleTapPadding) {
+      // touch on left side
+      setState(() {
+        doubleTapDetector = true;
+        tappedSide = false;
+      });
+      _controller.seekTo(
+        Duration(
+            seconds: _controller.value.position.inSeconds -
+                _controller.flags.doubleTapSkipTime),
+      );
+      Future.delayed(const Duration(seconds: 2), () {
+        setState(() {
+          doubleTapDetector = false;
+        });
+      });
+    }
+  }
+
+  Widget skipIcon(IconData icon, double dx) {
+    return Transform.translate(
+      offset: Offset(dx, 0),
+      child: Icon(
+        icon,
+        size: 40,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return widget.disableDragSeek
-        ? GestureDetector(onTap: _toggleControls)
-        : GestureDetector(
-            onTap: _toggleControls,
-            onHorizontalDragStart: (details) {
-              setState(() {
-                _dragging = true;
-              });
-              dragStartPos = details.globalPosition.dx;
-            },
-            onHorizontalDragUpdate: (details) {
-              _controller.updateValue(
-                _controller.value.copyWith(
-                  isControlsVisible: false,
-                ),
-              );
-              delta = details.globalPosition.dx - dragStartPos;
-              seekToPosition =
-                  (_controller.value.position.inMilliseconds + delta * 1000)
-                      .round();
-              setState(() {
-                seekDuration = (delta < 0 ? "- " : "+ ") +
-                    durationFormatter(
-                        (delta < 0 ? -1 : 1) * (delta * 1000).round());
-                if (seekToPosition < 0) seekToPosition = 0;
-                seekPosition = durationFormatter(seekToPosition);
-              });
-            },
-            onHorizontalDragEnd: (_) {
-              _controller.seekTo(Duration(milliseconds: seekToPosition));
-              setState(() {
-                _dragging = false;
-              });
-            },
-            onScaleUpdate: (details) {
-              scaleAmount = details.scale;
-            },
-            onScaleEnd: (_) {
-              if (_controller.value.isFullScreen) {
-                if (scaleAmount > 1) {
-                  _controller.fitWidth(MediaQuery.of(context).size);
-                }
-                if (scaleAmount < 1) {
-                  _controller.fitHeight(MediaQuery.of(context).size);
-                }
-              }
-            },
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              color: _controller.value.isControlsVisible
-                  ? Colors.black.withAlpha(150)
-                  : Colors.transparent,
-              child: _dragging
-                  ? Center(
-                      child: Container(
-                        padding: const EdgeInsets.all(4.0),
-                        decoration: BoxDecoration(
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(5.0)),
-                          color: Colors.black.withAlpha(150),
-                        ),
-                        child: Text(
-                          "$seekDuration ($seekPosition)",
-                          style: const TextStyle(
-                            fontSize: 26.0,
-                            fontWeight: FontWeight.w400,
-                            color: Colors.white,
-                          ),
+    return GestureDetector(
+      onTap: _toggleControls,
+      onDoubleTapDown: onDoubleTapAction,
+      onHorizontalDragStart: (details) {
+        setState(() {
+          _dragging = true;
+        });
+        dragStartPos = details.globalPosition.dx;
+      },
+      onHorizontalDragUpdate: (details) {
+        _controller.updateValue(
+          _controller.value.copyWith(
+            isControlsVisible: false,
+          ),
+        );
+        delta = details.globalPosition.dx - dragStartPos;
+        seekToPosition =
+            (_controller.value.position.inMilliseconds + delta * 1000).round();
+        setState(() {
+          seekDuration = (delta < 0 ? "- " : "+ ") +
+              durationFormatter((delta < 0 ? -1 : 1) * (delta * 1000).round());
+          if (seekToPosition < 0) seekToPosition = 0;
+          seekPosition = durationFormatter(seekToPosition);
+        });
+      },
+      onHorizontalDragEnd: (_) {
+        _controller.seekTo(Duration(milliseconds: seekToPosition));
+        setState(() {
+          _dragging = false;
+        });
+      },
+      onScaleUpdate: (details) {
+        scaleAmount = details.scale;
+      },
+      onScaleEnd: (_) {
+        if (_controller.value.isFullScreen) {
+          if (scaleAmount > 1) {
+            _controller.fitWidth(MediaQuery.of(context).size);
+          }
+          if (scaleAmount < 1) {
+            _controller.fitHeight(MediaQuery.of(context).size);
+          }
+        }
+      },
+      child: Stack(
+        children: [
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            color: _controller.value.isControlsVisible
+                ? Colors.black.withAlpha(150)
+                : Colors.transparent,
+            child: _dragging
+                ? Center(
+                    child: Container(
+                      padding: const EdgeInsets.all(4.0),
+                      decoration: BoxDecoration(
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(5.0)),
+                        color: Colors.black.withAlpha(150),
+                      ),
+                      child: Text(
+                        "$seekDuration ($seekPosition)",
+                        style: const TextStyle(
+                          fontSize: 26.0,
+                          fontWeight: FontWeight.w400,
+                          color: Colors.white,
                         ),
                       ),
-                    )
-                  : Container(),
-            ),
-          );
+                    ),
+                  )
+                : Container(),
+          ),
+          Center(
+            child: AnimatedContainer(
+                color: doubleTapDetector
+                    ? Colors.black.withAlpha(150)
+                    : Colors.transparent,
+                duration: const Duration(seconds: 2),
+                child: doubleTapDetector && tappedSide == true
+                    ? skipIcon(Icons.fast_forward, 100)
+                    : doubleTapDetector && tappedSide == false
+                        ? skipIcon(Icons.fast_rewind, -100)
+                        : null),
+          )
+        ],
+      ),
+    );
   }
 }
