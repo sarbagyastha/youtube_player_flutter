@@ -50,6 +50,7 @@
       var host = "<<host>>";
       var player;
       var timerId;
+      var loop = <<loop>>;
 
       function onYouTubeIframeAPIReady() {
         player = new YT.Player("player", {
@@ -163,6 +164,10 @@
             };
           }
         }
+      }
+      window.onload = function(){
+        // 실행될 코드
+        player.setLoop(loop);
       }
     </script>
   </body>
