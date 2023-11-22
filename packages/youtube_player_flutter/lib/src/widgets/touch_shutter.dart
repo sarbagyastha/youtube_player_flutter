@@ -44,9 +44,11 @@ class _TouchShutterState extends State<TouchShutter> {
   String seekPosition = "";
   bool _dragging = false;
   Timer? _timer;
+  Timer? _lockTimer;
   int doubleTapPadding = 50; // this disable the double tap effect in the middle
   bool doubleTapDetector = false;
   bool? tappedSide; // true means right side false means left side
+  bool showLockIcon = false;
 
   late YoutubePlayerController _controller;
   late bool _doubleTapSkip;
@@ -80,7 +82,25 @@ class _TouchShutterState extends State<TouchShutter> {
     super.dispose();
   }
 
+  void toggleLockIcon() {
+    setState(() {
+      showLockIcon = !showLockIcon;
+    });
+
+    _lockTimer?.cancel();
+    _lockTimer = Timer(widget.timeOut, () {
+      if (!_controller.value.isDragging) {
+        _controller.updateValue(
+          _controller.value.copyWith(
+            isControlsVisible: false,
+          ),
+        );
+      }
+    });
+  }
+
   void _toggleControls() {
+    if (showLockIcon) return;
     _controller.updateValue(
       _controller.value.copyWith(
         isControlsVisible: !_controller.value.isControlsVisible,
@@ -99,7 +119,8 @@ class _TouchShutterState extends State<TouchShutter> {
   }
 
   void onDoubleTapAction(TapDownDetails details) {
-    if (!_doubleTapSkip) return;
+    if (!_doubleTapSkip || showLockIcon) return;
+
     if (details.globalPosition.dx >
         (MediaQuery.of(context).size.width / 2) + doubleTapPadding) {
       // touch on right side
@@ -153,7 +174,7 @@ class _TouchShutterState extends State<TouchShutter> {
       onTap: _toggleControls,
       onDoubleTapDown: onDoubleTapAction,
       onHorizontalDragStart: (details) {
-        if (_controller.flags.disableDragSeek) return;
+        if (_controller.flags.disableDragSeek || showLockIcon) return;
         setState(() {
           _dragging = true;
         });
@@ -177,6 +198,7 @@ class _TouchShutterState extends State<TouchShutter> {
         });
       },
       onHorizontalDragEnd: (_) {
+        if (showLockIcon) return;
         if (_controller.flags.disableDragSeek) return;
         _controller.seekTo(Duration(milliseconds: seekToPosition));
         setState(() {
@@ -187,6 +209,7 @@ class _TouchShutterState extends State<TouchShutter> {
         scaleAmount = details.scale;
       },
       onScaleEnd: (_) {
+        if (showLockIcon) return;
         if (_controller.value.isFullScreen) {
           if (scaleAmount > 1) {
             _controller.fitWidth(MediaQuery.of(context).size);
@@ -225,17 +248,25 @@ class _TouchShutterState extends State<TouchShutter> {
                 : Container(),
           ),
           Center(
-            child: AnimatedContainer(
+            child: Container(
                 color: doubleTapDetector
                     ? Colors.black.withAlpha(150)
                     : Colors.transparent,
-                duration: const Duration(seconds: 2),
                 child: doubleTapDetector && tappedSide == true
                     ? skipIcon(Icons.fast_forward, 100)
                     : doubleTapDetector && tappedSide == false
                         ? skipIcon(Icons.fast_rewind, -100)
                         : null),
-          )
+          ),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: _controller.value.isControlsVisible
+                ? IconButton(
+                    icon: Icon(showLockIcon ? Icons.lock : Icons.lock_open),
+                    onPressed: toggleLockIcon,
+                  )
+                : Container(),
+          ),
         ],
       ),
     );
