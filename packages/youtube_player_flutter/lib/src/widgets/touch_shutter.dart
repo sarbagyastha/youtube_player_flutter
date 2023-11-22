@@ -49,6 +49,7 @@ class _TouchShutterState extends State<TouchShutter> {
   bool doubleTapDetector = false;
   bool? tappedSide; // true means right side false means left side
   bool showLockIcon = false;
+  late double distanceFromCenter;
 
   late YoutubePlayerController _controller;
   late bool _doubleTapSkip;
@@ -74,6 +75,12 @@ class _TouchShutterState extends State<TouchShutter> {
     } else {
       _doubleTapSkip = true;
     }
+  }
+
+  @override
+  void initState() {
+    distanceFromCenter = MediaQuery.of(context).size.width / 4;
+    super.initState();
   }
 
   @override
@@ -163,7 +170,7 @@ class _TouchShutterState extends State<TouchShutter> {
       offset: Offset(dx, 0),
       child: Icon(
         icon,
-        size: 40,
+        size: 100,
       ),
     );
   }
@@ -253,9 +260,9 @@ class _TouchShutterState extends State<TouchShutter> {
                     ? Colors.black.withAlpha(150)
                     : Colors.transparent,
                 child: doubleTapDetector && tappedSide == true
-                    ? skipIcon(Icons.fast_forward, 100)
+                    ? skipIcon(Icons.fast_forward, distanceFromCenter)
                     : doubleTapDetector && tappedSide == false
-                        ? skipIcon(Icons.fast_rewind, -100)
+                        ? skipIcon(Icons.fast_rewind, -distanceFromCenter)
                         : null),
           ),
           Align(
