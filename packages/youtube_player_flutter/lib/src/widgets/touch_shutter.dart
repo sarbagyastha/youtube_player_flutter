@@ -71,17 +71,12 @@ class _TouchShutterState extends State<TouchShutter> {
     }
 
     // initialize _doubleTapSkip
+    distanceFromCenter = MediaQuery.of(context).size.width / 4;
     if (_controller.flags.doubleTapSkipTime == 0) {
       _doubleTapSkip = false;
     } else {
       _doubleTapSkip = true;
     }
-  }
-
-  @override
-  void initState() {
-    distanceFromCenter = MediaQuery.of(context).size.width / 4;
-    super.initState();
   }
 
   @override
