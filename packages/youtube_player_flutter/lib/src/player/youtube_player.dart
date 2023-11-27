@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../enums/thumbnail_quality.dart';
@@ -196,6 +198,27 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
   late double _aspectRatio;
   bool _initialLoad = true;
 
+  Timer? _lockTimer;
+  bool _isLocked = false;
+  bool _showLockIcon = false;
+
+  void _toggleLock() {
+    if (_isLocked) {
+      _showLockIcon = !_showLockIcon;
+      _lockTimer?.cancel();
+      _lockTimer = Timer(const Duration(seconds: 3), () {
+        _showLockIcon = false;
+      });
+    }
+  }
+
+  void _switchLock() {
+    setState(() {
+      _isLocked = !_isLocked;
+    });
+    _toggleLock();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -338,7 +361,22 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                 ),
               ),
             ),
-          if (!controller.flags.hideControls) ...[
+          GestureDetector(
+            onTap: _toggleLock,
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: controller.flags.hideControls || _showLockIcon
+                  ? IconButton(
+                      icon: Icon(
+                        _isLocked ? Icons.lock : Icons.lock_open,
+                        color: Colors.white,
+                      ),
+                      onPressed: _switchLock,
+                    )
+                  : Container(color: Colors.transparent),
+            ),
+          ),
+          if (!_isLocked) ...[
             TouchShutter(
               disableDragSeek: controller.flags.disableDragSeek,
               timeOut: widget.controlsTimeOut,
