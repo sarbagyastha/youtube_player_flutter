@@ -87,7 +87,7 @@ class _TouchShutterState extends State<TouchShutter> {
 
   void _toggleControls() {
     if (isLocked) {
-      showLockIcon = true;
+      showLockIcon = !showLockIcon;
       _lockTimer?.cancel();
       _lockTimer = Timer(widget.timeOut, () {
         showLockIcon = false;
