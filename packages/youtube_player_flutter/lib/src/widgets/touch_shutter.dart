@@ -44,10 +44,12 @@ class _TouchShutterState extends State<TouchShutter> {
   String seekPosition = "";
   bool _dragging = false;
   Timer? _timer;
+  Timer? _lockTimer;
   int doubleTapPadding = 50; // this disable the double tap effect in the middle
   bool doubleTapDetector = false;
   bool? tappedSide; // true means right side false means left side
   bool isLocked = false;
+  bool showLockIcon = false;
 
   late double distanceFromCenter;
   late YoutubePlayerController _controller;
@@ -89,7 +91,20 @@ class _TouchShutterState extends State<TouchShutter> {
   }
 
   void _toggleControls() {
-    if (isLocked) return;
+    if (isLocked) {
+      showLockIcon = true;
+      _lockTimer?.cancel();
+      _lockTimer = Timer(widget.timeOut, () {
+        showLockIcon = false;
+      });
+      return;
+    }
+
+    _controller.updateValue(
+      _controller.value.copyWith(
+        isControlsVisible: !_controller.value.isControlsVisible,
+      ),
+    );
     _timer?.cancel();
     _timer = Timer(widget.timeOut, () {
       if (!_controller.value.isDragging) {
@@ -248,9 +263,12 @@ class _TouchShutterState extends State<TouchShutter> {
           ),
           Align(
             alignment: Alignment.centerLeft,
-            child: _controller.value.isControlsVisible || isLocked
+            child: _controller.value.isControlsVisible || showLockIcon
                 ? IconButton(
-                    icon: Icon(isLocked ? Icons.lock : Icons.lock_open),
+                    icon: Icon(
+                      isLocked ? Icons.lock : Icons.lock_open,
+                      color: Colors.white,
+                    ),
                     onPressed: switchLock,
                   )
                 : Container(color: Colors.transparent),
