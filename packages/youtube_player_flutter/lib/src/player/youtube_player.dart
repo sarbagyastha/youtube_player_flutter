@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../enums/thumbnail_quality.dart';
@@ -196,6 +198,33 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
   late double _aspectRatio;
   bool _initialLoad = true;
 
+  Timer? _timer;
+  bool _isLocked = false;
+
+  void _toggleControls() {
+    controller.updateValue(
+      controller.value.copyWith(
+        isControlsVisible: !controller.value.isControlsVisible,
+      ),
+    );
+    _timer?.cancel();
+    _timer = Timer(widget.controlsTimeOut, () {
+      if (!controller.value.isDragging) {
+        controller.updateValue(
+          controller.value.copyWith(
+            isControlsVisible: false,
+          ),
+        );
+      }
+    });
+  }
+
+  void _switchLock() {
+    setState(() {
+      _isLocked = !_isLocked;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -228,6 +257,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
   @override
   void dispose() {
     controller.removeListener(listener);
+    _timer?.cancel();
     super.dispose();
   }
 
@@ -299,10 +329,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
         clipBehavior: Clip.none,
         children: [
           Transform.scale(
-            scale: controller.value.isFullScreen
-                ? (1 / _aspectRatio * MediaQuery.of(context).size.width) /
-                    MediaQuery.of(context).size.height
-                : 1,
+            scale: 1,
             child: RawYoutubePlayer(
               key: widget.key,
               onEnded: (YoutubeMetaData metaData) {
@@ -327,7 +354,8 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
               controller.value.position > const Duration(milliseconds: 100) &&
               !controller.value.isControlsVisible &&
               widget.showVideoProgressIndicator &&
-              !controller.flags.isLive)
+              !controller.flags.isLive &&
+              !_isLocked)
             Positioned(
               bottom: -7.0,
               left: -7.0,
@@ -341,10 +369,9 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                 ),
               ),
             ),
-          if (!controller.flags.hideControls) ...[
+          if (!_isLocked && controller.value.isControlsVisible) ...[
             TouchShutter(
               disableDragSeek: controller.flags.disableDragSeek,
-              timeOut: widget.controlsTimeOut,
             ),
             Positioned(
               bottom: 0,
@@ -403,7 +430,22 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
               ),
             ),
           ],
-          if (!controller.flags.hideControls)
+          GestureDetector(
+            onTap: _toggleControls,
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: controller.value.isControlsVisible
+                  ? IconButton(
+                      icon: Icon(
+                        _isLocked ? Icons.lock : Icons.lock_open,
+                        color: Colors.white,
+                      ),
+                      onPressed: _switchLock,
+                    )
+                  : Container(color: Colors.transparent),
+            ),
+          ),
+          if (!controller.flags.hideControls && !_isLocked)
             Center(
               child: PlayPauseButton(),
             ),

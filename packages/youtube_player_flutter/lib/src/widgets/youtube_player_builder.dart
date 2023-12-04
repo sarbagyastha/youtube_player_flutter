@@ -48,7 +48,7 @@ class _YoutubePlayerBuilderState extends State<YoutubePlayerBuilder>
 
   @override
   void didChangeMetrics() {
-    final physicalSize = SchedulerBinding.instance.window.physicalSize;
+    final physicalSize = View.of(context).display.size;
     final controller = widget.player.controller;
     if (physicalSize.width > physicalSize.height) {
       controller.updateValue(controller.value.copyWith(isFullScreen: true));

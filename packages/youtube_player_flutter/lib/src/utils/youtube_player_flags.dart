@@ -39,6 +39,11 @@ class YoutubePlayerFlags {
   /// Default is false.
   final bool disableDragSeek;
 
+  /// this will enable double tap to skip video by [doubleTapSkipTime] seconds
+  /// this should be in seconds
+  /// default is 0 which means this functionality disabled
+  final int doubleTapSkipTime;
+
   /// Enabling this causes the player to play the video again and again.
   ///
   /// Default is false.
@@ -96,6 +101,7 @@ class YoutubePlayerFlags {
     this.endAt,
     this.useHybridComposition = true,
     this.showLiveFullscreenButton = true,
+    this.doubleTapSkipTime = 0,
   });
 
   /// Copies new values assigned to the [YoutubePlayerFlags].
@@ -116,6 +122,7 @@ class YoutubePlayerFlags {
     bool? controlsVisibleAtStart,
     bool? useHybridComposition,
     bool? showLiveFullscreenButton,
+    int? doubleTapSkipTime,
   }) {
     return YoutubePlayerFlags(
       autoPlay: autoPlay ?? this.autoPlay,
@@ -135,6 +142,7 @@ class YoutubePlayerFlags {
       useHybridComposition: useHybridComposition ?? this.useHybridComposition,
       showLiveFullscreenButton:
           showLiveFullscreenButton ?? this.showLiveFullscreenButton,
+      doubleTapSkipTime: doubleTapSkipTime ?? this.doubleTapSkipTime,
     );
   }
 }

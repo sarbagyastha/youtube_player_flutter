@@ -47,6 +47,15 @@ pubspec_overrides.yaml
 .pub-cache/
 .pub/
 build/
+.github/
+.idea/
+android/
+ios/
+linux/
+macos/
+web/
+windows/
+
 flutter_*.png
 linked_*.ds
 unlinked.ds
