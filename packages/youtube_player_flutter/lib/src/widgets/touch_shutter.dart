@@ -45,6 +45,7 @@ class _TouchShutterState extends State<TouchShutter> {
   int doubleTapPadding = 50; // this disable the double tap effect in the middle
   bool doubleTapDetector = false;
   bool? tappedSide; // true means right side false means left side
+  Timer? _timer;
 
   late double distanceFromCenter;
   late YoutubePlayerController _controller;
@@ -76,12 +77,13 @@ class _TouchShutterState extends State<TouchShutter> {
 
   @override
   void dispose() {
+    _timer?.cancel();
     super.dispose();
   }
 
   void onDoubleTapAction(TapDownDetails details) {
     if (!_doubleTapSkip) return;
-
+    _timer?.cancel();
     if (details.globalPosition.dx >
         (MediaQuery.of(context).size.width / 2) + doubleTapPadding) {
       // touch on right side
@@ -94,11 +96,6 @@ class _TouchShutterState extends State<TouchShutter> {
             seconds: _controller.value.position.inSeconds +
                 _controller.flags.doubleTapSkipTime),
       );
-      Future.delayed(const Duration(seconds: 2), () {
-        setState(() {
-          doubleTapDetector = false;
-        });
-      });
     } else if (details.globalPosition.dx <
         (MediaQuery.of(context).size.width / 2) - doubleTapPadding) {
       // touch on left side
@@ -111,12 +108,12 @@ class _TouchShutterState extends State<TouchShutter> {
             seconds: _controller.value.position.inSeconds -
                 _controller.flags.doubleTapSkipTime),
       );
-      Future.delayed(const Duration(seconds: 2), () {
-        setState(() {
-          doubleTapDetector = false;
-        });
-      });
     }
+    _timer = Timer(const Duration(seconds: 2), () {
+      setState(() {
+        doubleTapDetector = false;
+      });
+    });
   }
 
   Widget skipIcon(IconData icon, double dx) {
