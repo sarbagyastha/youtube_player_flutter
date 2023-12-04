@@ -347,7 +347,8 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
               controller.value.position > const Duration(milliseconds: 100) &&
               !controller.value.isControlsVisible &&
               widget.showVideoProgressIndicator &&
-              !controller.flags.isLive)
+              !controller.flags.isLive &&
+              !_isLocked)
             Positioned(
               bottom: -7.0,
               left: -7.0,
@@ -365,7 +366,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
             onTap: _toggleLock,
             child: Align(
               alignment: Alignment.centerLeft,
-              child: controller.flags.hideControls || _showLockIcon
+              child: _showLockIcon
                   ? IconButton(
                       icon: Icon(
                         _isLocked ? Icons.lock : Icons.lock_open,
