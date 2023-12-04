@@ -198,16 +198,40 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
   late double _aspectRatio;
   bool _initialLoad = true;
 
-  Timer? _lockTimer;
+  Timer? _timer;
+
   bool _isLocked = false;
   bool _showLockIcon = false;
 
+  void _toggleControls() {
+    _toggleLock();
+    controller.updateValue(
+      controller.value.copyWith(
+        isControlsVisible: !controller.value.isControlsVisible,
+      ),
+    );
+    _timer?.cancel();
+    _timer = Timer(widget.controlsTimeOut, () {
+      if (!controller.value.isDragging) {
+        controller.updateValue(
+          controller.value.copyWith(
+            isControlsVisible: false,
+          ),
+        );
+      }
+    });
+  }
+
   void _toggleLock() {
-    if (_isLocked) {
+    setState(() {
       _showLockIcon = !_showLockIcon;
-      _lockTimer?.cancel();
-      _lockTimer = Timer(const Duration(seconds: 3), () {
-        _showLockIcon = false;
+    });
+    if (_isLocked) {
+      _timer?.cancel();
+      _timer = Timer(const Duration(seconds: 3), () {
+        setState(() {
+          _showLockIcon = false;
+        });
       });
     }
   }
@@ -251,6 +275,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
   @override
   void dispose() {
     controller.removeListener(listener);
+    _timer?.cancel();
     super.dispose();
   }
 
@@ -362,25 +387,9 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                 ),
               ),
             ),
-          GestureDetector(
-            onTap: _toggleLock,
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: _showLockIcon
-                  ? IconButton(
-                      icon: Icon(
-                        _isLocked ? Icons.lock : Icons.lock_open,
-                        color: Colors.white,
-                      ),
-                      onPressed: _switchLock,
-                    )
-                  : Container(color: Colors.transparent),
-            ),
-          ),
           if (!_isLocked) ...[
             TouchShutter(
               disableDragSeek: controller.flags.disableDragSeek,
-              timeOut: widget.controlsTimeOut,
             ),
             Positioned(
               bottom: 0,
@@ -439,6 +448,21 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
               ),
             ),
           ],
+          GestureDetector(
+            onTap: _toggleControls,
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: _showLockIcon
+                  ? IconButton(
+                      icon: Icon(
+                        _isLocked ? Icons.lock : Icons.lock_open,
+                        color: Colors.white,
+                      ),
+                      onPressed: _switchLock,
+                    )
+                  : Container(color: Colors.transparent),
+            ),
+          ),
           if (!controller.flags.hideControls)
             Center(
               child: PlayPauseButton(),

@@ -22,13 +22,11 @@ class TouchShutter extends StatefulWidget {
   final bool disableDragSeek;
 
   /// Sets the timeout until when the controls hide.
-  final Duration timeOut;
 
   /// Creates [TouchShutter] widget.
   TouchShutter({
     this.controller,
     this.disableDragSeek = false,
-    required this.timeOut,
   });
 
   @override
@@ -43,7 +41,7 @@ class _TouchShutterState extends State<TouchShutter> {
   String seekDuration = "";
   String seekPosition = "";
   bool _dragging = false;
-  Timer? _timer;
+
   int doubleTapPadding = 50; // this disable the double tap effect in the middle
   bool doubleTapDetector = false;
   bool? tappedSide; // true means right side false means left side
@@ -78,26 +76,7 @@ class _TouchShutterState extends State<TouchShutter> {
 
   @override
   void dispose() {
-    _timer?.cancel();
     super.dispose();
-  }
-
-  void _toggleControls() {
-    _controller.updateValue(
-      _controller.value.copyWith(
-        isControlsVisible: !_controller.value.isControlsVisible,
-      ),
-    );
-    _timer?.cancel();
-    _timer = Timer(widget.timeOut, () {
-      if (!_controller.value.isDragging) {
-        _controller.updateValue(
-          _controller.value.copyWith(
-            isControlsVisible: false,
-          ),
-        );
-      }
-    });
   }
 
   void onDoubleTapAction(TapDownDetails details) {
@@ -153,7 +132,6 @@ class _TouchShutterState extends State<TouchShutter> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: _toggleControls,
       onDoubleTapDown: onDoubleTapAction,
       onHorizontalDragStart: (details) {
         if (_controller.flags.disableDragSeek) return;
