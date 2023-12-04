@@ -199,12 +199,9 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
   bool _initialLoad = true;
 
   Timer? _timer;
-
   bool _isLocked = false;
-  bool _showLockIcon = false;
 
   void _toggleControls() {
-    _toggleLock();
     controller.updateValue(
       controller.value.copyWith(
         isControlsVisible: !controller.value.isControlsVisible,
@@ -222,25 +219,10 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
     });
   }
 
-  void _toggleLock() {
-    setState(() {
-      _showLockIcon = !_showLockIcon;
-    });
-    if (_isLocked) {
-      _timer?.cancel();
-      _timer = Timer(const Duration(seconds: 3), () {
-        setState(() {
-          _showLockIcon = false;
-        });
-      });
-    }
-  }
-
   void _switchLock() {
     setState(() {
       _isLocked = !_isLocked;
     });
-    _toggleLock();
   }
 
   @override
@@ -387,7 +369,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                 ),
               ),
             ),
-          if (!_isLocked) ...[
+          if (!_isLocked && controller.value.isControlsVisible) ...[
             TouchShutter(
               disableDragSeek: controller.flags.disableDragSeek,
             ),
@@ -452,7 +434,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
             onTap: _toggleControls,
             child: Align(
               alignment: Alignment.centerLeft,
-              child: _showLockIcon
+              child: controller.value.isControlsVisible
                   ? IconButton(
                       icon: Icon(
                         _isLocked ? Icons.lock : Icons.lock_open,
@@ -463,7 +445,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                   : Container(color: Colors.transparent),
             ),
           ),
-          if (!controller.flags.hideControls)
+          if (!controller.flags.hideControls && !_isLocked)
             Center(
               child: PlayPauseButton(),
             ),
