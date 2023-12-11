@@ -4,11 +4,14 @@
 
 import 'dart:async';
 import 'dart:convert';
-import 'dart:html';
+import 'dart:js_interop';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:web/helpers.dart';
+import 'package:web/web.dart' as web;
+import 'package:web/helpers.dart' as web_helpers;
 import 'package:youtube_player_iframe/src/enums/player_state.dart';
 import 'package:youtube_player_iframe/src/enums/youtube_error.dart';
 import 'package:youtube_player_iframe/src/helpers/player_fragments.dart';
@@ -40,22 +43,22 @@ class RawYoutubePlayer extends StatefulWidget {
 
 class _WebYoutubePlayerState extends State<RawYoutubePlayer> {
   late YoutubePlayerController controller;
-  late Completer<IFrameElement> _iFrame;
+  late Completer<web.HTMLIFrameElement> _iFrame;
 
   @override
   void initState() {
     super.initState();
     controller = widget.controller;
     _iFrame = Completer();
-    final playerIFrame = IFrameElement()
+    final playerIFrame = web_helpers.createIFrameElement()
       ..srcdoc = player
       ..style.border = 'none';
     ui.platformViewRegistry.registerViewFactory(
       'youtube-player-${controller.hashCode}',
       (int id) {
-        window.onMessage.listen(
+        web.window.onMessage.listen(
           (event) {
-            final Map<String, dynamic> data = jsonDecode(event.data);
+            final data = jsonDecode(event.data.dartify() as String);
             if (data.containsKey('Ready')) {
               controller.add(
                 controller.value.copyWith(isReady: true),
@@ -167,7 +170,7 @@ class _WebYoutubePlayerState extends State<RawYoutubePlayer> {
 
   Future<void> _callMethod(String methodName) async {
     final iFrame = await _iFrame.future;
-    iFrame.contentWindow?.postMessage(methodName, '*');
+    iFrame.contentWindow?.postMessage(methodName.toJS, '*'.toJS);
   }
 
   @override
