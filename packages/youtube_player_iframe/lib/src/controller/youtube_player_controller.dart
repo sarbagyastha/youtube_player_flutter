@@ -178,15 +178,21 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     ListType? listType,
     int? index,
     double? startSeconds,
+    String? param_list,
   }) {
+    var varKwargData = {
+      'playlist': list,
+      'listType': listType?.value,
+      'index': index,
+      'startSeconds': startSeconds,
+    };
+    if (param_list != null) {
+      varKwargData['list'] = param_list;
+    }
+
     return _run(
       'loadPlaylist',
-      data: {
-        'playlist': list,
-        'listType': listType?.value,
-        'index': index,
-        'startSeconds': startSeconds,
-      },
+      data: varKwargData,
     );
   }
 
