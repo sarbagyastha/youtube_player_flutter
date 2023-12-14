@@ -655,6 +655,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
         final videoId = params['v'];
         if (videoId != null) loadVideoById(videoId: videoId);
         break;
+      case 'emb_title':
       case 'emb_logo':
       case 'social':
       case 'wl_button':
