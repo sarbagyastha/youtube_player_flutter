@@ -83,9 +83,9 @@ YoutubePlayerScaffold(
         player,
         Text('Youtube Player'),
       ],
-    ),
+    );
   },
-),
+)
 ```
 
 See the [example app](example/lib/main.dart) for detailed usage.
