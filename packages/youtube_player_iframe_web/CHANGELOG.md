@@ -1,3 +1,8 @@
+## 3.0.0
+- Adds support for wasm.
+- Bumps flutter version to `>=3.18.0-0`.
+- Fixes issue using `WebViewWidget` from `webview_flutter` package, together with the package.
+
 ## 2.0.2
 - Register as federated Web implementation package for `youtube_player_iframe`.
 

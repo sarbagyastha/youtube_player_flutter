@@ -599,10 +599,6 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     _onFullscreenChanged = callback;
   }
 
-  /// Called when full screen mode for the player changes.
-  @Deprecated('Use setFullScreenListener instead')
-  void Function(bool isFullscreen) onFullscreenChange = (_) {};
-
   /// Toggles fullscreen mode.
   ///
   /// If [lock] is true, auto rotate will be disabled.
