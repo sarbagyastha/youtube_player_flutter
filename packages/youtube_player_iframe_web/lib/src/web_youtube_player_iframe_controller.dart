@@ -4,10 +4,11 @@
 
 import 'dart:async';
 import 'dart:convert';
-import 'dart:html';
+import 'dart:js_interop';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:web/helpers.dart';
 import 'package:webview_flutter_platform_interface/webview_flutter_platform_interface.dart';
 
 import 'platform_view_stub.dart' if (dart.library.html) 'dart:ui' as ui;
@@ -28,7 +29,7 @@ class WebYoutubePlayerIframeControllerCreationParams
 
   /// The underlying element used as the WebView.
   @visibleForTesting
-  final IFrameElement ytiFrame = IFrameElement()
+  final HTMLIFrameElement ytiFrame = createIFrameElement()
     ..id = 'youtube-${_nextIFrameId++}'
     ..width = '100%'
     ..height = '100%'
@@ -72,8 +73,8 @@ class WebYoutubePlayerIframeController extends PlatformWebViewController {
   Future<void> runJavaScript(String javaScript) {
     final function = javaScript.replaceAll('"', '<<quote>>');
     _params.ytiFrame.contentWindow?.postMessage(
-      '{"key": null, "function": "$function"}',
-      '*',
+      '{"key": null, "function": "$function"}'.toJS,
+      '*'.toJS,
     );
 
     return SynchronousFuture(null);
@@ -88,7 +89,7 @@ class WebYoutubePlayerIframeController extends PlatformWebViewController {
     final completer = Completer<String>();
     final subscription = window.onMessage.listen(
       (event) {
-        final data = jsonDecode(event.data);
+        final data = jsonDecode(event.data.dartify() as String);
 
         if (data is Map && data.containsKey(key)) {
           completer.complete(data[key].toString());
@@ -97,8 +98,8 @@ class WebYoutubePlayerIframeController extends PlatformWebViewController {
     );
 
     contentWindow?.postMessage(
-      '{"key": "$key", "function": "$function"}',
-      '*',
+      '{"key": "$key", "function": "$function"}'.toJS,
+      '*'.toJS,
     );
 
     final result = await completer.future;
@@ -169,8 +170,9 @@ class YoutubePlayerIframeWeb extends PlatformWebViewWidget {
         window.onMessage.listen(
           (event) {
             if (channelParams.name == 'YoutubePlayer') {
+              print('event.data = ${event.data}');
               channelParams.onMessageReceived(
-                JavaScriptMessage(message: event.data),
+                JavaScriptMessage(message: event.data.dartify() as String),
               );
             }
           },
