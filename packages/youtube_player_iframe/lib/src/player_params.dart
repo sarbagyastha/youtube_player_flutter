@@ -146,7 +146,13 @@ class YoutubePlayerParams {
       'iv_load_policy': showVideoAnnotations ? 1 : 3,
       'loop': _boolean(loop),
       'modestbranding': '1',
-      if (origin != null && !kIsWeb) 'origin': origin,
+      if (kIsWeb) ...{
+        'origin': Uri.base.origin,
+        'widget_referrer': Uri.base.origin,
+      } else if (origin != null) ...{
+        'origin': origin,
+        'widget_referrer': origin,
+      },
       'playsinline': _boolean(playsInline),
       'rel': _boolean(!strictRelatedVideos),
     };

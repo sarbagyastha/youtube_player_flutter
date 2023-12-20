@@ -1,4 +1,11 @@
 # Changelog
+## 5.0.0
+**Dec 20, 2023**
+- Bumps dependency to latest version.
+- Adds support for wasm.
+- Bumps flutter version to `>=3.18.0-0`.
+- Fixes issue using `WebViewWidget` from `webview_flutter` package, together with the package.
+
 ## 4.0.4
 **Jan 29, 2023**
 - Fixed platform listing in pub.dev
