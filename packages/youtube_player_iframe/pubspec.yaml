@@ -18,10 +18,6 @@ dependencies:
   url_launcher: ^6.1.12
   youtube_player_iframe_web: ^2.0.2
 
-dev_dependencies:
-  flutter_test:
-    sdk: flutter
-
 flutter:
   assets:
     - assets/player.html

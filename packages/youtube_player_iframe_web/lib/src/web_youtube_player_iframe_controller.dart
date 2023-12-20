@@ -5,13 +5,12 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:js_interop';
+import 'dart:ui_web';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:web/helpers.dart';
 import 'package:webview_flutter_platform_interface/webview_flutter_platform_interface.dart';
-
-import 'platform_view_stub.dart' if (dart.library.html) 'dart:ui' as ui;
 
 /// An implementation of [PlatformWebViewControllerCreationParams] using Flutter
 /// for Web API.
@@ -31,8 +30,8 @@ class WebYoutubePlayerIframeControllerCreationParams
   @visibleForTesting
   final HTMLIFrameElement ytiFrame = createIFrameElement()
     ..id = 'youtube-${_nextIFrameId++}'
-    ..width = '100%'
-    ..height = '100%'
+    ..style.width = '100%'
+    ..style.height = '100%'
     ..style.border = 'none'
     ..allow = 'autoplay;fullscreen';
 }
@@ -149,7 +148,7 @@ class YoutubePlayerIframeWeb extends PlatformWebViewWidget {
   YoutubePlayerIframeWeb(PlatformWebViewWidgetCreationParams params)
       : _controller = params.controller as WebYoutubePlayerIframeController,
         super.implementation(params) {
-    ui.platformViewRegistry.registerViewFactory(
+    platformViewRegistry.registerViewFactory(
       _controller._params.ytiFrame.id,
       (int viewId) => _controller._params.ytiFrame,
     );
@@ -170,7 +169,6 @@ class YoutubePlayerIframeWeb extends PlatformWebViewWidget {
         window.onMessage.listen(
           (event) {
             if (channelParams.name == 'YoutubePlayer') {
-              print('event.data = ${event.data}');
               channelParams.onMessageReceived(
                 JavaScriptMessage(message: event.data.dartify() as String),
               );

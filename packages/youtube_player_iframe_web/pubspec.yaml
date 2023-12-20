@@ -5,7 +5,7 @@ homepage: https://github.com/sarbagyastha/youtube_player_flutter/tree/master/pac
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
-  flutter: '>=3.0.0'
+  flutter: '>=3.18.0-0'
 
 flutter:
   plugin:
@@ -21,9 +21,7 @@ dependencies:
   flutter_web_plugins:
     sdk: flutter
   web: ^0.4.0
-  webview_flutter_platform_interface: ^2.4.0
+  webview_flutter_platform_interface: ^2.9.0
 
 dev_dependencies:
-  flutter_test:
-    sdk: flutter
-  flutter_lints: ^2.0.2
+  flutter_lints: ^3.0.1
