@@ -1,9 +1,12 @@
+## 9.0.0-beta.0
+* Bumps `flutter_inappwebview` to latest version.
+
 ## 8.1.2
-* Bumped `flutter_inappwebview` to latest version.
-* Added support for extracting video id from YouTube Shorts & Music URL.
+* Bumps `flutter_inappwebview` to latest version.
+* Adds support for extracting video id from YouTube Shorts & Music URL.
 
 ## 8.1.1
-* Bumped `flutter_inappwebview` to latest version.
+* Bumps `flutter_inappwebview` to latest version.
 * Fixed cast error in YouTube error.
 
 ## 8.1.0
