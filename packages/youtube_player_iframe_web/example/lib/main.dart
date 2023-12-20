@@ -1,4 +1,7 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 void main() {
@@ -22,9 +25,33 @@ class MyApp extends StatelessWidget {
         appBar: AppBar(
           title: const Text('Youtube Player Iframe Web Demo'),
         ),
-        body: const Padding(
-          padding: EdgeInsets.all(32),
-          child: PlayerWidget(),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(32),
+          child: SizedBox(
+            height: 1000,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                if (constraints.maxWidth < 600) {
+                  return const Column(
+                    children: [
+                      PlayerWidget(),
+                      Divider(),
+                      Expanded(child: _WebViewWidget()),
+                    ],
+                  );
+                }
+
+                return const Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(child: PlayerWidget()),
+                    VerticalDivider(),
+                    Expanded(child: _WebViewWidget()),
+                  ],
+                );
+              },
+            ),
+          ),
         ),
       ),
     );
@@ -48,5 +75,27 @@ class PlayerWidget extends StatelessWidget {
       ),
       aspectRatio: 16 / 9,
     );
+  }
+}
+
+class _WebViewWidget extends StatefulWidget {
+  const _WebViewWidget();
+
+  @override
+  State<_WebViewWidget> createState() => _WebViewWidgetState();
+}
+
+class _WebViewWidgetState extends State<_WebViewWidget> {
+  @override
+  void initState() {
+    super.initState();
+    _controller = WebViewController()..loadRequest(Uri.https('flutter.dev'));
+  }
+
+  late final WebViewController _controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return WebViewWidget(controller: _controller);
   }
 }

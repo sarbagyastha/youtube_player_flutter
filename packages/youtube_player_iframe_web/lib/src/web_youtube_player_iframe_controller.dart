@@ -12,17 +12,29 @@ import 'package:flutter/widgets.dart';
 import 'package:web/helpers.dart';
 import 'package:webview_flutter_platform_interface/webview_flutter_platform_interface.dart';
 
+import 'content_type.dart';
+import 'http_request_factory.dart';
+
 /// An implementation of [PlatformWebViewControllerCreationParams] using Flutter
 /// for Web API.
 @immutable
 class WebYoutubePlayerIframeControllerCreationParams
     extends PlatformWebViewControllerCreationParams {
+  /// Creates a new [WebYoutubePlayerIframeControllerCreationParams] instance.
+  WebYoutubePlayerIframeControllerCreationParams({
+    this.httpRequestFactory = const HttpRequestFactory(),
+  }) : super();
+
   /// Creates a [WebYoutubePlayerIframeControllerCreationParams] instance based on [PlatformWebViewControllerCreationParams].
   WebYoutubePlayerIframeControllerCreationParams.fromPlatformWebViewControllerCreationParams(
     // Recommended placeholder to prevent being broken by platform interface.
     // ignore: avoid_unused_constructor_parameters
-    PlatformWebViewControllerCreationParams params,
-  );
+    PlatformWebViewControllerCreationParams params, {
+    HttpRequestFactory httpRequestFactory = const HttpRequestFactory(),
+  }) : this(httpRequestFactory: httpRequestFactory);
+
+  /// Handles creating and sending URL requests.
+  final HttpRequestFactory httpRequestFactory;
 
   static int _nextIFrameId = 0;
 
@@ -52,7 +64,7 @@ class WebYoutubePlayerIframeController extends PlatformWebViewController {
     return params as WebYoutubePlayerIframeControllerCreationParams;
   }
 
-  late final JavaScriptChannelParams _javaScriptChannelParams;
+  JavaScriptChannelParams? _javaScriptChannelParams;
 
   @override
   Future<void> loadHtmlString(String html, {String? baseUrl}) {
@@ -140,6 +152,42 @@ class WebYoutubePlayerIframeController extends PlatformWebViewController {
   Future<void> setBackgroundColor(Color color) async {
     // no-op
   }
+
+  @override
+  Future<void> loadRequest(LoadRequestParams params) async {
+    if (!params.uri.hasScheme) {
+      throw ArgumentError(
+          'LoadRequestParams#uri is required to have a scheme.');
+    }
+
+    if (params.headers.isEmpty &&
+        (params.body == null || params.body!.isEmpty) &&
+        params.method == LoadRequestMethod.get) {
+      _params.ytiFrame.src = params.uri.toString();
+    } else {
+      await _updateIFrameFromXhr(params);
+    }
+  }
+
+  /// Performs an AJAX request defined by [params].
+  Future<void> _updateIFrameFromXhr(LoadRequestParams params) async {
+    final httpReq = await _params.httpRequestFactory.request(
+      params.uri.toString(),
+      method: params.method.serialize(),
+      requestHeaders: params.headers,
+      sendData: params.body,
+    );
+
+    final header = httpReq.getResponseHeader('content-type') ?? 'text/html';
+    final contentType = ContentType.parse(header);
+    final encoding = Encoding.getByName(contentType.charset) ?? utf8;
+
+    _params.ytiFrame.src = Uri.dataFromString(
+      httpReq.responseText,
+      mimeType: contentType.mimeType,
+      encoding: encoding,
+    ).toString();
+  }
 }
 
 /// An implementation of [PlatformWebViewWidget] using Flutter the for Web API.
@@ -166,15 +214,18 @@ class YoutubePlayerIframeWeb extends PlatformWebViewWidget {
           .id,
       onPlatformViewCreated: (_) {
         final channelParams = _controller._javaScriptChannelParams;
-        window.onMessage.listen(
-          (event) {
-            if (channelParams.name == 'YoutubePlayer') {
-              channelParams.onMessageReceived(
-                JavaScriptMessage(message: event.data.dartify() as String),
-              );
-            }
-          },
-        );
+
+        if (channelParams != null) {
+          window.onMessage.listen(
+            (event) {
+              if (channelParams.name == 'YoutubePlayer') {
+                channelParams.onMessageReceived(
+                  JavaScriptMessage(message: event.data.dartify() as String),
+                );
+              }
+            },
+          );
+        }
       },
     );
   }
