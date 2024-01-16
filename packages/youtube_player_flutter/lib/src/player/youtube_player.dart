@@ -388,15 +388,15 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                             children: widget.bottomActions ??
                                 [
                                   const SizedBox(width: 14.0),
-                                  const CurrentPosition(),
+                                  CurrentPosition(),
                                   const SizedBox(width: 8.0),
                                   ProgressBar(
                                     isExpanded: true,
                                     colors: widget.progressColors,
                                   ),
-                                  const RemainingDuration(),
+                                  RemainingDuration(),
                                   const PlaybackSpeedButton(),
-                                  const FullScreenButton(),
+                                  FullScreenButton(),
                                 ],
                           ),
                         ),
@@ -423,7 +423,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
             ),
           ],
           if (!controller.flags.hideControls)
-            const Center(
+            Center(
               child: PlayPauseButton(),
             ),
           if (controller.value.hasError) errorWidget,
