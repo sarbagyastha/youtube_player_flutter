@@ -125,6 +125,7 @@ class YoutubePlayerEventHandler {
 
   /// This event fires when the player receives information about video states.
   void onVideoState(Object data) {
+    if (videoStateController.isClosed) return;
     videoStateController.add(YoutubeVideoState.fromJson(data.toString()));
   }
 
