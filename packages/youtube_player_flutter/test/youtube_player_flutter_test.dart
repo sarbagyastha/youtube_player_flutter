@@ -14,6 +14,7 @@ Widget buildPlayer({
   double? width,
   List<Widget>? bottomActions,
   List<Widget>? topActions,
+  List<Widget>? centerActions,
   bool showVideoProgressIndicator = true,
   double aspectRatio = 16 / 9,
   Widget? bufferIndicator,
@@ -42,6 +43,7 @@ Widget buildPlayer({
         progressIndicatorColor: progressIndicatorColor,
         thumbnail: thumbnail,
         topActions: topActions,
+        centerActions: centerActions,
       ),
     ),
   );
