@@ -3,3 +3,6 @@ repository: https://github.com/sarbagyastha/youtube_player_flutter
 
 packages:
   - packages/**
+
+environment:
+  sdk: "^3.0.0"
