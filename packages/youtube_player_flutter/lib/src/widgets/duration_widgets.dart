@@ -110,7 +110,7 @@ class _RemainingDurationState extends State<RemainingDuration> {
   @override
   Widget build(BuildContext context) {
     return Text(
-      "- ${durationFormatter(
+      "${durationFormatter(
         (_controller.metadata.duration.inMilliseconds) -
             (_controller.value.position.inMilliseconds),
       )}",
