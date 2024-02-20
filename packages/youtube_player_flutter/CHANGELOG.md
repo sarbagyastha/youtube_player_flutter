@@ -1,3 +1,6 @@
+## 8.1.3
+* Bumped `flutter_inappwebview` to stable version 6.0.0.
+
 ## 8.1.2
 * Bumped `flutter_inappwebview` to latest version.
 * Added support for extracting video id from YouTube Shorts & Music URL.
