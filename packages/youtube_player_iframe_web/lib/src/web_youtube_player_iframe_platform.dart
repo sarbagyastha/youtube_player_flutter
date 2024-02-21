@@ -38,8 +38,7 @@ class WebYoutubePlayerIframePlatform extends WebViewPlatform {
 /// An implementation of [PlatformNavigationDelegate] using Flutter for Web API.
 class WebNavigationDelegate extends PlatformNavigationDelegate {
   /// Creates a new [WebNavigationDelegate] instance.
-  WebNavigationDelegate(PlatformNavigationDelegateCreationParams params)
-      : super.implementation(params);
+  WebNavigationDelegate(super.params) : super.implementation();
 
   @override
   Future<void> setOnNavigationRequest(

@@ -59,7 +59,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
       ..setUserAgent(params.userAgent)
       ..addJavaScriptChannel(
         _youtubeJSChannelName,
-        onMessageReceived: _eventHandler,
+        onMessageReceived: _eventHandler.call,
       )
       ..enableZoom(false);
 

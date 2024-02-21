@@ -194,9 +194,9 @@ class WebYoutubePlayerIframeController extends PlatformWebViewController {
 /// An implementation of [PlatformWebViewWidget] using Flutter the for Web API.
 class YoutubePlayerIframeWeb extends PlatformWebViewWidget {
   /// Constructs a [YoutubePlayerIframeWeb].
-  YoutubePlayerIframeWeb(PlatformWebViewWidgetCreationParams params)
+  YoutubePlayerIframeWeb(super.params)
       : _controller = params.controller as WebYoutubePlayerIframeController,
-        super.implementation(params) {
+        super.implementation() {
     platformViewRegistry.registerViewFactory(
       _controller._params.ytiFrame.id,
       (int viewId) => _controller._params.ytiFrame,

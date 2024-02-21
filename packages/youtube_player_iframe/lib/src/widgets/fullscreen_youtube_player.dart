@@ -97,7 +97,10 @@ class _FullscreenYoutubePlayerState extends State<FullscreenYoutubePlayer> {
       autoPlay: true,
       params: const YoutubePlayerParams(showFullscreenButton: true),
     )..setFullScreenListener((_) async {
-        Navigator.pop(context, await _controller.currentTime);
+        final currentTime = await _controller.currentTime;
+        if (!mounted) return;
+
+        Navigator.pop(context, currentTime);
       });
 
     SystemChrome.setPreferredOrientations(

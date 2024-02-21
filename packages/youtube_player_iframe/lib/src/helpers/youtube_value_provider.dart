@@ -38,8 +38,8 @@ class YoutubePlayerControllerProvider extends InheritedWidget {
   }
 
   @override
-  bool updateShouldNotify(YoutubePlayerControllerProvider old) {
-    return old.controller.hashCode != controller.hashCode;
+  bool updateShouldNotify(YoutubePlayerControllerProvider oldWidget) {
+    return oldWidget.controller.hashCode != controller.hashCode;
   }
 }
 
