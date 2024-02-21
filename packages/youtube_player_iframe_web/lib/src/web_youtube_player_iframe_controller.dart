@@ -9,7 +9,7 @@ import 'dart:ui_web';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
-import 'package:web/helpers.dart';
+import 'package:web/web.dart';
 import 'package:webview_flutter_platform_interface/webview_flutter_platform_interface.dart';
 
 import 'content_type.dart';
@@ -40,12 +40,13 @@ class WebYoutubePlayerIframeControllerCreationParams
 
   /// The underlying element used as the WebView.
   @visibleForTesting
-  final HTMLIFrameElement ytiFrame = createIFrameElement()
-    ..id = 'youtube-${_nextIFrameId++}'
-    ..style.width = '100%'
-    ..style.height = '100%'
-    ..style.border = 'none'
-    ..allow = 'autoplay;fullscreen';
+  final HTMLIFrameElement ytiFrame =
+      (document.createElement('iframe') as HTMLIFrameElement)
+        ..id = 'youtube-${_nextIFrameId++}'
+        ..style.width = '100%'
+        ..style.height = '100%'
+        ..style.border = 'none'
+        ..allow = 'autoplay;fullscreen';
 }
 
 /// An implementation of [PlatformWebViewController] using Flutter for Web API.
@@ -171,19 +172,19 @@ class WebYoutubePlayerIframeController extends PlatformWebViewController {
 
   /// Performs an AJAX request defined by [params].
   Future<void> _updateIFrameFromXhr(LoadRequestParams params) async {
-    final httpReq = await _params.httpRequestFactory.request(
-      params.uri.toString(),
-      method: params.method.serialize(),
-      requestHeaders: params.headers,
-      sendData: params.body,
+    final response = await _params.httpRequestFactory.request(
+      params.uri,
+      method: params.method,
+      headers: params.headers,
+      body: params.body,
     );
 
-    final header = httpReq.getResponseHeader('content-type') ?? 'text/html';
+    final header = response.headers['content-type'] ?? 'text/html';
     final contentType = ContentType.parse(header);
     final encoding = Encoding.getByName(contentType.charset) ?? utf8;
 
     _params.ytiFrame.src = Uri.dataFromString(
-      httpReq.responseText,
+      response.body,
       mimeType: contentType.mimeType,
       encoding: encoding,
     ).toString();
