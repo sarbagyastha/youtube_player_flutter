@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -17,6 +18,7 @@ class YoutubePlayerEventHandler {
       'PlayerError': onError,
       'FullscreenButtonPressed': onFullscreenButtonPressed,
       'VideoState': onVideoState,
+      'AutoplayBlocked': onAutoplayBlocked,
     };
   }
 
@@ -38,7 +40,7 @@ class YoutubePlayerEventHandler {
       if (entry.key == 'ApiChange') {
         onApiChange(entry.value);
       } else {
-        _events[entry.key]?.call(entry.value);
+        _events[entry.key]?.call(entry.value ?? Object());
       }
     }
   }
@@ -126,6 +128,15 @@ class YoutubePlayerEventHandler {
   /// This event fires when the player receives information about video states.
   void onVideoState(Object data) {
     videoStateController.add(YoutubeVideoState.fromJson(data.toString()));
+  }
+
+  /// This event fires when the auto playback is blocked by the browser.
+  void onAutoplayBlocked(Object data) {
+    log(
+      'Autoplay was blocked by browser. '
+      'Most modern browser does not allow video with sound to autoplay. '
+      'Try muting the video to autoplay.',
+    );
   }
 
   /// Returns a [Future] that completes when the player is ready.

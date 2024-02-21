@@ -59,7 +59,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
       ..setUserAgent(params.userAgent)
       ..addJavaScriptChannel(
         _youtubeJSChannelName,
-        onMessageReceived: _eventHandler,
+        onMessageReceived: _eventHandler.call,
       )
       ..enableZoom(false);
 
@@ -599,10 +599,6 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     _onFullscreenChanged = callback;
   }
 
-  /// Called when full screen mode for the player changes.
-  @Deprecated('Use setFullScreenListener instead')
-  void Function(bool isFullscreen) onFullscreenChange = (_) {};
-
   /// Toggles fullscreen mode.
   ///
   /// If [lock] is true, auto rotate will be disabled.
@@ -655,6 +651,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
         final videoId = params['v'];
         if (videoId != null) loadVideoById(videoId: videoId);
         break;
+      case 'emb_title':
       case 'emb_logo':
       case 'social':
       case 'wl_button':

@@ -1,0 +1,19 @@
+name: youtube_player_iframe_web_example
+description: "An example of how to use the youtube_player_iframe_web plugin."
+publish_to: 'none'
+version: 1.0.0+1
+environment:
+  sdk: '>=3.2.3 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  webview_flutter: ^4.4.2
+  youtube_player_iframe:
+    path: ../../youtube_player_iframe
+
+dev_dependencies:
+  flutter_lints: ^3.0.1
+
+flutter:
+  uses-material-design: true

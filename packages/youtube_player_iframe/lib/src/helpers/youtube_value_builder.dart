@@ -35,14 +35,14 @@ class YoutubeValueBuilder extends StatefulWidget {
   ///
   /// The [builder] must not be null.
   const YoutubeValueBuilder({
-    Key? key,
+    super.key,
     required this.builder,
     this.buildWhen,
     this.controller,
-  }) : super(key: key);
+  });
 
   @override
-  _YoutubeValueBuilderState createState() => _YoutubeValueBuilderState();
+  State<YoutubeValueBuilder> createState() => _YoutubeValueBuilderState();
 }
 
 class _YoutubeValueBuilderState extends State<YoutubeValueBuilder> {

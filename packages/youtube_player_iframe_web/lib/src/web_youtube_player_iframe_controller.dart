@@ -4,36 +4,49 @@
 
 import 'dart:async';
 import 'dart:convert';
-import 'dart:html';
+import 'dart:js_interop';
+import 'dart:ui_web';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:web/web.dart';
 import 'package:webview_flutter_platform_interface/webview_flutter_platform_interface.dart';
 
-import 'platform_view_stub.dart' if (dart.library.html) 'dart:ui' as ui;
+import 'content_type.dart';
+import 'http_request_factory.dart';
 
 /// An implementation of [PlatformWebViewControllerCreationParams] using Flutter
 /// for Web API.
 @immutable
 class WebYoutubePlayerIframeControllerCreationParams
     extends PlatformWebViewControllerCreationParams {
+  /// Creates a new [WebYoutubePlayerIframeControllerCreationParams] instance.
+  WebYoutubePlayerIframeControllerCreationParams({
+    this.httpRequestFactory = const HttpRequestFactory(),
+  }) : super();
+
   /// Creates a [WebYoutubePlayerIframeControllerCreationParams] instance based on [PlatformWebViewControllerCreationParams].
   WebYoutubePlayerIframeControllerCreationParams.fromPlatformWebViewControllerCreationParams(
     // Recommended placeholder to prevent being broken by platform interface.
     // ignore: avoid_unused_constructor_parameters
-    PlatformWebViewControllerCreationParams params,
-  );
+    PlatformWebViewControllerCreationParams params, {
+    HttpRequestFactory httpRequestFactory = const HttpRequestFactory(),
+  }) : this(httpRequestFactory: httpRequestFactory);
+
+  /// Handles creating and sending URL requests.
+  final HttpRequestFactory httpRequestFactory;
 
   static int _nextIFrameId = 0;
 
   /// The underlying element used as the WebView.
   @visibleForTesting
-  final IFrameElement ytiFrame = IFrameElement()
-    ..id = 'youtube-${_nextIFrameId++}'
-    ..width = '100%'
-    ..height = '100%'
-    ..style.border = 'none'
-    ..allow = 'autoplay;fullscreen';
+  final HTMLIFrameElement ytiFrame =
+      (document.createElement('iframe') as HTMLIFrameElement)
+        ..id = 'youtube-${_nextIFrameId++}'
+        ..style.width = '100%'
+        ..style.height = '100%'
+        ..style.border = 'none'
+        ..allow = 'autoplay;fullscreen';
 }
 
 /// An implementation of [PlatformWebViewController] using Flutter for Web API.
@@ -52,7 +65,7 @@ class WebYoutubePlayerIframeController extends PlatformWebViewController {
     return params as WebYoutubePlayerIframeControllerCreationParams;
   }
 
-  late final JavaScriptChannelParams _javaScriptChannelParams;
+  JavaScriptChannelParams? _javaScriptChannelParams;
 
   @override
   Future<void> loadHtmlString(String html, {String? baseUrl}) {
@@ -72,8 +85,8 @@ class WebYoutubePlayerIframeController extends PlatformWebViewController {
   Future<void> runJavaScript(String javaScript) {
     final function = javaScript.replaceAll('"', '<<quote>>');
     _params.ytiFrame.contentWindow?.postMessage(
-      '{"key": null, "function": "$function"}',
-      '*',
+      '{"key": null, "function": "$function"}'.toJS,
+      '*'.toJS,
     );
 
     return SynchronousFuture(null);
@@ -88,7 +101,7 @@ class WebYoutubePlayerIframeController extends PlatformWebViewController {
     final completer = Completer<String>();
     final subscription = window.onMessage.listen(
       (event) {
-        final data = jsonDecode(event.data);
+        final data = jsonDecode(event.data.dartify() as String);
 
         if (data is Map && data.containsKey(key)) {
           completer.complete(data[key].toString());
@@ -97,8 +110,8 @@ class WebYoutubePlayerIframeController extends PlatformWebViewController {
     );
 
     contentWindow?.postMessage(
-      '{"key": "$key", "function": "$function"}',
-      '*',
+      '{"key": "$key", "function": "$function"}'.toJS,
+      '*'.toJS,
     );
 
     final result = await completer.future;
@@ -140,15 +153,51 @@ class WebYoutubePlayerIframeController extends PlatformWebViewController {
   Future<void> setBackgroundColor(Color color) async {
     // no-op
   }
+
+  @override
+  Future<void> loadRequest(LoadRequestParams params) async {
+    if (!params.uri.hasScheme) {
+      throw ArgumentError(
+          'LoadRequestParams#uri is required to have a scheme.');
+    }
+
+    if (params.headers.isEmpty &&
+        (params.body == null || params.body!.isEmpty) &&
+        params.method == LoadRequestMethod.get) {
+      _params.ytiFrame.src = params.uri.toString();
+    } else {
+      await _updateIFrameFromXhr(params);
+    }
+  }
+
+  /// Performs an AJAX request defined by [params].
+  Future<void> _updateIFrameFromXhr(LoadRequestParams params) async {
+    final response = await _params.httpRequestFactory.request(
+      params.uri,
+      method: params.method,
+      headers: params.headers,
+      body: params.body,
+    );
+
+    final header = response.headers['content-type'] ?? 'text/html';
+    final contentType = ContentType.parse(header);
+    final encoding = Encoding.getByName(contentType.charset) ?? utf8;
+
+    _params.ytiFrame.src = Uri.dataFromString(
+      response.body,
+      mimeType: contentType.mimeType,
+      encoding: encoding,
+    ).toString();
+  }
 }
 
 /// An implementation of [PlatformWebViewWidget] using Flutter the for Web API.
 class YoutubePlayerIframeWeb extends PlatformWebViewWidget {
   /// Constructs a [YoutubePlayerIframeWeb].
-  YoutubePlayerIframeWeb(PlatformWebViewWidgetCreationParams params)
+  YoutubePlayerIframeWeb(super.params)
       : _controller = params.controller as WebYoutubePlayerIframeController,
-        super.implementation(params) {
-    ui.platformViewRegistry.registerViewFactory(
+        super.implementation() {
+    platformViewRegistry.registerViewFactory(
       _controller._params.ytiFrame.id,
       (int viewId) => _controller._params.ytiFrame,
     );
@@ -166,15 +215,18 @@ class YoutubePlayerIframeWeb extends PlatformWebViewWidget {
           .id,
       onPlatformViewCreated: (_) {
         final channelParams = _controller._javaScriptChannelParams;
-        window.onMessage.listen(
-          (event) {
-            if (channelParams.name == 'YoutubePlayer') {
-              channelParams.onMessageReceived(
-                JavaScriptMessage(message: event.data),
-              );
-            }
-          },
-        );
+
+        if (channelParams != null) {
+          window.onMessage.listen(
+            (event) {
+              if (channelParams.name == 'YoutubePlayer') {
+                channelParams.onMessageReceived(
+                  JavaScriptMessage(message: event.data.dartify() as String),
+                );
+              }
+            },
+          );
+        }
       },
     );
   }

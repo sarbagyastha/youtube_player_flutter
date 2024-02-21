@@ -72,39 +72,57 @@ For API < 20 devices, you might want to forward the video to be played using You
 #### Using the player
 
 ```dart
-YoutubePlayerController _controller = YoutubePlayerController(
-    initialVideoId: 'K18cpp_-gP8',
-    params: YoutubePlayerParams(
-        playlist: ['nPt8bK2gbaU', 'gQDByCdjUXw'], // Defining custom playlist
-        startAt: Duration(seconds: 30),
-        showControls: true,
-        showFullscreenButton: true,
-    ),
-);
+YoutubePlayerController? _controller;
+ void initState() {
+    super.initState();
+    _controller = YoutubePlayerController(
+      initialVideoId: videoId,
+    
+      flags: YoutubePlayerFlags(autoPlay: true, mute: false, startAt: 0),
+    );
+}
 
-YoutubePlayerIFrame(
-    controller: _controller,
-    aspectRatio: 16 / 9,
+
+//--------------- in Widget build(BuildContext context) -------------------
+YoutubePlayer(
+  controller: _controller!,
+  showVideoProgressIndicator: true,
+  progressIndicatorColor: Colors.amber,
+  progressColors: ProgressBarColors(
+    playedColor: Colors.amber,
+    handleColor: Colors.amberAccent,
+  ),
+  onReady: () {
+    _controller!.addListener(listener);
+  },
 ),
 
--------------- OR --------------
-
-YoutubePlayerControllerProvider( // Provides controller to all the widget below it.
-  controller: _controller,
-  child: YoutubePlayerIFrame(
-    aspectRatio: 16 / 9,
-  ),
-);
-
-// Access the controller as: `YoutubePlayerControllerProvider.of(context)` or `controller.ytController`.
 ```
 
+
+###For FullScreen Support
+```dart
+YoutubePlayerBuilder(
+    player: YoutubePlayer(
+      showVideoProgressIndicator: true,
+      controller: _controller!,
+    ),
+    builder: (context, player) {
+      return Column(
+        children: [
+          // some widgets
+          player,
+        ],
+      );
+    },
+),
+```
 ## Want to customize the player?
-The package provides `YoutubeValueBuilder`, which can be used to create any custom controls.
+The package provides `YoutubePlayerBuilder`, which can be used to create any custom controls.
 
 For example, let's create a custom play pause button.
 ```dart
-YoutubeValueBuilder(
+YoutubePlayerBuilder(
    controller: _controller, // This can be omitted, if using `YoutubePlayerControllerProvider`
    builder: (context, value) {
       return IconButton(

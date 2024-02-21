@@ -97,7 +97,10 @@ class _FullscreenYoutubePlayerState extends State<FullscreenYoutubePlayer> {
       autoPlay: true,
       params: const YoutubePlayerParams(showFullscreenButton: true),
     )..setFullScreenListener((_) async {
-        Navigator.pop(context, await _controller.currentTime);
+        final currentTime = await _controller.currentTime;
+        if (!mounted) return;
+
+        Navigator.pop(context, currentTime);
       });
 
     SystemChrome.setPreferredOrientations(
@@ -111,10 +114,13 @@ class _FullscreenYoutubePlayerState extends State<FullscreenYoutubePlayer> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        Navigator.pop(context, await _controller.currentTime);
-        return false;
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        if (didPop) return;
+        _controller.currentTime.then(
+          (time) => Navigator.pop(context, time),
+        );
       },
       child: YoutubePlayer(
         controller: _controller,
