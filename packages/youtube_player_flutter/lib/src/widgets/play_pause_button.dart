@@ -90,7 +90,7 @@ class _PlayPauseButtonState extends State<PlayPauseButton>
               icon: AnimatedIcons.play_pause,
               progress: _animController.view,
               color: Colors.white,
-              size: 60.0,
+              size: 45.0,
             ),
           ),
         ),
