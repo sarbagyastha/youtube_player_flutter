@@ -1,3 +1,6 @@
+## 3.0.1
+- Bumps dependencies to latest version.
+
 ## 3.0.0
 - Adds support for wasm.
 - Bumps flutter version to `>=3.18.0-0`.
