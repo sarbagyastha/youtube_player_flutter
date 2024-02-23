@@ -300,8 +300,9 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
         children: [
           Transform.scale(
             scale: controller.value.isFullScreen
-                ? (1 / _aspectRatio * MediaQuery.of(context).size.width) /
-                    MediaQuery.of(context).size.height
+                ? 1
+            //(1 / _aspectRatio * MediaQuery.of(context).size.width) /
+                   // MediaQuery.of(context).size.height
                 : 1,
             child: RawYoutubePlayer(
               key: widget.key,
