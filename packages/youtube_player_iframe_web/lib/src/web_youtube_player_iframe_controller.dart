@@ -42,19 +42,13 @@ class WebYoutubePlayerIframeControllerCreationParams
 
   /// The underlying element used as the WebView.
   @visibleForTesting
-  final HTMLIFrameElement ytiFrame = _createIFrame();
-
-  static HTMLIFrameElement _createIFrame() {
-    final element = HTMLIFrameElement()
-      ..id = 'youtube-${_nextIFrameId++}'
-      ..style.width = '100%'
-      ..style.height = '100%'
-      ..style.border = 'none'
-      ..allow = 'autoplay;fullscreen'
-      ..credentialless = true;
-
-    return element;
-  }
+  final HTMLIFrameElement ytiFrame = HTMLIFrameElement()
+    ..id = 'youtube-${_nextIFrameId++}'
+    ..style.width = '100%'
+    ..style.height = '100%'
+    ..style.border = 'none'
+    ..allow = 'autoplay;fullscreen'
+    ..credentialless = true;
 }
 
 extension on HTMLIFrameElement {
