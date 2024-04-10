@@ -10,6 +10,7 @@ import 'dart:ui_web';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:web/helpers.dart';
 import 'package:web/web.dart';
 import 'package:webview_flutter_platform_interface/webview_flutter_platform_interface.dart';
 
@@ -49,14 +50,19 @@ class WebYoutubePlayerIframeControllerCreationParams
       ..style.width = '100%'
       ..style.height = '100%'
       ..style.border = 'none'
-      ..allow = 'autoplay;fullscreen';
-
-    // See
-    // https://developer.mozilla.org/en-US/docs/Web/Security/IFrame_credentialless
-    // https://developer.chrome.com/blog/anonymous-iframe-origin-trial
-    element['credentialless'] = true.toJS;
+      ..allow = 'autoplay;fullscreen'
+      ..credentialless = true;
 
     return element;
+  }
+}
+
+extension on HTMLIFrameElement {
+  // See
+  // https://developer.mozilla.org/en-US/docs/Web/Security/IFrame_credentialless
+  // https://developer.chrome.com/blog/anonymous-iframe-origin-trial
+  set credentialless(bool value) {
+    this['credentialless'] = value.toJS;
   }
 }
 
