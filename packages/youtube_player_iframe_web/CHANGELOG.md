@@ -1,3 +1,8 @@
+## 3.0.2
+- Use `credentialless` `iframe`, to allow videos to play in pages with
+  `Cross-Origin-Embedder-Policy` set.
+- Require `sdk: ^3.3.0` and `flutter: '>=3.19.0'`.
+
 ## 3.0.1
 - Bumps dependencies to latest version.
 
