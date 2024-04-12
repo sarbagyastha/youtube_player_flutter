@@ -1,11 +1,11 @@
 name: youtube_player_iframe_web
 description: Web implementation of webview_flutter plugin tailored for using with youtube_player_iframe package.
-version: 3.0.1
+version: 3.0.2
 homepage: https://github.com/sarbagyastha/youtube_player_flutter/tree/master/packages/youtube_player_iframe_web
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
-  flutter: '>=3.18.0-0'
+  sdk: ^3.3.0
+  flutter: '>=3.19.0'
 
 flutter:
   plugin:
@@ -21,8 +21,8 @@ dependencies:
     sdk: flutter
   flutter_web_plugins:
     sdk: flutter
-  web: ^0.5.0
+  web: ^0.5.1
   webview_flutter_platform_interface: ^2.10.0
 
 dev_dependencies:
-  flutter_lints: ^3.0.1
+  flutter_lints: ^3.0.2

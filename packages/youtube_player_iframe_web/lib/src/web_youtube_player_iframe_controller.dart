@@ -5,6 +5,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:js_interop';
+import 'dart:js_interop_unsafe';
 import 'dart:ui_web';
 
 import 'package:flutter/foundation.dart';
@@ -40,13 +41,8 @@ class WebYoutubePlayerIframeControllerCreationParams
 
   /// The underlying element used as the WebView.
   @visibleForTesting
-  final HTMLIFrameElement ytiFrame =
-      (document.createElement('iframe') as HTMLIFrameElement)
-        ..id = 'youtube-${_nextIFrameId++}'
-        ..style.width = '100%'
-        ..style.height = '100%'
-        ..style.border = 'none'
-        ..allow = 'autoplay;fullscreen';
+  final YoutubeIframeElement ytiFrame =
+      YoutubeIframeElement(id: _nextIFrameId++)..credentialless = true;
 }
 
 /// An implementation of [PlatformWebViewController] using Flutter for Web API.
@@ -70,31 +66,17 @@ class WebYoutubePlayerIframeController extends PlatformWebViewController {
   @override
   Future<void> loadHtmlString(String html, {String? baseUrl}) {
     _params.ytiFrame.srcdoc = html;
-
-    // Fallback for browser that doesn't support srcdoc.
-    _params.ytiFrame.src = Uri.dataFromString(
-      html,
-      mimeType: 'text/html',
-      encoding: utf8,
-    ).toString();
-
     return SynchronousFuture(null);
   }
 
   @override
   Future<void> runJavaScript(String javaScript) {
-    final function = javaScript.replaceAll('"', '<<quote>>');
-    _params.ytiFrame.contentWindow?.postMessage(
-      '{"key": null, "function": "$function"}'.toJS,
-      '*'.toJS,
-    );
-
+    _params.ytiFrame.runFunction(javaScript.replaceAll('"', '<<quote>>'));
     return SynchronousFuture(null);
   }
 
   @override
   Future<String> runJavaScriptReturningResult(String javaScript) async {
-    final contentWindow = _params.ytiFrame.contentWindow;
     final key = DateTime.now().millisecondsSinceEpoch.toString();
     final function = javaScript.replaceAll('"', '<<quote>>');
 
@@ -109,10 +91,7 @@ class WebYoutubePlayerIframeController extends PlatformWebViewController {
       },
     );
 
-    contentWindow?.postMessage(
-      '{"key": "$key", "function": "$function"}'.toJS,
-      '*'.toJS,
-    );
+    _params.ytiFrame.runFunction(function, key: key);
 
     final result = await completer.future;
     subscription.cancel();
@@ -228,6 +207,53 @@ class YoutubePlayerIframeWeb extends PlatformWebViewWidget {
           );
         }
       },
+    );
+  }
+}
+
+extension type YoutubeIframeElement._(HTMLIFrameElement element) {
+  /// A class that represents a YouTube iframe element.
+  YoutubeIframeElement({required int id})
+      : element = HTMLIFrameElement()
+          ..id = 'youtube-$id'
+          ..style.width = '100%'
+          ..style.height = '100%'
+          ..style.border = 'none'
+          ..allow = 'autoplay;fullscreen';
+
+  /// The underlying [HTMLIFrameElement] used by the [YoutubeIframeElement].
+  String get id => element.id;
+
+  /// The URL of the page that the iframe will display.
+  set src(String value) => element.src = value;
+
+  /// The content of the page that the iframe will display.
+  set srcdoc(String value) {
+    element.srcdoc = value;
+
+    // Fallback for browser that doesn't support srcdoc.
+    element.src = Uri.dataFromString(
+      value,
+      mimeType: 'text/html',
+      encoding: utf8,
+    ).toString();
+  }
+
+  /// Provides a mechanism for developers to load third-party resources in [HTMLIFrameElement]s using a new, ephemeral context.
+  /// This allows the third-party resources to be loaded without cookies, storage, or access to the parent frame.
+  ///
+  /// See more at:
+  /// - [MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/Security/IFrame_credentialless)
+  /// - [Chrome Developers](https://developer.chrome.com/blog/anonymous-iframe-origin-trial)
+  set credentialless(bool value) {
+    element['credentialless'] = value.toJS;
+  }
+
+  /// Runs a function in the [HTMLIFrameElement] using postMessage.
+  void runFunction(String function, {String? key}) {
+    element.contentWindow?.postMessage(
+      '{"key": "$key", "function": "$function"}'.toJS,
+      '*'.toJS,
     );
   }
 }
