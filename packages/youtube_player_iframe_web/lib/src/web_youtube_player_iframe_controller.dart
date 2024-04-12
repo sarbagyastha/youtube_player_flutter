@@ -10,7 +10,6 @@ import 'dart:ui_web';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
-import 'package:web/helpers.dart';
 import 'package:web/web.dart';
 import 'package:webview_flutter_platform_interface/webview_flutter_platform_interface.dart';
 
