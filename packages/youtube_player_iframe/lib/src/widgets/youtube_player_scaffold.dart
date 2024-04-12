@@ -160,11 +160,12 @@ class _FullScreen extends StatefulWidget {
 
 class _FullScreenState extends State<_FullScreen> with WidgetsBindingObserver {
   Orientation? _previousOrientation;
+  bool canPop = false;
 
   @override
   void initState() {
     super.initState();
-
+    canPop = Navigator.of(context).canPop();
     if (widget.auto) WidgetsBinding.instance.addObserver(this);
     SystemChrome.setPreferredOrientations(_deviceOrientations);
     SystemChrome.setEnabledSystemUIMode(_uiMode);
@@ -201,7 +202,7 @@ class _FullScreenState extends State<_FullScreen> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: false,
+      canPop: canPop,
       onPopInvoked: _handleFullScreenBackAction,
       child: widget.child,
     );
