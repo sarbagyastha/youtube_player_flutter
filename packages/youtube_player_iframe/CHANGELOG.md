@@ -1,4 +1,9 @@
 # Changelog
+## 5.1.2
+**Apr 12, 2024**
+- Bumps dependency to latest version.
+- Updates minimum supported SDK version to Flutter 3.19.0/Dart 3.3.0.
+
 ## 5.1.1
 **Feb 21, 2024**
 - Improves pub score.
