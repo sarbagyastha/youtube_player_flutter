@@ -5,10 +5,12 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:js_interop';
+import 'dart:js_interop_unsafe';
 import 'dart:ui_web';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:web/helpers.dart';
 import 'package:web/web.dart';
 import 'package:webview_flutter_platform_interface/webview_flutter_platform_interface.dart';
 
@@ -40,13 +42,22 @@ class WebYoutubePlayerIframeControllerCreationParams
 
   /// The underlying element used as the WebView.
   @visibleForTesting
-  final HTMLIFrameElement ytiFrame =
-      (document.createElement('iframe') as HTMLIFrameElement)
-        ..id = 'youtube-${_nextIFrameId++}'
-        ..style.width = '100%'
-        ..style.height = '100%'
-        ..style.border = 'none'
-        ..allow = 'autoplay;fullscreen';
+  final HTMLIFrameElement ytiFrame = HTMLIFrameElement()
+    ..id = 'youtube-${_nextIFrameId++}'
+    ..style.width = '100%'
+    ..style.height = '100%'
+    ..style.border = 'none'
+    ..allow = 'autoplay;fullscreen'
+    ..credentialless = true;
+}
+
+extension on HTMLIFrameElement {
+  // See
+  // https://developer.mozilla.org/en-US/docs/Web/Security/IFrame_credentialless
+  // https://developer.chrome.com/blog/anonymous-iframe-origin-trial
+  set credentialless(bool value) {
+    this['credentialless'] = value.toJS;
+  }
 }
 
 /// An implementation of [PlatformWebViewController] using Flutter for Web API.
