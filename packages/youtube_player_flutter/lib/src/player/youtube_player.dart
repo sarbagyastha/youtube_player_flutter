@@ -4,13 +4,13 @@
 
 import 'package:flutter/material.dart';
 
-import '../enums/thumbnail_quality.dart';
-import '../utils/errors.dart';
-import '../utils/youtube_meta_data.dart';
-import '../utils/youtube_player_controller.dart';
-import '../utils/youtube_player_flags.dart';
-import '../widgets/widgets.dart';
-import 'raw_youtube_player.dart';
+import 'package:youtube_player_flutter/src/enums/thumbnail_quality.dart';
+import 'package:youtube_player_flutter/src/player/raw_youtube_player.dart';
+import 'package:youtube_player_flutter/src/utils/errors.dart';
+import 'package:youtube_player_flutter/src/utils/youtube_meta_data.dart';
+import 'package:youtube_player_flutter/src/utils/youtube_player_controller.dart';
+import 'package:youtube_player_flutter/src/utils/youtube_player_flags.dart';
+import 'package:youtube_player_flutter/src/widgets/widgets.dart';
 
 /// A widget to play or stream YouTube videos using the official [YouTube IFrame Player API](https://developers.google.com/youtube/iframe_api_reference).
 ///
@@ -39,9 +39,6 @@ import 'raw_youtube_player.dart';
 /// ```
 ///
 class YoutubePlayer extends StatefulWidget {
-  /// Sets [Key] as an identification to underlying web view associated to the player.
-  final Key? key;
-
   /// A [YoutubePlayerController] to control the player.
   final YoutubePlayerController controller;
 
@@ -132,7 +129,7 @@ class YoutubePlayer extends StatefulWidget {
 
   /// Creates [YoutubePlayer] widget.
   const YoutubePlayer({
-    this.key,
+    super.key,
     required this.controller,
     this.width,
     this.aspectRatio = 16 / 9,
@@ -155,19 +152,33 @@ class YoutubePlayer extends StatefulWidget {
   ///
   /// If videoId is passed as url then no conversion is done.
   static String? convertUrlToId(String url, {bool trimWhitespaces = true}) {
-    if (!url.contains("http") && (url.length == 11)) return url;
+    if (!url.contains('http') && (url.length == 11)) return url;
     if (trimWhitespaces) url = url.trim();
 
     for (var exp in [
       RegExp(
-          r"^https:\/\/(?:www\.|m\.)?youtube\.com\/watch\?v=([_\-a-zA-Z0-9]{11}).*$"),
+        r'^https:\/\/(?:www\.|m\.)?youtube\.com\/watch\?v=([_\-a-zA-Z0-9]{11}).*$',
+      ),
       RegExp(
-          r"^https:\/\/(?:music\.)?youtube\.com\/watch\?v=([_\-a-zA-Z0-9]{11}).*$"),
+        r'^https:\/\/(?:www\.|m\.)?youtube\.com\/live\/([_\-a-zA-Z0-9]{11}).*$',
+      ),
       RegExp(
-          r"^https:\/\/(?:www\.|m\.)?youtube\.com\/shorts\/([_\-a-zA-Z0-9]{11}).*$"),
+        r'^https:\/\/(?:www\.|m\.)?youtube\.com\/v\/([_\-a-zA-Z0-9]{11}).*$',
+      ),
       RegExp(
-          r"^https:\/\/(?:www\.|m\.)?youtube(?:-nocookie)?\.com\/embed\/([_\-a-zA-Z0-9]{11}).*$"),
-      RegExp(r"^https:\/\/youtu\.be\/([_\-a-zA-Z0-9]{11}).*$")
+        r'^https:\/\/(?:www\.|m\.)?youtube\.com\/e\/([_\-a-zA-Z0-9]{11}).*$',
+      ),
+      RegExp(r'^https:\/\/(?:www\.|m\.)?youtu\.be\/([_\-a-zA-Z0-9]{11}).*$'),
+      RegExp(
+        r'^https:\/\/(?:music\.)?youtube\.com\/watch\?v=([_\-a-zA-Z0-9]{11}).*$',
+      ),
+      RegExp(
+        r'^https:\/\/(?:www\.|m\.)?youtube\.com\/shorts\/([_\-a-zA-Z0-9]{11}).*$',
+      ),
+      RegExp(
+        r'^https:\/\/(?:www\.|m\.)?youtube(?:-nocookie)?\.com\/embed\/([_\-a-zA-Z0-9]{11}).*$',
+      ),
+      RegExp(r'^https:\/\/youtu\.be\/([_\-a-zA-Z0-9]{11}).*$'),
     ]) {
       Match? match = exp.firstMatch(url);
       if (match != null && match.groupCount >= 1) return match.group(1);
@@ -210,7 +221,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
     widget.controller.addListener(listener);
   }
 
-  void listener() async {
+  Future<void> listener() async {
     if (controller.value.isReady && _initialLoad) {
       _initialLoad = false;
       if (controller.flags.autoPlay) controller.play();
@@ -307,9 +318,11 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
               key: widget.key,
               onEnded: (YoutubeMetaData metaData) {
                 if (controller.flags.loop) {
-                  controller.load(controller.metadata.videoId,
-                      startAt: controller.flags.startAt,
-                      endAt: controller.flags.endAt);
+                  controller.load(
+                    controller.metadata.videoId,
+                    startAt: controller.flags.startAt,
+                    endAt: controller.flags.endAt,
+                  );
                 }
 
                 widget.onEnded?.call(metaData);
@@ -356,32 +369,38 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                     ? 1
                     : 0,
                 duration: const Duration(milliseconds: 300),
-                child: controller.flags.isLive
-                    ? LiveBottomBar(
-                        liveUIColor: widget.liveUIColor,
-                        showLiveFullscreenButton:
-                            widget.controller.flags.showLiveFullscreenButton,
-                      )
-                    : Padding(
-                        padding: widget.bottomActions == null
-                            ? const EdgeInsets.all(0.0)
-                            : widget.actionsPadding,
-                        child: Row(
-                          children: widget.bottomActions ??
-                              [
-                                const SizedBox(width: 14.0),
-                                CurrentPosition(),
-                                const SizedBox(width: 8.0),
-                                ProgressBar(
-                                  isExpanded: true,
-                                  colors: widget.progressColors,
-                                ),
-                                RemainingDuration(),
-                                const PlaybackSpeedButton(),
-                                FullScreenButton(),
-                              ],
+                child: SafeArea(
+                  top: controller.value.isFullScreen,
+                  left: controller.value.isFullScreen,
+                  bottom: controller.value.isFullScreen,
+                  right: controller.value.isFullScreen,
+                  child: controller.flags.isLive
+                      ? LiveBottomBar(
+                          liveUIColor: widget.liveUIColor,
+                          showLiveFullscreenButton:
+                              widget.controller.flags.showLiveFullscreenButton,
+                        )
+                      : Padding(
+                          padding: widget.bottomActions == null
+                              ? const EdgeInsets.all(0.0)
+                              : widget.actionsPadding,
+                          child: Row(
+                            children: widget.bottomActions ??
+                                [
+                                  const SizedBox(width: 14.0),
+                                  CurrentPosition(),
+                                  const SizedBox(width: 8.0),
+                                  ProgressBar(
+                                    isExpanded: true,
+                                    colors: widget.progressColors,
+                                  ),
+                                  RemainingDuration(),
+                                  const PlaybackSpeedButton(),
+                                  FullScreenButton(),
+                                ],
+                          ),
                         ),
-                      ),
+                ),
               ),
             ),
             Positioned(
