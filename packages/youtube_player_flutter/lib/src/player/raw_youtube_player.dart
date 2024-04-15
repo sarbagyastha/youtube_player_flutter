@@ -45,6 +45,7 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    controller?.value.webViewController?.dispose();
     super.dispose();
   }
 
