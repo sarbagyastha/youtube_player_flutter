@@ -104,13 +104,18 @@ class YoutubePlayer extends StatefulWidget {
   /// {@endtemplate}
   final List<Widget>? topActions;
 
+  /// {@template youtube_player_flutter.centerActions}
+  /// Adds custom top bar widgets.
+  /// {@endtemplate}
+  final List<Widget>? centerActions;
+
   /// {@template youtube_player_flutter.bottomActions}
   /// Adds custom bottom bar widgets.
   /// {@endtemplate}
   final List<Widget>? bottomActions;
 
   /// {@template youtube_player_flutter.actionsPadding}
-  /// Defines padding for [topActions] and [bottomActions].
+  /// Defines padding for [topActions], and [bottomActions].
   ///
   /// Default is EdgeInsets.all(8.0).
   /// {@endtemplate}
@@ -144,6 +149,7 @@ class YoutubePlayer extends StatefulWidget {
     this.onEnded,
     this.liveUIColor = Colors.red,
     this.topActions,
+    this.centerActions,
     this.bottomActions,
     this.actionsPadding = const EdgeInsets.all(8.0),
     this.thumbnail,
@@ -398,6 +404,24 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                   padding: widget.actionsPadding,
                   child: Row(
                     children: widget.topActions ?? [Container()],
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              child: Center(
+                child: AnimatedOpacity(
+                  opacity: !controller.flags.hideControls &&
+                          controller.value.isControlsVisible
+                      ? 1
+                      : 0,
+                  duration: const Duration(milliseconds: 300),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: widget.centerActions ?? [Container()],
+                    ),
                   ),
                 ),
               ),
