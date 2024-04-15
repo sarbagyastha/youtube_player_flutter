@@ -6,9 +6,11 @@ import 'package:flutter/material.dart';
 
 import '../enums/thumbnail_quality.dart';
 import '../utils/errors.dart';
+import '../utils/skip_button.dart';
 import '../utils/youtube_meta_data.dart';
 import '../utils/youtube_player_controller.dart';
 import '../utils/youtube_player_flags.dart';
+import '../widgets/double_tap_animated.dart';
 import '../widgets/widgets.dart';
 import 'raw_youtube_player.dart';
 
@@ -130,6 +132,63 @@ class YoutubePlayer extends StatefulWidget {
   /// {@endtemplate}
   final bool showVideoProgressIndicator;
 
+  /// {@template youtube_player_flutter.showVideoProgressIndicator}
+  /// Defines enable user to skip 10 seconds from video.
+  ///
+  /// Default is true.
+  /// {@endtemplate}
+  final bool enableSkipSecondsFromVideo;
+
+  /// {@template youtube_player_flutter.showVideoProgressIndicator}
+  /// Defines skip seconds from video to forwards and previse.
+  ///
+  /// Default is 10 seconds.
+  /// {@endtemplate}
+  final int countOfSkip;
+
+  /// {@template youtube_player_flutter.showVideoProgressIndicator}
+  /// Defines its the icon show in the right to skip forwards.
+  ///
+  /// Default is Icons.fast_rewind.
+  /// {@endtemplate}
+  final IconData rightIcon;
+
+  /// {@template youtube_player_flutter.showVideoProgressIndicator}
+  /// Defines its the icon show in the right to skip previse.
+  ///
+  /// Default is Icons.fast_forward.
+  /// {@endtemplate}
+  final IconData leftIcon;
+
+  /// {@template youtube_player_flutter.showVideoProgressIndicator}
+  /// Defines its the color of skip icons.
+  ///
+  /// Default is Icons.fast_forward.
+  /// {@endtemplate}
+  final Color colorOfSkipIcon;
+
+  /// {@template youtube_player_flutter.showVideoProgressIndicator}
+  /// Defines its the size of skip icons.
+  ///
+  /// Default is 40.
+  /// {@endtemplate}
+  final double sizeOfSkipIcon;
+
+
+  /// {@template youtube_player_flutter.showVideoProgressIndicator}
+  /// Defines its the style of text show when skip.
+  ///
+  /// Default is 40.
+  /// {@endtemplate}
+  final TextStyle textStyle;
+
+  /// {@template youtube_player_flutter.showVideoProgressIndicator}
+  /// Defines its the text show when skip .
+  ///
+  /// Default is secs "10 secs".
+  /// {@endtemplate}
+  final String textOfSkip;
+
   /// Creates [YoutubePlayer] widget.
   const YoutubePlayer({
     this.key,
@@ -145,6 +204,14 @@ class YoutubePlayer extends StatefulWidget {
     this.liveUIColor = Colors.red,
     this.topActions,
     this.bottomActions,
+    this.countOfSkip  = 10,
+    this.textStyle = const TextStyle(color: Colors.black),
+    this.rightIcon = Icons.fast_rewind,
+    this.textOfSkip = 'secs',
+    this.leftIcon = Icons.fast_forward,
+    this.colorOfSkipIcon = Colors.black,
+    this.sizeOfSkipIcon = 40,
+    this.enableSkipSecondsFromVideo = true,
     this.actionsPadding = const EdgeInsets.all(8.0),
     this.thumbnail,
     this.showVideoProgressIndicator = false,
@@ -230,6 +297,22 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
     controller.removeListener(listener);
     super.dispose();
   }
+  SkipButtonNotifier skipButtonNotify = SkipButtonNotifier();
+
+  _increaseOrDecrease(double x, double screenWidth){
+      if (x < screenWidth / 2) {
+        skipButtonNotify.addToSkipForward();
+        final currentPosition = controller.value.position;
+        final newPosition = currentPosition - Duration(seconds: widget.countOfSkip);
+        controller.seekTo(newPosition);
+
+      } else {
+        skipButtonNotify.addToSkipPrevious();
+        final currentPosition = controller.value.position;
+        final newPosition = currentPosition + Duration(seconds: widget.countOfSkip);
+        controller.seekTo(newPosition);
+      }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -294,7 +377,33 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
   Widget _buildPlayer({required Widget errorWidget}) {
     return AspectRatio(
       aspectRatio: _aspectRatio,
-      child: Stack(
+      child:GestureDetector(
+        onDoubleTapDown:widget.enableSkipSecondsFromVideo? (details) {
+          var x = details.localPosition.dx;
+          var screenWidth = MediaQuery.of(context).size.width;
+          _increaseOrDecrease(x,screenWidth);
+        }:null,
+        onHorizontalDragStart:widget.enableSkipSecondsFromVideo? (details) {
+          var x = details.localPosition.dx;
+          var screenWidth = MediaQuery.of(context).size.width;
+          _increaseOrDecrease(x,screenWidth);
+
+        }:null,
+        // onHorizontalDragUpdate:widget.enableSkipSecondsFromVideo? (details) {
+        //   var x = details.localPosition.dx;
+        //   var screenWidth = MediaQuery.of(context).size.width;
+        //   _increaseOrDecrease(x,screenWidth);
+        //
+        // }:null,
+        onHorizontalDragCancel:widget.enableSkipSecondsFromVideo? () {
+            skipButtonNotify.cancelSkip();
+        }:null,
+        onHorizontalDragEnd:widget.enableSkipSecondsFromVideo? (details) {
+          var x = details.velocity.pixelsPerSecond.dx;
+          var screenWidth = MediaQuery.of(context).size.width;
+          _increaseOrDecrease(x,screenWidth);
+        }:null,
+        child: Stack(
         fit: StackFit.expand,
         clipBehavior: Clip.none,
         children: [
@@ -408,8 +517,49 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
               child: PlayPauseButton(),
             ),
           if (controller.value.hasError) errorWidget,
+          if(widget.enableSkipSecondsFromVideo)
+            Row(
+            children: [
+              Expanded(
+                child: DoubleTapAnimated(
+                  skipButtonNotify: skipButtonNotify,
+                  curveBank: 40,
+                  textOfSkip:widget.textOfSkip,
+                  rippleExpansionTime: const Duration(milliseconds: 400),
+                  expansionHoldingTime: const Duration(milliseconds: 200),
+                  fadeTime: const Duration(milliseconds: 100),
+                  ovalColor: Colors.white24,
+                  labelStyle: widget.textStyle,
+                  icon: Icon(
+                    widget.rightIcon,
+                    color: widget.colorOfSkipIcon,
+                    size: widget.sizeOfSkipIcon,
+                  ),
+                  isRight: true, countOfSkip: widget.countOfSkip,
+                ),
+              ),
+              Expanded(
+                child: DoubleTapAnimated(
+                  skipButtonNotify: skipButtonNotify,
+                  textOfSkip:widget.textOfSkip,
+                  rippleExpansionTime: const Duration(milliseconds: 400),
+                  expansionHoldingTime: const Duration(milliseconds: 200),
+                  fadeTime: const Duration(milliseconds: 100),
+                  ovalColor: Colors.white24,
+                  labelStyle: widget.textStyle,
+                  curveBank: 40,
+                  isRight: false,
+                  icon: Icon(
+                    widget.leftIcon,
+                    color: widget.colorOfSkipIcon,
+                    size: widget.sizeOfSkipIcon,
+                  ), countOfSkip: widget.countOfSkip,
+                ),
+              ),
+            ],
+          ),
         ],
-      ),
+      ),)
     );
   }
 
