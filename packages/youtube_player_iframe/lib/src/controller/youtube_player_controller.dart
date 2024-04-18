@@ -344,8 +344,9 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
       error: error ?? value.error,
       metaData: metaData ?? value.metaData,
     );
-
-    _valueController.add(updatedValue);
+    if (!_valueController.isClosed) {
+      _valueController.add(updatedValue);
+    }
   }
 
   /// Listen to updates in [YoutubePlayerController].
