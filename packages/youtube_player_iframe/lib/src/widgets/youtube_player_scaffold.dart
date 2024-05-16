@@ -201,9 +201,8 @@ class _FullScreenState extends State<_FullScreen> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      canPop: canPop,
-      onPopInvoked: _handleFullScreenBackAction,
+    return BackButtonListener(
+      onBackButtonPressed: _handleFullScreenBackAction,
       child: widget.child,
     );
   }
