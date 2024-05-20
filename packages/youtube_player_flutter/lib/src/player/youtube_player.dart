@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'package:flutter/material.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
 import '../enums/thumbnail_quality.dart';
 import '../utils/errors.dart';
@@ -130,6 +131,13 @@ class YoutubePlayer extends StatefulWidget {
   /// {@endtemplate}
   final bool showVideoProgressIndicator;
 
+  /// {@template youtube_player_flutter.enableDebugWebView}
+  /// Enable or disable debugging info web view.
+  ///
+  /// Default is true.
+  /// {@endtemplate}
+  final bool enableDebugWebView;
+
   /// Creates [YoutubePlayer] widget.
   const YoutubePlayer({
     this.key,
@@ -148,6 +156,7 @@ class YoutubePlayer extends StatefulWidget {
     this.actionsPadding = const EdgeInsets.all(8.0),
     this.thumbnail,
     this.showVideoProgressIndicator = false,
+    this.enableDebugWebView = true,
   })  : progressColors = progressColors ?? const ProgressBarColors(),
         progressIndicatorColor = progressIndicatorColor ?? Colors.red;
 
@@ -199,6 +208,8 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
   @override
   void initState() {
     super.initState();
+    PlatformInAppWebViewController.debugLoggingSettings.enabled =
+        widget.enableDebugWebView;
     controller = widget.controller..addListener(listener);
     _aspectRatio = widget.aspectRatio;
   }
