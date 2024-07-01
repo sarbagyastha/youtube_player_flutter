@@ -1,4 +1,4 @@
-name: 🐞 Bug
+name: Bug Report
 about: File a report to help improve the player
 title: "[BUG] <title>"
 labels: ["Bug", "Needs Triage"]
