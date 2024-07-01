@@ -13,10 +13,10 @@ class CurrentPosition extends StatefulWidget {
   final YoutubePlayerController? controller;
 
   /// Creates [CurrentPosition] widget.
-  CurrentPosition({this.controller});
+  const CurrentPosition({super.key, this.controller});
 
   @override
-  _CurrentPositionState createState() => _CurrentPositionState();
+  State<CurrentPosition> createState() => _CurrentPositionState();
 }
 
 class _CurrentPositionState extends State<CurrentPosition> {
@@ -66,14 +66,14 @@ class _CurrentPositionState extends State<CurrentPosition> {
 
 /// A widget which displays the remaining duration of the video.
 class RemainingDuration extends StatefulWidget {
+  /// Creates [RemainingDuration] widget.
+  const RemainingDuration({super.key, this.controller});
+
   /// Overrides the default [YoutubePlayerController].
   final YoutubePlayerController? controller;
 
-  /// Creates [RemainingDuration] widget.
-  RemainingDuration({this.controller});
-
   @override
-  _RemainingDurationState createState() => _RemainingDurationState();
+  State<RemainingDuration> createState() => _RemainingDurationState();
 }
 
 class _RemainingDurationState extends State<RemainingDuration> {

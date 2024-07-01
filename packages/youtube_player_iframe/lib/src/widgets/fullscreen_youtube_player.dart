@@ -47,7 +47,7 @@ class FullscreenYoutubePlayer extends StatefulWidget {
 
   /// The background color of the [WebView].
   ///
-  /// Default to [ColorScheme.background].
+  /// Default to [ColorScheme.surface].
   final Color? backgroundColor;
 
   @override
@@ -119,7 +119,9 @@ class _FullscreenYoutubePlayerState extends State<FullscreenYoutubePlayer> {
       onPopInvoked: (didPop) {
         if (didPop) return;
         _controller.currentTime.then(
-          (time) => Navigator.pop(context, time),
+          (time) {
+            if (context.mounted) return Navigator.pop(context, time);
+          },
         );
       },
       child: YoutubePlayer(

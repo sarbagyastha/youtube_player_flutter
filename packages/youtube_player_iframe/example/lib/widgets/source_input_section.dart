@@ -7,8 +7,10 @@ import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 ///
 class SourceInputSection extends StatefulWidget {
+  const SourceInputSection({super.key});
+
   @override
-  _SourceInputSectionState createState() => _SourceInputSectionState();
+  State<SourceInputSection> createState() => _SourceInputSectionState();
 }
 
 class _SourceInputSectionState extends State<SourceInputSection> {
@@ -41,7 +43,7 @@ class _SourceInputSectionState extends State<SourceInputSection> {
               border: InputBorder.none,
               hintText: _hint,
               helperText: _helperText,
-              fillColor: Theme.of(context).colorScheme.surfaceVariant,
+              fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
               filled: true,
               hintStyle: Theme.of(context).textTheme.bodyLarge!.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -163,10 +165,7 @@ class _SourceInputSectionState extends State<SourceInputSection> {
 }
 
 class _PlaylistTypeDropDown extends StatefulWidget {
-  const _PlaylistTypeDropDown({
-    Key? key,
-    required this.onChanged,
-  }) : super(key: key);
+  const _PlaylistTypeDropDown({required this.onChanged});
 
   final ValueChanged<ListType?> onChanged;
 
@@ -182,7 +181,7 @@ class _PlaylistTypeDropDownState extends State<_PlaylistTypeDropDown> {
     return DropdownButtonFormField<ListType>(
       decoration: InputDecoration(
         border: InputBorder.none,
-        fillColor: Theme.of(context).colorScheme.surfaceVariant,
+        fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
         filled: true,
       ),
       isExpanded: true,
@@ -198,7 +197,7 @@ class _PlaylistTypeDropDownState extends State<_PlaylistTypeDropDown> {
           ),
         ),
         ...ListType.values.map(
-          (type) => DropdownMenuItem(child: Text(type.value), value: type),
+          (type) => DropdownMenuItem(value: type, child: Text(type.value)),
         ),
       ],
       onChanged: (value) {
@@ -211,14 +210,10 @@ class _PlaylistTypeDropDownState extends State<_PlaylistTypeDropDown> {
 }
 
 class _Button extends StatelessWidget {
+  const _Button({required this.onTap, required this.action});
+
   final VoidCallback? onTap;
   final String action;
-
-  const _Button({
-    Key? key,
-    required this.onTap,
-    required this.action,
-  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

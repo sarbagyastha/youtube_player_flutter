@@ -9,20 +9,21 @@ import '../utils/youtube_player_controller.dart';
 
 /// A widget to display play/pause button.
 class PlayPauseButton extends StatefulWidget {
+  /// Creates [PlayPauseButton] widget.
+  const PlayPauseButton({
+    super.key,
+    this.controller,
+    this.bufferIndicator,
+  });
+
   /// Overrides the default [YoutubePlayerController].
   final YoutubePlayerController? controller;
 
   /// Defines placeholder widget to show when player is in buffering state.
   final Widget? bufferIndicator;
 
-  /// Creates [PlayPauseButton] widget.
-  PlayPauseButton({
-    this.controller,
-    this.bufferIndicator,
-  });
-
   @override
-  _PlayPauseButtonState createState() => _PlayPauseButtonState();
+  State<PlayPauseButton> createState() => _PlayPauseButtonState();
 }
 
 class _PlayPauseButtonState extends State<PlayPauseButton>
@@ -71,12 +72,12 @@ class _PlayPauseButtonState extends State<PlayPauseButton>
 
   @override
   Widget build(BuildContext context) {
-    final _playerState = _controller.value.playerState;
+    final playerState = _controller.value.playerState;
     if ((!_controller.flags.autoPlay && _controller.value.isReady) ||
-        _playerState == PlayerState.playing ||
-        _playerState == PlayerState.paused) {
+        playerState == PlayerState.playing ||
+        playerState == PlayerState.paused) {
       return Visibility(
-        visible: _playerState == PlayerState.cued ||
+        visible: playerState == PlayerState.cued ||
             !_controller.value.isPlaying ||
             _controller.value.isControlsVisible,
         child: Material(
@@ -98,10 +99,9 @@ class _PlayPauseButtonState extends State<PlayPauseButton>
     }
     if (_controller.value.hasError) return const SizedBox();
     return widget.bufferIndicator ??
-        Container(
-          width: 70.0,
-          height: 70.0,
-          child: const CircularProgressIndicator(
+        const SizedBox.square(
+          dimension: 70,
+          child: CircularProgressIndicator(
             valueColor: AlwaysStoppedAnimation(Colors.white),
           ),
         );

@@ -1,0 +1,61 @@
+name: Bug Report
+description: File a report to help improve the player
+title: "[BUG] <title>"
+labels: ["Bug", "Needs Triage"]
+assignees:
+  - sarbagyastha
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+  - type: checkboxes
+    attributes:
+      label: Is there an existing issue for this?
+      description: Please search to see if an issue already exists for the bug you encountered.
+      options:
+        - label: I have searched the existing issues
+          required: true
+  - type: dropdown
+    id: package
+    attributes:
+      label: Package
+      description: Which package are you reporting bug for?
+      options:
+        - youtube_player_iframe (Default)
+        - youtube_player_flutter
+      default: 0
+    validations:
+      required: true
+  - type: textarea
+    id: desc
+    attributes:
+      label: What happened?
+      description: A clear and concise description of what the bug is.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What is the expected behaviour?
+      description: A clear and concise description of what you expected to happen.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: How to reproduce?
+      description: Steps to reproduce the behavior.
+      placeholder: |
+        1. In this environment...
+        2. With this config...
+        3. Run '...'
+        4. See error...
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Flutter Doctor Output
+      description: Paste the output of `flutter doctor -v`
+      render: shell

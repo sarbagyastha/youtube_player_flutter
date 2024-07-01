@@ -50,7 +50,7 @@ class YoutubePlayer extends StatefulWidget {
 
   /// The background color of the [WebView].
   ///
-  /// Default to [ColorScheme.background].
+  /// Default to [ColorScheme.surface].
   final Color? backgroundColor;
 
   /// The value used for the HTTP User-Agent: request header.
@@ -126,7 +126,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
   }
 
   void _updateBackgroundColor(Color? backgroundColor) {
-    final bgColor = backgroundColor ?? Theme.of(context).colorScheme.background;
+    final bgColor = backgroundColor ?? Theme.of(context).colorScheme.surface;
     _controller.webViewController.setBackgroundColor(bgColor);
   }
 

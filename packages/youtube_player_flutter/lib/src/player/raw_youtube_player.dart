@@ -13,20 +13,17 @@ import '../utils/youtube_player_controller.dart';
 ///
 /// Use [YoutubePlayer] instead.
 class RawYoutubePlayer extends StatefulWidget {
-  /// Sets [Key] as an identification to underlying web view associated to the player.
-  final Key? key;
+  /// Creates a [RawYoutubePlayer] widget.
+  const RawYoutubePlayer({
+    super.key,
+    this.onEnded,
+  });
 
   /// {@macro youtube_player_flutter.onEnded}
   final void Function(YoutubeMetaData metaData)? onEnded;
 
-  /// Creates a [RawYoutubePlayer] widget.
-  RawYoutubePlayer({
-    this.key,
-    this.onEnded,
-  });
-
   @override
-  _RawYoutubePlayerState createState() => _RawYoutubePlayerState();
+  State<RawYoutubePlayer> createState() => _RawYoutubePlayerState();
 }
 
 class _RawYoutubePlayerState extends State<RawYoutubePlayer>

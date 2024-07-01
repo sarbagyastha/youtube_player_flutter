@@ -58,21 +58,22 @@ void main() {
 
   testWidgets('Create Youtube Player', (WidgetTester tester) async {
     provideMockedNetworkImages(() async {
-      var _controller = createController();
+      final controller = createController();
 
-      await tester.pumpWidget(buildPlayer(controller: _controller));
+      await tester.pumpWidget(buildPlayer(controller: controller));
     });
   });
 }
 
 class TestApp extends StatelessWidget {
-  final Widget child;
-  final TextDirection textDirection;
-
-  TestApp({
+  const TestApp({
+    super.key,
     this.textDirection = TextDirection.ltr,
     required this.child,
   });
+
+  final Widget child;
+  final TextDirection textDirection;
 
   @override
   Widget build(BuildContext context) {
@@ -93,7 +94,7 @@ class TestApp extends StatelessWidget {
   }
 }
 
-R provideMockedNetworkImages<R>(R body()) {
+R provideMockedNetworkImages<R>(R Function() body) {
   return HttpOverrides.runZoned(
     body,
     createHttpClient: (_) => _createMockImageHttpClient(_, _transparentImage),

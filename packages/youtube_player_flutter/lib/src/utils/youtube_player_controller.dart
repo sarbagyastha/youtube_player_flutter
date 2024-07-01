@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:developer';
+
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
@@ -168,11 +170,11 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
         ?.controller;
   }
 
-  _callMethod(String methodString) {
+  void _callMethod(String methodString) {
     if (value.isReady) {
       value.webViewController?.evaluateJavascript(source: methodString);
     } else {
-      print('The controller is not ready for method calls.');
+      log('The controller is not ready for method calls.');
     }
   }
 
@@ -316,15 +318,16 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
 class InheritedYoutubePlayer extends InheritedWidget {
   /// Creates [InheritedYoutubePlayer]
   const InheritedYoutubePlayer({
-    Key? key,
+    super.key,
     required this.controller,
-    required Widget child,
-  }) : super(key: key, child: child);
+    required super.child,
+  });
 
   /// A [YoutubePlayerController] which controls the player.
   final YoutubePlayerController controller;
 
   @override
-  bool updateShouldNotify(InheritedYoutubePlayer oldPlayer) =>
-      oldPlayer.controller.hashCode != controller.hashCode;
+  bool updateShouldNotify(InheritedYoutubePlayer oldWidget) {
+    return oldWidget.controller.hashCode != controller.hashCode;
+  }
 }

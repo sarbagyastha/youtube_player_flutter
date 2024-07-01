@@ -29,11 +29,13 @@ const List<String> _videoIds = [
 ];
 
 Future<void> main() async {
-  runApp(YoutubeApp());
+  runApp(const YoutubeApp());
 }
 
 ///
 class YoutubeApp extends StatelessWidget {
+  const YoutubeApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -46,15 +48,17 @@ class YoutubeApp extends StatelessWidget {
         useMaterial3: true,
       ),
       debugShowCheckedModeBanner: false,
-      home: YoutubeAppDemo(),
+      home: const YoutubeAppDemo(),
     );
   }
 }
 
 ///
 class YoutubeAppDemo extends StatefulWidget {
+  const YoutubeAppDemo({super.key});
+
   @override
-  _YoutubeAppDemoState createState() => _YoutubeAppDemoState();
+  State<YoutubeAppDemo> createState() => _YoutubeAppDemoState();
 }
 
 class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
@@ -144,7 +148,7 @@ class _YoutubeAppDemoState extends State<YoutubeAppDemo> {
 ///
 class Controls extends StatelessWidget {
   ///
-  const Controls();
+  const Controls({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -153,15 +157,15 @@ class Controls extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          MetaDataSection(),
+          const MetaDataSection(),
           _space,
-          SourceInputSection(),
+          const SourceInputSection(),
           _space,
           PlayPauseButtonBar(),
           _space,
           const VideoPositionSeeker(),
           _space,
-          PlayerStateSection(),
+          const PlayerStateSection(),
         ],
       ),
     );
