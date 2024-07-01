@@ -1,5 +1,5 @@
 name: 🐞 Bug
-description: File a report to help improve the player
+about: File a report to help improve the player
 title: "[BUG] <title>"
 labels: ["Bug", "Needs Triage"]
 assignees:
