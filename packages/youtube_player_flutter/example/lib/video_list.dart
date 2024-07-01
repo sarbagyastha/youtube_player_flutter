@@ -3,8 +3,10 @@ import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 /// Creates list of video players
 class VideoList extends StatefulWidget {
+  const VideoList({super.key});
+
   @override
-  _VideoListState createState() => _VideoListState();
+  State<VideoList> createState() => _VideoListState();
 }
 
 class _VideoListState extends State<VideoList> {
@@ -40,11 +42,11 @@ class _VideoListState extends State<VideoList> {
             key: ObjectKey(_controllers[index]),
             controller: _controllers[index],
             actionsPadding: const EdgeInsets.only(left: 16.0),
-            bottomActions: [
+            bottomActions: const [
               CurrentPosition(),
-              const SizedBox(width: 10.0),
+              SizedBox(width: 10),
               ProgressBar(isExpanded: true),
-              const SizedBox(width: 10.0),
+              SizedBox(width: 10),
               RemainingDuration(),
               FullScreenButton(),
             ],

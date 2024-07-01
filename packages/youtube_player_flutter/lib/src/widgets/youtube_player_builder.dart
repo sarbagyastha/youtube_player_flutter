@@ -6,6 +6,15 @@ import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 /// A wrapper for [YoutubePlayer].
 class YoutubePlayerBuilder extends StatefulWidget {
+  /// Builder for [YoutubePlayer] that supports switching between fullscreen and normal mode.
+  const YoutubePlayerBuilder({
+    super.key,
+    required this.player,
+    required this.builder,
+    this.onEnterFullScreen,
+    this.onExitFullScreen,
+  });
+
   /// The actual [YoutubePlayer].
   final YoutubePlayer player;
 
@@ -18,17 +27,8 @@ class YoutubePlayerBuilder extends StatefulWidget {
   /// Callback to notify that the player has exited fullscreen.
   final VoidCallback? onExitFullScreen;
 
-  /// Builder for [YoutubePlayer] that supports switching between fullscreen and normal mode.
-  const YoutubePlayerBuilder({
-    Key? key,
-    required this.player,
-    required this.builder,
-    this.onEnterFullScreen,
-    this.onExitFullScreen,
-  }) : super(key: key);
-
   @override
-  _YoutubePlayerBuilderState createState() => _YoutubePlayerBuilderState();
+  State<YoutubePlayerBuilder> createState() => _YoutubePlayerBuilderState();
 }
 
 class _YoutubePlayerBuilderState extends State<YoutubePlayerBuilder>
@@ -65,24 +65,27 @@ class _YoutubePlayerBuilderState extends State<YoutubePlayerBuilder>
 
   @override
   Widget build(BuildContext context) {
-    final _player = Container(
+    final player = Container(
       key: playerKey,
-      child: WillPopScope(
-        onWillPop: () async {
+      child: PopScope(
+        canPop: false,
+        onPopInvoked: (didPop) {
           final controller = widget.player.controller;
           if (controller.value.isFullScreen) {
             widget.player.controller.toggleFullScreenMode();
-            return false;
+          } else {
+            Navigator.pop(context);
           }
-          return true;
         },
         child: widget.player,
       ),
     );
-    final child = widget.builder(context, _player);
+    final child = widget.builder(context, player);
+
     return OrientationBuilder(
-      builder: (context, orientation) =>
-          orientation == Orientation.portrait ? child : _player,
+      builder: (context, orientation) {
+        return orientation == Orientation.portrait ? child : player;
+      },
     );
   }
 }
