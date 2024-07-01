@@ -41,7 +41,7 @@ class _SourceInputSectionState extends State<SourceInputSection> {
               border: InputBorder.none,
               hintText: _hint,
               helperText: _helperText,
-              fillColor: Theme.of(context).colorScheme.surfaceVariant,
+              fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
               filled: true,
               hintStyle: Theme.of(context).textTheme.bodyLarge!.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -182,7 +182,7 @@ class _PlaylistTypeDropDownState extends State<_PlaylistTypeDropDown> {
     return DropdownButtonFormField<ListType>(
       decoration: InputDecoration(
         border: InputBorder.none,
-        fillColor: Theme.of(context).colorScheme.surfaceVariant,
+        fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
         filled: true,
       ),
       isExpanded: true,

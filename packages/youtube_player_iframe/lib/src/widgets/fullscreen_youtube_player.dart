@@ -47,7 +47,7 @@ class FullscreenYoutubePlayer extends StatefulWidget {
 
   /// The background color of the [WebView].
   ///
-  /// Default to [ColorScheme.background].
+  /// Default to [ColorScheme.surface].
   final Color? backgroundColor;
 
   @override

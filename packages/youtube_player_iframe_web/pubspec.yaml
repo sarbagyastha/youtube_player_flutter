@@ -25,4 +25,4 @@ dependencies:
   webview_flutter_platform_interface: ^2.10.0
 
 dev_dependencies:
-  flutter_lints: ^3.0.2
+  flutter_lints: ^4.0.0
