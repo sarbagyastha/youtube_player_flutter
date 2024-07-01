@@ -1,11 +1,11 @@
 {
-    "name": "YouTube Player for Flutter",
-    "short_name": "YouTube Player",
+    "name": "example",
+    "short_name": "example",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "YouTube Player Demo",
+    "description": "A new Flutter project.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
