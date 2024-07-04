@@ -129,6 +129,7 @@ YoutubePlayer(
  * PlayPauseButton
  * PlaybackSpeedButton
  * ProgressBar
+ * TotalDuration
 
 ```dart
 YoutubePlayer(
