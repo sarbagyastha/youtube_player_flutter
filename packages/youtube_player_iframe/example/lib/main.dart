@@ -42,10 +42,9 @@ class YoutubeApp extends StatelessWidget {
       title: 'Youtube Player IFrame Demo',
       theme: ThemeData.from(
         colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.deepPurple,
-          brightness: Brightness.dark,
+          seedColor: Colors.red,
+          dynamicSchemeVariant: DynamicSchemeVariant.rainbow,
         ),
-        useMaterial3: true,
       ),
       debugShowCheckedModeBanner: false,
       home: const YoutubeAppDemo(),

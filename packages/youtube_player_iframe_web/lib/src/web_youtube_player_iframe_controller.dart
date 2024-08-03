@@ -102,8 +102,14 @@ class WebYoutubePlayerIframeController extends PlatformWebViewController {
   @override
   Future<void> addJavaScriptChannel(
     JavaScriptChannelParams javaScriptChannelParams,
-  ) async {
+  ) {
     _javaScriptChannelParams = javaScriptChannelParams;
+    return SynchronousFuture(null);
+  }
+
+  @override
+  Future<void> removeJavaScriptChannel(String javaScriptChannelName) {
+    return SynchronousFuture(null);
   }
 
   @override
