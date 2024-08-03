@@ -16,6 +16,15 @@ final router = GoRouter(
           path: 'playlist',
           pageBuilder: (_, __) => NoTransitionPage(child: VideoListPage()),
         ),
+        GoRoute(
+          path: 'watch',
+          pageBuilder: (_, GoRouterState state) {
+            print(state.pathParameters);
+            return NoTransitionPage(
+              child: HomePage(videoId: state.uri.queryParameters['v']),
+            );
+          },
+        ),
       ],
     ),
   ],

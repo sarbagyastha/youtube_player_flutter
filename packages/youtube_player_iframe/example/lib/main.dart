@@ -18,8 +18,9 @@ class YoutubeApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = ColorScheme.fromSeed(
-      seedColor: Colors.red,
+      seedColor: Colors.green,
       dynamicSchemeVariant: DynamicSchemeVariant.expressive,
+      brightness: Brightness.dark,
     );
 
     return MaterialApp.router(

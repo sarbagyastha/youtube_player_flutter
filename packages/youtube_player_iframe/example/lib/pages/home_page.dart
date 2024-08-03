@@ -29,7 +29,9 @@ const List<String> _videoIds = [
 
 ///
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  const HomePage({super.key, this.videoId});
+
+  final String? videoId;
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -56,11 +58,15 @@ class _HomePageState extends State<HomePage> {
       },
     );
 
-    _controller.loadPlaylist(
-      list: _videoIds,
-      listType: ListType.playlist,
-      startSeconds: 136,
-    );
+    if (widget.videoId != null) {
+      _controller.loadVideoById(videoId: widget.videoId!);
+    } else {
+      _controller.loadPlaylist(
+        list: _videoIds,
+        listType: ListType.playlist,
+        startSeconds: 136,
+      );
+    }
   }
 
   @override
