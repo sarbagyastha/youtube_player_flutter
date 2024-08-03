@@ -120,10 +120,10 @@
       function sendPlatformMessage(message) {
         switch(platform) {
            case 'android':
-             YoutubePlayer.postMessage(message);
+             <<playerId>>.postMessage(message);
              break;
            case 'ios':
-             YoutubePlayer.postMessage(message, '*');
+             <<playerId>>.postMessage(message, '*');
              break;
            case 'web':
              window.parent.postMessage(message, '*');

@@ -248,10 +248,9 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   /// Loads the player with default [params].
   @internal
   Future<void> init() async {
-    final defaultBaseUrl = kIsWeb ? Uri.base.origin : null;
     await load(
       params: params,
-      baseUrl: params.origin ?? defaultBaseUrl,
+      baseUrl: kIsWeb ? Uri.base.origin : params.origin,
       id: playerId,
     );
 
@@ -329,7 +328,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
 
   /// The unique player id.
   @internal
-  String get playerId => 'youtube-${key ?? hashCode}';
+  String get playerId => 'Youtube${key ?? hashCode}';
 
   /// MetaData for the currently loaded or cued video.
   YoutubeMetaData get metadata => _value.metaData;
