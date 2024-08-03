@@ -336,6 +336,8 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     YoutubeError? error,
     YoutubeMetaData? metaData,
   }) {
+    if (_valueController.isClosed) return;
+
     final updatedValue = YoutubePlayerValue(
       fullScreenOption: fullScreenOption ?? value.fullScreenOption,
       playerState: playerState ?? value.playerState,

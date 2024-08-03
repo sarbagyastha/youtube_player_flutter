@@ -38,14 +38,14 @@ class YoutubeApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = ColorScheme.fromSeed(
+      seedColor: Colors.red,
+      dynamicSchemeVariant: DynamicSchemeVariant.expressive,
+    );
+
     return MaterialApp(
       title: 'Youtube Player IFrame Demo',
-      theme: ThemeData.from(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.red,
-          dynamicSchemeVariant: DynamicSchemeVariant.rainbow,
-        ),
-      ),
+      theme: ThemeData.from(colorScheme: colorScheme),
       debugShowCheckedModeBanner: false,
       home: const YoutubeAppDemo(),
     );

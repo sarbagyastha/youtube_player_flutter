@@ -25,11 +25,33 @@ class _VideoListPageState extends State<VideoListPage> {
 
     _controllers = List.generate(
       _videoIds.length,
-      (index) => YoutubePlayerController.fromVideoId(
-        videoId: _videoIds[index],
-        autoPlay: false,
-        params: const YoutubePlayerParams(showFullscreenButton: true),
-      ),
+      (index) {
+        final controller = YoutubePlayerController.fromVideoId(
+          videoId: _videoIds[index],
+          autoPlay: false,
+          params: const YoutubePlayerParams(showFullscreenButton: true),
+        );
+        controller.setFullScreenListener(
+          (_) async {
+            final videoData = await controller.videoData;
+            final startSeconds = await controller.currentTime;
+
+            if (context.mounted) {
+              final currentTime = await FullscreenYoutubePlayer.launch(
+                context,
+                videoId: videoData.videoId,
+                startSeconds: startSeconds,
+              );
+
+              if (currentTime != null) {
+                controller.seekTo(seconds: currentTime);
+              }
+            }
+          },
+        );
+
+        return controller;
+      },
     );
   }
 
@@ -39,44 +61,25 @@ class _VideoListPageState extends State<VideoListPage> {
       appBar: AppBar(
         title: const Text('Video List Demo'),
       ),
-      body: ListView.separated(
-        padding: const EdgeInsets.all(8),
+      body: GridView.builder(
+        padding: const EdgeInsets.all(16),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: MediaQuery.sizeOf(context).width > 500 ? 2 : 1,
+          crossAxisSpacing: 8,
+          mainAxisSpacing: 8,
+          childAspectRatio: 16 / 9,
+        ),
         itemCount: _controllers.length,
         itemBuilder: (context, index) {
           final controller = _controllers[index];
 
-          return Card(
-            child: Padding(
-              padding: const EdgeInsets.all(8),
-              child: YoutubePlayer(
-                key: ObjectKey(controller),
-                aspectRatio: 16 / 9,
-                enableFullScreenOnVerticalDrag: false,
-                controller: controller
-                  ..setFullScreenListener(
-                    (_) async {
-                      final videoData = await controller.videoData;
-                      final startSeconds = await controller.currentTime;
-
-                      if (context.mounted) {
-                        final currentTime =
-                            await FullscreenYoutubePlayer.launch(
-                          context,
-                          videoId: videoData.videoId,
-                          startSeconds: startSeconds,
-                        );
-
-                        if (currentTime != null) {
-                          controller.seekTo(seconds: currentTime);
-                        }
-                      }
-                    },
-                  ),
-              ),
-            ),
+          return YoutubePlayer(
+            key: ObjectKey(controller),
+            aspectRatio: 16 / 9,
+            enableFullScreenOnVerticalDrag: false,
+            controller: controller,
           );
         },
-        separatorBuilder: (context, _) => const SizedBox(height: 16),
       ),
     );
   }
