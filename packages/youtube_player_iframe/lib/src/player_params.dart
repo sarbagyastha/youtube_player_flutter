@@ -124,7 +124,7 @@ class YoutubePlayerParams {
     this.interfaceLanguage = 'en',
     this.showVideoAnnotations = true,
     this.loop = false,
-    this.origin = 'https://www.youtube.com',
+    this.origin,
     this.playsInline = true,
     this.strictRelatedVideos = false,
     this.userAgent,

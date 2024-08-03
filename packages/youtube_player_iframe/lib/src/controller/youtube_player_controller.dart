@@ -27,6 +27,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   YoutubePlayerController({
     this.params = const YoutubePlayerParams(),
     ValueChanged<YoutubeWebResourceError>? onWebResourceError,
+    this.key,
   }) {
     _eventHandler = YoutubePlayerEventHandler(this);
 
@@ -57,10 +58,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setNavigationDelegate(navigationDelegate)
       ..setUserAgent(params.userAgent)
-      ..addJavaScriptChannel(
-        _youtubeJSChannelName,
-        onMessageReceived: _eventHandler.call,
-      )
+      ..addJavaScriptChannel(playerId, onMessageReceived: _eventHandler.call)
       ..enableZoom(false);
 
     final webViewPlatform = webViewController.platform;
@@ -80,7 +78,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     double? startSeconds,
     double? endSeconds,
   }) {
-    final controller = YoutubePlayerController(params: params);
+    final controller = YoutubePlayerController(params: params, key: videoId);
 
     if (autoPlay) {
       controller.loadVideoById(
@@ -99,7 +97,8 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     return controller;
   }
 
-  final String _youtubeJSChannelName = 'YoutubePlayer';
+  /// The unique key for the player.
+  final String? key;
 
   /// Defines player parameters for the youtube player.
   final YoutubePlayerParams params;
@@ -249,7 +248,12 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   /// Loads the player with default [params].
   @internal
   Future<void> init() async {
-    await load(params: params, baseUrl: params.origin);
+    final defaultBaseUrl = kIsWeb ? Uri.base.origin : null;
+    await load(
+      params: params,
+      baseUrl: params.origin ?? defaultBaseUrl,
+      id: playerId,
+    );
 
     if (!_initCompleter.isCompleted) _initCompleter.complete();
   }
@@ -260,19 +264,19 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   Future<void> load({
     required YoutubePlayerParams params,
     String? baseUrl,
+    String id = 'player',
   }) async {
-    final playerHtml = await rootBundle.loadString(
-      'packages/youtube_player_iframe/assets/player.html',
-    );
-
     final platform = kIsWeb ? 'web' : defaultTargetPlatform.name.toLowerCase();
+    final playerData = {
+      'playerId': id,
+      'pointerEvents': params.pointerEvents.name,
+      'playerVars': params.toJson(),
+      'platform': platform,
+      'host': params.origin ?? 'https://www.youtube.com',
+    };
 
     await webViewController.loadHtmlString(
-      playerHtml
-          .replaceFirst('<<pointerEvents>>', params.pointerEvents.name)
-          .replaceFirst('<<playerVars>>', params.toJson())
-          .replaceFirst('<<platform>>', platform)
-          .replaceFirst('<<host>>', params.origin ?? 'https://www.youtube.com'),
+      await _buildPlayerHTML(playerData),
       baseUrl: baseUrl,
     );
   }
@@ -322,6 +326,10 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     await _eventHandler.isReady;
     return data == null ? '' : jsonEncode(data);
   }
+
+  /// The unique player id.
+  @internal
+  String get playerId => 'youtube-${key ?? hashCode}';
 
   /// MetaData for the currently loaded or cued video.
   YoutubeMetaData get metadata => _value.metaData;
@@ -664,10 +672,21 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     return NavigationDecision.prevent;
   }
 
+  Future<String> _buildPlayerHTML(Map<String, String> data) async {
+    final playerHtml = await rootBundle.loadString(
+      'packages/youtube_player_iframe/assets/player.html',
+    );
+
+    return playerHtml.replaceAllMapped(
+      RegExp(r'<<([a-zA-Z]+)>>'),
+      (m) => data[m.group(1)] ?? m.group(0)!,
+    );
+  }
+
   /// Disposes the resources created by [YoutubePlayerController].
   Future<void> close() async {
     await stopVideo();
-    await webViewController.removeJavaScriptChannel(_youtubeJSChannelName);
+    await webViewController.removeJavaScriptChannel('youtube-$hashCode');
     await _eventHandler.videoStateController.close();
     await _valueController.close();
   }

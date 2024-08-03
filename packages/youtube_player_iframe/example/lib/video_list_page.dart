@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 const List<String> _videoIds = [
-  'dHuYBB05bYU',
-  'RpoFTgWRfJ4',
-  '82u-4xcsyJU',
+  'j4lDDQTKN8s',
+  'bmgia-h1qNg',
+  'Cohbiz2lOQI',
+  'CoNgsfBbxJk',
+  'c9gzcPkSdw0',
+  'UEA_uwpvqtI',
+  'j61j9X4xCnA',
 ];
 
 ///
@@ -78,6 +82,7 @@ class _VideoListPageState extends State<VideoListPage> {
             aspectRatio: 16 / 9,
             enableFullScreenOnVerticalDrag: false,
             controller: controller,
+            keepAlive: true,
           );
         },
       ),

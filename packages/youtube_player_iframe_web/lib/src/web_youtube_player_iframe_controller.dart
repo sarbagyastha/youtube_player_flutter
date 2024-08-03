@@ -206,11 +206,9 @@ class YoutubePlayerIframeWeb extends PlatformWebViewWidget {
         if (channelParams != null) {
           window.onMessage.listen(
             (event) {
-              if (channelParams.name == 'YoutubePlayer') {
-                channelParams.onMessageReceived(
-                  JavaScriptMessage(message: event.data.dartify() as String),
-                );
-              }
+              channelParams.onMessageReceived(
+                JavaScriptMessage(message: event.data.dartify() as String),
+              );
             },
           );
         }
