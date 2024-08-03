@@ -15,3 +15,6 @@ jobs:
       - uses: sarbagyastha/flutter-gh-pages@main
         with:
           workingDir: packages/youtube_player_iframe/example
+          baseHref: /
+          webRenderer: skwasm
+          customArgs: --wasm

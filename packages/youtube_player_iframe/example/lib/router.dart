@@ -19,7 +19,6 @@ final router = GoRouter(
         GoRoute(
           path: 'watch',
           pageBuilder: (_, GoRouterState state) {
-            print(state.pathParameters);
             return NoTransitionPage(
               child: HomePage(videoId: state.uri.queryParameters['v']),
             );
