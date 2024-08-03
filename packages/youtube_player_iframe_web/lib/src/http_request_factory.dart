@@ -1,5 +1,7 @@
-import 'package:http/browser_client.dart';
-import 'package:http/http.dart' show Response;
+import 'dart:js_interop';
+import 'dart:typed_data';
+
+import 'package:web/web.dart';
 import 'package:webview_flutter_platform_interface/webview_flutter_platform_interface.dart';
 
 /// Factory class for creating [HttpRequest] instances.
@@ -12,13 +14,14 @@ class HttpRequestFactory {
     Uri uri, {
     required LoadRequestMethod method,
     Map<String, String>? headers,
-    Object? body,
+    Uint8List? data,
   }) async {
-    final client = BrowserClient();
+    final request = RequestInit(
+      method: method.serialize(),
+      headers: headers.jsify()! as HeadersInit,
+      body: data?.toJS,
+    );
 
-    return switch (method) {
-      LoadRequestMethod.get => client.get(uri, headers: headers),
-      LoadRequestMethod.post => client.post(uri, headers: headers, body: body),
-    };
+    return window.fetch(uri.toString().toJS, request).toDart;
   }
 }

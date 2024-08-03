@@ -155,15 +155,17 @@ class WebYoutubePlayerIframeController extends PlatformWebViewController {
       params.uri,
       method: params.method,
       headers: params.headers,
-      body: params.body,
+      data: params.body,
     );
 
-    final header = response.headers['content-type'] ?? 'text/html';
+    final header = response.headers.get('content-type') ?? 'text/html';
     final contentType = ContentType.parse(header);
     final encoding = Encoding.getByName(contentType.charset) ?? utf8;
 
+    final responseText = await response.text().toDart;
+
     _params.ytiFrame.src = Uri.dataFromString(
-      response.body,
+      responseText.toDart,
       mimeType: contentType.mimeType,
       encoding: encoding,
     ).toString();
@@ -229,7 +231,7 @@ extension type YoutubeIframeElement._(HTMLIFrameElement element) {
 
   /// The content of the page that the iframe will display.
   set srcdoc(String value) {
-    element.srcdoc = value;
+    element.srcdoc = value.toJS;
 
     // Fallback for browser that doesn't support srcdoc.
     element.src = Uri.dataFromString(
