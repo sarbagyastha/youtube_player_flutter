@@ -16,5 +16,4 @@ jobs:
         with:
           workingDir: packages/youtube_player_iframe/example
           baseHref: /
-          webRenderer: skwasm
           customArgs: --wasm
