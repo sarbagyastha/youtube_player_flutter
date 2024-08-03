@@ -35,6 +35,7 @@ class YoutubePlayerEventHandler {
   /// Handles the [javaScriptMessage] from the player iframe and create events.
   void call(JavaScriptMessage javaScriptMessage) {
     final data = Map.from(jsonDecode(javaScriptMessage.message));
+    if (data['playerId'] != controller.playerId) return;
 
     for (final entry in data.entries) {
       if (entry.key == 'ApiChange') {
@@ -127,6 +128,8 @@ class YoutubePlayerEventHandler {
 
   /// This event fires when the player receives information about video states.
   void onVideoState(Object data) {
+    if (videoStateController.isClosed) return;
+
     videoStateController.add(YoutubeVideoState.fromJson(data.toString()));
   }
 
