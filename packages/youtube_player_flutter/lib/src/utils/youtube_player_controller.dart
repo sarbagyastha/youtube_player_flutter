@@ -312,6 +312,12 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
           metaData: const YoutubeMetaData(),
         ),
       );
+
+  @override
+  void dispose() {
+    value.webViewController?.dispose();
+    super.dispose();
+  }
 }
 
 /// An inherited widget to provide [YoutubePlayerController] to it's descendants.
