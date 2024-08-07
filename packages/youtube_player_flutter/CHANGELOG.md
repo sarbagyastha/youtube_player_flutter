@@ -1,3 +1,6 @@
+## 9.0.2
+* Fixes issue with getting error logs even after disposing player.
+
 ## 9.0.1
 * Fixes issue with fullscreen pop.
 
