@@ -203,7 +203,7 @@ class _FullScreenState extends State<_FullScreen> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: canPop,
-      onPopInvoked: _handleFullScreenBackAction,
+      onPopInvokedWithResult: _handleFullScreenBackAction,
       child: widget.child,
     );
   }
@@ -232,7 +232,7 @@ class _FullScreenState extends State<_FullScreen> with WidgetsBindingObserver {
         : SystemUiMode.edgeToEdge;
   }
 
-  void _handleFullScreenBackAction(bool didPop) {
+  void _handleFullScreenBackAction(bool didPop, _) {
     if (didPop) return;
 
     if (mounted && widget.fullScreenOption.enabled) {
