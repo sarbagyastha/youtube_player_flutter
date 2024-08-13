@@ -1,4 +1,9 @@
 # Changelog
+## 5.1.5
+**Aug 13, 2024**
+- Updates readme
+- Improves pub score
+
 ## 5.1.4
 **Aug 3, 2024**
 - Bumps dependency to latest version.
