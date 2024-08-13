@@ -1,19 +1,26 @@
-# Youtube Player IFrame
+<p align="center">
+<img src="https://raw.githubusercontent.com/sarbagyastha/youtube_player_flutter/master/packages/youtube_player_iframe/screenshots/logo.png" height="100" alt="Youtube Player iFrame" />
+</p>
 
-[![pub package](https://img.shields.io/pub/v/youtube_player_iframe.svg)](https://pub.dartlang.org/packages/youtube_player_iframe)
-[![licence](https://img.shields.io/badge/licence-BSD-orange.svg)](https://github.com/sarbagyastha/youtube_player_flutter/blob/master/LICENSE)
-[![Download](https://img.shields.io/badge/download-APK-informational.svg)](https://github.com/sarbagyastha/youtube_player_flutter/releases)
-[![Stars](https://img.shields.io/github/stars/sarbagyastha/youtube_player_flutter?color=deeppink)](https://github.com/sarbagyastha/youtube_player_flutter)
-[![Top Language](https://img.shields.io/github/languages/top/sarbagyastha/youtube_player_flutter?color=9cf)](https://github.com/sarbagyastha/youtube_player_flutter)
-[![effective dart](https://img.shields.io/badge/style-effective_dart-40c4ff.svg)](https://dart.dev/guides/language/effective-dart)
-[![Web DEMO](https://img.shields.io/badge/Web-DEMO-informational.svg)](https://sarbagyastha.github.io/youtube_player_flutter)
+<p align="center">
+<strong>Youtube Player iFrame</strong>
+</p>
 
-Flutter plugin for playing or streaming YouTube videos inline using the official [**iFrame Player API**](https://developers.google.com/youtube/iframe_api_reference).
-The package exposes almost all the API provided by **iFrame Player API**. So, it's 100% customizable.
+<p align="center">
+<a href="https://pub.dartlang.org/packages/youtube_player_iframe"><img src="https://img.shields.io/pub/v/youtube_player_iframe" alt="Pub"></a>
+<a href="https://youtube.sarbagyastha.com.np"><img src="https://img.shields.io/badge/Web-Demo-deeppink.svg" alt="Web Demo"></a>
+<a href="https://github.com/sarbagyastha/youtube_player_flutter/blob/master/packages/youtube_player_iframe/LICENSE"><img src="https://img.shields.io/badge/License-BSD--3-blueviolet" alt="BSD-3 License"></a>
+<a href="https://github.com/sarbagyastha/youtube_player_flutter"><img src="https://img.shields.io/github/languages/top/sarbagyastha/youtube_player_flutter?color=9cf" alt="Top Language"></a>
+<a href="https://github.com/sarbagyastha/youtube_player_flutter/issues"><img src="https://img.shields.io/github/issues/sarbagyastha/youtube_player_flutter" alt="GitHub issues"></a>
+<a href="https://github.com/sarbagyastha/youtube_player_flutter"><img src="https://img.shields.io/github/stars/sarbagyastha/youtube_player_flutter" alt="Stars"></a>
+</p>
 
-![YOUTUBE PLAYER IFRAME](youtube_player_iframe.png)
+---
 
-[Click here for WEB DEMO](https://sarbagyastha.github.io/youtube_player_flutter)
+Flutter plugin for seamlessly playing or streaming YouTube videos inline using the official [**iFrame Player API**](https://developers.google.com/youtube/iframe_api_reference). This package offers extensive customization by exposing nearly the full range of the iFrame Player API's features, ensuring complete flexibility and control.
+
+<a href="https://youtube.sarbagyastha.com.np"><img src="https://raw.githubusercontent.com/sarbagyastha/youtube_player_flutter/master/packages/youtube_player_iframe/screenshots/demo.png" alt="Demo Screenshot"></a>
+
 
 ## Salient Features
 * Inline Playback
@@ -131,9 +138,6 @@ YoutubeValueBuilder(
    },
 );
 ```
-
-## Limitation 
-For Android: Since the plugin is based on platform views. This plugin requires Android API level 19 or greater.
 
 ## License
 ```

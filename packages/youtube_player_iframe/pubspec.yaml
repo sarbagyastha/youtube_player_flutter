@@ -34,3 +34,7 @@ platforms:
   android:
   ios:
   web:
+
+screenshots:
+  - description: Youtube Player iFrame Logo
+    path: screenshots/logo.png
