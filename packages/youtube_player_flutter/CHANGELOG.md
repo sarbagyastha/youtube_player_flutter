@@ -1,3 +1,7 @@
+## 9.0.3
+* Fixes issue where loading indicator would always show.
+* Updates the default color of the progress indicator to be primary container color.
+
 ## 9.0.2
 * Fixes issue with getting error logs even after disposing player.
 
