@@ -70,6 +70,7 @@ class _YoutubePlayerBuilderState extends State<YoutubePlayerBuilder>
       child: PopScope(
         canPop: false,
         onPopInvokedWithResult: (didPop, _) {
+          if(didPop) return;
           final controller = widget.player.controller;
           if (controller.value.isFullScreen) {
             widget.player.controller.toggleFullScreenMode();
