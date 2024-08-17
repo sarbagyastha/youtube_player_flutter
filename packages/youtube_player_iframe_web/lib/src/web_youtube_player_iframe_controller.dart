@@ -206,9 +206,14 @@ class YoutubePlayerIframeWeb extends PlatformWebViewWidget {
         if (channelParams != null) {
           window.onMessage.listen(
             (event) {
-              channelParams.onMessageReceived(
-                JavaScriptMessage(message: event.data.dartify() as String),
-              );
+              final message = switch (event.data.dartify()) {
+                String message => message,
+                Map map => jsonEncode(map),
+                Object? data => throw Exception(
+                    '[$YoutubePlayerIframeWeb] Invalid message type "${data.runtimeType}": $data'),
+              };
+              channelParams
+                  .onMessageReceived(JavaScriptMessage(message: message));
             },
           );
         }
