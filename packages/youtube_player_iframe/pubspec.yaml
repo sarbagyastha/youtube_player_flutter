@@ -5,8 +5,8 @@ repository: https://github.com/sarbagyastha/youtube_player_flutter
 homepage: https://github.com/sarbagyastha/youtube_player_flutter/tree/master/packages/youtube_player_iframe
 
 environment:
-  sdk: ^3.3.0
-  flutter: '>=3.19.0'
+  sdk: ^3.4.0
+  flutter: '>=3.22.0'
 
 dependencies:
   flutter:

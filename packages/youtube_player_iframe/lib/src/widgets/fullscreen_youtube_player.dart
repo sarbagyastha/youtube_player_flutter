@@ -63,8 +63,7 @@ class FullscreenYoutubePlayer extends StatefulWidget {
     required String videoId,
     double? startSeconds,
     double? endSeconds,
-    Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers =
-        const <Factory<OneSequenceGestureRecognizer>>{},
+    Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers = const <Factory<OneSequenceGestureRecognizer>>{},
     Color? backgroundColor,
   }) {
     return Navigator.push<double>(
@@ -116,7 +115,7 @@ class _FullscreenYoutubePlayerState extends State<FullscreenYoutubePlayer> {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
-      onPopInvokedWithResult: (didPop, _) {
+      onPopInvoked: (didPop) {
         if (didPop) return;
         _controller.currentTime.then(
           (time) {
