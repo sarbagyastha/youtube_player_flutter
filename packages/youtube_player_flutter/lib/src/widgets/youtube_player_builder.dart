@@ -7,6 +7,8 @@ import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 /// A wrapper for [YoutubePlayer].
 class YoutubePlayerBuilder extends StatefulWidget {
   /// Builder for [YoutubePlayer] that supports switching between fullscreen and normal mode.
+  /// When popping, if the player is in fullscreen, fullscreen will be toggled,
+  /// otherwise the route will pop.
   const YoutubePlayerBuilder({
     super.key,
     required this.player,
@@ -68,14 +70,12 @@ class _YoutubePlayerBuilderState extends State<YoutubePlayerBuilder>
     final player = Container(
       key: playerKey,
       child: PopScope(
-        canPop: false,
+        canPop: !widget.player.controller.value.isFullScreen,
         onPopInvokedWithResult: (didPop, _) {
           if(didPop) return;
           final controller = widget.player.controller;
           if (controller.value.isFullScreen) {
             widget.player.controller.toggleFullScreenMode();
-          } else {
-            Navigator.pop(context);
           }
         },
         child: widget.player,
