@@ -67,8 +67,11 @@ class _YoutubePlayerBuilderState extends State<YoutubePlayerBuilder>
 
   @override
   Widget build(BuildContext context) {
+    final double height = MediaQuery.of(context).size.height;
+
     final player = Container(
       key: playerKey,
+      height: (MediaQuery.of(context).orientation == Orientation.landscape) ? height : null,
       child: PopScope(
         canPop: !widget.player.controller.value.isFullScreen,
         onPopInvokedWithResult: (didPop, _) {
