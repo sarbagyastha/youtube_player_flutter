@@ -67,7 +67,7 @@ class _YoutubePlayerBuilderState extends State<YoutubePlayerBuilder>
 
   @override
   Widget build(BuildContext context) {
-    final orientation = MediaQuery.of(context).orientation;
+    final orientation = MediaQuery.orientationOf(context);
     final height = MediaQuery.sizeOf(context).height;
 
     final player = SizedBox(
