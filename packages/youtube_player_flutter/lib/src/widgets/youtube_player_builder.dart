@@ -75,11 +75,12 @@ class _YoutubePlayerBuilderState extends State<YoutubePlayerBuilder>
       height: orientation == Orientation.landscape ? height : null,
       child: PopScope(
         canPop: !widget.player.controller.value.isFullScreen,
-        onPopInvokedWithResult: (didPop, _) {
+        onPopInvoked: (didPop) {
           if (didPop) return;
+
           final controller = widget.player.controller;
           if (controller.value.isFullScreen) {
-            widget.player.controller.toggleFullScreenMode();
+            controller.toggleFullScreenMode();
           }
         },
         child: widget.player,

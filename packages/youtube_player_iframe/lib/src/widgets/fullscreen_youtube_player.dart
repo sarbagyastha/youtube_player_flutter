@@ -116,11 +116,13 @@ class _FullscreenYoutubePlayerState extends State<FullscreenYoutubePlayer> {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
-      onPopInvokedWithResult: (didPop, _) {
+      onPopInvoked: (didPop) {
         if (didPop) return;
         _controller.currentTime.then(
           (time) {
-            if (context.mounted) return Navigator.pop(context, time);
+            if (context.mounted) {
+              Navigator.pop(context, time);
+            }
           },
         );
       },
