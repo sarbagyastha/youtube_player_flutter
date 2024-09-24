@@ -1,4 +1,9 @@
 # Changelog
+## 5.2.0
+**Sep 23, 2024**
+- Updates minimum supported SDK version to Flutter 3.24/Dart 3.5.
+- Updates dependencies.
+
 ## 5.1.5
 **Aug 13, 2024**
 - Updates readme
