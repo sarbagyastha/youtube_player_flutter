@@ -53,43 +53,50 @@ unlinked.ds
 unlinked_spec.ds
 
 # Android related
-**/example/android/**/gradle-wrapper.jar
-**/example/android/.gradle
-**/example/android/captures/
-**/example/android/gradlew
-**/example/android/gradlew.bat
-**/example/android/local.properties
-**/example/android/**/GeneratedPluginRegistrant.java
-**/example/android/key.properties
+**/android/settings_aar.gradle
+**/android/**/gradle-wrapper.jar
+**/android/.gradle
+**/android/captures/
+**/android/gradlew
+**/android/gradlew.bat
+**/android/local.properties
+**/android/**/GeneratedPluginRegistrant.java
+**/android/key.properties
 *.jks
 
 # iOS/XCode related
-**/example/ios/**/*.mode1v3
-**/example/ios/**/*.mode2v3
-**/example/ios/**/*.moved-aside
-**/example/ios/**/*.pbxuser
-**/example/ios/**/*.perspectivev3
-**/example/ios/**/*sync/
-**/example/ios/**/.sconsign.dblite
-**/example/ios/**/.tags*
-**/example/ios/**/.vagrant/
-**/example/ios/**/DerivedData/
-**/example/ios/**/Icon?
-**/example/ios/**/Pods/
-**/example/ios/**/.symlinks/
-**/example/ios/**/profile
-**/example/ios/**/xcuserdata
-**/example/ios/.generated/
-**/example/ios/Flutter/App.framework
-**/example/ios/Flutter/Flutter.framework
-**/example/ios/Flutter/Flutter.podspec
-**/example/ios/Flutter/Generated.xcconfig
-**/example/ios/Flutter/app.flx
-**/example/ios/Flutter/app.zip
-**/example/ios/Flutter/flutter_assets/
-**/example/ios/Flutter/flutter_export_environment.sh
-**/example/ios/ServiceDefinitions.json
-**/example/ios/Runner/GeneratedPluginRegistrant.*
+**/ios/**/*.mode1v3
+**/ios/**/*.mode2v3
+**/ios/**/*.moved-aside
+**/ios/**/*.pbxuser
+**/ios/**/*.perspectivev3
+**/ios/**/*sync/
+**/ios/**/.sconsign.dblite
+**/ios/**/.tags*
+**/ios/**/.vagrant/
+**/ios/**/DerivedData/
+**/ios/**/Icon?
+**/ios/**/Pods/
+**/ios/**/.symlinks/
+**/ios/**/profile
+**/ios/**/xcuserdata
+**/ios/.generated/
+**/ios/Flutter/App.framework
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/app.flx
+**/ios/Flutter/app.zip
+**/ios/Flutter/flutter_assets/
+**/ios/Flutter/flutter_export_environment.sh
+**/ios/ServiceDefinitions.json
+**/ios/Runner/GeneratedPluginRegistrant.*
+.last_build_id
+
+# macOS
+**/macos/Flutter/GeneratedPluginRegistrant.swift
+**/macos/Flutter/ephemeral/
+**/macos/Pods/
 
 # Coverage
 coverage/
