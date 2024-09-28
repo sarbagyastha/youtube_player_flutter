@@ -1,3 +1,6 @@
+## 9.1.1
+* Bumps `flutter_inappwebview` to latest version.
+
 ## 9.1.0
 * Updates minimum supported SDK version to Flutter 3.24/Dart 3.5.
 * Updates dependencies.
