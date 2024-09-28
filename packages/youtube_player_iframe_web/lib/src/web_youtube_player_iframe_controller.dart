@@ -83,8 +83,8 @@ class WebYoutubePlayerIframeController extends PlatformWebViewController {
     final completer = Completer<String>();
     final subscription = window.onMessage.listen(
       (event) {
-        final data = jsonDecode(handleJsMessage(event.data.dartify()));
-        if (data is Map && data.containsKey(key)) {
+        final data = handleJsMessageToMap(event.data.dartify());
+        if (data.containsKey(key)) {
           completer.complete(data[key].toString());
         }
       },
@@ -206,7 +206,7 @@ class YoutubePlayerIframeWeb extends PlatformWebViewWidget {
           window.onMessage.listen(
             (event) {
               channelParams.onMessageReceived(JavaScriptMessage(
-                message: handleJsMessage(event.data.dartify()),
+                message: handleJsMessageToString(event.data.dartify()),
               ));
             },
           );
@@ -216,7 +216,18 @@ class YoutubePlayerIframeWeb extends PlatformWebViewWidget {
   }
 }
 
-String handleJsMessage(Object? jsMessage) {
+Map handleJsMessageToMap(Object? jsMessage) {
+  return switch (jsMessage) {
+    String message => jsonDecode(message),
+    Map map => map,
+    Object? data => {
+        'error':
+            '[$YoutubePlayerIframeWeb] Invalid message type "${data.runtimeType}": $data'
+      },
+  };
+}
+
+String handleJsMessageToString(Object? jsMessage) {
   return switch (jsMessage) {
     String message => message,
     Map map => jsonEncode(map),
