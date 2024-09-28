@@ -220,8 +220,8 @@ String handleJsMessage(Object? jsMessage) {
   return switch (jsMessage) {
     String message => message,
     Map map => jsonEncode(map),
-    Object? data => throw Exception(
-        '[$YoutubePlayerIframeWeb] Invalid message type "${data.runtimeType}": $data'),
+    Object? data =>
+      '[$YoutubePlayerIframeWeb] Invalid message type "${data.runtimeType}": $data',
   };
 }
 
