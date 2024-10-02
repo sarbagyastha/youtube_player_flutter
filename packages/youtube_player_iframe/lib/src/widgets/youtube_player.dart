@@ -27,6 +27,7 @@ class YoutubePlayer extends StatefulWidget {
     @Deprecated('Unused parameter. Use `YoutubePlayerParam.userAgent` instead.')
     this.userAgent,
     this.enableFullScreenOnVerticalDrag = true,
+    this.keepAlive = false,
   });
 
   /// The [controller] for this player.
@@ -50,7 +51,7 @@ class YoutubePlayer extends StatefulWidget {
 
   /// The background color of the [WebView].
   ///
-  /// Default to [ColorScheme.background].
+  /// Default to [ColorScheme.surface].
   final Color? backgroundColor;
 
   /// The value used for the HTTP User-Agent: request header.
@@ -65,11 +66,15 @@ class YoutubePlayer extends StatefulWidget {
   /// Default is true.
   final bool enableFullScreenOnVerticalDrag;
 
+  /// Whether to keep the state of the player alive when it is not visible.
+  final bool keepAlive;
+
   @override
   State<YoutubePlayer> createState() => _YoutubePlayerState();
 }
 
-class _YoutubePlayerState extends State<YoutubePlayer> {
+class _YoutubePlayerState extends State<YoutubePlayer>
+    with AutomaticKeepAliveClientMixin {
   late final YoutubePlayerController _controller;
 
   @override
@@ -91,6 +96,8 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
+
     Widget player = WebViewWidget(
       controller: _controller.webViewController,
       gestureRecognizers: widget.gestureRecognizers,
@@ -126,7 +133,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
   }
 
   void _updateBackgroundColor(Color? backgroundColor) {
-    final bgColor = backgroundColor ?? Theme.of(context).colorScheme.background;
+    final bgColor = backgroundColor ?? Theme.of(context).colorScheme.surface;
     _controller.webViewController.setBackgroundColor(bgColor);
   }
 
@@ -137,4 +144,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
 
     await _controller.init();
   }
+
+  @override
+  bool get wantKeepAlive => widget.keepAlive;
 }

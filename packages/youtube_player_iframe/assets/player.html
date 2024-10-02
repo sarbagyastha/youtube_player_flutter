@@ -37,7 +37,7 @@
 
   <body>
     <div class="embed-container">
-      <div id="player"></div>
+      <div id="<<playerId>>"></div>
     </div>
 
     <script>
@@ -52,7 +52,7 @@
       var timerId;
 
       function onYouTubeIframeAPIReady() {
-        player = new YT.Player("player", {
+        player = new YT.Player("<<playerId>>", {
           host: host,
           playerVars: <<playerVars>>,
           events: {
@@ -120,10 +120,10 @@
       function sendPlatformMessage(message) {
         switch(platform) {
            case 'android':
-             YoutubePlayer.postMessage(message);
+             <<playerId>>.postMessage(message);
              break;
            case 'ios':
-             YoutubePlayer.postMessage(message, '*');
+             <<playerId>>.postMessage(message, '*');
              break;
            case 'web':
              window.parent.postMessage(message, '*');
@@ -132,11 +132,12 @@
       }
 
       function sendMessage(key, data) {
-         var message = {}
-         message[key] = data
+         var message = {};
+         message[key] = data;
+         message['playerId'] = '<<playerId>>';
          var messageString = JSON.stringify(message);
 
-         sendPlatformMessage(messageString)
+         sendPlatformMessage(messageString);
       }
 
       function getVideoData() {

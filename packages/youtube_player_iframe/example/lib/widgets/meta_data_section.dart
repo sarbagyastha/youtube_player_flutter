@@ -7,6 +7,8 @@ import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 ///
 class MetaDataSection extends StatelessWidget {
+  const MetaDataSection({super.key});
+
   @override
   Widget build(BuildContext context) {
     return YoutubeValueBuilder(
@@ -44,13 +46,13 @@ class MetaDataSection extends StatelessWidget {
                       items: PlaybackRate.all
                           .map(
                             (rate) => DropdownMenuItem(
+                              value: rate,
                               child: Text(
                                 '${rate}x',
                                 style: const TextStyle(
                                   fontWeight: FontWeight.w300,
                                 ),
                               ),
-                              value: rate,
                             ),
                           )
                           .toList(),

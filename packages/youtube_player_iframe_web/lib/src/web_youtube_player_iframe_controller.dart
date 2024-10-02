@@ -102,8 +102,14 @@ class WebYoutubePlayerIframeController extends PlatformWebViewController {
   @override
   Future<void> addJavaScriptChannel(
     JavaScriptChannelParams javaScriptChannelParams,
-  ) async {
+  ) {
     _javaScriptChannelParams = javaScriptChannelParams;
+    return SynchronousFuture(null);
+  }
+
+  @override
+  Future<void> removeJavaScriptChannel(String javaScriptChannelName) {
+    return SynchronousFuture(null);
   }
 
   @override
@@ -155,15 +161,17 @@ class WebYoutubePlayerIframeController extends PlatformWebViewController {
       params.uri,
       method: params.method,
       headers: params.headers,
-      body: params.body,
+      data: params.body,
     );
 
-    final header = response.headers['content-type'] ?? 'text/html';
+    final header = response.headers.get('content-type') ?? 'text/html';
     final contentType = ContentType.parse(header);
     final encoding = Encoding.getByName(contentType.charset) ?? utf8;
 
+    final responseText = await response.text().toDart;
+
     _params.ytiFrame.src = Uri.dataFromString(
-      response.body,
+      responseText.toDart,
       mimeType: contentType.mimeType,
       encoding: encoding,
     ).toString();
@@ -198,11 +206,9 @@ class YoutubePlayerIframeWeb extends PlatformWebViewWidget {
         if (channelParams != null) {
           window.onMessage.listen(
             (event) {
-              if (channelParams.name == 'YoutubePlayer') {
-                channelParams.onMessageReceived(
-                  JavaScriptMessage(message: event.data.dartify() as String),
-                );
-              }
+              channelParams.onMessageReceived(
+                JavaScriptMessage(message: event.data.dartify() as String),
+              );
             },
           );
         }
@@ -229,7 +235,7 @@ extension type YoutubeIframeElement._(HTMLIFrameElement element) {
 
   /// The content of the page that the iframe will display.
   set srcdoc(String value) {
-    element.srcdoc = value;
+    element.srcdoc = value.toJS;
 
     // Fallback for browser that doesn't support srcdoc.
     element.src = Uri.dataFromString(

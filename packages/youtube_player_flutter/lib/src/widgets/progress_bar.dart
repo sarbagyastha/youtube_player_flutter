@@ -45,6 +45,14 @@ class ProgressBarColors {
 
 /// A widget to display video progress bar.
 class ProgressBar extends StatefulWidget {
+  /// Creates [ProgressBar] widget.
+  const ProgressBar({
+    super.key,
+    this.controller,
+    this.colors,
+    this.isExpanded = false,
+  });
+
   /// Overrides the default [YoutubePlayerController].
   final YoutubePlayerController? controller;
 
@@ -56,17 +64,8 @@ class ProgressBar extends StatefulWidget {
   /// Default is false.
   final bool isExpanded;
 
-  /// Creates [ProgressBar] widget.
-  ProgressBar({
-    this.controller,
-    this.colors,
-    this.isExpanded = false,
-  });
-
   @override
-  _ProgressBarState createState() {
-    return _ProgressBarState();
-  }
+  State<ProgressBar> createState() => _ProgressBarState();
 }
 
 class _ProgressBarState extends State<ProgressBar> {
@@ -105,11 +104,11 @@ class _ProgressBarState extends State<ProgressBar> {
   }
 
   void positionListener() {
-    var _totalDuration = _controller.metadata.duration.inMilliseconds;
-    if (mounted && !_totalDuration.isNaN && _totalDuration != 0) {
+    var totalDuration = _controller.metadata.duration.inMilliseconds;
+    if (mounted && !totalDuration.isNaN && totalDuration != 0) {
       setState(() {
         _playedValue =
-            _controller.value.position.inMilliseconds / _totalDuration;
+            _controller.value.position.inMilliseconds / totalDuration;
         _bufferedValue = _controller.value.buffered;
       });
     }
@@ -238,15 +237,15 @@ class _ProgressBarPainter extends CustomPainter {
       centerY,
     );
 
-    final secondaryColor = themeData.colorScheme.secondary;
+    final color = themeData.colorScheme.primaryContainer;
 
-    paint.color = colors?.backgroundColor ?? secondaryColor.withOpacity(0.38);
+    paint.color = colors?.backgroundColor ?? color.withOpacity(0.38);
     canvas.drawLine(startPoint, endPoint, paint);
 
     paint.color = colors?.bufferedColor ?? Colors.white70;
     canvas.drawLine(startPoint, secondProgressPoint, paint);
 
-    paint.color = colors?.playedColor ?? secondaryColor;
+    paint.color = colors?.playedColor ?? color;
     canvas.drawLine(startPoint, progressPoint, paint);
 
     final handlePaint = Paint()..isAntiAlias = true;
@@ -254,14 +253,14 @@ class _ProgressBarPainter extends CustomPainter {
     handlePaint.color = Colors.transparent;
     canvas.drawCircle(progressPoint, centerY, handlePaint);
 
-    final _handleColor = colors?.handleColor ?? secondaryColor;
+    final handleColor = colors?.handleColor ?? color;
 
     if (touchDown) {
-      handlePaint.color = _handleColor.withOpacity(0.4);
+      handlePaint.color = handleColor.withOpacity(0.4);
       canvas.drawCircle(progressPoint, handleRadius * 3, handlePaint);
     }
 
-    handlePaint.color = _handleColor;
+    handlePaint.color = handleColor;
     canvas.drawCircle(progressPoint, handleRadius, handlePaint);
   }
 }

@@ -6,6 +6,17 @@ import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 /// A wrapper for [YoutubePlayer].
 class YoutubePlayerBuilder extends StatefulWidget {
+  /// Builder for [YoutubePlayer] that supports switching between fullscreen and normal mode.
+  /// When popping, if the player is in fullscreen, fullscreen will be toggled,
+  /// otherwise the route will pop.
+  const YoutubePlayerBuilder({
+    super.key,
+    required this.player,
+    required this.builder,
+    this.onEnterFullScreen,
+    this.onExitFullScreen,
+  });
+
   /// The actual [YoutubePlayer].
   final YoutubePlayer player;
 
@@ -18,17 +29,8 @@ class YoutubePlayerBuilder extends StatefulWidget {
   /// Callback to notify that the player has exited fullscreen.
   final VoidCallback? onExitFullScreen;
 
-  /// Builder for [YoutubePlayer] that supports switching between fullscreen and normal mode.
-  const YoutubePlayerBuilder({
-    Key? key,
-    required this.player,
-    required this.builder,
-    this.onEnterFullScreen,
-    this.onExitFullScreen,
-  }) : super(key: key);
-
   @override
-  _YoutubePlayerBuilderState createState() => _YoutubePlayerBuilderState();
+  State<YoutubePlayerBuilder> createState() => _YoutubePlayerBuilderState();
 }
 
 class _YoutubePlayerBuilderState extends State<YoutubePlayerBuilder>
@@ -65,24 +67,30 @@ class _YoutubePlayerBuilderState extends State<YoutubePlayerBuilder>
 
   @override
   Widget build(BuildContext context) {
-    final _player = Container(
+    final orientation = MediaQuery.orientationOf(context);
+    final height = MediaQuery.sizeOf(context).height;
+
+    final player = SizedBox(
       key: playerKey,
-      child: WillPopScope(
-        onWillPop: () async {
+      height: orientation == Orientation.landscape ? height : null,
+      child: PopScope(
+        canPop: !widget.player.controller.value.isFullScreen,
+        onPopInvokedWithResult: (didPop, _) {
+          if (didPop) return;
           final controller = widget.player.controller;
           if (controller.value.isFullScreen) {
             widget.player.controller.toggleFullScreenMode();
-            return false;
           }
-          return true;
         },
         child: widget.player,
       ),
     );
-    final child = widget.builder(context, _player);
+    final child = widget.builder(context, player);
+
     return OrientationBuilder(
-      builder: (context, orientation) =>
-          orientation == Orientation.portrait ? child : _player,
+      builder: (context, orientation) {
+        return orientation == Orientation.portrait ? child : player;
+      },
     );
   }
 }

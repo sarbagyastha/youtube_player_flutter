@@ -10,6 +10,14 @@ import 'full_screen_button.dart';
 
 /// A widget to display bottom controls bar on Live Video Mode.
 class LiveBottomBar extends StatefulWidget {
+  /// Creates [LiveBottomBar] widget.
+  const LiveBottomBar({
+    super.key,
+    this.controller,
+    required this.liveUIColor,
+    required this.showLiveFullscreenButton,
+  });
+
   /// Overrides the default [YoutubePlayerController].
   final YoutubePlayerController? controller;
 
@@ -19,15 +27,8 @@ class LiveBottomBar extends StatefulWidget {
   /// Defines whether to show or hide the fullscreen button
   final bool showLiveFullscreenButton;
 
-  /// Creates [LiveBottomBar] widget.
-  LiveBottomBar({
-    this.controller,
-    required this.liveUIColor,
-    required this.showLiveFullscreenButton,
-  });
-
   @override
-  _LiveBottomBarState createState() => _LiveBottomBarState();
+  State<LiveBottomBar> createState() => _LiveBottomBarState();
 }
 
 class _LiveBottomBarState extends State<LiveBottomBar> {
@@ -80,9 +81,10 @@ class _LiveBottomBarState extends State<LiveBottomBar> {
           const SizedBox(
             width: 14.0,
           ),
-          CurrentPosition(),
+          const CurrentPosition(),
           Expanded(
             child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
               child: Slider(
                 value: _currentSliderPosition,
                 onChanged: (value) {
@@ -96,9 +98,6 @@ class _LiveBottomBarState extends State<LiveBottomBar> {
                 },
                 activeColor: widget.liveUIColor,
                 inactiveColor: Colors.transparent,
-              ),
-              padding: const EdgeInsets.symmetric(
-                horizontal: 8.0,
               ),
             ),
           ),

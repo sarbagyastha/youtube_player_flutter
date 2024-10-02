@@ -9,20 +9,21 @@ import '../utils/youtube_player_controller.dart';
 
 /// A widget to display play/pause button.
 class PlayPauseButton extends StatefulWidget {
+  /// Creates [PlayPauseButton] widget.
+  const PlayPauseButton({
+    super.key,
+    this.controller,
+    this.bufferIndicator,
+  });
+
   /// Overrides the default [YoutubePlayerController].
   final YoutubePlayerController? controller;
 
   /// Defines placeholder widget to show when player is in buffering state.
   final Widget? bufferIndicator;
 
-  /// Creates [PlayPauseButton] widget.
-  PlayPauseButton({
-    this.controller,
-    this.bufferIndicator,
-  });
-
   @override
-  _PlayPauseButtonState createState() => _PlayPauseButtonState();
+  State<PlayPauseButton> createState() => _PlayPauseButtonState();
 }
 
 class _PlayPauseButtonState extends State<PlayPauseButton>
@@ -54,38 +55,47 @@ class _PlayPauseButtonState extends State<PlayPauseButton>
     } else {
       _controller = controller;
     }
-    _controller.removeListener(_playPauseListener);
-    _controller.addListener(_playPauseListener);
+    _controller.removeListener(_controllerListener);
+    _controller.addListener(_controllerListener);
   }
 
   @override
   void dispose() {
-    _controller.removeListener(_playPauseListener);
+    _controller.removeListener(_controllerListener);
     _animController.dispose();
     super.dispose();
   }
 
-  void _playPauseListener() => _controller.value.isPlaying
-      ? _animController.forward()
-      : _animController.reverse();
+  void _controllerListener() {
+    final value = _controller.value;
+
+    if (!mounted) return;
+    setState(() {});
+
+    if (value.isPlaying) {
+      _animController.forward();
+    } else {
+      _animController.reverse();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final _playerState = _controller.value.playerState;
-    if ((!_controller.flags.autoPlay && _controller.value.isReady) ||
-        _playerState == PlayerState.playing ||
-        _playerState == PlayerState.paused) {
+    final value = _controller.value;
+    final state = value.playerState;
+
+    if (_showPlayPause(state)) {
+      final visible = state == PlayerState.cued ||
+          !value.isPlaying ||
+          value.isControlsVisible;
+
       return Visibility(
-        visible: _playerState == PlayerState.cued ||
-            !_controller.value.isPlaying ||
-            _controller.value.isControlsVisible,
+        visible: visible,
         child: Material(
           color: Colors.transparent,
           child: InkWell(
             borderRadius: BorderRadius.circular(50.0),
-            onTap: () => _controller.value.isPlaying
-                ? _controller.pause()
-                : _controller.play(),
+            onTap: () => _togglePlayPause(state),
             child: AnimatedIcon(
               icon: AnimatedIcons.play_pause,
               progress: _animController.view,
@@ -98,12 +108,21 @@ class _PlayPauseButtonState extends State<PlayPauseButton>
     }
     if (_controller.value.hasError) return const SizedBox();
     return widget.bufferIndicator ??
-        Container(
-          width: 70.0,
-          height: 70.0,
-          child: const CircularProgressIndicator(
+        const SizedBox.square(
+          dimension: 70,
+          child: CircularProgressIndicator(
             valueColor: AlwaysStoppedAnimation(Colors.white),
           ),
         );
+  }
+
+  void _togglePlayPause(PlayerState state) {
+    state == PlayerState.playing ? _controller.pause() : _controller.play();
+  }
+
+  bool _showPlayPause(PlayerState state) {
+    return (!_controller.flags.autoPlay && _controller.value.isReady) ||
+        state == PlayerState.playing ||
+        state == PlayerState.paused;
   }
 }
