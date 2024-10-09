@@ -571,8 +571,10 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   Future<PlayerState> get playerState async {
     final stateCode = await _runWithResult('getPlayerState');
 
+    final newStateCode = num.tryParse(stateCode)?.toInt();
+
     return PlayerState.values.firstWhere(
-      (state) => state.code.toString() == stateCode,
+      (state) => state.code == newStateCode,
       orElse: () => PlayerState.unknown,
     );
   }
