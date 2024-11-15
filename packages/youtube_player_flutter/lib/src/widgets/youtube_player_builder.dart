@@ -1,5 +1,4 @@
 import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
@@ -69,24 +68,24 @@ class _YoutubePlayerBuilderState extends State<YoutubePlayerBuilder>
   Widget build(BuildContext context) {
     final orientation = MediaQuery.orientationOf(context);
     final height = MediaQuery.sizeOf(context).height;
-
     final player = SizedBox(
       key: playerKey,
       height: orientation == Orientation.landscape ? height : null,
       child: PopScope(
         canPop: !widget.player.controller.value.isFullScreen,
-        onPopInvokedWithResult: (didPop, _) {
-          if (didPop) return;
-          final controller = widget.player.controller;
-          if (controller.value.isFullScreen) {
-            widget.player.controller.toggleFullScreenMode();
+        onPopInvoked: (didPop) {
+          if (!didPop) {
+            final controller = widget.player.controller;
+            if (controller.value.isFullScreen) {
+              widget.player.controller.toggleFullScreenMode();
+            }
           }
         },
         child: widget.player,
       ),
     );
-    final child = widget.builder(context, player);
 
+    final child = widget.builder(context, player);
     return OrientationBuilder(
       builder: (context, orientation) {
         return orientation == Orientation.portrait ? child : player;
