@@ -17,6 +17,19 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  icons_launcher: ^3.0.0
 
 flutter:
   uses-material-design: true
+
+icons_launcher:
+  image_path: ../screenshots/logo.png
+  platforms:
+    android:
+      enable: true
+    ios:
+      enable: true
+    web:
+      enable: true
+    macos:
+      enable: true
