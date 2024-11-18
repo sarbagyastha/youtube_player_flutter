@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-import 'package:youtube_player_iframe/src/widgets/fullscreen_youtube_player.dart';
-
-import '../controller/youtube_player_controller.dart';
+import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 /// A widget to play or stream Youtube Videos.
 ///
@@ -28,6 +28,7 @@ class YoutubePlayer extends StatefulWidget {
     this.userAgent,
     this.enableFullScreenOnVerticalDrag = true,
     this.keepAlive = false,
+    this.thumbnail,
   });
 
   /// The [controller] for this player.
@@ -35,6 +36,9 @@ class YoutubePlayer extends StatefulWidget {
 
   /// Aspect ratio for the player.
   final double aspectRatio;
+
+  /// Thumbnail widget to show when the player has not been playing.
+  final Widget? thumbnail;
 
   /// Which gestures should be consumed by the youtube player.
   ///
@@ -76,13 +80,29 @@ class YoutubePlayer extends StatefulWidget {
 class _YoutubePlayerState extends State<YoutubePlayer>
     with AutomaticKeepAliveClientMixin {
   late final YoutubePlayerController _controller;
+  StreamSubscription<YoutubePlayerValue>? _sub;
+  bool _showThumbnail = true;
 
   @override
   void initState() {
     super.initState();
     _controller = widget.controller;
+    _sub = _controller.stream.listen((value) {
+      if (value.playerState == PlayerState.playing ||
+          value.playerState == PlayerState.cued) {
+        setState(() {
+          _showThumbnail = false;
+        });
+      }
+    });
 
     _initPlayer();
+  }
+
+  @override
+  void dispose() {
+    _sub?.cancel();
+    super.dispose();
   }
 
   @override
@@ -98,9 +118,19 @@ class _YoutubePlayerState extends State<YoutubePlayer>
   Widget build(BuildContext context) {
     super.build(context);
 
-    Widget player = WebViewWidget(
-      controller: _controller.webViewController,
-      gestureRecognizers: widget.gestureRecognizers,
+    Widget player = Stack(
+      children: [
+        WebViewWidget(
+          controller: _controller.webViewController,
+          gestureRecognizers: widget.gestureRecognizers,
+        ),
+        if (widget.thumbnail != null)
+          AnimatedOpacity(
+            duration: const Duration(milliseconds: 100),
+            opacity: _showThumbnail ? 1 : 0,
+            child: widget.thumbnail!,
+          ),
+      ],
     );
 
     if (widget.enableFullScreenOnVerticalDrag) {
@@ -113,11 +143,10 @@ class _YoutubePlayerState extends State<YoutubePlayer>
     return OrientationBuilder(
       builder: (context, orientation) {
         return AspectRatio(
-          aspectRatio: orientation == Orientation.landscape
-              ? MediaQuery.of(context).size.aspectRatio
-              : widget.aspectRatio,
-          child: player,
-        );
+            aspectRatio: orientation == Orientation.landscape
+                ? MediaQuery.of(context).size.aspectRatio
+                : widget.aspectRatio,
+            child: player);
       },
     );
   }

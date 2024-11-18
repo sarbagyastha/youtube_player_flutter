@@ -24,7 +24,7 @@ const List<String> _videoIds = [
   '6jZDSSZZxjQ',
   'p2lYr3vM_1w',
   '7QUtEmBT_-w',
-  '34_PXCzGw1M'
+  '34_PXCzGw1M',
 ];
 
 ///
@@ -73,6 +73,12 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return YoutubePlayerScaffold(
       controller: _controller,
+      thumbnail: widget.videoId != null
+          ? Image.network(YoutubePlayerController.getThumbnail(
+              videoId: widget.videoId!,
+              quality: ThumbnailQuality.high,
+            ))
+          : null,
       builder: (context, player) {
         return Scaffold(
           appBar: AppBar(
