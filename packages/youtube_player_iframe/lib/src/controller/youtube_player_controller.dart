@@ -58,7 +58,10 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setNavigationDelegate(navigationDelegate)
       ..setUserAgent(params.userAgent)
-      ..addJavaScriptChannel(playerId, onMessageReceived: _eventHandler.call)
+      ..addJavaScriptChannel(
+        javaScriptChannel,
+         onMessageReceived: _eventHandler.call,
+      )
       ..enableZoom(false);
 
     final webViewPlatform = webViewController.platform;
@@ -120,6 +123,8 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
 
   /// The [YoutubePlayerValue].
   YoutubePlayerValue get value => _value;
+
+  static const javaScriptChannel = 'youtubePlayerChannel';
 
   @override
   Future<void> cuePlaylist({
@@ -685,7 +690,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   /// Disposes the resources created by [YoutubePlayerController].
   Future<void> close() async {
     await stopVideo();
-    await webViewController.removeJavaScriptChannel('youtube-$hashCode');
+    await webViewController.removeJavaScriptChannel(javaScriptChannel);
     await _eventHandler.videoStateController.close();
     await _valueController.close();
   }
