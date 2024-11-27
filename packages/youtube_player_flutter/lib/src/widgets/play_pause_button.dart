@@ -55,38 +55,47 @@ class _PlayPauseButtonState extends State<PlayPauseButton>
     } else {
       _controller = controller;
     }
-    _controller.removeListener(_playPauseListener);
-    _controller.addListener(_playPauseListener);
+    _controller.removeListener(_controllerListener);
+    _controller.addListener(_controllerListener);
   }
 
   @override
   void dispose() {
-    _controller.removeListener(_playPauseListener);
+    _controller.removeListener(_controllerListener);
     _animController.dispose();
     super.dispose();
   }
 
-  void _playPauseListener() => _controller.value.isPlaying
-      ? _animController.forward()
-      : _animController.reverse();
+  void _controllerListener() {
+    final value = _controller.value;
+
+    if (!mounted) return;
+    setState(() {});
+
+    if (value.isPlaying) {
+      _animController.forward();
+    } else {
+      _animController.reverse();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final playerState = _controller.value.playerState;
-    if ((!_controller.flags.autoPlay && _controller.value.isReady) ||
-        playerState == PlayerState.playing ||
-        playerState == PlayerState.paused) {
+    final value = _controller.value;
+    final state = value.playerState;
+
+    if (_showPlayPause(state)) {
+      final visible = state == PlayerState.cued ||
+          !value.isPlaying ||
+          value.isControlsVisible;
+
       return Visibility(
-        visible: playerState == PlayerState.cued ||
-            !_controller.value.isPlaying ||
-            _controller.value.isControlsVisible,
+        visible: visible,
         child: Material(
           color: Colors.transparent,
           child: InkWell(
             borderRadius: BorderRadius.circular(50.0),
-            onTap: () => _controller.value.isPlaying
-                ? _controller.pause()
-                : _controller.play(),
+            onTap: () => _togglePlayPause(state),
             child: AnimatedIcon(
               icon: AnimatedIcons.play_pause,
               progress: _animController.view,
@@ -105,5 +114,15 @@ class _PlayPauseButtonState extends State<PlayPauseButton>
             valueColor: AlwaysStoppedAnimation(Colors.white),
           ),
         );
+  }
+
+  void _togglePlayPause(PlayerState state) {
+    state == PlayerState.playing ? _controller.pause() : _controller.play();
+  }
+
+  bool _showPlayPause(PlayerState state) {
+    return (!_controller.flags.autoPlay && _controller.value.isReady) ||
+        state == PlayerState.playing ||
+        state == PlayerState.paused;
   }
 }

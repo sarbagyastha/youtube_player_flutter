@@ -27,7 +27,7 @@ class YoutubePlayerDemoApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Youtube Player Flutter',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        colorSchemeSeed: Colors.blue,
         appBarTheme: const AppBarTheme(
           color: Colors.blueAccent,
           titleTextStyle: TextStyle(

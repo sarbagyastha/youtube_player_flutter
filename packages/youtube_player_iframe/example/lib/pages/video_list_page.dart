@@ -43,17 +43,18 @@ class _VideoListPageState extends State<VideoListPage> {
           (_) async {
             final videoData = await controller.videoData;
             final startSeconds = await controller.currentTime;
-            if (context.mounted) {
-              final currentTime = await FullscreenYoutubePlayer.launch(
-                context,
-                videoId: videoData.videoId,
-                startSeconds: startSeconds,
-                aspectRatio: controller.value.aspectRatio,
-              );
 
-              if (currentTime != null) {
-                controller.seekTo(seconds: currentTime);
-              }
+            if (!mounted) return;
+
+            final currentTime = await FullscreenYoutubePlayer.launch(
+              context,
+              videoId: videoData.videoId,
+              startSeconds: startSeconds,
+              aspectRatio: controller.value.aspectRatio,
+            );
+
+            if (currentTime != null) {
+              controller.seekTo(seconds: currentTime);
             }
           },
         );
