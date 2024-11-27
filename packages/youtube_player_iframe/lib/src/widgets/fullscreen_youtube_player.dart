@@ -21,6 +21,7 @@ class FullscreenYoutubePlayer extends StatefulWidget {
     this.endSeconds,
     this.gestureRecognizers = const <Factory<OneSequenceGestureRecognizer>>{},
     this.backgroundColor,
+    this.aspectRatio,
   });
 
   /// The YouTube Video ID.
@@ -50,6 +51,8 @@ class FullscreenYoutubePlayer extends StatefulWidget {
   /// Default to [ColorScheme.surface].
   final Color? backgroundColor;
 
+  final double? aspectRatio;
+
   @override
   State<FullscreenYoutubePlayer> createState() {
     return _FullscreenYoutubePlayerState();
@@ -66,6 +69,7 @@ class FullscreenYoutubePlayer extends StatefulWidget {
     Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers =
         const <Factory<OneSequenceGestureRecognizer>>{},
     Color? backgroundColor,
+    double? aspectRatio,
   }) {
     return Navigator.push<double>(
       context,
@@ -77,6 +81,7 @@ class FullscreenYoutubePlayer extends StatefulWidget {
             endSeconds: endSeconds,
             gestureRecognizers: gestureRecognizers,
             backgroundColor: backgroundColor,
+            aspectRatio: aspectRatio,
           );
         },
       ),
@@ -90,6 +95,7 @@ class _FullscreenYoutubePlayerState extends State<FullscreenYoutubePlayer> {
   @override
   void initState() {
     super.initState();
+    final aspectRatio = widget.aspectRatio ?? 16 / 9;
 
     _controller = YoutubePlayerController.fromVideoId(
       videoId: widget.videoId,
@@ -103,12 +109,12 @@ class _FullscreenYoutubePlayerState extends State<FullscreenYoutubePlayer> {
         Navigator.pop(context, currentTime);
       });
 
-    SystemChrome.setPreferredOrientations(
-      [
+    if (aspectRatio > 1) {
+      SystemChrome.setPreferredOrientations([
         DeviceOrientation.landscapeLeft,
         DeviceOrientation.landscapeRight,
-      ],
-    );
+      ]);
+    }
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
   }
 
