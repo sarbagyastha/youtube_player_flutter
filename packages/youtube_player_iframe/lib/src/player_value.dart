@@ -17,6 +17,7 @@ class YoutubePlayerValue {
     this.playbackQuality,
     this.error = YoutubeError.none,
     this.metaData = const YoutubeMetaData(),
+    this.aspectRatio = 16 / 9,
   });
 
   /// The initial fullscreen option.
@@ -42,6 +43,9 @@ class YoutubePlayerValue {
   /// Returns meta data of the currently loaded/cued video.
   final YoutubeMetaData metaData;
 
+  /// The aspect ratio of the video. Defaults to 16/9. Youtube Shorts to 9/16.
+  final double aspectRatio;
+
   @override
   String toString() {
     return '$runtimeType('
@@ -50,6 +54,7 @@ class YoutubePlayerValue {
         'playbackRate: $playbackRate, '
         'playbackQuality: $playbackQuality, '
         'isFullScreen: ${fullScreenOption.enabled}, '
+        'aspectRatio: $aspectRatio, '
         'error: $error)';
   }
 }

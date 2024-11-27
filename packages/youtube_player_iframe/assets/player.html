@@ -73,6 +73,7 @@
                   sendMessage('VideoState', JSON.stringify(state));
                 }, 100);
               }
+              sendVideoSize();
             },
             onPlaybackQualityChange: function (event) {
               sendMessage('PlaybackQualityChange', event.data);
@@ -156,6 +157,21 @@
         if(platform == 'android') return data;
 
         return JSON.stringify(data);
+      }
+
+      function sendVideoSize(){
+        if (platform == 'web') {
+          return;
+        }
+        var ytFrame = document.getElementsByTagName('iframe')[0].contentWindow.document;
+        const videoElement = ytFrame.querySelector('video');
+        if (videoElement) {
+          const videoWidth = videoElement.videoWidth;
+          const videoHeight = videoElement.videoHeight;
+        
+          sendMessage('VideoSize', {'width':videoWidth , 'height':videoHeight});
+          
+        }
       }
 
       function handleFullScreenForMobilePlatform() {
