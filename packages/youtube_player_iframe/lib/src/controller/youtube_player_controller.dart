@@ -339,6 +339,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     FullScreenOption? fullScreenOption,
     PlayerState? playerState,
     double? playbackRate,
+    double? aspectRatio,
     String? playbackQuality,
     YoutubeError? error,
     YoutubeMetaData? metaData,
@@ -352,6 +353,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
       playbackQuality: playbackQuality ?? value.playbackQuality,
       error: error ?? value.error,
       metaData: metaData ?? value.metaData,
+      aspectRatio: aspectRatio ?? value.aspectRatio,
     );
 
     _valueController.add(updatedValue);

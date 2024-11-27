@@ -19,6 +19,7 @@ class YoutubePlayerEventHandler {
       'FullscreenButtonPressed': onFullscreenButtonPressed,
       'VideoState': onVideoState,
       'AutoplayBlocked': onAutoplayBlocked,
+      'VideoSize': onVideoSize,
     };
   }
 
@@ -112,6 +113,18 @@ class YoutubePlayerEventHandler {
   /// This event is fired to indicate that the fullscreen button was clicked.
   void onFullscreenButtonPressed(Object data) {
     controller.toggleFullScreen();
+  }
+
+  void onVideoSize(Object data) {
+    if (data is Map) {
+      final width = data['width'];
+      final height = data['height'];
+
+      if (width is int && height is int) {
+        if (width == 0 || height == 0) return;
+        controller.update(aspectRatio: width / height);
+      }
+    }
   }
 
   /// This event fires if an error occurs in the player.

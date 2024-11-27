@@ -9,9 +9,11 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  go_router: ^14.2.2
   flutter_web_plugins:
       sdk: flutter
-  youtube_player_iframe: ^5.2.0
+  youtube_player_iframe:
+    path: ../
   go_router: ^14.6.0
 
 dev_dependencies:
