@@ -122,7 +122,7 @@ class YoutubePlayerEventHandler {
 
       if (width is int && height is int) {
         if (width == 0 || height == 0) return;
-        controller.update(aspectRatio: width / height);
+        controller.aspectRatio = width / height;
       }
     }
   }

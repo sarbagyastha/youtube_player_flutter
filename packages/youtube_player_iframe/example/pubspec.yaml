@@ -4,7 +4,7 @@ publish_to: none
 version: 5.0.0
 
 environment:
-  sdk: '>=3.5.4 <4.0.0'
+  sdk: '>=3.5.3 <4.0.0'
 
 dependencies:
   flutter:
@@ -14,7 +14,6 @@ dependencies:
       sdk: flutter
   youtube_player_iframe:
     path: ../
-  go_router: ^14.6.0
 
 dev_dependencies:
   flutter_test:

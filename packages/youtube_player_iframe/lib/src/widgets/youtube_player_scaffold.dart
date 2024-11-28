@@ -123,7 +123,7 @@ class _YoutubePlayerScaffoldState extends State<YoutubePlayerScaffold> {
                   fullscreenOrientations: widget.fullscreenOrientations,
                   lockedOrientations: widget.lockedOrientations,
                   fullScreenOption: value.fullScreenOption,
-                  aspectRatio: widget.controller.value.aspectRatio,
+                  aspectRatio: widget.controller.aspectRatio,
                   child: Builder(
                     builder: (context) {
                       if (value.fullScreenOption.enabled) return player;
