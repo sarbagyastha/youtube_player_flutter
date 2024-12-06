@@ -165,7 +165,7 @@
           const videoElement = event.target.getIframe().contentWindow.document.querySelector('video');
           if (videoElement == null) return;
           if (videoElement) {
-            videoElement.addEventListener('loadedmetadata', () => {
+            videoElement.addEventListener('canplay', () => {
               const videoWidth = videoElement.videoWidth;
               const videoHeight = videoElement.videoHeight;
               sendMessage('VideoSize', { width: videoWidth, height: videoHeight });
