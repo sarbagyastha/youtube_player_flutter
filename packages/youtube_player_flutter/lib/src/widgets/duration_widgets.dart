@@ -55,7 +55,7 @@ class _CurrentPositionState extends State<CurrentPosition> {
     return Stack(
       children: [
         Text(
-          "${_controller.value.position.inHours != 0 ? '00:' : ''}00:00",
+          "${_controller.value.position.inHours != 0 ? '66:' : ''}66:66",
           key: const Key('hidden-current-position-text'),
           style: const TextStyle(
             color: Colors.transparent,
@@ -124,7 +124,7 @@ class _RemainingDurationState extends State<RemainingDuration> {
     return Stack(
       children: [
         Text(
-          "- ${_controller.value.position.inHours != 0 ? '00:' : ''}00:00",
+          "- ${_controller.value.position.inHours != 0 ? '66:' : ''}66:66",
           key: const Key('hidden-remaining-duration-text'),
           style: const TextStyle(
             color: Colors.transparent,

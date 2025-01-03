@@ -7,7 +7,7 @@ import '../../youtube_player_flutter_test.dart';
 main() {
   group('CurrentPosition', () {
     testWidgets(
-      'includes text with Colors.transparent color and "00:00" when duration is < 1hour',
+      'includes text with Colors.transparent color and "66:66" when duration is < 1hour',
       (widgetTester) async {
         final controller = createController();
         controller.value =
@@ -24,13 +24,13 @@ main() {
         await widgetTester.pumpAndSettle();
         final hiddenCurrentPositionText = widgetTester.widget<Text>(
             find.byKey(const Key('hidden-current-position-text')));
-        expect(hiddenCurrentPositionText.data, '00:00');
+        expect(hiddenCurrentPositionText.data, '66:66');
         expect(hiddenCurrentPositionText.style?.color, Colors.transparent);
       },
     );
 
     testWidgets(
-      'includes text with Colors.transparent color and "00:00:00" when duration is == 1hour',
+      'includes text with Colors.transparent color and "66:66:66" when duration is == 1hour',
       (widgetTester) async {
         final controller = createController();
         controller.value =
@@ -47,13 +47,13 @@ main() {
         await widgetTester.pumpAndSettle();
         final hiddenCurrentPositionText = widgetTester.widget<Text>(
             find.byKey(const Key('hidden-current-position-text')));
-        expect(hiddenCurrentPositionText.data, '00:00:00');
+        expect(hiddenCurrentPositionText.data, '66:66:66');
         expect(hiddenCurrentPositionText.style?.color, Colors.transparent);
       },
     );
 
     testWidgets(
-      'includes text with Colors.transparent color and "00:00:00" when duration is > 1hour',
+      'includes text with Colors.transparent color and "66:66:66" when duration is > 1hour',
       (widgetTester) async {
         final controller = createController();
         controller.value =
@@ -70,7 +70,7 @@ main() {
         await widgetTester.pumpAndSettle();
         final hiddenCurrentPositionText = widgetTester.widget<Text>(
             find.byKey(const Key('hidden-current-position-text')));
-        expect(hiddenCurrentPositionText.data, '00:00:00');
+        expect(hiddenCurrentPositionText.data, '66:66:66');
         expect(hiddenCurrentPositionText.style?.color, Colors.transparent);
       },
     );
@@ -78,7 +78,7 @@ main() {
 
   group('RemainingDuration', () {
     testWidgets(
-      'includes text with Colors.transparent color and "- 00:00" when duration is < 1hour',
+      'includes text with Colors.transparent color and "- 66:66" when duration is < 1hour',
       (widgetTester) async {
         final controller = createController();
         controller.value =
@@ -95,13 +95,13 @@ main() {
         await widgetTester.pumpAndSettle();
         final hiddenCurrentPositionText = widgetTester.widget<Text>(
             find.byKey(const Key('hidden-remaining-duration-text')));
-        expect(hiddenCurrentPositionText.data, '- 00:00');
+        expect(hiddenCurrentPositionText.data, '- 66:66');
         expect(hiddenCurrentPositionText.style?.color, Colors.transparent);
       },
     );
 
     testWidgets(
-      'includes text with Colors.transparent color and "- 00:00:00" when duration is == 1hour',
+      'includes text with Colors.transparent color and "- 66:66:66" when duration is == 1hour',
       (widgetTester) async {
         final controller = createController();
         controller.value =
@@ -118,13 +118,13 @@ main() {
         await widgetTester.pumpAndSettle();
         final hiddenCurrentPositionText = widgetTester.widget<Text>(
             find.byKey(const Key('hidden-remaining-duration-text')));
-        expect(hiddenCurrentPositionText.data, '- 00:00:00');
+        expect(hiddenCurrentPositionText.data, '- 66:66:66');
         expect(hiddenCurrentPositionText.style?.color, Colors.transparent);
       },
     );
 
     testWidgets(
-      'includes text with Colors.transparent color and "- 00:00:00" when duration is > 1hour',
+      'includes text with Colors.transparent color and "- 66:66:66" when duration is > 1hour',
       (widgetTester) async {
         final controller = createController();
         controller.value =
@@ -141,7 +141,7 @@ main() {
         await widgetTester.pumpAndSettle();
         final hiddenCurrentPositionText = widgetTester.widget<Text>(
             find.byKey(const Key('hidden-remaining-duration-text')));
-        expect(hiddenCurrentPositionText.data, '- 00:00:00');
+        expect(hiddenCurrentPositionText.data, '- 66:66:66');
         expect(hiddenCurrentPositionText.style?.color, Colors.transparent);
       },
     );
