@@ -50,8 +50,6 @@ class PlayerStateSection extends StatelessWidget {
         return Colors.yellow;
       case PlayerState.cued:
         return Colors.blue[900]!;
-      default:
-        return Colors.blue;
     }
   }
 }
