@@ -1,4 +1,4 @@
-library youtube_player_flutter;
+library;
 
 export 'src/enums/playback_rate.dart';
 export 'src/enums/player_state.dart';
