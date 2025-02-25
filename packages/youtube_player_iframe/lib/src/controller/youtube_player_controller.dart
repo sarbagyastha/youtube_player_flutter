@@ -17,6 +17,11 @@ import 'youtube_player_event_handler.dart';
 /// The Web Resource Error.
 typedef YoutubeWebResourceError = WebResourceError;
 
+/// Optional callback invoked when the player wants to navigate to a new page.
+/// Return true to allow the navigation, false to cancel it which allows you
+/// to handle the navigation manually.
+typedef WebViewNavigationRequestCallback = bool Function(Uri uri);
+
 /// Controls the youtube player, and provides updates when the state is changing.
 ///
 /// The video is displayed in a Flutter app by creating a [YoutubePlayer] widget.
@@ -27,6 +32,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   YoutubePlayerController({
     this.params = const YoutubePlayerParams(),
     ValueChanged<YoutubeWebResourceError>? onWebResourceError,
+    WebViewNavigationRequestCallback? onWebNavigationRequest,
     this.key,
   }) {
     _eventHandler = YoutubePlayerEventHandler(this);
@@ -48,7 +54,12 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
       },
       onNavigationRequest: (request) {
         final uri = Uri.tryParse(request.url);
-        return _decideNavigation(uri);
+        if (uri == null) return NavigationDecision.prevent;
+        return onWebNavigationRequest == null
+            ? _decideNavigation(uri)
+            : onWebNavigationRequest.call(uri)
+                ? NavigationDecision.navigate
+                : NavigationDecision.prevent;
       },
     );
 
@@ -77,8 +88,14 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     bool autoPlay = false,
     double? startSeconds,
     double? endSeconds,
+    ValueChanged<YoutubeWebResourceError>? onWebResourceError,
+    WebViewNavigationRequestCallback? onWebNavigationRequest,
   }) {
-    final controller = YoutubePlayerController(params: params, key: videoId);
+    final controller = YoutubePlayerController(
+        params: params,
+        key: videoId,
+        onWebResourceError: onWebResourceError,
+        onWebNavigationRequest: onWebNavigationRequest);
 
     if (autoPlay) {
       controller.loadVideoById(
@@ -633,9 +650,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     return videoStateStream.map((state) => state.position);
   }
 
-  NavigationDecision _decideNavigation(Uri? uri) {
-    if (uri == null) return NavigationDecision.prevent;
-
+  NavigationDecision _decideNavigation(Uri uri) {
     final params = uri.queryParameters;
     final host = uri.host;
     final path = uri.path;
