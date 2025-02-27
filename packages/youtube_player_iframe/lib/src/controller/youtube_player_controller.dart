@@ -84,6 +84,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   /// Creates a [YoutubePlayerController] and initializes the player with [videoId].
   factory YoutubePlayerController.fromVideoId({
     required String videoId,
+    String? key,
     YoutubePlayerParams params = const YoutubePlayerParams(),
     bool autoPlay = false,
     double? startSeconds,
@@ -93,7 +94,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   }) {
     final controller = YoutubePlayerController(
         params: params,
-        key: videoId,
+        key: key,
         onWebResourceError: onWebResourceError,
         onWebNavigationRequest: onWebNavigationRequest);
 
