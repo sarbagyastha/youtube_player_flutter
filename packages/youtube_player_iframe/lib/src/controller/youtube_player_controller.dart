@@ -54,12 +54,23 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
       },
       onNavigationRequest: (request) {
         final uri = Uri.tryParse(request.url);
-        if (uri == null) return NavigationDecision.prevent;
-        return onWebNavigationRequest == null
-            ? _decideNavigation(uri)
-            : onWebNavigationRequest.call(uri)
-                ? NavigationDecision.navigate
-                : NavigationDecision.prevent;
+
+        return switch (uri) {
+          null => NavigationDecision.prevent,
+
+          // required for ios
+          var u when u.toString() == 'https://www.youtube.com/' =>
+            NavigationDecision.navigate,
+          var u when u.host == 'www.youtube.com' && u.path == '/embed/' =>
+            NavigationDecision.navigate,
+          var u when u.toString() == 'about:blank' =>
+            NavigationDecision.prevent,
+          _ => onWebNavigationRequest == null
+              ? _decideNavigation(uri)
+              : onWebNavigationRequest.call(uri)
+                  ? NavigationDecision.navigate
+                  : NavigationDecision.prevent
+        };
       },
     );
 
