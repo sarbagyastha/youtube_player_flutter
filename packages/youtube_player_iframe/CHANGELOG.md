@@ -1,4 +1,14 @@
 # Changelog
+
+## 5.3.0
+**Feb 27, 2025**
+- Added optional `key` to `YoutubePlayerController.fromVideoId` to make consistent with the main constructor.
+
+## 5.3.0
+**Feb 25, 2025**
+- Added optional callback: `onWebNavigationRequest` to the controller to allow the app full control over handling of navigation requests.
+- Added `onWebResourceError` to the `YoutubePlayerController.fromVideoId` factory constructor for consistency
+
 ## 5.2.1
 **Nov 16, 2024**
 - Bumps dependency to latest version.
