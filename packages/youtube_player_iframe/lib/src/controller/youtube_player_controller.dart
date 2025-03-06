@@ -78,7 +78,10 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     double? startSeconds,
     double? endSeconds,
   }) {
-    final controller = YoutubePlayerController(params: params, key: videoId);
+    final controller = YoutubePlayerController(
+      params: params,
+      key: videoId.replaceAll(RegExp(r'[^a-zA-Z0-9_]'), ''),
+    );
 
     if (autoPlay) {
       controller.loadVideoById(
