@@ -1,15 +1,17 @@
-![YOUTUBE PLAYER FLUTTER](misc/ypf_banner.png)
+# YouTube Player Flutter Fixed
 
-[![pub package](https://img.shields.io/pub/v/youtube_player_flutter.svg)](https://pub.dartlang.org/packages/youtube_player_flutter)
-[![Build Status](https://travis-ci.org/sarbagyastha/youtube_player_flutter.svg?branch=master)](https://travis-ci.org/sarbagyastha/youtube_player_flutter)
-[![licence](https://img.shields.io/badge/licence-BSD-orange.svg)](https://github.com/sarbagyastha/youtube_player_flutter/blob/master/LICENSE)
-[![Download](https://img.shields.io/badge/download-APK-informational.svg)](https://github.com/sarbagyastha/youtube_player_flutter/releases)
-[![Stars](https://img.shields.io/github/stars/sarbagyastha/youtube_player_flutter?color=deeppink)](https://github.com/sarbagyastha/youtube_player_flutter)
-[![Top Language](https://img.shields.io/github/languages/top/sarbagyastha/youtube_player_flutter?color=9cf)](https://github.com/sarbagyastha/youtube_player_flutter)
-[![effective dart](https://img.shields.io/badge/style-effective_dart-40c4ff.svg)](https://dart.dev/guides/language/effective-dart)
-
+[![pub package](https://img.shields.io/pub/v/youtube_player_flutter_fixed.svg)](https://pub.dartlang.org/packages/youtube_player_flutter_fixed)
 
 Flutter plugin for playing or streaming YouTube videos inline using the official [**iFrame Player API**](https://developers.google.com/youtube/iframe_api_reference).
+
+## 🆕 What's Fixed
+This package fixes iOS crashes that occurred with the original `youtube_player_flutter` package by replacing `flutter_inappwebview` with the more stable `zikzak_inappwebview`.
+
+**Key Improvements:**
+- ✅ Fixed iOS app crashes in latest iOS versions
+- ✅ Uses `zikzak_inappwebview` instead of `flutter_inappwebview`
+- ✅ Maintains all original functionality
+- ✅ Better stability on iOS devices
 
 Supported Platforms:
 * **Android** 
@@ -31,9 +33,9 @@ For web support, use [youtube_player_iframe](https://pub.dev/packages/youtube_pl
 * Fast Forward and Rewind on horizontal drag
 * Fit Videos to wide screens with pinch gestures
 
-The plugin uses [flutter_inappwebview](https://pub.dartlang.org/packages/flutter_inappwebview) under-the-hood.
+The plugin uses [zikzak_inappwebview](https://pub.dev/packages/zikzak_inappwebview) under-the-hood, which provides better stability and fixes iOS crashes that occurred with the original flutter_inappwebview.
 
-Since *flutter_inappwebview* relies on Flutter's mechanism for embedding Android and iOS views, this plugin might share some known issues tagged with the [platform-views](https://github.com/flutter/flutter/labels/a%3A%20platform-views) label.
+Since *zikzak_inappwebview* relies on Flutter's mechanism for embedding Android and iOS views, this plugin might share some known issues tagged with the [platform-views](https://github.com/flutter/flutter/labels/a%3A%20platform-views) label.
 
 ## Requirements
 * Android: `minSdkVersion 17` and add support for `androidx` (see [AndroidX Migration](https://flutter.dev/docs/development/androidx-migration))
@@ -49,10 +51,31 @@ For more info, [see here](https://pub.dev/packages/flutter_inappwebview#importan
 ### Android
 Set `minSdkVersion` of your `android/app/build.gradle` file to at least 17.
 
-For more info, [see here](https://pub.dev/packages/flutter_inappwebview#important-note-for-android)
+For more info, [see here](https://pub.dev/packages/zikzak_inappwebview#important-note-for-android)
 
 *Note:* Although the minimum to be set is 17, the player won't play on device with API < 20 (19 if Hybrid Composition is enabled). 
 For API < 20 devices, you might want to forward the video to be played using YouTube app instead, using packages like `url_launcher` or `android_intent`.
+
+## Installation
+
+Add this to your package's `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  youtube_player_flutter_fixed: ^1.0.1
+```
+
+Then run:
+```bash
+flutter pub get
+```
+
+And import it:
+```dart
+import 'package:youtube_player_flutter_fixed/youtube_player_flutter.dart';
+```
+
+## Usage
 
 #### Using Youtube Player
          
