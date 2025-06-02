@@ -72,7 +72,7 @@ flutter pub get
 
 And import it:
 ```dart
-import 'package:youtube_player_flutter_fixed/youtube_player_flutter.dart';
+import 'package:youtube_player_flutter_fixed/youtube_player_flutter_fixed.dart';
 ```
 
 ## Usage
