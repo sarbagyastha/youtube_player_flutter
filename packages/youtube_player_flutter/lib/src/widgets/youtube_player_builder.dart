@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+import 'package:youtube_player_flutter_fixed/youtube_player_flutter_fixed.dart';
 
 /// A wrapper for [YoutubePlayer].
 class YoutubePlayerBuilder extends StatefulWidget {

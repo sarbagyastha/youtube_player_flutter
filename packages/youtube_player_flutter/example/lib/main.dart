@@ -3,7 +3,7 @@ import 'dart:developer';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+import 'package:youtube_player_flutter_fixed/youtube_player_flutter_fixed.dart';
 
 import 'video_list.dart';
 
@@ -391,8 +391,6 @@ class _MyHomePageState extends State<MyHomePage> {
         return Colors.yellow;
       case PlayerState.cued:
         return Colors.blue[900]!;
-      default:
-        return Colors.blue;
     }
   }
 
