@@ -391,8 +391,6 @@ class _MyHomePageState extends State<MyHomePage> {
         return Colors.yellow;
       case PlayerState.cued:
         return Colors.blue[900]!;
-      default:
-        return Colors.blue;
     }
   }
 

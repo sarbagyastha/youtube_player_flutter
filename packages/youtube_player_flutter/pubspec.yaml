@@ -1,6 +1,6 @@
 name: youtube_player_flutter_fixed
 description: Flutter plugin for playing or streaming inline YouTube videos using the official iFrame player API. This plugin supports both Android and iOS. Fixed iOS crashes by replacing flutter_inappwebview with zikzak_inappwebview.
-version: 1.0.1
+version: 1.0.2
 repository: https://github.com/hmmza-tariq/youtube_player_flutter
 homepage: https://github.com/hmmza-tariq/youtube_player_flutter
 
@@ -22,5 +22,4 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
-  assets:
-    - assets/speedometer.webp
+ 
