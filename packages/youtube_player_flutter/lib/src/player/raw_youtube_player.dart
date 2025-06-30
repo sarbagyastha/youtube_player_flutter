@@ -185,8 +185,9 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
             ..addJavaScriptHandler(
               handlerName: 'Errors',
               callback: (args) {
+                final code = args.first.toString();
                 controller!.updateValue(
-                  controller!.value.copyWith(errorCode: int.parse(args.first)),
+                  controller!.value.copyWith(errorCode: int.parse(code)),
                 );
               },
             )
@@ -241,6 +242,30 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
                 width: 100%;
                 pointer-events: none;
             }
+            ${controller!.flags.hideYoutubeOverlay ? '''
+            /* Hide YouTube overlay elements */
+            .ytp-title,
+            .ytp-chrome-top,
+            .ytp-show-cards-title,
+            .ytp-title-text,
+            .ytp-title-link,
+            .ytp-title-expanded-overlay,
+            .ytp-gradient-top,
+            .ytp-videowall-still,
+            .ytp-ce-element,
+            .ytp-cards-teaser,
+            .iv-branding,
+            .ytp-pause-overlay {
+                display: none !important;
+                visibility: hidden !important;
+                opacity: 0 !important;
+            }
+            
+            /* Hide the top gradient overlay */
+            .ytp-gradient-top {
+                background: none !important;
+            }
+            ''' : ''}
         </style>
         <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
     </head>
@@ -274,7 +299,31 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
                         'end': ${controller!.flags.endAt}
                     },
                     events: {
-                        onReady: function(event) { window.flutter_inappwebview.callHandler('Ready'); },
+                        onReady: function(event) { 
+                            window.flutter_inappwebview.callHandler('Ready');
+                            ${controller!.flags.hideYoutubeOverlay ? '''
+                            // Additional JavaScript to hide overlay elements
+                            function hideOverlayElements() {
+                                var iframe = document.querySelector('iframe');
+                                if (iframe && iframe.contentDocument) {
+                                    var style = iframe.contentDocument.createElement('style');
+                                    style.textContent = `
+                                        .ytp-title, .ytp-chrome-top, .ytp-show-cards-title,
+                                        .ytp-title-text, .ytp-title-link, .ytp-title-expanded-overlay,
+                                        .ytp-gradient-top, .ytp-videowall-still, .ytp-ce-element,
+                                        .ytp-cards-teaser, .iv-branding, .ytp-pause-overlay {
+                                            display: none !important;
+                                            visibility: hidden !important;
+                                            opacity: 0 !important;
+                                        }
+                                    `;
+                                    iframe.contentDocument.head.appendChild(style);
+                                }
+                            }
+                            setTimeout(hideOverlayElements, 1000);
+                            setInterval(hideOverlayElements, 2000);
+                            ''' : ''}
+                        },
                         onStateChange: function(event) { sendPlayerStateChange(event.data); },
                         onPlaybackQualityChange: function(event) { window.flutter_inappwebview.callHandler('PlaybackQualityChange', event.data); },
                         onPlaybackRateChange: function(event) { window.flutter_inappwebview.callHandler('PlaybackRateChange', event.data); },
