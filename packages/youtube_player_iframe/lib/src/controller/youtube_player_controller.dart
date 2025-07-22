@@ -500,7 +500,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   @override
   Future<bool> get isMuted async {
     final isMuted = await _runWithResult('isMuted');
-    return bool.tryParse(isMuted, caseSensitive: false) ?? false;
+    return bool.tryParse(isMuted, caseSensitive: false) ?? true;
   }
 
   @override
