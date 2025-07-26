@@ -26,8 +26,7 @@ class RawYoutubePlayer extends StatefulWidget {
   State<RawYoutubePlayer> createState() => _RawYoutubePlayerState();
 }
 
-class _RawYoutubePlayerState extends State<RawYoutubePlayer>
-    with WidgetsBindingObserver {
+class _RawYoutubePlayerState extends State<RawYoutubePlayer> with WidgetsBindingObserver {
   YoutubePlayerController? controller;
   PlayerState? _cachedPlayerState;
   bool _isPlayerReady = false;
@@ -49,8 +48,7 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.resumed:
-        if (_cachedPlayerState != null &&
-            _cachedPlayerState == PlayerState.playing) {
+        if (_cachedPlayerState != null && _cachedPlayerState == PlayerState.playing) {
           controller?.play();
         }
         break;
@@ -168,8 +166,7 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
               handlerName: 'PlaybackQualityChange',
               callback: (args) {
                 controller!.updateValue(
-                  controller!.value
-                      .copyWith(playbackQuality: args.first as String),
+                  controller!.value.copyWith(playbackQuality: args.first as String),
                 );
               },
             )
@@ -194,8 +191,7 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
               handlerName: 'VideoData',
               callback: (args) {
                 controller!.updateValue(
-                  controller!.value.copyWith(
-                      metaData: YoutubeMetaData.fromRawData(args.first)),
+                  controller!.value.copyWith(metaData: YoutubeMetaData.fromRawData(args.first)),
                 );
               },
             )
@@ -345,6 +341,30 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
 
             function unMute() {
                 player.unMute();
+                return '';
+            }
+
+            function toggleCaptions() {
+                var track = player.getOption('captions', 'track');
+                if (track && track.languageCode) {
+                    player.unloadModule('captions');
+                } else {
+                    player.loadModule('captions');
+                    player.setOption('captions', 'track', {});
+                }
+                return '';
+            }
+
+            function showCaptions() {
+                player.loadModule('captions');
+                player.setOption('captions', 'track', {
+                    languageCode: 'en' // ensure this is defined
+                });
+                return '';
+            }
+
+            function hideCaptions() {
+                player.unloadModule('captions');
                 return '';
             }
 

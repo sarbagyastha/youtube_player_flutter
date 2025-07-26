@@ -16,6 +16,7 @@ class LiveBottomBar extends StatefulWidget {
     this.controller,
     required this.liveUIColor,
     required this.showLiveFullscreenButton,
+    this.customMuteButton,
   });
 
   /// Overrides the default [YoutubePlayerController].
@@ -26,6 +27,9 @@ class LiveBottomBar extends StatefulWidget {
 
   /// Defines whether to show or hide the fullscreen button
   final bool showLiveFullscreenButton;
+
+  /// Custom widget to replace the default mute button.
+  final Widget? customMuteButton;
 
   @override
   State<LiveBottomBar> createState() => _LiveBottomBarState();
@@ -62,11 +66,9 @@ class _LiveBottomBarState extends State<LiveBottomBar> {
   void listener() {
     if (mounted) {
       setState(() {
-        _currentSliderPosition =
-            _controller.metadata.duration.inMilliseconds == 0
-                ? 0
-                : _controller.value.position.inMilliseconds /
-                    _controller.metadata.duration.inMilliseconds;
+        _currentSliderPosition = _controller.metadata.duration.inMilliseconds == 0
+            ? 0
+            : _controller.value.position.inMilliseconds / _controller.metadata.duration.inMilliseconds;
       });
     }
   }
@@ -81,6 +83,10 @@ class _LiveBottomBarState extends State<LiveBottomBar> {
           const SizedBox(
             width: 14.0,
           ),
+          if (widget.customMuteButton != null) ...[
+            widget.customMuteButton!,
+            const SizedBox(width: 8.0),
+          ],
           const CurrentPosition(),
           Expanded(
             child: Padding(
@@ -90,9 +96,7 @@ class _LiveBottomBarState extends State<LiveBottomBar> {
                 onChanged: (value) {
                   _controller.seekTo(
                     Duration(
-                      milliseconds:
-                          (_controller.metadata.duration.inMilliseconds * value)
-                              .round(),
+                      milliseconds: (_controller.metadata.duration.inMilliseconds * value).round(),
                     ),
                   );
                 },
@@ -115,9 +119,7 @@ class _LiveBottomBarState extends State<LiveBottomBar> {
               ),
             ),
           ),
-          widget.showLiveFullscreenButton
-              ? FullScreenButton(controller: _controller)
-              : const SizedBox(width: 14.0),
+          widget.showLiveFullscreenButton ? FullScreenButton(controller: _controller) : const SizedBox(width: 14.0),
         ],
       ),
     );
