@@ -1,3 +1,6 @@
+## 3.1.2
+- Bumps dependencies.
+
 ## 3.1.1
 - Bumps dependencies.
 
