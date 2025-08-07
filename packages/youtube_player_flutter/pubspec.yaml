@@ -4,6 +4,13 @@ version: 9.1.2
 repository: https://github.com/sarbagyastha/youtube_player_flutter
 homepage: https://github.com/sarbagyastha/youtube_player_flutter/tree/main/packages/youtube_player_flutter
 
+topics:
+  - youtube
+  - video
+  - player
+  - iframe
+  - multimedia
+
 environment:
   sdk: ^3.5.0
   flutter: '>=3.24.0'
