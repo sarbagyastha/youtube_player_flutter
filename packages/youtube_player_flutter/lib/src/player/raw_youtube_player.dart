@@ -73,8 +73,8 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
         key: widget.key,
         initialData: InAppWebViewInitialData(
           data: player,
-          baseUrl: WebUri.uri(Uri.https('www.youtube.com')),
           encoding: 'utf-8',
+          baseUrl: WebUri.uri(Uri.https('youtube-nocookie.com')),
           mimeType: 'text/html',
         ),
         initialSettings: InAppWebViewSettings(
@@ -185,8 +185,11 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
             ..addJavaScriptHandler(
               handlerName: 'Errors',
               callback: (args) {
+                final errorCode = args.first is int
+                    ? args.first
+                    : int.tryParse(args.first) ?? -1;
                 controller!.updateValue(
-                  controller!.value.copyWith(errorCode: int.parse(args.first)),
+                  controller!.value.copyWith(errorCode: errorCode),
                 );
               },
             )
