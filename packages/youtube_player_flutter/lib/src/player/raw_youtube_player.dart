@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:developer';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
@@ -13,10 +16,13 @@ import '../utils/youtube_player_controller.dart';
 ///
 /// Use [YoutubePlayer] instead.
 class RawYoutubePlayer extends StatefulWidget {
+  final String baseUrl;
+
   /// Creates a [RawYoutubePlayer] widget.
   const RawYoutubePlayer({
     super.key,
     this.onEnded,
+    this.baseUrl = 'www.youtube.com',
   });
 
   /// {@macro youtube_player_flutter.onEnded}
@@ -74,10 +80,11 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
         initialData: InAppWebViewInitialData(
           data: player,
           encoding: 'utf-8',
-          baseUrl: WebUri.uri(Uri.https('youtube-nocookie.com')),
+          baseUrl: WebUri.uri(Uri.https(widget.baseUrl)),
           mimeType: 'text/html',
         ),
         initialSettings: InAppWebViewSettings(
+          isInspectable: kDebugMode,
           userAgent: userAgent,
           mediaPlaybackRequiresUserGesture: false,
           transparentBackground: true,
@@ -110,6 +117,7 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
             ..addJavaScriptHandler(
               handlerName: 'StateChange',
               callback: (args) {
+                log('StateChange ${args.first}', name: '_RawYoutubePlayerState.build');
                 switch (args.first as int) {
                   case -1:
                     controller!.updateValue(
@@ -118,6 +126,8 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
                         isLoaded: true,
                       ),
                     );
+                    _removeUnwantedElements(webController);
+                    if (controller!.flags.autoPlay) controller?.play();
                     break;
                   case 0:
                     widget.onEnded?.call(controller!.metadata);
@@ -136,6 +146,8 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
                         errorCode: 0,
                       ),
                     );
+
+                    _removeUnwantedElements(webController);
                     break;
                   case 2:
                     controller!.updateValue(
@@ -224,8 +236,37 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
             );
           }
         },
+        onConsoleMessage: (_, consoleMessage) {
+          log(consoleMessage.message, name: 'CONSOLE');
+        },
       ),
     );
+  }
+
+  void _removeUnwantedElements(InAppWebViewController webController) async {
+    Future.delayed(const Duration(milliseconds: 0), () async {
+      await webController.evaluateJavascript(
+        source: '''
+          // Lấy iframe với id là 'player'
+          const iframe = document.getElementById('player');
+
+          try {
+            // Truy cập nội dung của iframe
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+
+            // Tìm thẻ div cần ẩn
+            const elementToHide = iframeDoc.querySelector('.ytp-chrome-top');
+            const ytpWatermark = iframeDoc.querySelector('.ytp-watermark');
+
+            // Thêm CSS để ẩn nó đi
+            if (elementToHide) elementToHide.remove();
+            if (ytpWatermark) ytpWatermark.remove();
+          } catch (e) {
+            console.error("Không thể truy cập nội dung iframe do lỗi Same-Origin Policy.", e);
+          }
+        ''',
+      );
+    });
   }
 
   String get player => '''

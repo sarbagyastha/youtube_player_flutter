@@ -193,6 +193,10 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
   late double _aspectRatio;
   bool _initialLoad = true;
 
+  String get videoId => controller.metadata.videoId.isEmpty
+      ? controller.initialVideoId
+      : controller.metadata.videoId;
+
   @override
   void initState() {
     super.initState();
@@ -258,9 +262,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                         child: Text(
                           errorString(
                             controller.value.errorCode,
-                            videoId: controller.metadata.videoId.isNotEmpty
-                                ? controller.metadata.videoId
-                                : controller.initialVideoId,
+                            videoId: videoId,
                           ),
                           style: const TextStyle(
                             color: Colors.white,
@@ -403,21 +405,12 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
   }
 
   Widget get _thumbnail => Image.network(
-        YoutubePlayer.getThumbnail(
-          videoId: controller.metadata.videoId.isEmpty
-              ? controller.initialVideoId
-              : controller.metadata.videoId,
-        ),
+        YoutubePlayer.getThumbnail(videoId: videoId),
         fit: BoxFit.cover,
         loadingBuilder: (_, child, progress) =>
             progress == null ? child : Container(color: Colors.black),
         errorBuilder: (context, _, __) => Image.network(
-          YoutubePlayer.getThumbnail(
-            videoId: controller.metadata.videoId.isEmpty
-                ? controller.initialVideoId
-                : controller.metadata.videoId,
-            webp: false,
-          ),
+          YoutubePlayer.getThumbnail(videoId: videoId, webp: false),
           fit: BoxFit.cover,
           loadingBuilder: (_, child, progress) =>
               progress == null ? child : Container(color: Colors.black),
