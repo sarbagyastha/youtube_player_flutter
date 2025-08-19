@@ -14,6 +14,7 @@ class PlayPauseButton extends StatefulWidget {
     super.key,
     this.controller,
     this.bufferIndicator,
+    this.size = 60.0,
   });
 
   /// Overrides the default [YoutubePlayerController].
@@ -21,6 +22,9 @@ class PlayPauseButton extends StatefulWidget {
 
   /// Defines placeholder widget to show when player is in buffering state.
   final Widget? bufferIndicator;
+
+  /// Size of the button.
+  final double size;
 
   @override
   State<PlayPauseButton> createState() => _PlayPauseButtonState();
@@ -100,7 +104,7 @@ class _PlayPauseButtonState extends State<PlayPauseButton>
               icon: AnimatedIcons.play_pause,
               progress: _animController.view,
               color: Colors.white,
-              size: 60.0,
+              size: widget.size,
             ),
           ),
         ),
@@ -108,8 +112,10 @@ class _PlayPauseButtonState extends State<PlayPauseButton>
     }
     if (_controller.value.hasError) return const SizedBox();
     return widget.bufferIndicator ??
-        const SizedBox.square(
-          dimension: 70,
+        SizedBox.square(
+          // multiply by 7/6 to maintain the original 70/60 ratio between button and progress indicator sizes
+          key: const Key('default-buffer-indicator'),
+          dimension: widget.size * 7 / 6,
           child: CircularProgressIndicator(
             valueColor: AlwaysStoppedAnimation(Colors.white),
           ),
