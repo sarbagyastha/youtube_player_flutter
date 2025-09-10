@@ -29,7 +29,7 @@ class YoutubePlayerDemoApp extends StatelessWidget {
       theme: ThemeData(
         colorSchemeSeed: Colors.blue,
         appBarTheme: const AppBarTheme(
-          color: Colors.blueAccent,
+          backgroundColor: Colors.blueAccent,
           titleTextStyle: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.w300,
@@ -89,6 +89,7 @@ class _MyHomePageState extends State<MyHomePage> {
         isLive: false,
         forceHD: false,
         enableCaption: true,
+        hideThumbnail: true,
       ),
     )..addListener(listener);
     _idController = TextEditingController();
