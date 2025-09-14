@@ -57,20 +57,39 @@ class MyApp extends StatelessWidget {
 }
 
 ///
-class PlayerWidget extends StatelessWidget {
+class PlayerWidget extends StatefulWidget {
   ///
   const PlayerWidget({super.key});
 
   @override
+  State<PlayerWidget> createState() => _PlayerWidgetState();
+}
+
+class _PlayerWidgetState extends State<PlayerWidget> {
+  late final YoutubePlayerController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = YoutubePlayerController.fromVideoId(
+      videoId: 'gCRNEJxDJKM',
+      params: const YoutubePlayerParams(
+        showControls: true,
+        showFullscreenButton: true,
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.close();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return YoutubePlayer(
-      controller: YoutubePlayerController.fromVideoId(
-        videoId: 'gCRNEJxDJKM',
-        params: const YoutubePlayerParams(
-          showControls: true,
-          showFullscreenButton: true,
-        ),
-      ),
+      controller: _controller,
       aspectRatio: 16 / 9,
     );
   }

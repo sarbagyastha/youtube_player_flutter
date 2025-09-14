@@ -74,14 +74,16 @@ class YoutubePlayer extends StatefulWidget {
 }
 
 class _YoutubePlayerState extends State<YoutubePlayer>
-    with AutomaticKeepAliveClientMixin {
-  late final YoutubePlayerController _controller;
+    with AutomaticKeepAliveClientMixin, WidgetsBindingObserver {
+  late YoutubePlayerController _controller;
+  bool _isInitialized = false;
+  bool _isDisposed = false;
 
   @override
   void initState() {
     super.initState();
     _controller = widget.controller;
-
+    WidgetsBinding.instance.addObserver(this);
     _initPlayer();
   }
 
@@ -92,11 +94,63 @@ class _YoutubePlayerState extends State<YoutubePlayer>
     if (widget.backgroundColor != oldWidget.backgroundColor) {
       _updateBackgroundColor(widget.backgroundColor);
     }
+
+    // If controller changed, re-initialize
+    if (widget.controller != oldWidget.controller) {
+      _handleControllerChange(oldWidget.controller);
+    }
+  }
+
+  @override
+  void dispose() {
+    _isDisposed = true;
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    if (_isDisposed || !_isInitialized) return;
+
+    switch (state) {
+      case AppLifecycleState.paused:
+        // Pause video when app goes to background
+        _controller.pauseVideo().catchError((e) {
+          // Ignore errors when pausing
+        });
+        break;
+      case AppLifecycleState.resumed:
+        // No action needed on resume, let user control playback
+        break;
+      case AppLifecycleState.detached:
+        // Clean up when app is detached
+        _controller.close().catchError((e) {
+          // Ignore errors during cleanup
+        });
+        break;
+      default:
+        break;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
+
+    if (!_isInitialized) {
+      return AspectRatio(
+        aspectRatio: widget.aspectRatio,
+        child: Container(
+          color:
+              widget.backgroundColor ?? Theme.of(context).colorScheme.surface,
+          child: const Center(
+            child: CircularProgressIndicator(),
+          ),
+        ),
+      );
+    }
 
     Widget player = WebViewWidget(
       controller: _controller.webViewController,
@@ -122,6 +176,18 @@ class _YoutubePlayerState extends State<YoutubePlayer>
     );
   }
 
+  void _handleControllerChange(YoutubePlayerController oldController) {
+    // Reset the old controller
+    oldController.reset().catchError((e) {
+      // Ignore reset errors
+    });
+
+    // Update to new controller
+    _controller = widget.controller;
+    _isInitialized = false;
+    _initPlayer();
+  }
+
   void _fullscreenGesture(DragUpdateDetails details) {
     final delta = details.delta.dy;
 
@@ -139,11 +205,37 @@ class _YoutubePlayerState extends State<YoutubePlayer>
   }
 
   Future<void> _initPlayer() async {
-    SchedulerBinding.instance.addPostFrameCallback((_) {
-      _updateBackgroundColor(widget.backgroundColor);
-    });
+    if (_isDisposed) return;
 
-    await _controller.init();
+    try {
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        if (!_isDisposed) {
+          _updateBackgroundColor(widget.backgroundColor);
+        }
+      });
+
+      await _controller.init();
+
+      if (!_isDisposed) {
+        setState(() {
+          _isInitialized = true;
+        });
+      }
+    } catch (e) {
+      if (!_isDisposed) {
+        // Show error state or retry initialization
+        setState(() {
+          _isInitialized = false;
+        });
+
+        // Retry initialization after a delay
+        Future.delayed(const Duration(seconds: 2), () {
+          if (!_isDisposed && !_isInitialized) {
+            _initPlayer();
+          }
+        });
+      }
+    }
   }
 
   @override

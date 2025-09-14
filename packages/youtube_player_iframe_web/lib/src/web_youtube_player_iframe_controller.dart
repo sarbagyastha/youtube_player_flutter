@@ -62,41 +62,90 @@ class WebYoutubePlayerIframeController extends PlatformWebViewController {
   }
 
   JavaScriptChannelParams? _javaScriptChannelParams;
+  final Set<StreamSubscription> _subscriptions = <StreamSubscription>{};
+  bool _isDisposed = false;
 
   @override
   Future<void> loadHtmlString(String html, {String? baseUrl}) {
-    _params.ytiFrame.srcdoc = html;
-    return SynchronousFuture(null);
+    if (_isDisposed) return SynchronousFuture(null);
+    
+    try {
+      _params.ytiFrame.srcdoc = html;
+      return SynchronousFuture(null);
+    } catch (e) {
+      // Fallback for cases where srcdoc fails
+      try {
+        _params.ytiFrame.src = Uri.dataFromString(
+          html,
+          mimeType: 'text/html',
+          encoding: utf8,
+        ).toString();
+      } catch (fallbackError) {
+        // If both methods fail, log and continue
+        if (kDebugMode) {
+          print('Failed to load HTML: $e, Fallback error: $fallbackError');
+        }
+      }
+      return SynchronousFuture(null);
+    }
   }
 
   @override
   Future<void> runJavaScript(String javaScript) {
-    _params.ytiFrame.runFunction(javaScript.replaceAll('"', '<<quote>>'));
-    return SynchronousFuture(null);
+    if (_isDisposed) return SynchronousFuture(null);
+    
+    try {
+      _params.ytiFrame.runFunction(javaScript.replaceAll('"', '<<quote>>'));
+      return SynchronousFuture(null);
+    } catch (e) {
+      // Log error but don't throw to prevent crashes
+      return SynchronousFuture(null);
+    }
   }
 
   @override
   Future<String> runJavaScriptReturningResult(String javaScript) async {
-    final key = DateTime.now().millisecondsSinceEpoch.toString();
-    final function = javaScript.replaceAll('"', '<<quote>>');
+    if (_isDisposed) return '';
+    
+    try {
+      final key = DateTime.now().millisecondsSinceEpoch.toString();
+      final function = javaScript.replaceAll('"', '<<quote>>');
 
-    final completer = Completer<String>();
-    final subscription = window.onMessage.listen(
-      (event) {
-        final data = jsonDecode(event.data.dartify() as String);
+      final completer = Completer<String>();
+      late StreamSubscription subscription;
+      
+      subscription = window.onMessage.listen(
+        (event) {
+          try {
+            final data = jsonDecode(event.data.dartify() as String);
 
-        if (data is Map && data.containsKey(key)) {
-          completer.complete(data[key].toString());
-        }
-      },
-    );
+            if (data is Map && data.containsKey(key)) {
+              completer.complete(data[key].toString());
+              subscription.cancel();
+              _subscriptions.remove(subscription);
+            }
+          } catch (e) {
+            // Ignore parsing errors from other messages
+          }
+        },
+      );
+      
+      _subscriptions.add(subscription);
 
-    _params.ytiFrame.runFunction(function, key: key);
+      _params.ytiFrame.runFunction(function, key: key);
 
-    final result = await completer.future;
-    subscription.cancel();
-
-    return result;
+      // Add timeout to prevent indefinite waiting
+      return await completer.future.timeout(
+        const Duration(seconds: 5),
+        onTimeout: () {
+          subscription.cancel();
+          _subscriptions.remove(subscription);
+          return '';
+        },
+      );
+    } catch (e) {
+      return '';
+    }
   }
 
   @override
@@ -141,6 +190,8 @@ class WebYoutubePlayerIframeController extends PlatformWebViewController {
 
   @override
   Future<void> loadRequest(LoadRequestParams params) async {
+    if (_isDisposed) return;
+    
     if (!params.uri.hasScheme) {
       throw ArgumentError(
           'LoadRequestParams#uri is required to have a scheme.');
@@ -152,6 +203,28 @@ class WebYoutubePlayerIframeController extends PlatformWebViewController {
       _params.ytiFrame.src = params.uri.toString();
     } else {
       await _updateIFrameFromXhr(params);
+    }
+  }
+  
+  /// Dispose of the controller and clean up resources.
+  Future<void> dispose() async {
+    if (_isDisposed) return;
+    _isDisposed = true;
+    
+    // Cancel all subscriptions
+    for (final subscription in _subscriptions) {
+      subscription.cancel();
+    }
+    _subscriptions.clear();
+    
+    // Clear JavaScript channel
+    _javaScriptChannelParams = null;
+    
+    // Clear iframe source
+    try {
+      _params.ytiFrame.src = 'about:blank';
+    } catch (e) {
+      // Ignore errors during cleanup
     }
   }
 
@@ -203,14 +276,31 @@ class YoutubePlayerIframeWeb extends PlatformWebViewWidget {
       onPlatformViewCreated: (_) {
         final channelParams = _controller._javaScriptChannelParams;
 
-        if (channelParams != null) {
-          window.onMessage.listen(
-            (event) {
-              channelParams.onMessageReceived(
-                JavaScriptMessage(message: event.data.dartify() as String),
-              );
-            },
-          );
+        if (channelParams != null && !_controller._isDisposed) {
+          try {
+            final subscription = window.onMessage.listen(
+              (event) {
+                try {
+                  if (!_controller._isDisposed) {
+                    channelParams.onMessageReceived(
+                      JavaScriptMessage(message: event.data.dartify() as String),
+                    );
+                  }
+                } catch (e) {
+                  // Ignore message processing errors to prevent crashes
+                  if (kDebugMode) {
+                    print('Error processing message: $e');
+                  }
+                }
+              },
+            );
+            _controller._subscriptions.add(subscription);
+          } catch (e) {
+            // Fallback if message listener setup fails
+            if (kDebugMode) {
+              print('Failed to set up message listener: $e');
+            }
+          }
         }
       },
     );
@@ -235,14 +325,28 @@ extension type YoutubeIframeElement._(HTMLIFrameElement element) {
 
   /// The content of the page that the iframe will display.
   set srcdoc(String value) {
-    element.srcdoc = value.toJS;
+    try {
+      element.srcdoc = value.toJS;
+    } catch (e) {
+      // Log error but continue
+      if (kDebugMode) {
+        print('Failed to set srcdoc: $e');
+      }
+    }
 
     // Fallback for browser that doesn't support srcdoc.
-    element.src = Uri.dataFromString(
-      value,
-      mimeType: 'text/html',
-      encoding: utf8,
-    ).toString();
+    try {
+      element.src = Uri.dataFromString(
+        value,
+        mimeType: 'text/html',
+        encoding: utf8,
+      ).toString();
+    } catch (e) {
+      // Log error but continue
+      if (kDebugMode) {
+        print('Failed to set src fallback: $e');
+      }
+    }
   }
 
   /// Provides a mechanism for developers to load third-party resources in [HTMLIFrameElement]s using a new, ephemeral context.
@@ -257,9 +361,16 @@ extension type YoutubeIframeElement._(HTMLIFrameElement element) {
 
   /// Runs a function in the [HTMLIFrameElement] using postMessage.
   void runFunction(String function, {String? key}) {
-    element.contentWindow?.postMessage(
-      '{"key": "$key", "function": "$function"}'.toJS,
-      '*'.toJS,
-    );
+    try {
+      element.contentWindow?.postMessage(
+        '{"key": "$key", "function": "$function"}'.toJS,
+        '*'.toJS,
+      );
+    } catch (e) {
+      // Silently handle postMessage failures to prevent crashes
+      if (kDebugMode) {
+        print('Failed to run function: $function, error: $e');
+      }
+    }
   }
 }

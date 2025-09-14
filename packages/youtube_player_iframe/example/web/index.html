@@ -31,8 +31,55 @@
 
   <title>Youtube Player IFrame Demo</title>
   <link rel="manifest" href="manifest.json">
+  
+  <!-- Enhanced error handling and fallback configuration -->
+  <script>
+    // Fallback configuration for Flutter web
+    window.flutterConfiguration = {
+      canvasKitMaxRetries: 3,
+      canvasKitForceHTML: false, // Set to true to force HTML renderer
+    };
+    
+    // Error handling for failed resource loads
+    window.addEventListener('error', function(e) {
+      if (e.target && e.target.src && e.target.src.includes('canvaskit')) {
+        console.warn('CanvasKit failed to load, consider using HTML renderer');
+        // Optional: Force reload with HTML renderer
+        // window.location.href = window.location.href + '?web-renderer=html';
+      }
+    });
+    
+    // Service worker registration with error handling
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('flutter_service_worker.js')
+        .catch(function(error) {
+          console.warn('Service worker registration failed:', error);
+        });
+    }
+  </script>
 </head>
 <body>
+  <!-- Loading indicator -->
+  <div id="loading" style="
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: Arial, sans-serif;
+    color: #666;
+    display: block;
+  ">
+    Loading YouTube Player...
+  </div>
+  
+  <script>
+    // Hide loading indicator once Flutter loads
+    window.addEventListener('flutter-first-frame', function() {
+      const loading = document.getElementById('loading');
+      if (loading) loading.style.display = 'none';
+    });
+  </script>
+  
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

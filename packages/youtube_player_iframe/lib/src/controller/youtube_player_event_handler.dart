@@ -31,18 +31,25 @@ class YoutubePlayerEventHandler {
 
   final Completer<void> _readyCompleter = Completer();
   late final Map<String, ValueChanged<Object>> _events;
+  bool _isDisposed = false;
 
   /// Handles the [javaScriptMessage] from the player iframe and create events.
   void call(JavaScriptMessage javaScriptMessage) {
-    final data = Map.from(jsonDecode(javaScriptMessage.message));
-    if (data['playerId'] != controller.playerId) return;
+    if (_isDisposed) return;
 
-    for (final entry in data.entries) {
-      if (entry.key == 'ApiChange') {
-        onApiChange(entry.value);
-      } else {
-        _events[entry.key]?.call(entry.value ?? Object());
+    try {
+      final data = Map.from(jsonDecode(javaScriptMessage.message));
+      if (data['playerId'] != controller.playerId) return;
+
+      for (final entry in data.entries) {
+        if (entry.key == 'ApiChange') {
+          onApiChange(entry.value);
+        } else {
+          _events[entry.key]?.call(entry.value ?? Object());
+        }
       }
+    } catch (e) {
+      log('Error handling JavaScript message: $e');
     }
   }
 
@@ -57,29 +64,43 @@ class YoutubePlayerEventHandler {
   /// The data property of the event object that the API passes to your event listener function
   /// will specify an integer that corresponds to the new player state.
   Future<void> onStateChange(Object data) async {
-    final stateCode = data as int;
+    if (_isDisposed) return;
 
-    final playerState = PlayerState.values.firstWhere(
-      (state) => state.code == stateCode,
-      orElse: () => PlayerState.unknown,
-    );
+    try {
+      final stateCode = data as int;
 
-    if (playerState == PlayerState.playing) {
-      controller.update(playerState: playerState, error: YoutubeError.none);
-
-      final duration = await controller.duration;
-      final videoData = await controller.videoData;
-
-      final metaData = YoutubeMetaData(
-        duration: Duration(milliseconds: (duration * 1000).truncate()),
-        videoId: videoData.videoId,
-        author: videoData.author,
-        title: videoData.title,
+      final playerState = PlayerState.values.firstWhere(
+        (state) => state.code == stateCode,
+        orElse: () => PlayerState.unknown,
       );
 
-      controller.update(metaData: metaData);
-    } else {
-      controller.update(playerState: playerState);
+      if (playerState == PlayerState.playing) {
+        controller.update(playerState: playerState, error: YoutubeError.none);
+
+        // Get metadata with timeout and error handling
+        try {
+          final duration =
+              await controller.duration.timeout(const Duration(seconds: 3));
+          final videoData =
+              await controller.videoData.timeout(const Duration(seconds: 3));
+
+          final metaData = YoutubeMetaData(
+            duration: Duration(milliseconds: (duration * 1000).truncate()),
+            videoId: videoData.videoId,
+            author: videoData.author,
+            title: videoData.title,
+          );
+
+          controller.update(metaData: metaData);
+        } catch (e) {
+          log('Error getting video metadata: $e');
+          // Continue without metadata if it fails
+        }
+      } else {
+        controller.update(playerState: playerState);
+      }
+    } catch (e) {
+      log('Error handling state change: $e');
     }
   }
 
@@ -128,13 +149,19 @@ class YoutubePlayerEventHandler {
 
   /// This event fires when the player receives information about video states.
   void onVideoState(Object data) {
-    if (videoStateController.isClosed) return;
+    if (videoStateController.isClosed || _isDisposed) return;
 
-    videoStateController.add(YoutubeVideoState.fromJson(data.toString()));
+    try {
+      videoStateController.add(YoutubeVideoState.fromJson(data.toString()));
+    } catch (e) {
+      log('Error handling video state: $e');
+    }
   }
 
   /// This event fires when the auto playback is blocked by the browser.
   void onAutoplayBlocked(Object data) {
+    if (_isDisposed) return;
+
     log(
       'Autoplay was blocked by browser. '
       'Most modern browser does not allow video with sound to autoplay. '
@@ -144,4 +171,14 @@ class YoutubePlayerEventHandler {
 
   /// Returns a [Future] that completes when the player is ready.
   Future<void> get isReady => _readyCompleter.future;
+
+  /// Dispose the event handler and clean up resources.
+  Future<void> dispose() async {
+    if (_isDisposed) return;
+    _isDisposed = true;
+
+    if (!videoStateController.isClosed) {
+      await videoStateController.close();
+    }
+  }
 }

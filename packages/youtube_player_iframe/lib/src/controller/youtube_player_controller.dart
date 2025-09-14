@@ -113,6 +113,9 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
       StreamController.broadcast();
   YoutubePlayerValue _value = YoutubePlayerValue();
 
+  bool _isDisposed = false;
+  Timer? _disposeTimer;
+
   /// A Stream of [YoutubePlayerValue], which allows you to subscribe to changes
   /// in the controller value.
   Stream<YoutubePlayerValue> get stream => _valueController.stream;
@@ -247,13 +250,25 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   /// Loads the player with default [params].
   @internal
   Future<void> init() async {
-    await load(
-      params: params,
-      baseUrl: kIsWeb ? Uri.base.origin : params.origin,
-      id: playerId,
-    );
+    if (_isDisposed) return;
 
-    if (!_initCompleter.isCompleted) _initCompleter.complete();
+    try {
+      await load(
+        params: params,
+        baseUrl: kIsWeb ? Uri.base.origin : params.origin,
+        id: playerId,
+      );
+
+      if (!_initCompleter.isCompleted && !_isDisposed) {
+        _initCompleter.complete();
+      }
+    } catch (e) {
+      log('Error initializing player: $e');
+      if (!_initCompleter.isCompleted) {
+        _initCompleter.completeError(e);
+      }
+      rethrow;
+    }
   }
 
   /// Loads the player with the given [params].
@@ -283,46 +298,89 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     String functionName, {
     Map<String, dynamic>? data,
   }) async {
-    await _initCompleter.future;
+    if (_isDisposed) return;
 
-    final varArgs = await _prepareData(data);
+    try {
+      await _initCompleter.future;
 
-    return webViewController.runJavaScript('player.$functionName($varArgs);');
+      if (_isDisposed) return;
+
+      final varArgs = await _prepareData(data);
+
+      return webViewController.runJavaScript('player.$functionName($varArgs);');
+    } catch (e) {
+      log('Error running $functionName: $e');
+      rethrow;
+    }
   }
 
   Future<String> _runWithResult(
     String functionName, {
     Map<String, dynamic>? data,
   }) async {
-    await _initCompleter.future;
+    if (_isDisposed) return '';
 
-    final varArgs = await _prepareData(data);
+    try {
+      await _initCompleter.future;
 
-    final result = await webViewController.runJavaScriptReturningResult(
-      'player.$functionName($varArgs);',
-    );
-    return result.toString();
+      if (_isDisposed) return '';
+
+      final varArgs = await _prepareData(data);
+
+      final result = await webViewController.runJavaScriptReturningResult(
+        'player.$functionName($varArgs);',
+      );
+      return result.toString();
+    } catch (e) {
+      log('Error running $functionName with result: $e');
+      return '';
+    }
   }
 
   Future<void> _eval(String javascript) async {
-    await _eventHandler.isReady;
+    if (_isDisposed) return;
 
-    return webViewController.runJavaScript(javascript);
+    try {
+      await _eventHandler.isReady;
+
+      if (_isDisposed) return;
+
+      return webViewController.runJavaScript(javascript);
+    } catch (e) {
+      log('Error evaluating JavaScript: $e');
+      rethrow;
+    }
   }
 
   Future<String> _evalWithResult(String javascript) async {
-    await _eventHandler.isReady;
+    if (_isDisposed) return '';
 
-    final result = await webViewController.runJavaScriptReturningResult(
-      javascript,
-    );
+    try {
+      await _eventHandler.isReady;
 
-    return result.toString();
+      if (_isDisposed) return '';
+
+      final result = await webViewController.runJavaScriptReturningResult(
+        javascript,
+      );
+
+      return result.toString();
+    } catch (e) {
+      log('Error evaluating JavaScript with result: $e');
+      return '';
+    }
   }
 
   Future<String> _prepareData(Map<String, dynamic>? data) async {
-    await _eventHandler.isReady;
-    return data == null ? '' : jsonEncode(data);
+    if (_isDisposed) return '';
+
+    try {
+      await _eventHandler.isReady;
+      return data == null ? '' : jsonEncode(data);
+    } catch (e) {
+      log('Error preparing data: $e');
+      return '';
+    }
   }
 
   /// The unique player id.
@@ -342,7 +400,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     YoutubeError? error,
     YoutubeMetaData? metaData,
   }) {
-    if (_valueController.isClosed) return;
+    if (_valueController.isClosed || _isDisposed) return;
 
     final updatedValue = YoutubePlayerValue(
       fullScreenOption: fullScreenOption ?? value.fullScreenOption,
@@ -353,7 +411,14 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
       metaData: metaData ?? value.metaData,
     );
 
-    _valueController.add(updatedValue);
+    try {
+      _valueController.add(updatedValue);
+    } catch (e) {
+      // Handle case where controller is already closed
+      if (!_isDisposed) {
+        log('Failed to update player value: $e');
+      }
+    }
   }
 
   /// Listen to updates in [YoutubePlayerController].
@@ -683,10 +748,68 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
 
   /// Disposes the resources created by [YoutubePlayerController].
   Future<void> close() async {
-    await stopVideo();
-    await webViewController.removeJavaScriptChannel('youtube-$hashCode');
-    await _eventHandler.videoStateController.close();
-    await _valueController.close();
+    if (_isDisposed) return;
+    _isDisposed = true;
+
+    // Cancel any pending dispose timer
+    _disposeTimer?.cancel();
+    _disposeTimer = null;
+
+    try {
+      // Stop video first to clean up player state
+      await stopVideo().timeout(const Duration(seconds: 2));
+    } catch (e) {
+      log('Error stopping video during disposal: $e');
+    }
+
+    try {
+      // Remove JavaScript channels
+      await webViewController
+          .removeJavaScriptChannel(playerId)
+          .timeout(const Duration(seconds: 2));
+    } catch (e) {
+      log('Error removing JavaScript channel: $e');
+    }
+
+    try {
+      // Close event handler and video state controller
+      await _eventHandler.dispose();
+    } catch (e) {
+      log('Error disposing event handler: $e');
+    }
+
+    try {
+      // Close value controller
+      if (!_valueController.isClosed) {
+        await _valueController.close();
+      }
+    } catch (e) {
+      log('Error closing value controller: $e');
+    }
+  }
+
+  /// Resets the controller to a clean state for reuse.
+  Future<void> reset() async {
+    if (_isDisposed) return;
+
+    try {
+      // Stop current video
+      await stopVideo();
+
+      // Reset player state
+      update(
+        playerState: PlayerState.unStarted,
+        error: YoutubeError.none,
+        metaData: YoutubeMetaData(),
+        playbackRate: 1.0,
+        playbackQuality: null,
+      );
+
+      // Clear any cached data
+      _value = YoutubePlayerValue();
+    } catch (e) {
+      log('Error resetting controller: $e');
+    }
   }
 }
 
@@ -700,15 +823,20 @@ class YoutubeVideoState {
 
   /// Creates a new instance of [YoutubeVideoState] from the given [json].
   factory YoutubeVideoState.fromJson(String json) {
-    final state = jsonDecode(json);
-    final currentTime = state['currentTime'] as num? ?? 0;
-    final loadedFraction = state['loadedFraction'] as num? ?? 0;
-    final positionInMs = (currentTime * 1000).truncate();
+    try {
+      final state = jsonDecode(json);
+      final currentTime = state['currentTime'] as num? ?? 0;
+      final loadedFraction = state['loadedFraction'] as num? ?? 0;
+      final positionInMs = (currentTime * 1000).truncate();
 
-    return YoutubeVideoState(
-      position: Duration(milliseconds: positionInMs),
-      loadedFraction: loadedFraction.toDouble(),
-    );
+      return YoutubeVideoState(
+        position: Duration(milliseconds: positionInMs),
+        loadedFraction: loadedFraction.toDouble(),
+      );
+    } catch (e) {
+      // Return default state if parsing fails
+      return const YoutubeVideoState();
+    }
   }
 
   /// The current position of the video.

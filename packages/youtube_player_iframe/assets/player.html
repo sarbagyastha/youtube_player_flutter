@@ -1,3 +1,4 @@
+<!-- Template file with placeholders like <<playerId>> that are replaced at runtime -->
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -50,51 +51,111 @@
       var host = "<<host>>";
       var player;
       var timerId;
+      var isPlayerReady = false;
+      var isDisposed = false;
+
+      // Cleanup function
+      function cleanup() {
+        if (timerId) {
+          clearTimeout(timerId);
+          timerId = null;
+        }
+        
+        if (player && typeof player.destroy === 'function') {
+          try {
+            player.destroy();
+          } catch (e) {
+            console.warn('Error destroying player:', e);
+          }
+        }
+        
+        isPlayerReady = false;
+        isDisposed = true;
+      }
+
+      // Enhanced error handling
+      function safePlayerCall(func, ...args) {
+        if (isDisposed || !isPlayerReady || !player) {
+          return null;
+        }
+        
+        try {
+          return func.apply(player, args);
+        } catch (e) {
+          console.warn('Player call failed:', e);
+          return null;
+        }
+      }
 
       function onYouTubeIframeAPIReady() {
-        player = new YT.Player("<<playerId>>", {
-          host: host,
-          playerVars: <<playerVars>>,
-          events: {
-            onReady: function (event) {
-              handleFullScreenForMobilePlatform();
-              sendMessage('Ready', event);
-            },
-            onStateChange: function (event) {
-              clearTimeout(timerId);
-              sendMessage('StateChange', event.data);
-              if (event.data == 1) {
-                timerId = setInterval(function () {
-                  var state = {
-                    'currentTime': player.getCurrentTime(),
-                    'loadedFraction': player.getVideoLoadedFraction()
-                  };
+        if (isDisposed) return;
+        
+        try {
+          player = new YT.Player("<<playerId>>", {
+            host: host,
+            playerVars: <<playerVars>>,
+            events: {
+              onReady: function (event) {
+                isPlayerReady = true;
+                handleFullScreenForMobilePlatform();
+                sendMessage('Ready', event);
+              },
+              onStateChange: function (event) {
+                if (isDisposed) return;
+                
+                clearTimeout(timerId);
+                sendMessage('StateChange', event.data);
+                
+                if (event.data == 1) { // Playing state
+                  timerId = setInterval(function () {
+                    if (isDisposed || !isPlayerReady) {
+                      clearTimeout(timerId);
+                      return;
+                    }
+                    
+                    try {
+                      var state = {
+                        'currentTime': safePlayerCall(player.getCurrentTime) || 0,
+                        'loadedFraction': safePlayerCall(player.getVideoLoadedFraction) || 0
+                      };
 
-                  sendMessage('VideoState', JSON.stringify(state));
-                }, 100);
-              }
+                      sendMessage('VideoState', JSON.stringify(state));
+                    } catch (e) {
+                      console.warn('Error getting video state:', e);
+                      clearTimeout(timerId);
+                    }
+                  }, 100);
+                }
+              },
+              onPlaybackQualityChange: function (event) {
+                if (!isDisposed) sendMessage('PlaybackQualityChange', event.data);
+              },
+              onPlaybackRateChange: function (event) {
+                if (!isDisposed) sendMessage('PlaybackRateChange', event.data);
+              },
+              onApiChange: function (event) {
+                if (!isDisposed) sendMessage('ApiChange', event.data);
+              },
+              onError: function (event) {
+                if (!isDisposed) sendMessage('PlayerError', event.data);
+              },
+              onAutoplayBlocked: function (event) {
+                if (!isDisposed) sendMessage('AutoplayBlocked', event.data);
+              },
             },
-            onPlaybackQualityChange: function (event) {
-              sendMessage('PlaybackQualityChange', event.data);
-            },
-            onPlaybackRateChange: function (event) {
-              sendMessage('PlaybackRateChange', event.data);
-            },
-            onApiChange: function (event) {
-              sendMessage('ApiChange', event.data);
-            },
-            onError: function (event) {
-              sendMessage('PlayerError', event.data);
-            },
-            onAutoplayBlocked: function (event) {
-              sendMessage('AutoplayBlocked', event.data);
-            },
-          },
-        });
-        player.setSize(window.innerWidth, window.innerHeight);
+          });
+          
+          // Set initial size safely
+          safePlayerCall(player.setSize, window.innerWidth, window.innerHeight);
+        } catch (e) {
+          console.error('Error initializing YouTube player:', e);
+          sendMessage('PlayerError', 100); // Send generic error
+        }
       }
 
       window.addEventListener('message', (event) => {
+        if (isDisposed) return;
+        
         try {
           var data = JSON.parse(event.data);
 
@@ -110,65 +171,93 @@
               event.source.postMessage(messageString , '*');
             }
           }
-        } catch (e) { }
+        } catch (e) { 
+          console.warn('Error processing message:', e);
+        }
       }, false);
 
+      window.addEventListener('beforeunload', cleanup);
+
       window.onresize = function () {
-        player.setSize(window.innerWidth, window.innerHeight);
+        if (!isDisposed && isPlayerReady) {
+          safePlayerCall(player.setSize, window.innerWidth, window.innerHeight);
+        }
       };
 
       function sendPlatformMessage(message) {
-        switch(platform) {
-           case 'android':
-             <<playerId>>.postMessage(message);
-             break;
-           case 'ios':
-             <<playerId>>.postMessage(message, '*');
-             break;
-           case 'web':
-             window.parent.postMessage(message, '*');
-             break;
-         }
+        if (isDisposed) return;
+        
+        try {
+          switch(platform) {
+             case 'android':
+               <<playerId>>.postMessage(message);
+               break;
+             case 'ios':
+               <<playerId>>.postMessage(message, '*');
+               break;
+             case 'web':
+               window.parent.postMessage(message, '*');
+               break;
+           }
+        } catch (e) {
+          console.warn('Error sending platform message:', e);
+        }
       }
 
       function sendMessage(key, data) {
-         var message = {};
-         message[key] = data;
-         message['playerId'] = '<<playerId>>';
-         var messageString = JSON.stringify(message);
+        if (isDisposed) return;
+        
+        try {
+          var message = {};
+          message[key] = data;
+          message['playerId'] = '<<playerId>>';
+          var messageString = JSON.stringify(message);
 
-         sendPlatformMessage(messageString);
+          sendPlatformMessage(messageString);
+        } catch (e) {
+          console.warn('Error sending message:', e);
+        }
       }
 
       function getVideoData() {
-        return prepareDataForPlatform(player.getVideoData());
+        return prepareDataForPlatform(safePlayerCall(player.getVideoData) || {});
       }
 
       function getPlaylist() {
-        return prepareDataForPlatform(player.getPlaylist());
+        return prepareDataForPlatform(safePlayerCall(player.getPlaylist) || []);
       }
 
       function getAvailablePlaybackRates(){
-        return prepareDataForPlatform(player.getAvailablePlaybackRates());
+        return prepareDataForPlatform(safePlayerCall(player.getAvailablePlaybackRates) || []);
       }
 
       function prepareDataForPlatform(data) {
-        if(platform == 'android') return data;
-
-        return JSON.stringify(data);
+        if (isDisposed) return platform == 'android' ? {} : '{}';
+        
+        try {
+          if(platform == 'android') return data;
+          return JSON.stringify(data);
+        } catch (e) {
+          console.warn('Error preparing data for platform:', e);
+          return platform == 'android' ? {} : '{}';
+        }
       }
 
       function handleFullScreenForMobilePlatform() {
-        if(platform != 'web') {
-          var ytFrame = document.getElementsByTagName('iframe')[0].contentWindow.document;
-          var fsButton = ytFrame.getElementsByClassName('ytp-fullscreen-button ytp-button')[0];
+        if(platform != 'web' && isPlayerReady && !isDisposed) {
+          try {
+            var ytFrame = document.getElementsByTagName('iframe')[0].contentWindow.document;
+            var fsButton = ytFrame.getElementsByClassName('ytp-fullscreen-button ytp-button')[0];
 
-          if(fsButton != null) {
-            var fsButtonCopy = fsButton.cloneNode(true);
-            fsButton.replaceWith(fsButtonCopy);
-            fsButtonCopy.onclick = function() {
-              sendMessage('FullscreenButtonPressed', '');
-            };
+            if(fsButton != null) {
+              var fsButtonCopy = fsButton.cloneNode(true);
+              fsButton.replaceWith(fsButtonCopy);
+              fsButtonCopy.onclick = function() {
+                sendMessage('FullscreenButtonPressed', '');
+              };
+            }
+          } catch (e) {
+            // Fullscreen button handling may fail in some cases, ignore silently
           }
         }
       }
