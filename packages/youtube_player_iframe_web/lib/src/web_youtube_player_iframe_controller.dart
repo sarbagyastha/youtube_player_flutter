@@ -68,7 +68,7 @@ class WebYoutubePlayerIframeController extends PlatformWebViewController {
   @override
   Future<void> loadHtmlString(String html, {String? baseUrl}) {
     if (_isDisposed) return SynchronousFuture(null);
-    
+
     try {
       _params.ytiFrame.srcdoc = html;
       return SynchronousFuture(null);
@@ -93,7 +93,7 @@ class WebYoutubePlayerIframeController extends PlatformWebViewController {
   @override
   Future<void> runJavaScript(String javaScript) {
     if (_isDisposed) return SynchronousFuture(null);
-    
+
     try {
       _params.ytiFrame.runFunction(javaScript.replaceAll('"', '<<quote>>'));
       return SynchronousFuture(null);
@@ -106,14 +106,14 @@ class WebYoutubePlayerIframeController extends PlatformWebViewController {
   @override
   Future<String> runJavaScriptReturningResult(String javaScript) async {
     if (_isDisposed) return '';
-    
+
     try {
       final key = DateTime.now().millisecondsSinceEpoch.toString();
       final function = javaScript.replaceAll('"', '<<quote>>');
 
       final completer = Completer<String>();
       late StreamSubscription subscription;
-      
+
       subscription = window.onMessage.listen(
         (event) {
           try {
@@ -129,7 +129,7 @@ class WebYoutubePlayerIframeController extends PlatformWebViewController {
           }
         },
       );
-      
+
       _subscriptions.add(subscription);
 
       _params.ytiFrame.runFunction(function, key: key);
@@ -191,7 +191,7 @@ class WebYoutubePlayerIframeController extends PlatformWebViewController {
   @override
   Future<void> loadRequest(LoadRequestParams params) async {
     if (_isDisposed) return;
-    
+
     if (!params.uri.hasScheme) {
       throw ArgumentError(
           'LoadRequestParams#uri is required to have a scheme.');
@@ -205,21 +205,21 @@ class WebYoutubePlayerIframeController extends PlatformWebViewController {
       await _updateIFrameFromXhr(params);
     }
   }
-  
+
   /// Dispose of the controller and clean up resources.
   Future<void> dispose() async {
     if (_isDisposed) return;
     _isDisposed = true;
-    
+
     // Cancel all subscriptions
     for (final subscription in _subscriptions) {
       subscription.cancel();
     }
     _subscriptions.clear();
-    
+
     // Clear JavaScript channel
     _javaScriptChannelParams = null;
-    
+
     // Clear iframe source
     try {
       _params.ytiFrame.src = 'about:blank';
@@ -283,7 +283,8 @@ class YoutubePlayerIframeWeb extends PlatformWebViewWidget {
                 try {
                   if (!_controller._isDisposed) {
                     channelParams.onMessageReceived(
-                      JavaScriptMessage(message: event.data.dartify() as String),
+                      JavaScriptMessage(
+                          message: event.data.dartify() as String),
                     );
                   }
                 } catch (e) {

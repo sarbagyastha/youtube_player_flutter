@@ -60,7 +60,7 @@
           clearTimeout(timerId);
           timerId = null;
         }
-        
+
         if (player && typeof player.destroy === 'function') {
           try {
             player.destroy();
@@ -68,7 +68,7 @@
             console.warn('Error destroying player:', e);
           }
         }
-        
+
         isPlayerReady = false;
         isDisposed = true;
       }
@@ -78,7 +78,7 @@
         if (isDisposed || !isPlayerReady || !player) {
           return null;
         }
-        
+
         try {
           return func.apply(player, args);
         } catch (e) {
@@ -89,7 +89,7 @@
 
       function onYouTubeIframeAPIReady() {
         if (isDisposed) return;
-        
+
         try {
           player = new YT.Player("<<playerId>>", {
             host: host,
@@ -102,17 +102,17 @@
               },
               onStateChange: function (event) {
                 if (isDisposed) return;
-                
+
                 clearTimeout(timerId);
                 sendMessage('StateChange', event.data);
-                
+
                 if (event.data == 1) { // Playing state
                   timerId = setInterval(function () {
                     if (isDisposed || !isPlayerReady) {
                       clearTimeout(timerId);
                       return;
                     }
-                    
+
                     try {
                       var state = {
                         'currentTime': safePlayerCall(player.getCurrentTime) || 0,
@@ -144,7 +144,7 @@
               },
             },
           });
-          
+
           // Set initial size safely
           safePlayerCall(player.setSize, window.innerWidth, window.innerHeight);
         } catch (e) {
@@ -155,7 +155,7 @@
 
       window.addEventListener('message', (event) => {
         if (isDisposed) return;
-        
+
         try {
           var data = JSON.parse(event.data);
 
@@ -171,7 +171,7 @@
               event.source.postMessage(messageString , '*');
             }
           }
-        } catch (e) { 
+        } catch (e) {
           console.warn('Error processing message:', e);
         }
       }, false);
@@ -186,7 +186,7 @@
 
       function sendPlatformMessage(message) {
         if (isDisposed) return;
-        
+
         try {
           switch(platform) {
              case 'android':
@@ -206,7 +206,7 @@
 
       function sendMessage(key, data) {
         if (isDisposed) return;
-        
+
         try {
           var message = {};
           message[key] = data;
@@ -233,7 +233,7 @@
 
       function prepareDataForPlatform(data) {
         if (isDisposed) return platform == 'android' ? {} : '{}';
-        
+
         try {
           if(platform == 'android') return data;
           return JSON.stringify(data);
