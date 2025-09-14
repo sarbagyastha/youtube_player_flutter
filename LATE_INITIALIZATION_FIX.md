@@ -9,14 +9,17 @@
 ## ✅ **Fixes Applied**
 
 ### 1. **YouTube Player Widget Controller Declaration**
+
 **File**: `packages/youtube_player_iframe/lib/src/widgets/youtube_player.dart`
 
 **Before** (Causing Error):
+
 ```dart
 late final YoutubePlayerController _controller;
 ```
 
 **After** (Fixed):
+
 ```dart
 late YoutubePlayerController _controller;
 ```
@@ -24,9 +27,11 @@ late YoutubePlayerController _controller;
 **Explanation**: Removed `final` keyword to allow controller reassignment when the parent widget provides a new controller instance.
 
 ### 2. **Example App Controller Lifecycle**
+
 **File**: `packages/youtube_player_iframe_web/example/lib/main.dart`
 
 **Before** (Causing Rebuilds):
+
 ```dart
 class PlayerWidget extends StatelessWidget {
   @override
@@ -39,6 +44,7 @@ class PlayerWidget extends StatelessWidget {
 ```
 
 **After** (Proper Lifecycle):
+
 ```dart
 class PlayerWidget extends StatefulWidget {
   @override
@@ -70,16 +76,19 @@ class _PlayerWidgetState extends State<PlayerWidget> {
 ## 🎯 **Key Improvements**
 
 ### **Enhanced Error Resilience**
+
 - ✅ Controllers can now be safely swapped during widget lifecycle
 - ✅ Proper resource cleanup on controller changes
 - ✅ No more crashes when widgets rebuild with new controllers
 
 ### **Better Resource Management**
+
 - ✅ Single controller instance per widget lifetime
 - ✅ Proper disposal preventing memory leaks
 - ✅ Clean state transitions between different videos
 
 ### **Improved Stability**
+
 - ✅ No more `LateInitializationError`
 - ✅ Graceful handling of widget rebuilds
 - ✅ Robust controller lifecycle management
@@ -87,12 +96,14 @@ class _PlayerWidgetState extends State<PlayerWidget> {
 ## 🔍 **Technical Details**
 
 ### **Why This Happened**
+
 1. `late final` fields can only be assigned once in Dart
 2. Widget rebuilds were creating new controller instances
 3. The `didUpdateWidget` method tried to reassign the `final` field
 4. This triggered the `LateInitializationError`
 
 ### **How This Was Fixed**
+
 1. Changed `late final` to `late` to allow reassignment
 2. Made example apps use stateful widgets for proper controller lifecycle
 3. Added proper disposal methods to prevent memory leaks

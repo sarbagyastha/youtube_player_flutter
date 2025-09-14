@@ -21,6 +21,7 @@ flutter build web --dart-define=FLUTTER_WEB_USE_SKIA=false
 ### 2. **Environment Variable Approach**
 
 Set in your shell or IDE:
+
 ```bash
 export FLUTTER_WEB_USE_SKIA=false
 ```
@@ -46,16 +47,19 @@ void main() {
 The YouTube iframe player has been enhanced with:
 
 ### **Network Resilience**
+
 - ✅ Timeout protection for all network operations
 - ✅ Fallback mechanisms for failed resource loads
 - ✅ Graceful degradation when external resources fail
 
 ### **Error Recovery**
+
 - ✅ Automatic retry on initialization failures
 - ✅ Silent handling of non-critical errors
 - ✅ Robust iframe communication with fallbacks
 
 ### **Memory Management**
+
 - ✅ Proper cleanup of event listeners
 - ✅ Resource disposal on component unmount
 - ✅ Prevention of memory leaks
@@ -63,6 +67,7 @@ The YouTube iframe player has been enhanced with:
 ## 🚀 **Performance Optimizations**
 
 ### **Web-Specific Improvements**
+
 1. **Reduced Bundle Size**: HTML renderer uses less resources
 2. **Faster Loading**: Avoids large CanvasKit downloads
 3. **Better Compatibility**: Works on all browsers and networks
@@ -71,6 +76,7 @@ The YouTube iframe player has been enhanced with:
 ### **Configuration Options**
 
 #### **Option 1: index.html Enhancement** (Already Applied)
+
 ```html
 <script>
   window.flutterConfiguration = {
@@ -81,7 +87,9 @@ The YouTube iframe player has been enhanced with:
 ```
 
 #### **Option 2: Build Configuration**
+
 Create `web/flutter_service_worker.js.map` with:
+
 ```json
 {
   "renderer": "html",
@@ -94,17 +102,20 @@ Create `web/flutter_service_worker.js.map` with:
 ### **If CanvasKit Still Fails:**
 
 1. **Clear Browser Cache**
+
    ```bash
    # Chrome
    Ctrl+Shift+Delete or Cmd+Shift+Delete
    ```
 
 2. **Check Network Connectivity**
+
    ```bash
    ping www.gstatic.com
    ```
 
 3. **Corporate Firewall**
+
    - Add `*.gstatic.com` to allowlist
    - Or use HTML renderer permanently
 
@@ -116,6 +127,7 @@ Create `web/flutter_service_worker.js.map` with:
 ## 🎯 **Production Deployment**
 
 ### **Recommended Build Command**
+
 ```bash
 flutter build web \
   --dart-define=FLUTTER_WEB_USE_SKIA=false \
@@ -125,7 +137,9 @@ flutter build web \
 ```
 
 ### **Server Configuration**
+
 Ensure your web server serves these headers:
+
 ```
 Cross-Origin-Embedder-Policy: credentialless
 Cross-Origin-Opener-Policy: same-origin-allow-popups
