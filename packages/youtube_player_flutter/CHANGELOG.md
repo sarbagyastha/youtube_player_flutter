@@ -1,3 +1,6 @@
+## 9.1.3
+* Bumps dependencies to latest version.
+
 ## 9.1.2
 * Fixes type error when handling YouTube error codes (error where int was expected as String).
 * Improves error handling for YouTube error codes 150 and 152.
