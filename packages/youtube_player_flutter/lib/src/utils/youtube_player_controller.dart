@@ -313,6 +313,12 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
         ),
       );
 
+  void setDebugLogSettings({
+    required bool value,
+  }) {
+    PlatformInAppWebViewController.debugLoggingSettings.enabled = value;
+  }
+
   @override
   void dispose() {
     value.webViewController?.dispose();
