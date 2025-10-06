@@ -1,6 +1,6 @@
 ![YOUTUBE PLAYER FLUTTER](misc/ypf_banner.png)
 
-[![pub package](https://img.shields.io/pub/v/youtube_player_flutter.svg)](https://pub.dartlang.org/packages/youtube_player_flutter)
+[![pub package](https://img.shields.io/pub/v/youtube_player_flutter.svg)](https://pub.dev/packages/youtube_player_flutter)
 [![Build Status](https://travis-ci.org/sarbagyastha/youtube_player_flutter.svg?branch=master)](https://travis-ci.org/sarbagyastha/youtube_player_flutter)
 [![licence](https://img.shields.io/badge/licence-BSD-orange.svg)](https://github.com/sarbagyastha/youtube_player_flutter/blob/master/LICENSE)
 [![Download](https://img.shields.io/badge/download-APK-informational.svg)](https://github.com/sarbagyastha/youtube_player_flutter/releases)
@@ -31,7 +31,7 @@ For web support, use [youtube_player_iframe](https://pub.dev/packages/youtube_pl
 * Fast Forward and Rewind on horizontal drag
 * Fit Videos to wide screens with pinch gestures
 
-The plugin uses [flutter_inappwebview](https://pub.dartlang.org/packages/flutter_inappwebview) under-the-hood.
+The plugin uses [flutter_inappwebview](https://pub.dev/packages/flutter_inappwebview) under-the-hood.
 
 Since *flutter_inappwebview* relies on Flutter's mechanism for embedding Android and iOS views, this plugin might share some known issues tagged with the [platform-views](https://github.com/flutter/flutter/labels/a%3A%20platform-views) label.
 
