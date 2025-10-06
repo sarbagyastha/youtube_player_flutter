@@ -29,7 +29,7 @@ class YoutubePlayerDemoApp extends StatelessWidget {
       theme: ThemeData(
         colorSchemeSeed: Colors.blue,
         appBarTheme: const AppBarTheme(
-          color: Colors.blueAccent,
+          backgroundColor: Colors.blueAccent,
           titleTextStyle: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.w300,

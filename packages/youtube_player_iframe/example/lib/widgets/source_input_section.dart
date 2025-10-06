@@ -185,7 +185,7 @@ class _PlaylistTypeDropDownState extends State<_PlaylistTypeDropDown> {
         filled: true,
       ),
       isExpanded: true,
-      value: _playlistType,
+      initialValue: _playlistType,
       items: [
         DropdownMenuItem(
           child: Text(
