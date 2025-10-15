@@ -56,6 +56,7 @@
           events: {
             onReady: function (event) {
               handleFullScreenForMobilePlatform();
+              sendVideoSize(event);
               sendMessage('Ready', event);
             },
             onStateChange: function (event) {
@@ -71,6 +72,7 @@
                   sendMessage('VideoState', JSON.stringify(state));
                 }, 100);
               }
+              
             },
             onPlaybackQualityChange: function (event) {
               sendMessage('PlaybackQualityChange', event.data);
@@ -154,6 +156,20 @@
         if(platform == 'android') return data;
 
         return JSON.stringify(data);
+      }
+
+      function sendVideoSize(event){
+        if (platform != 'web') {
+          const videoElement = event.target.getIframe().contentWindow.document.querySelector('video');
+          if (videoElement == null) return;
+          if (videoElement) {
+            videoElement.addEventListener('canplay', () => {
+              const videoWidth = videoElement.videoWidth;
+              const videoHeight = videoElement.videoHeight;
+              sendMessage('VideoSize', { width: videoWidth, height: videoHeight });
+            });
+          }
+        }
       }
 
       function handleFullScreenForMobilePlatform() {

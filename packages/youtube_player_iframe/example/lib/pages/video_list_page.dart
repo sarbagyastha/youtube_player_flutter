@@ -50,6 +50,7 @@ class _VideoListPageState extends State<VideoListPage> {
               context,
               videoId: videoData.videoId,
               startSeconds: startSeconds,
+              aspectRatio: controller.aspectRatio,
             );
 
             if (currentTime != null) {

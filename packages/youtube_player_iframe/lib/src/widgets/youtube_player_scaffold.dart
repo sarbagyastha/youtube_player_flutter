@@ -123,6 +123,7 @@ class _YoutubePlayerScaffoldState extends State<YoutubePlayerScaffold> {
                   fullscreenOrientations: widget.fullscreenOrientations,
                   lockedOrientations: widget.lockedOrientations,
                   fullScreenOption: value.fullScreenOption,
+                  aspectRatio: widget.controller.aspectRatio,
                   child: Builder(
                     builder: (context) {
                       if (value.fullScreenOption.enabled) return player;
@@ -145,6 +146,7 @@ class _FullScreen extends StatefulWidget {
     required this.lockedOrientations,
     required this.child,
     required this.auto,
+    this.aspectRatio = 16 / 9,
   });
 
   final FullScreenOption fullScreenOption;
@@ -153,6 +155,7 @@ class _FullScreen extends StatefulWidget {
   final List<DeviceOrientation> lockedOrientations;
   final Widget child;
   final bool auto;
+  final double aspectRatio;
 
   @override
   State<_FullScreen> createState() => _FullScreenState();
@@ -167,7 +170,10 @@ class _FullScreenState extends State<_FullScreen> with WidgetsBindingObserver {
     super.initState();
     canPop = Navigator.of(context).canPop();
     if (widget.auto) WidgetsBinding.instance.addObserver(this);
-    SystemChrome.setPreferredOrientations(_deviceOrientations);
+
+    if (widget.aspectRatio > 1) {
+      SystemChrome.setPreferredOrientations(_deviceOrientations);
+    }
     SystemChrome.setEnabledSystemUIMode(_uiMode);
   }
 
@@ -176,7 +182,9 @@ class _FullScreenState extends State<_FullScreen> with WidgetsBindingObserver {
     super.didUpdateWidget(oldWidget);
 
     if (oldWidget.fullScreenOption != widget.fullScreenOption) {
-      SystemChrome.setPreferredOrientations(_deviceOrientations);
+      if (widget.aspectRatio > 1) {
+        SystemChrome.setPreferredOrientations(_deviceOrientations);
+      }
       SystemChrome.setEnabledSystemUIMode(_uiMode);
     }
   }
