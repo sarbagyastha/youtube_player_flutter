@@ -79,6 +79,16 @@ class YoutubePlayerFlags {
   /// Default is true.
   final bool showLiveFullscreenButton;
 
+  /// Defines whether to use the original audio track or not (forces the original audio track to be used).
+  ///
+  /// Default is false.
+  final bool forceOriginalAudio;
+
+  /// Specifies the default language that the player will use to display the original audio track. Set the parameter's value to an [ISO 639-1 two-letter language code](http://www.loc.gov/standards/iso639-2/php/code_list.php).
+  ///
+  /// Default is `ar`.
+  final String originalAudioLanguage;
+
   /// Creates [YoutubePlayerFlags].
   const YoutubePlayerFlags({
     this.hideControls = false,
@@ -96,6 +106,8 @@ class YoutubePlayerFlags {
     this.endAt,
     this.useHybridComposition = true,
     this.showLiveFullscreenButton = true,
+    this.forceOriginalAudio = false,
+    this.originalAudioLanguage = 'ar',
   });
 
   /// Copies new values assigned to the [YoutubePlayerFlags].
@@ -116,6 +128,8 @@ class YoutubePlayerFlags {
     bool? controlsVisibleAtStart,
     bool? useHybridComposition,
     bool? showLiveFullscreenButton,
+    bool? forceOriginalAudio,
+    String? originalAudioLanguage,
   }) {
     return YoutubePlayerFlags(
       autoPlay: autoPlay ?? this.autoPlay,
@@ -135,6 +149,8 @@ class YoutubePlayerFlags {
       useHybridComposition: useHybridComposition ?? this.useHybridComposition,
       showLiveFullscreenButton:
           showLiveFullscreenButton ?? this.showLiveFullscreenButton,
+      forceOriginalAudio: forceOriginalAudio ?? this.forceOriginalAudio,
+      originalAudioLanguage: originalAudioLanguage ?? this.originalAudioLanguage,
     );
   }
 }

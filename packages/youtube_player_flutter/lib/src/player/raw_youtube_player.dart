@@ -274,7 +274,12 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
                         'cc_lang_pref': '${controller!.flags.captionLanguage}',
                         'autoplay': ${boolean(value: controller!.flags.autoPlay)},
                         'start': ${controller!.flags.startAt},
-                        'end': ${controller!.flags.endAt}
+                        'end': ${controller!.flags.endAt},
+                        ${controller!.flags.forceOriginalAudio ? "'hl': '${controller!.flags.originalAudioLanguage}'," : ""}
+                        ${controller!.flags.forceOriginalAudio ? "'lang': '${controller!.flags.originalAudioLanguage}'," : ""}
+                        ${controller!.flags.forceOriginalAudio ? "'audio_lang': '${controller!.flags.originalAudioLanguage}'," : ""}
+                        ${controller!.flags.forceOriginalAudio ? "'original': 1," : ""}
+                        ${controller!.flags.forceOriginalAudio ? "'acont': '${controller!.flags.originalAudioLanguage}'" : ""}
                     },
                     events: {
                         onReady: function(event) { window.flutter_inappwebview.callHandler('Ready'); },
