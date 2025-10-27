@@ -22,9 +22,12 @@ typedef YoutubeWebResourceError = WebResourceError;
 ///
 /// After [YoutubePlayerController.close] all further calls are ignored.
 class YoutubePlayerController implements YoutubePlayerIFrameAPI {
+  final String? initialVideoId;
+
   /// Creates [YoutubePlayerController].
   YoutubePlayerController({
     this.params = const YoutubePlayerParams(),
+    this.initialVideoId,
     ValueChanged<YoutubeWebResourceError>? onWebResourceError,
     this.key,
   }) {
@@ -77,7 +80,8 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     double? startSeconds,
     double? endSeconds,
   }) {
-    final controller = YoutubePlayerController(params: params, key: videoId);
+    final controller = YoutubePlayerController(
+        params: params, key: videoId, initialVideoId: videoId);
 
     if (autoPlay) {
       controller.loadVideoById(
@@ -270,7 +274,8 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
       'pointerEvents': params.pointerEvents.name,
       'playerVars': params.toJson(),
       'platform': platform,
-      'host': params.origin ?? 'https://www.youtube.com',
+      'host': params.host ?? 'https://www.youtube.com',
+      'videoId': initialVideoId ?? '',
     };
 
     await webViewController.loadHtmlString(
@@ -327,7 +332,8 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
 
   /// The unique player id.
   @internal
-  String get playerId => 'Youtube${key ?? hashCode}';
+  String get playerId =>
+      'Youtube${initialVideoId ?? key ?? hashCode}'.replaceAll('-', '/-');
 
   /// MetaData for the currently loaded or cued video.
   YoutubeMetaData get metadata => _value.metaData;

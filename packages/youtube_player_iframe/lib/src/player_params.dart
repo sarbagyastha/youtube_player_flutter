@@ -96,6 +96,7 @@ class YoutubePlayerParams {
   ///
   /// Specify your domain as the value.
   final String? origin;
+  final String? host;
 
   /// This parameter controls whether videos play inline or fullscreen in an HTML5 player on iOS.
   ///
@@ -125,6 +126,7 @@ class YoutubePlayerParams {
     this.showVideoAnnotations = true,
     this.loop = false,
     this.origin = 'https://www.youtube.com',
+    this.host = 'https://www.youtube.com',
     this.playsInline = true,
     this.strictRelatedVideos = false,
     this.userAgent,

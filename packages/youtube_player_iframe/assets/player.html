@@ -46,11 +46,11 @@
 
       var platform = "<<platform>>";
       var host = "<<host>>";
+      var videoId = "<<videoId>>";
       var player;
       var timerId;
 
-      function onYouTubeIframeAPIReady() {
-        player = new YT.Player("<<playerId>>", {
+      var playerConfig = {
           host: host,
           playerVars: <<playerVars>>,
           events: {
@@ -87,8 +87,15 @@
             onAutoplayBlocked: function (event) {
               sendMessage('AutoplayBlocked', event.data);
             },
-          },
-        });
+          }
+      };
+
+      if(videoId) {
+          playerConfig['videoId'] = videoId;
+        }
+
+      function onYouTubeIframeAPIReady() {
+        player = new YT.Player("<<playerId>>", playerConfig);
         player.setSize(window.innerWidth, window.innerHeight);
       }
 
