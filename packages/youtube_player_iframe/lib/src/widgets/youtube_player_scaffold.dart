@@ -37,10 +37,14 @@ class YoutubePlayerScaffold extends StatefulWidget {
     this.backgroundColor,
     @Deprecated('Unused parameter. Use `YoutubePlayerParam.userAgent` instead.')
     this.userAgent,
+    this.thumbnail,
   });
 
   /// Builds the child widget.
   final Widget Function(BuildContext context, Widget player) builder;
+
+  /// Thumbnail widget to show when the player has not been playing.
+  final Widget? thumbnail;
 
   /// The player controller.
   final YoutubePlayerController controller;
@@ -106,6 +110,7 @@ class _YoutubePlayerScaffoldState extends State<YoutubePlayerScaffold> {
         gestureRecognizers: widget.gestureRecognizers,
         enableFullScreenOnVerticalDrag: widget.enableFullScreenOnVerticalDrag,
         backgroundColor: widget.backgroundColor,
+        thumbnail: widget.thumbnail,
       ),
     );
 
