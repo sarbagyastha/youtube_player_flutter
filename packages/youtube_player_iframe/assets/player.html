@@ -133,6 +133,7 @@
          var message = {};
          message[key] = data;
          message['playerId'] = '<<playerId>>';
+         message['youtubePlayerMessageChannelKey'] = '<<youtubePlayerMessageChannelKey>>';
          var messageString = JSON.stringify(message);
 
          sendPlatformMessage(messageString);
