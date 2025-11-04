@@ -27,6 +27,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     this.params = const YoutubePlayerParams(),
     ValueChanged<YoutubeWebResourceError>? onWebResourceError,
     this.key,
+    this.youtubePlayerMessageChannelKey,
   }) {
     _eventHandler = YoutubePlayerEventHandler(this);
 
@@ -76,8 +77,9 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     bool autoPlay = false,
     double? startSeconds,
     double? endSeconds,
+    String? youtubePlayerMessageChannelKey,
   }) {
-    final controller = YoutubePlayerController(params: params, key: videoId);
+    final controller = YoutubePlayerController(params: params, key: videoId, youtubePlayerMessageChannelKey: youtubePlayerMessageChannelKey);
 
     if (autoPlay) {
       controller.loadVideoById(
@@ -98,6 +100,9 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
 
   /// The unique key for the player.
   final String? key;
+
+  /// The key for the message channel of the player web view.
+  final String? youtubePlayerMessageChannelKey;
 
   /// Defines player parameters for the youtube player.
   final YoutubePlayerParams params;
@@ -271,6 +276,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
       'playerVars': params.toJson(),
       'platform': platform,
       'host': params.origin ?? 'https://www.youtube.com',
+      'youtubePlayerMessageChannelKey': youtubePlayerMessageChannelKey ?? '',
     };
 
     await webViewController.loadHtmlString(

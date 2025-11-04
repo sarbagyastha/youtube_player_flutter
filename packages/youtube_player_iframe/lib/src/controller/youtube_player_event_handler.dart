@@ -35,7 +35,11 @@ class YoutubePlayerEventHandler {
   /// Handles the [javaScriptMessage] from the player iframe and create events.
   void call(JavaScriptMessage javaScriptMessage) {
     final data = Map.from(jsonDecode(javaScriptMessage.message));
-    if (data['playerId'] != controller.playerId) return;
+    if(data["youtubePlayerMessageChannelKey"]== null || data["youtubePlayerMessageChannelKey"] == ""){
+      if (data['playerId'] != controller.playerId) return;
+    } else {
+      if (data['youtubePlayerMessageChannelKey'] != controller.youtubePlayerMessageChannelKey) return;
+    }
 
     for (final entry in data.entries) {
       if (entry.key == 'ApiChange') {
