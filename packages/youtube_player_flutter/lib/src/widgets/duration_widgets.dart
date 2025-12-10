@@ -11,9 +11,14 @@ import '../utils/youtube_player_controller.dart';
 class CurrentPosition extends StatefulWidget {
   /// Overrides the default [YoutubePlayerController].
   final YoutubePlayerController? controller;
+  final int? selectedTimeMs;
 
   /// Creates [CurrentPosition] widget.
-  const CurrentPosition({super.key, this.controller});
+  const CurrentPosition({
+    super.key,
+    this.controller,
+    this.selectedTimeMs,
+  });
 
   @override
   State<CurrentPosition> createState() => _CurrentPositionState();
@@ -52,22 +57,38 @@ class _CurrentPositionState extends State<CurrentPosition> {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      durationFormatter(
-        _controller.value.position.inMilliseconds,
-      ),
-      style: const TextStyle(
-        color: Colors.white,
+    final flags = _controller.flags;
+    final decoration = flags.timeDecoration;
+
+    final timeDisplay = durationFormatterFromController(
+      _controller,
+      countDown: false,
+      selectedTimeMs: widget.selectedTimeMs,
+    );
+    final textWidget = Text(
+      ' $timeDisplay ',
+      style: TextStyle(
+        color: flags.timeTextColor,
         fontSize: 12.0,
       ),
     );
+    if (decoration == null) {
+      return textWidget;
+    }
+    return DecoratedBox(decoration: decoration, child: textWidget);
   }
 }
 
 /// A widget which displays the remaining duration of the video.
 class RemainingDuration extends StatefulWidget {
   /// Creates [RemainingDuration] widget.
-  const RemainingDuration({super.key, this.controller});
+  const RemainingDuration({
+    super.key,
+    this.controller,
+    this.selectedTimeMs,
+  });
+
+  final int? selectedTimeMs;
 
   /// Overrides the default [YoutubePlayerController].
   final YoutubePlayerController? controller;
@@ -109,15 +130,24 @@ class _RemainingDurationState extends State<RemainingDuration> {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      "- ${durationFormatter(
-        (_controller.metadata.duration.inMilliseconds) -
-            (_controller.value.position.inMilliseconds),
-      )}",
-      style: const TextStyle(
-        color: Colors.white,
+    final flags = _controller.flags;
+    final decoration = flags.timeDecoration;
+
+    final timeDisplay = durationFormatterFromController(
+      _controller,
+      countDown: true,
+      selectedTimeMs: widget.selectedTimeMs,
+    );
+    final textWidget = Text(
+      ' $timeDisplay ',
+      style: TextStyle(
+        color: flags.timeTextColor,
         fontSize: 12.0,
       ),
     );
+    if (decoration == null) {
+      return textWidget;
+    }
+    return DecoratedBox(decoration: decoration, child: textWidget);
   }
 }

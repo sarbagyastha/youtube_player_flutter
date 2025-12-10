@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 
 import '../utils/duration_formatter.dart';
@@ -44,7 +42,6 @@ class _TouchShutterState extends State<TouchShutter> {
   String seekDuration = "";
   String seekPosition = "";
   bool _dragging = false;
-  Timer? _timer;
 
   late YoutubePlayerController _controller;
 
@@ -66,7 +63,6 @@ class _TouchShutterState extends State<TouchShutter> {
 
   @override
   void dispose() {
-    _timer?.cancel();
     super.dispose();
   }
 
@@ -76,16 +72,6 @@ class _TouchShutterState extends State<TouchShutter> {
         isControlsVisible: !_controller.value.isControlsVisible,
       ),
     );
-    _timer?.cancel();
-    _timer = Timer(widget.timeOut, () {
-      if (!_controller.value.isDragging) {
-        _controller.updateValue(
-          _controller.value.copyWith(
-            isControlsVisible: false,
-          ),
-        );
-      }
-    });
   }
 
   @override
@@ -107,15 +93,18 @@ class _TouchShutterState extends State<TouchShutter> {
                 ),
               );
               delta = details.globalPosition.dx - dragStartPos;
+              final isLive = widget.controller?.metadata.isLive ?? false;
               seekToPosition =
                   (_controller.value.position.inMilliseconds + delta * 1000)
                       .round();
               setState(() {
                 seekDuration = (delta < 0 ? "- " : "+ ") +
                     durationFormatter(
-                        (delta < 0 ? -1 : 1) * (delta * 1000).round());
+                        (delta < 0 ? -1 : 1) * (delta * 1000).round(),
+                        _controller.metadata.isLive);
                 if (seekToPosition < 0) seekToPosition = 0;
-                seekPosition = durationFormatter(seekToPosition);
+                seekPosition =
+                    durationFormatter(seekToPosition, _controller.metadata.isLive);
               });
             },
             onHorizontalDragEnd: (_) {
