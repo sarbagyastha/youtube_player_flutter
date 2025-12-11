@@ -20,12 +20,12 @@ class YoutubeMetaData {
   /// rewound a total of 12hr at max
   final int totalVideoLengthMs;
 
+  /// The initial starting point for video length
+  /// This value is used to determine the offsetMs for live streams
+  final int startingVideoLengthMs;
+
   /// The YouTube API response value for if a video is live
   final bool isLive;
-
-  /// The start time ms since epoch
-  /// Used for live videos which are currently streaming and are less than 12hr long
-  final DateTime? startTime;
 
   /// Creates [YoutubeMetaData] for Youtube Video.
   const YoutubeMetaData({
@@ -34,8 +34,8 @@ class YoutubeMetaData {
     this.author = '',
     this.duration = const Duration(),
     this.totalVideoLengthMs = 0,
+    this.startingVideoLengthMs = 0,
     this.isLive = false,
-    this.startTime,
   });
 
   YoutubeMetaData copyWith({
@@ -58,10 +58,6 @@ class YoutubeMetaData {
 
     /// The YouTube API response value for if a video is live
     final bool? isLive,
-
-    /// The start time ms since epoch
-    /// Used for live videos which are currently streaming and are less than 12hr long
-    final DateTime? startTime,
   }) {
     return YoutubeMetaData(
         isLive: isLive ?? this.isLive,
@@ -70,7 +66,7 @@ class YoutubeMetaData {
         videoId: videoId ?? this.videoId,
         author: author ?? this.author,
         title: title ?? this.title,
-        startTime: startTime ?? this.startTime);
+        startingVideoLengthMs: startingVideoLengthMs);
   }
 
   /// Creates [YoutubeMetaData] from raw json video data.
@@ -100,9 +96,10 @@ class YoutubeMetaData {
         duration: Duration(milliseconds: duration),
         totalVideoLengthMs: totalLength,
         isLive: isLive,
-        startTime: startTime);
+        startingVideoLengthMs: totalLength);
   }
 
+//2025-12-10 12:54:06.670874
   @override
   String toString() {
     return '$runtimeType('

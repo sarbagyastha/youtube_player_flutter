@@ -1,6 +1,5 @@
 import '../../youtube_player_flutter.dart';
 
-
 /// Calculator used to determine the livestreams values for stream metadata
 /// Livestreams must increment their times based on the difference between
 /// when they were started and how long the stream has been running in
@@ -9,53 +8,26 @@ class LiveDurationCalculator {
   static LivestreamTimes getDuration({
     /// The controller of the livestream
     required YoutubePlayerController controller,
+
     /// The time milliseconds selected by the livestream player
     required int selectedTimeMs,
   }) {
-    final startTime = controller.metadata.startTime;
-    assert(startTime != null, 'Start time must be specified for livestreams');
-    final timeOffset = DateTime.now().difference(startTime!).inMilliseconds;
+    final offset = controller.metadata.totalVideoLengthMs -
+        controller.metadata.startingVideoLengthMs;
+    final positionMs = selectedTimeMs + offset;
+    final totalVideoTimeMs = controller.metadata.totalVideoLengthMs;
 
-    final positionMs = selectedTimeMs + timeOffset;
-    final totalVideoTimeMs =
-        controller.metadata.totalVideoLengthMs + timeOffset;
-
-    final streamAtMaxTime =
-        maxDurationMs <= controller.value.metaData.duration.inMilliseconds;
-
-    if (streamAtMaxTime) {
-      //Stream is max length, no need to offset duration
-      return LivestreamTimes(
-          selectedPositionMs: positionMs,
-          videoDurationMs: maxDurationMs,
-          totalVideoTimeMs: totalVideoTimeMs);
-    }
-
-    final durationMs =
-        controller.value.metaData.duration.inMilliseconds + timeOffset;
-
-    if (durationMs >= maxDurationMs) {
-      final metadata = controller.metadata.copyWith(
-          duration: const Duration(milliseconds: maxDurationMs),
-          totalVideoLengthMs: totalVideoTimeMs);
-
-      controller.updateValue(YoutubePlayerValue(metaData: metadata));
-      return LivestreamTimes(
-          selectedPositionMs: positionMs,
-          videoDurationMs: maxDurationMs,
-          totalVideoTimeMs: totalVideoTimeMs);
-    }
-
-    final actualDurationMs =
-        durationMs >= maxDurationMs ? maxDurationMs : durationMs;
+    final durationMs = controller.value.metaData.duration.inMilliseconds;
+    final streamAtMaxTime = maxDurationMs <= durationMs;
 
     return LivestreamTimes(
         selectedPositionMs: positionMs,
-        videoDurationMs: actualDurationMs,
+        videoDurationMs: streamAtMaxTime ? maxDurationMs : durationMs,
         totalVideoTimeMs: totalVideoTimeMs);
   }
 }
 
+/// Wrapper class to hold formatted times for livestreams
 class LivestreamTimes {
   final int videoDurationMs;
   final int selectedPositionMs;

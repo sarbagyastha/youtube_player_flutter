@@ -27,12 +27,10 @@ String durationFormatter(int milliseconds, bool isLive) {
       : seconds == 0
           ? '00'
           : '0$seconds';
-  final formattedTime =
-      '${hoursString == '00' ? '' : '$hoursString:'}$minutesString:$secondsString';
-
-  return isLive ? '-$formattedTime' : formattedTime;
+  return '${hoursString == '00' ? '' : '$hoursString:'}$minutesString:$secondsString';
 }
 
+/// Use controller values to determine the position of livestreams using current values
 String durationFormatterFromController(YoutubePlayerController controller,
     {required bool countDown, int? selectedTimeMs}) {
   final bool isLive = controller.metadata.isLive;
@@ -42,6 +40,7 @@ String durationFormatterFromController(YoutubePlayerController controller,
     final int position = controllerPosition;
     final int videoLengthMs = controller.metadata.totalVideoLengthMs;
     final offset = countDown ? videoLengthMs - position : position;
+
     return durationFormatter(offset, isLive);
   }
   final liveStreamTimes = LiveDurationCalculator.getDuration(
@@ -54,5 +53,6 @@ String durationFormatterFromController(YoutubePlayerController controller,
     return 'Live';
   }
 
-  return durationFormatter(offset, isLive);
+  final formattedTime = durationFormatter(offset, isLive);
+  return '-$formattedTime';
 }
