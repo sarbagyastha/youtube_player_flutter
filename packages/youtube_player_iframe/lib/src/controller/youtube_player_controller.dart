@@ -226,7 +226,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   /// i.e. https://www.youtube.com/watch?v=VIDEO_ID
   Future<void> loadVideo(String url) {
     assert(
-      RegExp(r'^https://(?:www\.|m\.)?youtube\.com/watch.*').hasMatch(url),
+      RegExp(r'^https?://(?:www\.|m\.)?youtube\.com/watch.*').hasMatch(url),
       'Only YouTube watch URLs are supported.',
     );
 
