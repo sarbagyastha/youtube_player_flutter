@@ -381,12 +381,12 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     if (!url.contains("http") && (url.length == 11)) return url;
     if (trimWhitespaces) url = url.trim();
 
-    const contentUrlPattern = r'^http(s)?:\/\/(?:www\.|m\.)?youtube\.com\/watch\?';
+    const contentUrlPattern = r'^https?:\/\/(?:www\.|m\.)?youtube\.com\/watch\?';
     const embedUrlPattern =
-        r'^http(s)?:\/\/(?:www\.|m\.)?youtube(?:-nocookie)?\.com\/embed\/';
-    const altUrlPattern = r'^http(s)?:\/\/youtu\.be\/';
-    const shortsUrlPattern = r'^http(s)?:\/\/(?:www\.|m\.)?youtube\.com\/shorts\/';
-    const musicUrlPattern = r'^http(s)?:\/\/(?:music\.)?youtube\.com\/watch\?';
+        r'^https?:\/\/(?:www\.|m\.)?youtube(?:-nocookie)?\.com\/embed\/';
+    const altUrlPattern = r'^https?:\/\/youtu\.be\/';
+    const shortsUrlPattern = r'^https?:\/\/(?:www\.|m\.)?youtube\.com\/shorts\/';
+    const musicUrlPattern = r'^https?:\/\/(?:music\.)?youtube\.com\/watch\?';
     const idPattern = r'([_\-a-zA-Z0-9]{11}).*$';
 
     for (var regex in [
@@ -397,7 +397,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
       '$musicUrlPattern?v=$idPattern',
     ]) {
       Match? match = RegExp(regex).firstMatch(url);
-      if (match != null && match.groupCount >= 2) return match.group(2);
+      if (match != null && match.groupCount >= 1) return match.group(1);
     }
 
     return null;
