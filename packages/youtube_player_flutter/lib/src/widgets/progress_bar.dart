@@ -239,7 +239,8 @@ class _ProgressBarPainter extends CustomPainter {
 
     final color = themeData.colorScheme.primaryContainer;
 
-    paint.color = colors?.backgroundColor ?? color.withValues(alpha: 0.38);
+    // FIX: withValues(alpha:) → withOpacity() for Flutter < 3.27 compatibility
+    paint.color = colors?.backgroundColor ?? color.withOpacity(0.38);
     canvas.drawLine(startPoint, endPoint, paint);
 
     paint.color = colors?.bufferedColor ?? Colors.white70;
@@ -256,7 +257,8 @@ class _ProgressBarPainter extends CustomPainter {
     final handleColor = colors?.handleColor ?? color;
 
     if (touchDown) {
-      handlePaint.color = handleColor.withValues(alpha: 0.4);
+      // FIX: withValues(alpha:) → withOpacity() for Flutter < 3.27 compatibility
+      handlePaint.color = handleColor.withOpacity(0.4);
       canvas.drawCircle(progressPoint, handleRadius * 3, handlePaint);
     }
 
