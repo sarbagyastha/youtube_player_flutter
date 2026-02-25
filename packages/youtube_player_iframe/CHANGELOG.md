@@ -1,4 +1,19 @@
 # Changelog
+
+## 5.4.0
+**Feb 24, 2026**
+- Fixed Error 15: default `origin` changed from `youtube.com` to `youtube-nocookie.com`.
+- Merged upstream: dep bumps, iOS 13.0 min, bug fixes, background-color removal.
+
+## 5.3.1
+**Feb 27, 2025**
+- Added optional `key` to `YoutubePlayerController.fromVideoId` to make consistent with the main constructor.
+
+## 5.3.0
+**Feb 25, 2025**
+- Added optional callback: `onWebNavigationRequest` to the controller to allow the app full control over handling of navigation requests.
+- Added `onWebResourceError` to the `YoutubePlayerController.fromVideoId` factory constructor for consistency
+
 ## 5.2.2
 **Aug 7, 2025**
 - Bumps dependency to latest version.
