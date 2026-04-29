@@ -327,7 +327,8 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
 
   /// The unique player id.
   @internal
-  String get playerId => 'Youtube${key ?? hashCode}';
+  String get playerId =>
+      'Youtube${(key ?? hashCode.toString()).replaceAll('-', '_')}';
 
   /// MetaData for the currently loaded or cued video.
   YoutubeMetaData get metadata => _value.metaData;
