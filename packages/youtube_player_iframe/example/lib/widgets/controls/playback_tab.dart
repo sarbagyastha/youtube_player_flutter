@@ -39,14 +39,14 @@ class _PlaybackTabState extends State<PlaybackTab> {
     final cs = Theme.of(context).colorScheme;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Transport controls card
           Card(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
               child: Column(
                 children: [
                   Row(
@@ -66,7 +66,7 @@ class _PlaybackTabState extends State<PlaybackTab> {
                           return FilledButton(
                             style: FilledButton.styleFrom(
                               shape: const CircleBorder(),
-                              padding: const EdgeInsets.all(18),
+                              padding: const EdgeInsets.all(12),
                               minimumSize: Size.zero,
                               backgroundColor: cs.primary,
                             ),
@@ -81,7 +81,7 @@ class _PlaybackTabState extends State<PlaybackTab> {
                                 isPlaying
                                     ? Icons.pause_rounded
                                     : Icons.play_arrow_rounded,
-                                size: 36,
+                                size: 28,
                                 color: cs.onPrimary,
                                 key: ValueKey(isPlaying),
                               ),
@@ -110,7 +110,7 @@ class _PlaybackTabState extends State<PlaybackTab> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 6),
                   // Seek slider
                   const VideoPositionSeeker(),
                 ],
@@ -118,7 +118,7 @@ class _PlaybackTabState extends State<PlaybackTab> {
             ),
           ),
 
-          const SizedBox(height: 12),
+          const SizedBox(height: 6),
 
           // Volume
           Row(
@@ -186,8 +186,8 @@ class _PlaybackTabState extends State<PlaybackTab> {
             ],
           ),
 
-          const SizedBox(height: 8),
-          const Divider(height: 20),
+          const SizedBox(height: 4),
+          const Divider(height: 12),
 
           // Loop & shuffle
           SwitchListTile.adaptive(

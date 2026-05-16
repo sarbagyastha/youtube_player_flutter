@@ -44,11 +44,11 @@ class _VideoListPageState extends State<VideoListPage> {
     return Scaffold(
       appBar: AppBar(title: const Text('Video List')),
       body: GridView.builder(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(8),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: MediaQuery.sizeOf(context).width > 500 ? 2 : 1,
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
+          crossAxisSpacing: 8,
+          mainAxisSpacing: 8,
           childAspectRatio: 16 / 9,
         ),
         itemCount: _controllers.length,

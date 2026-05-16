@@ -300,10 +300,14 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
 
     final varArgs = await _prepareData(data);
 
-    final result = await webViewController.runJavaScriptReturningResult(
-      'player.$functionName($varArgs);',
-    );
-    return result.toString();
+    try {
+      final result = await webViewController.runJavaScriptReturningResult(
+        'player.$functionName($varArgs);',
+      );
+      return result.toString();
+    } catch (_) {
+      return '';
+    }
   }
 
   Future<void> _waitReady() {

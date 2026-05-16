@@ -8,7 +8,7 @@ class InfoTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
       child: YoutubeValueBuilder(
         buildWhen: (o, n) =>
             o.metaData != n.metaData ||
@@ -30,18 +30,18 @@ class InfoTab extends StatelessWidget {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 6),
 
               // Channel row
               if (meta.author.isNotEmpty) ...[
                 _ChannelRow(author: meta.author),
-                const SizedBox(height: 10),
+                const SizedBox(height: 6),
               ],
 
               // Info chips + state badge
               Wrap(
-                spacing: 6,
-                runSpacing: 6,
+                spacing: 4,
+                runSpacing: 4,
                 crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   PlayerStateBadge(state: value.playerState),
@@ -136,7 +136,7 @@ class _InfoChip extends StatelessWidget {
     final fg = isError ? cs.onErrorContainer : cs.onSurfaceVariant;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(50),

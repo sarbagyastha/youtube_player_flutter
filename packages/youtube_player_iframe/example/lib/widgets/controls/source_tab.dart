@@ -23,7 +23,7 @@ class _SourceTabState extends State<SourceTab> {
     final cs = Theme.of(context).colorScheme;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -46,7 +46,7 @@ class _SourceTabState extends State<SourceTab> {
             ],
           ),
 
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
 
           // Input field
           AnimatedSize(
@@ -68,7 +68,7 @@ class _SourceTabState extends State<SourceTab> {
             ),
           ),
 
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
 
           // Load / Cue buttons
           Row(
