@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 class SourceTab extends StatefulWidget {
@@ -133,6 +134,9 @@ class _SourceTabState extends State<SourceTab> {
               ],
             ),
           ],
+
+          const SizedBox(height: 16),
+          _DeepLinkHint(videoIdController: _textController),
         ],
       ),
     );
@@ -184,5 +188,95 @@ class _SourceTabState extends State<SourceTab> {
   void dispose() {
     _textController.dispose();
     super.dispose();
+  }
+}
+
+class _DeepLinkHint extends StatelessWidget {
+  const _DeepLinkHint({required this.videoIdController});
+
+  final TextEditingController videoIdController;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerHighest.withValues(alpha: 0.4),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: cs.outlineVariant),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.link_rounded, size: 16, color: cs.primary),
+              const SizedBox(width: 6),
+              Text(
+                'Deep link',
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: cs.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Open a specific video by navigating to:',
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+          ),
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  r'/?v=<videoId>  or  /watch?v=<videoId>',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    fontFamily: 'monospace',
+                    color: cs.onSurface,
+                  ),
+                ),
+              ),
+              if (videoIdController.text.length == 11)
+                IconButton(
+                  iconSize: 18,
+                  visualDensity: VisualDensity.compact,
+                  tooltip: 'Copy deep link',
+                  icon: const Icon(Icons.copy_rounded),
+                  onPressed: () {
+                    final uri = Uri.base.replace(
+                      path: '/watch',
+                      queryParameters: {'v': videoIdController.text},
+                    );
+                    Clipboard.setData(ClipboardData(text: uri.toString()));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Copied: $uri',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w300,
+                            fontSize: 14,
+                          ),
+                        ),
+                        behavior: SnackBarBehavior.floating,
+                        elevation: 1,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(50),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 }
