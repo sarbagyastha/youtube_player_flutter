@@ -10,12 +10,11 @@ final router = GoRouter(
   routes: [
     GoRoute(
       path: '/',
-      builder: (_, __) => const HomePage(),
+      builder: (_, _) => const HomePage(),
       routes: [
         GoRoute(
           path: 'playlist',
-          pageBuilder: (_, __) =>
-              const NoTransitionPage(child: VideoListPage()),
+          pageBuilder: (_, _) => const NoTransitionPage(child: VideoListPage()),
         ),
         GoRoute(
           path: 'watch',
