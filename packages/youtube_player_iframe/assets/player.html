@@ -128,7 +128,7 @@
       }
 
       window.onresize = function () {
-        player.setSize(window.innerWidth, window.innerHeight);
+        if (player) player.setSize(window.innerWidth, window.innerHeight);
       };
 
       function sendPlatformMessage(message) {
