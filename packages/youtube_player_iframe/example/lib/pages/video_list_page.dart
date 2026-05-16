@@ -34,31 +34,11 @@ class _VideoListPageState extends State<VideoListPage> {
     _controllers = List.generate(
       _videoIds.length,
       (index) {
-        final controller = YoutubePlayerController.fromVideoId(
+        return YoutubePlayerController.fromVideoId(
           videoId: _videoIds[index],
           autoPlay: false,
           params: const YoutubePlayerParams(showFullscreenButton: true),
         );
-        controller.setFullScreenListener(
-          (_) async {
-            final videoData = await controller.videoData;
-            final startSeconds = await controller.currentTime;
-
-            if (!mounted) return;
-
-            final currentTime = await FullscreenYoutubePlayer.launch(
-              context,
-              videoId: videoData.videoId,
-              startSeconds: startSeconds,
-            );
-
-            if (currentTime != null) {
-              controller.seekTo(seconds: currentTime);
-            }
-          },
-        );
-
-        return controller;
       },
     );
   }

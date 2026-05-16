@@ -15,3 +15,4 @@ export 'src/meta_data.dart';
 export 'src/player_params.dart';
 export 'src/player_value.dart';
 export 'src/widgets/youtube_player.dart';
+export 'src/widgets/youtube_player_scaffold.dart';
