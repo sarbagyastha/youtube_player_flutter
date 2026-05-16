@@ -182,7 +182,9 @@
             if(fsButton != null) {
               var fsButtonCopy = fsButton.cloneNode(true);
               fsButton.replaceWith(fsButtonCopy);
-              fsButtonCopy.onclick = function() {
+              fsButtonCopy.onclick = function(e) {
+                e.stopPropagation();
+                e.preventDefault();
                 sendMessage('FullscreenButtonPressed', '');
               };
             }
