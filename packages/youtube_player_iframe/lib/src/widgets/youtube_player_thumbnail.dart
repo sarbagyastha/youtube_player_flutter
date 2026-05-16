@@ -7,6 +7,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import '../controller/youtube_player_controller.dart';
+import '../enums/thumbnail_format.dart';
 import '../enums/thumbnail_quality.dart';
 import 'youtube_player.dart';
 
@@ -28,6 +29,7 @@ class YoutubePlayerThumbnail extends StatefulWidget {
     required this.controller,
     this.aspectRatio = 16 / 9,
     this.thumbnailQuality = ThumbnailQuality.high,
+    this.thumbnailFormat = ThumbnailFormat.webp,
     this.gestureRecognizers = const <Factory<OneSequenceGestureRecognizer>>{},
     this.backgroundColor,
     this.enableFullScreenOnVerticalDrag = true,
@@ -46,7 +48,12 @@ class YoutubePlayerThumbnail extends StatefulWidget {
   /// Quality of the thumbnail image.
   ///
   /// Defaults to [ThumbnailQuality.high].
-  final String thumbnailQuality;
+  final ThumbnailQuality thumbnailQuality;
+
+  /// Format of the thumbnail image.
+  ///
+  /// Defaults to [ThumbnailFormat.webp].
+  final ThumbnailFormat thumbnailFormat;
 
   /// Which gestures should be consumed by the youtube player once active.
   final Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers;
@@ -106,9 +113,10 @@ class _YoutubePlayerThumbnailState extends State<YoutubePlayerThumbnail> {
           children: [
             if (videoId != null)
               Image.network(
-                ThumbnailQuality.thumbnailUrl(
-                  videoId,
+                YoutubePlayerController.getThumbnail(
+                  videoId: videoId,
                   quality: widget.thumbnailQuality,
+                  format: widget.thumbnailFormat,
                 ),
                 fit: BoxFit.cover,
                 loadingBuilder: (_, child, progress) =>
