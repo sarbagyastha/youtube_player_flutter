@@ -8,20 +8,28 @@ class LabeledValue extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text.rich(
-      TextSpan(
-        text: '$label: ',
-        style: Theme.of(context).textTheme.labelLarge,
-        children: [
-          TextSpan(
-            text: value,
-            style: Theme.of(context)
-                .textTheme
-                .labelMedium!
-                .copyWith(fontWeight: FontWeight.w300),
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label.toUpperCase(),
+          style: tt.labelSmall!.copyWith(
+            color: cs.primary,
+            letterSpacing: 0.8,
+            fontWeight: FontWeight.w700,
           ),
-        ],
-      ),
+        ),
+        const SizedBox(height: 3),
+        Text(
+          value.isEmpty ? '—' : value,
+          style: tt.bodyMedium!.copyWith(color: cs.onSurface),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ],
     );
   }
 }

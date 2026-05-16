@@ -72,8 +72,13 @@ class _HomePageState extends State<HomePage> {
       controller: _controller,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Youtube Player IFrame Demo'),
-          actions: const [_VideoPlaylistIconButton()],
+          title: const Text('YT Player IFrame'),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: _VideoPlaylistButton(),
+            ),
+          ],
         ),
         body: LayoutBuilder(
           builder: (context, constraints) {
@@ -87,7 +92,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                   const Expanded(
                     flex: 2,
-                    child: ControlsPanel(),
+                    child: SingleChildScrollView(child: ControlsPanel()),
                   ),
                 ],
               );
@@ -112,19 +117,20 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-class _VideoPlaylistIconButton extends StatelessWidget {
-  const _VideoPlaylistIconButton();
+class _VideoPlaylistButton extends StatelessWidget {
+  const _VideoPlaylistButton();
 
   @override
   Widget build(BuildContext context) {
     final controller = context.ytController;
 
-    return IconButton(
+    return IconButton.filledTonal(
       onPressed: () async {
         controller.pauseVideo();
         router.go('/playlist');
       },
-      icon: const Icon(Icons.playlist_play_sharp),
+      icon: const Icon(Icons.playlist_play_rounded),
+      tooltip: 'Playlist',
     );
   }
 }

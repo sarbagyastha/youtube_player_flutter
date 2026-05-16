@@ -139,13 +139,14 @@ class _YoutubePlayerThumbnailState extends State<YoutubePlayerThumbnail> {
                   format: widget.thumbnailFormat,
                 ),
                 fit: BoxFit.cover,
-                loadingBuilder: (_, child, progress) =>
-                    progress == null ? child : const ColoredBox(color: Colors.black),
+                loadingBuilder: (_, child, progress) => progress == null
+                    ? child
+                    : ColoredBox(color: Theme.of(context).colorScheme.surface),
                 errorBuilder: (_, _, _) =>
-                    const ColoredBox(color: Colors.black),
+                    ColoredBox(color: Theme.of(context).colorScheme.surface),
               )
             else
-              const ColoredBox(color: Colors.black),
+              ColoredBox(color: Theme.of(context).colorScheme.surface),
             Center(
               child: widget.playIcon ?? const _DefaultPlayIcon(),
             ),
@@ -161,14 +162,15 @@ class _DefaultPlayIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return DecoratedBox(
-      decoration: const BoxDecoration(
-        color: Colors.red,
+      decoration: BoxDecoration(
+        color: colorScheme.primary,
         shape: BoxShape.circle,
       ),
-      child: const Padding(
-        padding: EdgeInsets.all(12),
-        child: Icon(Icons.play_arrow, color: Colors.white, size: 32),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Icon(Icons.play_arrow, color: colorScheme.onPrimary, size: 32),
       ),
     );
   }

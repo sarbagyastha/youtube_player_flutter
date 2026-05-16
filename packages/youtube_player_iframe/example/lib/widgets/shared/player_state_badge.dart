@@ -8,39 +8,34 @@ class PlayerStateBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final (bg, fg) = _colorsForState(state, cs);
+
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 400),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      duration: const Duration(milliseconds: 300),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
       decoration: BoxDecoration(
-        color: _colorForState(state),
-        borderRadius: BorderRadius.circular(20),
+        color: bg,
+        borderRadius: BorderRadius.circular(50),
       ),
       child: Text(
         state.name,
-        style: Theme.of(context)
-            .textTheme
-            .labelSmall!
-            .copyWith(color: Colors.white),
+        style: Theme.of(context).textTheme.labelSmall!.copyWith(
+              color: fg,
+              fontWeight: FontWeight.w600,
+            ),
       ),
     );
   }
 
-  Color _colorForState(PlayerState state) {
-    switch (state) {
-      case PlayerState.unknown:
-        return Colors.grey[700]!;
-      case PlayerState.unStarted:
-        return Colors.pink;
-      case PlayerState.ended:
-        return Colors.red;
-      case PlayerState.playing:
-        return Colors.blueAccent;
-      case PlayerState.paused:
-        return Colors.orange;
-      case PlayerState.buffering:
-        return Colors.yellow[700]!;
-      case PlayerState.cued:
-        return Colors.blue[900]!;
-    }
+  (Color, Color) _colorsForState(PlayerState state, ColorScheme cs) {
+    return switch (state) {
+      PlayerState.playing => (cs.primaryContainer, cs.onPrimaryContainer),
+      PlayerState.paused => (cs.tertiaryContainer, cs.onTertiaryContainer),
+      PlayerState.buffering => (cs.secondaryContainer, cs.onSecondaryContainer),
+      PlayerState.ended => (cs.errorContainer, cs.onErrorContainer),
+      PlayerState.cued => (cs.secondaryContainer, cs.onSecondaryContainer),
+      _ => (cs.surfaceContainerHighest, cs.onSurfaceVariant),
+    };
   }
 }

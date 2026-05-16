@@ -15,9 +15,7 @@ const List<String> _videoIds = [
   'j61j9X4xCnA',
 ];
 
-///
 class VideoListPage extends StatefulWidget {
-  ///
   const VideoListPage({super.key});
 
   @override
@@ -41,20 +39,22 @@ class _VideoListPageState extends State<VideoListPage> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Video List Demo')),
+      appBar: AppBar(title: const Text('Video List')),
       body: GridView.builder(
         padding: const EdgeInsets.all(16),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: MediaQuery.sizeOf(context).width > 500 ? 2 : 1,
-          crossAxisSpacing: 8,
-          mainAxisSpacing: 8,
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
           childAspectRatio: 16 / 9,
         ),
         itemCount: _controllers.length,
         itemBuilder: (context, index) {
-          return ClipRRect(
-            borderRadius: BorderRadius.circular(8),
+          return Card(
+            clipBehavior: Clip.antiAlias,
             child: Stack(
               fit: StackFit.expand,
               children: [
@@ -67,22 +67,27 @@ class _VideoListPageState extends State<VideoListPage> {
                   right: 0,
                   bottom: 0,
                   child: DecoratedBox(
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.bottomCenter,
                         end: Alignment.topCenter,
-                        colors: [Colors.black87, Colors.transparent],
+                        colors: [
+                          cs.surface.withValues(alpha: 0.85),
+                          cs.surface.withValues(alpha: 0),
+                        ],
                       ),
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.all(8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
                       child: Text(
                         'Video ${index + 1}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                        ),
+                        style: Theme.of(context).textTheme.labelMedium!.copyWith(
+                              color: cs.onSurface,
+                              fontWeight: FontWeight.w600,
+                            ),
                       ),
                     ),
                   ),

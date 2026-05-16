@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
-import 'package:youtube_player_iframe_example/widgets/shared/labeled_value.dart';
 import 'package:youtube_player_iframe_example/widgets/shared/player_state_badge.dart';
 
 class InfoTab extends StatelessWidget {
@@ -8,102 +7,153 @@ class InfoTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          YoutubeValueBuilder(
-            buildWhen: (o, n) =>
-                o.metaData != n.metaData ||
-                o.playbackQuality != n.playbackQuality,
-            builder: (context, value) {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+      child: YoutubeValueBuilder(
+        buildWhen: (o, n) =>
+            o.metaData != n.metaData ||
+            o.playbackQuality != n.playbackQuality ||
+            o.playerState != n.playerState ||
+            o.error != n.error,
+        builder: (context, value) {
+          final meta = value.metaData;
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Title
+              Text(
+                meta.title.isEmpty ? 'No video loaded' : meta.title,
+                style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                      fontWeight: FontWeight.w700,
+                      height: 1.3,
+                    ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 10),
+
+              // Channel row
+              if (meta.author.isNotEmpty) ...[
+                _ChannelRow(author: meta.author),
+                const SizedBox(height: 10),
+              ],
+
+              // Info chips + state badge
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
-                  LabeledValue('Title', value.metaData.title),
-                  const SizedBox(height: 8),
-                  LabeledValue('Channel', value.metaData.author),
-                  const SizedBox(height: 8),
-                  LabeledValue(
-                    'Duration',
-                    _formatDuration(value.metaData.duration),
-                  ),
-                  const SizedBox(height: 8),
-                  LabeledValue('Video ID', value.metaData.videoId),
-                  const SizedBox(height: 8),
-                  LabeledValue('Quality', value.playbackQuality ?? '—'),
+                  PlayerStateBadge(state: value.playerState),
+                  if (meta.duration > Duration.zero)
+                    _InfoChip(
+                      icon: Icons.schedule_rounded,
+                      label: _formatDuration(meta.duration),
+                    ),
+                  if (value.playbackQuality != null)
+                    _InfoChip(
+                      icon: Icons.hd_rounded,
+                      label: value.playbackQuality!,
+                    ),
+                  if (meta.videoId.isNotEmpty)
+                    _InfoChip(
+                      icon: Icons.tag_rounded,
+                      label: meta.videoId,
+                    ),
+                  if (value.hasError)
+                    _InfoChip(
+                      icon: Icons.error_outline_rounded,
+                      label: value.error.name,
+                      isError: true,
+                    ),
                 ],
-              );
-            },
-          ),
-          const SizedBox(height: 16),
-          YoutubeValueBuilder(
-            buildWhen: (o, n) =>
-                o.playerState != n.playerState || o.error != n.error,
-            builder: (context, value) {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                        'State: ',
-                        style: Theme.of(context).textTheme.labelLarge,
-                      ),
-                      const SizedBox(width: 8),
-                      PlayerStateBadge(state: value.playerState),
-                    ],
-                  ),
-                  if (value.hasError) ...[
-                    const SizedBox(height: 12),
-                    _ErrorCard(error: value.error),
-                  ],
-                ],
-              );
-            },
-          ),
-        ],
+              ),
+            ],
+          );
+        },
       ),
     );
   }
 
   String _formatDuration(Duration d) {
-    final hours = d.inHours;
-    final minutes = d.inMinutes.remainder(60).toString().padLeft(2, '0');
-    final seconds = d.inSeconds.remainder(60).toString().padLeft(2, '0');
-    if (hours > 0) return '$hours:$minutes:$seconds';
-    return '$minutes:$seconds';
+    final h = d.inHours;
+    final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final s = d.inSeconds.remainder(60).toString().padLeft(2, '0');
+    return h > 0 ? '$h:$m:$s' : '$m:$s';
   }
 }
 
-class _ErrorCard extends StatelessWidget {
-  const _ErrorCard({required this.error});
+class _ChannelRow extends StatelessWidget {
+  const _ChannelRow({required this.author});
 
-  final YoutubeError error;
+  final String author;
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: Theme.of(context).colorScheme.errorContainer,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        child: Row(
-          children: [
-            Icon(
-              Icons.error_outline,
-              color: Theme.of(context).colorScheme.onErrorContainer,
-              size: 18,
-            ),
-            const SizedBox(width: 8),
-            Text(
-              error.name,
-              style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                    color: Theme.of(context).colorScheme.onErrorContainer,
-                  ),
-            ),
-          ],
+    final cs = Theme.of(context).colorScheme;
+    return Row(
+      children: [
+        CircleAvatar(
+          radius: 14,
+          backgroundColor: cs.primaryContainer,
+          child: Icon(
+            Icons.person_rounded,
+            size: 16,
+            color: cs.onPrimaryContainer,
+          ),
         ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            author,
+            style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: cs.onSurfaceVariant,
+                ),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _InfoChip extends StatelessWidget {
+  const _InfoChip({
+    required this.icon,
+    required this.label,
+    this.isError = false,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool isError;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final bg = isError ? cs.errorContainer : cs.surfaceContainerHighest;
+    final fg = isError ? cs.onErrorContainer : cs.onSurfaceVariant;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(50),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: fg),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: Theme.of(context)
+                .textTheme
+                .labelSmall!
+                .copyWith(color: fg),
+          ),
+        ],
       ),
     );
   }
