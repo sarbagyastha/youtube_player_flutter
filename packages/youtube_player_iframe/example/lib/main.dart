@@ -17,7 +17,7 @@ class YoutubeApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    final theme = ThemeData(colorSchemeSeed: Colors.red, brightness: .dark);
+    final theme = ThemeData(colorSchemeSeed: Colors.red, brightness: .dark, scaffoldBackgroundColor: Colors.black);
 
     return MaterialApp.router(
       title: 'Youtube Player IFrame Demo',

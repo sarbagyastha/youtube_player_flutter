@@ -137,6 +137,7 @@
              <<playerId>>.postMessage(message);
              break;
            case 'ios':
+           case 'macos':
              <<playerId>>.postMessage(message, '*');
              break;
            case 'web':
