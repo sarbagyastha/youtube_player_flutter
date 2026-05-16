@@ -6,12 +6,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart' as uri_launcher;
 import 'package:webview_flutter/webview_flutter.dart';
-import 'package:webview_flutter_android/webview_flutter_android.dart';
-import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 import 'package:youtube_player_iframe/src/iframe_api/src/functions/video_information.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 import 'js_bridge.dart';
+import 'webview_platform_stub.dart'
+    if (dart.library.io) 'webview_platform_io.dart';
 import 'youtube_player_event_handler.dart';
 
 /// The Web Resource Error.
@@ -41,15 +41,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   }) {
     _eventHandler = YoutubePlayerEventHandler(this);
 
-    late final PlatformWebViewControllerCreationParams webViewParams;
-    if (WebViewPlatform.instance is WebKitWebViewPlatform) {
-      webViewParams = WebKitWebViewControllerCreationParams(
-        allowsInlineMediaPlayback: true,
-        mediaTypesRequiringUserAction: const <PlaybackMediaTypes>{},
-      );
-    } else {
-      webViewParams = const PlatformWebViewControllerCreationParams();
-    }
+    final webViewParams = buildWebViewParams();
 
     final navigationDelegate = NavigationDelegate(
       onWebResourceError: (error) {
@@ -73,13 +65,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
           )
           ..enableZoom(false);
 
-    final webViewPlatform = webViewController.platform;
-    if (webViewPlatform is AndroidWebViewController) {
-      AndroidWebViewController.enableDebugging(false);
-      webViewPlatform.setMediaPlaybackRequiresUserGesture(false);
-    } else if (webViewPlatform is WebKitWebViewController) {
-      webViewPlatform.setAllowsBackForwardNavigationGestures(false);
-    }
+    configureWebViewController(webViewController);
 
     _bridge = JsBridge(
       webViewController: webViewController,
