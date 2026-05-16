@@ -103,7 +103,12 @@ class _YoutubePlayerThumbnailState extends State<YoutubePlayerThumbnail> {
 
     return GestureDetector(
       onTap: () {
-        widget.controller.playVideo();
+        final videoId = widget.controller.key;
+        if (videoId != null) {
+          widget.controller.loadVideoById(videoId: videoId);
+        } else {
+          widget.controller.playVideo();
+        }
         _activate();
       },
       child: AspectRatio(
