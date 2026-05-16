@@ -22,7 +22,7 @@ const List<String> _videoIds = [
   '6jZDSSZZxjQ',
   'p2lYr3vM_1w',
   '7QUtEmBT_-w',
-  '34_PXCzGw1M'
+  '34_PXCzGw1M',
 ];
 
 class HomePage extends StatefulWidget {
@@ -36,6 +36,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   late YoutubePlayerController _controller;
+  late final GlobalObjectKey _playerKey;
 
   @override
   void initState() {
@@ -49,11 +50,9 @@ class _HomePageState extends State<HomePage> {
       ),
     );
 
-    _controller.setFullScreenListener(
-      (isFullScreen) {
-        log('${isFullScreen ? 'Entered' : 'Exited'} Fullscreen.');
-      },
-    );
+    _controller.setFullScreenListener((isFullScreen) {
+      log('${isFullScreen ? 'Entered' : 'Exited'} Fullscreen.');
+    });
 
     if (widget.videoId != null) {
       _controller.loadVideoById(videoId: widget.videoId!);
@@ -64,10 +63,14 @@ class _HomePageState extends State<HomePage> {
         startSeconds: 136,
       );
     }
+
+    _playerKey = GlobalObjectKey(_controller);
   }
 
   @override
   Widget build(BuildContext context) {
+    final player = PlayerView(key: _playerKey, controller: _controller);
+
     return YoutubePlayerControllerProvider(
       controller: _controller,
       child: Scaffold(
@@ -86,10 +89,7 @@ class _HomePageState extends State<HomePage> {
               return Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    flex: 3,
-                    child: PlayerView(controller: _controller),
-                  ),
+                  Expanded(flex: 3, child: player),
                   const Expanded(
                     flex: 2,
                     child: SingleChildScrollView(child: ControlsPanel()),
@@ -98,12 +98,7 @@ class _HomePageState extends State<HomePage> {
               );
             }
 
-            return ListView(
-              children: [
-                PlayerView(controller: _controller),
-                const ControlsPanel(),
-              ],
-            );
+            return ListView(children: [player, const ControlsPanel()]);
           },
         ),
       ),
