@@ -22,6 +22,8 @@ typedef YoutubeWebResourceError = WebResourceError;
 ///
 /// After [YoutubePlayerController.close] all further calls are ignored.
 class YoutubePlayerController implements YoutubePlayerIFrameAPI {
+  static int _instanceCount = 0;
+
   /// Creates [YoutubePlayerController].
   YoutubePlayerController({
     this.params = const YoutubePlayerParams(),
@@ -336,7 +338,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
 
   /// The unique player id.
   @internal
-  String get playerId => 'Youtube${key ?? hashCode}';
+  late final String playerId = 'Youtube${++_instanceCount}';
 
   /// MetaData for the currently loaded or cued video.
   YoutubeMetaData get metadata => _value.metaData;
