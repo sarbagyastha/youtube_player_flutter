@@ -42,6 +42,48 @@ class YoutubePlayerValue {
   /// Returns meta data of the currently loaded/cued video.
   final YoutubeMetaData metaData;
 
+  /// Returns a copy of this value with the given fields replaced.
+  YoutubePlayerValue copyWith({
+    FullScreenOption? fullScreenOption,
+    PlayerState? playerState,
+    double? playbackRate,
+    String? playbackQuality,
+    YoutubeError? error,
+    YoutubeMetaData? metaData,
+  }) {
+    return YoutubePlayerValue(
+      fullScreenOption: fullScreenOption ?? this.fullScreenOption,
+      playerState: playerState ?? this.playerState,
+      playbackRate: playbackRate ?? this.playbackRate,
+      playbackQuality: playbackQuality ?? this.playbackQuality,
+      error: error ?? this.error,
+      metaData: metaData ?? this.metaData,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        other is YoutubePlayerValue &&
+            runtimeType == other.runtimeType &&
+            fullScreenOption == other.fullScreenOption &&
+            playerState == other.playerState &&
+            playbackRate == other.playbackRate &&
+            playbackQuality == other.playbackQuality &&
+            error == other.error &&
+            metaData == other.metaData;
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    fullScreenOption,
+    playerState,
+    playbackRate,
+    playbackQuality,
+    error,
+    metaData,
+  );
+
   @override
   String toString() {
     return '$runtimeType('
@@ -57,10 +99,7 @@ class YoutubePlayerValue {
 /// The fullscreen option.
 class FullScreenOption {
   /// Creates [FullScreenOption].
-  const FullScreenOption({
-    required this.enabled,
-    this.locked = false,
-  });
+  const FullScreenOption({required this.enabled, this.locked = false});
 
   /// Denotes that the fullscreen mode is currently enabled.
   final bool enabled;
@@ -79,4 +118,15 @@ class FullScreenOption {
 
   @override
   int get hashCode => enabled.hashCode ^ locked.hashCode;
+
+  /// Returns a copy of this option with the given fields replaced.
+  FullScreenOption copyWith({bool? enabled, bool? locked}) {
+    return FullScreenOption(
+      enabled: enabled ?? this.enabled,
+      locked: locked ?? this.locked,
+    );
+  }
+
+  @override
+  String toString() => 'FullScreenOption(enabled: $enabled, locked: $locked)';
 }

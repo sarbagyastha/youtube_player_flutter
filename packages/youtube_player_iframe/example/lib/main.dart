@@ -11,21 +11,20 @@ Future<void> main() async {
   runApp(const YoutubeApp());
 }
 
-///
 class YoutubeApp extends StatelessWidget {
   const YoutubeApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = ColorScheme.fromSeed(
-      seedColor: Colors.green,
-      dynamicSchemeVariant: DynamicSchemeVariant.expressive,
-      brightness: Brightness.dark,
+    final theme = ThemeData(
+      colorSchemeSeed: Colors.red,
+      brightness: .dark,
+      scaffoldBackgroundColor: Colors.black,
     );
 
     return MaterialApp.router(
       title: 'Youtube Player IFrame Demo',
-      theme: ThemeData.from(colorScheme: colorScheme),
+      theme: theme,
       debugShowCheckedModeBanner: false,
       routerConfig: router,
     );

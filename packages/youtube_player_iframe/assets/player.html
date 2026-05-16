@@ -45,6 +45,7 @@
       firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
       var platform = "<<platform>>";
+      var isMobile = platform === 'android' || platform === 'ios';
       var host = "<<host>>";
       var player;
       var timerId;
@@ -55,11 +56,11 @@
           playerVars: <<playerVars>>,
           events: {
             onReady: function (event) {
-              handleFullScreenForMobilePlatform();
+              if (isMobile) handleFullScreenForMobilePlatform();
               sendMessage('Ready', event);
             },
             onStateChange: function (event) {
-              clearTimeout(timerId);
+              clearInterval(timerId);
               sendMessage('StateChange', event.data);
               if (event.data == 1) {
                 timerId = setInterval(function () {
@@ -89,7 +90,7 @@
             },
           },
         });
-        player.setSize(window.innerWidth, window.innerHeight);
+        if (platform !== 'web') player.setSize(window.innerWidth, window.innerHeight);
       }
 
       window.addEventListener('message', (event) => {
@@ -98,7 +99,7 @@
 
           if(data.function){
             var rawFunction = data.function.replaceAll('<<quote>>', '"');
-            var result = eval(rawFunction);
+            var result = _safeCall(rawFunction);
 
             if(data.key) {
               var message = {}
@@ -111,8 +112,24 @@
         } catch (e) { }
       }, false);
 
+      function _safeCall(rawFunction) {
+        var playerMatch = rawFunction.match(/^player\.(\w+)\(([\s\S]*)\);?$/);
+        if (playerMatch) {
+          var fn = playerMatch[1];
+          var argsStr = playerMatch[2].trim();
+          if (typeof player[fn] !== 'function') throw new Error('Unknown player method: ' + fn);
+          return argsStr ? player[fn](JSON.parse(argsStr)) : player[fn]();
+        }
+        var globalAllowlist = { getVideoData: getVideoData, getPlaylist: getPlaylist, getAvailablePlaybackRates: getAvailablePlaybackRates };
+        var globalMatch = rawFunction.match(/^(\w+)\(\);?$/);
+        if (globalMatch && globalMatch[1] in globalAllowlist) {
+          return globalAllowlist[globalMatch[1]]();
+        }
+        throw new Error('Disallowed function: ' + rawFunction);
+      }
+
       window.onresize = function () {
-        player.setSize(window.innerWidth, window.innerHeight);
+        if (player && platform !== 'web') player.setSize(window.innerWidth, window.innerHeight);
       };
 
       function sendPlatformMessage(message) {
@@ -121,6 +138,7 @@
              <<playerId>>.postMessage(message);
              break;
            case 'ios':
+           case 'macos':
              <<playerId>>.postMessage(message, '*');
              break;
            case 'web':
@@ -157,17 +175,21 @@
       }
 
       function handleFullScreenForMobilePlatform() {
-        if(platform != 'web') {
+        try {
           var ytFrame = document.getElementsByTagName('iframe')[0].contentWindow.document;
           var fsButton = ytFrame.getElementsByClassName('ytp-fullscreen-button ytp-button')[0];
 
           if(fsButton != null) {
             var fsButtonCopy = fsButton.cloneNode(true);
             fsButton.replaceWith(fsButtonCopy);
-            fsButtonCopy.onclick = function() {
+            fsButtonCopy.onclick = function(e) {
+              e.stopPropagation();
+              e.preventDefault();
               sendMessage('FullscreenButtonPressed', '');
             };
           }
+        } catch (e) {
+          console.warn('youtube_player: fullscreen button setup failed', e);
         }
       }
     </script>

@@ -10,16 +10,15 @@ final router = GoRouter(
   routes: [
     GoRoute(
       path: '/',
-      builder: (_, __) => const HomePage(),
+      builder: (_, state) => HomePage(videoId: state.uri.queryParameters['v']),
       routes: [
         GoRoute(
           path: 'playlist',
-          pageBuilder: (_, __) =>
-              const NoTransitionPage(child: VideoListPage()),
+          pageBuilder: (_, _) => const NoTransitionPage(child: VideoListPage()),
         ),
         GoRoute(
           path: 'watch',
-          pageBuilder: (_, GoRouterState state) {
+          pageBuilder: (_, state) {
             return NoTransitionPage(
               child: HomePage(videoId: state.uri.queryParameters['v']),
             );

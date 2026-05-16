@@ -94,7 +94,7 @@ class YoutubePlayerParams {
 
   /// This parameter provides an extra security measure for the IFrame API and is only supported for IFrame embeds.
   ///
-  /// Specify your domain as the value.
+  /// Specify your domain as the value. Defaults to [host] when not set.
   final String? origin;
 
   /// This parameter controls whether videos play inline or fullscreen in an HTML5 player on iOS.
@@ -110,6 +110,12 @@ class YoutubePlayerParams {
   /// The user agent for the player.
   final String? userAgent;
 
+  /// Uses the privacy-enhanced `youtube-nocookie.com` domain instead of `youtube.com`.
+  ///
+  /// YouTube will not store information about visitors on your web page
+  /// unless they play the video. Default is true.
+  final bool privacyEnhancedMode;
+
   /// Defines player parameters for the youtube player.
   const YoutubePlayerParams({
     this.mute = false,
@@ -124,10 +130,11 @@ class YoutubePlayerParams {
     this.interfaceLanguage = 'en',
     this.showVideoAnnotations = true,
     this.loop = false,
-    this.origin = 'https://www.youtube.com',
+    this.origin,
     this.playsInline = true,
     this.strictRelatedVideos = false,
     this.userAgent,
+    this.privacyEnhancedMode = true,
   });
 
   /// Creates [Map] representation of [YoutubePlayerParams].
@@ -158,8 +165,60 @@ class YoutubePlayerParams {
     };
   }
 
+  /// The YouTube host URL, based on [privacyEnhancedMode].
+  String get host => privacyEnhancedMode
+      ? 'https://www.youtube-nocookie.com'
+      : 'https://www.youtube.com';
+
   /// The serialized JSON representation of the [YoutubePlayerParams].
   String toJson() => jsonEncode(toMap());
+
+  // Sentinel used by copyWith to distinguish "set to null" from "not provided"
+  // for nullable fields.
+  static const Object _sentinel = Object();
+
+  /// Returns a copy of this params with the given fields replaced.
+  ///
+  /// To explicitly set a nullable field to null, pass `null` for that argument.
+  YoutubePlayerParams copyWith({
+    bool? mute,
+    String? captionLanguage,
+    bool? enableCaption,
+    PointerEvents? pointerEvents,
+    String? color,
+    bool? showControls,
+    bool? enableKeyboard,
+    bool? enableJavaScript,
+    bool? showFullscreenButton,
+    String? interfaceLanguage,
+    bool? showVideoAnnotations,
+    bool? loop,
+    Object? origin = _sentinel,
+    bool? playsInline,
+    bool? strictRelatedVideos,
+    Object? userAgent = _sentinel,
+    bool? privacyEnhancedMode,
+  }) {
+    return YoutubePlayerParams(
+      mute: mute ?? this.mute,
+      captionLanguage: captionLanguage ?? this.captionLanguage,
+      enableCaption: enableCaption ?? this.enableCaption,
+      pointerEvents: pointerEvents ?? this.pointerEvents,
+      color: color ?? this.color,
+      showControls: showControls ?? this.showControls,
+      enableKeyboard: enableKeyboard ?? this.enableKeyboard,
+      enableJavaScript: enableJavaScript ?? this.enableJavaScript,
+      showFullscreenButton: showFullscreenButton ?? this.showFullscreenButton,
+      interfaceLanguage: interfaceLanguage ?? this.interfaceLanguage,
+      showVideoAnnotations: showVideoAnnotations ?? this.showVideoAnnotations,
+      loop: loop ?? this.loop,
+      origin: origin == _sentinel ? this.origin : origin as String?,
+      playsInline: playsInline ?? this.playsInline,
+      strictRelatedVideos: strictRelatedVideos ?? this.strictRelatedVideos,
+      userAgent: userAgent == _sentinel ? this.userAgent : userAgent as String?,
+      privacyEnhancedMode: privacyEnhancedMode ?? this.privacyEnhancedMode,
+    );
+  }
 
   int _boolean(bool value) => value ? 1 : 0;
 }

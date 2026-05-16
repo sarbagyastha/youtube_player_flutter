@@ -28,6 +28,9 @@ enum YoutubeError {
   /// This error is the same as [YoutubeError.notEmbeddable] in disguise!
   sameAsNotEmbeddable(150),
 
+  /// This error is the same as [YoutubeError.sameAsNotEmbeddable] in disguise!
+  sameAsNotEmbeddable2(152),
+
   /// Unknown Error
   unknown(-1);
 
@@ -36,24 +39,4 @@ enum YoutubeError {
 
   /// Code of the error.
   final int code;
-}
-
-///
-YoutubeError errorEnum(int errorCode) {
-  switch (errorCode) {
-    case 2:
-      return YoutubeError.invalidParam;
-    case 5:
-      return YoutubeError.html5Error;
-    case 100:
-      return YoutubeError.videoNotFound;
-    case 101:
-      return YoutubeError.notEmbeddable;
-    case 105:
-      return YoutubeError.cannotFindVideo;
-    case 150:
-      return YoutubeError.sameAsNotEmbeddable;
-    default:
-      return YoutubeError.unknown;
-  }
 }

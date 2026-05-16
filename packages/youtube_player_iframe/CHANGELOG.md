@@ -1,4 +1,23 @@
 # Changelog
+## 6.0.0
+**May 16, 2026**
+
+**Breaking Changes**
+- Removes `YoutubePlayerScaffold`. Use `YoutubePlayer` directly. Fullscreen is now handled internally. See the migration guide in the README.
+- Bumps minimum Flutter version to `>=3.38.0` / Dart SDK `^3.10.0`.
+
+**New Features**
+- Fullscreen navigation is no longer broken. Entering and exiting fullscreen is now smooth and works correctly across all supported platforms. Auto-enters fullscreen on landscape rotation; supports swipe-up/down gesture.
+- Adds `YoutubePlayerThumbnail` widget. Shows the video thumbnail and only creates the WebView when the user taps, making it ideal for lists.
+- Adds `privacyEnhancedMode` to `YoutubePlayerParams` (default `true`). Uses `youtube-nocookie.com` so YouTube won't track visitors unless they play the video.
+- Adds `copyWith` to `YoutubePlayerParams`.
+- Adds `ThumbnailQuality` and `ThumbnailFormat` enums for `YoutubePlayerController.getThumbnail`.
+- Adds macOS support.
+- Fixes fullscreen button handling on mobile platforms.
+- Fixes event propagation on fullscreen button click.
+- Fixes player not resizing correctly after orientation change.
+- Fixes null `videoId` crash in controller.
+
 ## 5.2.2
 **Aug 7, 2025**
 - Bumps dependency to latest version.
