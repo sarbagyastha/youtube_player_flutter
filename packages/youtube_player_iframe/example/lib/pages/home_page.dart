@@ -4,7 +4,6 @@
 
 import 'dart:developer';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 import 'package:youtube_player_iframe_example/router.dart';
@@ -85,7 +84,7 @@ class _HomePageState extends State<HomePage> {
         ),
         body: LayoutBuilder(
           builder: (context, constraints) {
-            if (kIsWeb && constraints.maxWidth > 750) {
+            if (constraints.maxWidth > 750) {
               return Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
