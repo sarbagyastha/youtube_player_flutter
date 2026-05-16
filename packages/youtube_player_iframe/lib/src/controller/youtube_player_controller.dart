@@ -11,10 +11,21 @@ import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 import 'package:youtube_player_iframe/src/iframe_api/src/functions/video_information.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
+import 'js_bridge.dart';
 import 'youtube_player_event_handler.dart';
 
 /// The Web Resource Error.
 typedef YoutubeWebResourceError = WebResourceError;
+
+Future<String> _buildPlayerHTML(Map<String, String> data) async {
+  final playerHtml = await rootBundle.loadString(
+    'packages/youtube_player_iframe/assets/player.html',
+  );
+  return playerHtml.replaceAllMapped(
+    RegExp(r'<<([a-zA-Z]+)>>'),
+    (m) => data[m.group(1)] ?? m.group(0)!,
+  );
+}
 
 /// Controls the youtube player, and provides updates when the state is changing.
 ///
@@ -67,6 +78,11 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     } else if (webViewPlatform is WebKitWebViewController) {
       webViewPlatform.setAllowsBackForwardNavigationGestures(false);
     }
+
+    _bridge = JsBridge(
+      webViewController: webViewController,
+      isReady: () => _eventHandler.isReady,
+    );
   }
 
   /// Creates a [YoutubePlayerController] and initializes the player with [videoId].
@@ -107,7 +123,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   late final WebViewController webViewController;
 
   late final YoutubePlayerEventHandler _eventHandler;
-  final Completer<void> _initCompleter = Completer();
+  late final JsBridge _bridge;
 
   final StreamController<YoutubePlayerValue> _valueController =
       StreamController.broadcast();
@@ -127,7 +143,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     int? index,
     double? startSeconds,
   }) {
-    return _run(
+    return _bridge.run(
       'cuePlaylist',
       data: {
         list.length == 1 ? 'list' : 'playlist': list,
@@ -144,7 +160,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     double? startSeconds,
     double? endSeconds,
   }) {
-    return _run(
+    return _bridge.run(
       'cueVideoById',
       data: {
         'videoId': videoId,
@@ -160,7 +176,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     double? startSeconds,
     double? endSeconds,
   }) {
-    return _run(
+    return _bridge.run(
       'cueVideoByUrl',
       data: {
         'mediaContentUrl': mediaContentUrl,
@@ -177,7 +193,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     int? index,
     double? startSeconds,
   }) {
-    return _run(
+    return _bridge.run(
       'loadPlaylist',
       data: {
         list.length == 1 ? 'list' : 'playlist': list,
@@ -194,7 +210,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     double? startSeconds,
     double? endSeconds,
   }) {
-    return _run(
+    return _bridge.run(
       'loadVideoById',
       data: {
         'videoId': videoId,
@@ -210,7 +226,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     double? startSeconds,
     double? endSeconds,
   }) {
-    return _run(
+    return _bridge.run(
       'loadVideoByUrl',
       data: {
         'mediaContentUrl': mediaContentUrl,
@@ -230,8 +246,8 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
       'Only YouTube watch URLs are supported.',
     );
 
-    final params = Uri.parse(url).queryParameters;
-    final videoId = params['v'];
+    final queryParams = Uri.parse(url).queryParameters;
+    final videoId = queryParams['v'];
 
     assert(
       videoId != null && videoId.isNotEmpty,
@@ -240,7 +256,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
 
     return loadVideoById(
       videoId: videoId!,
-      startSeconds: double.tryParse(params['t'] ?? ''),
+      startSeconds: double.tryParse(queryParams['t'] ?? ''),
     );
   }
 
@@ -253,7 +269,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
       id: playerId,
     );
 
-    if (!_initCompleter.isCompleted) _initCompleter.complete();
+    _bridge.completeInit();
   }
 
   /// Loads the player with the given [params].
@@ -277,65 +293,6 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
       await _buildPlayerHTML(playerData),
       baseUrl: baseUrl,
     );
-  }
-
-  Future<void> _run(
-    String functionName, {
-    Map<String, dynamic>? data,
-  }) async {
-    await _initCompleter.future;
-
-    final varArgs = await _prepareData(data);
-
-    return webViewController.runJavaScript('player.$functionName($varArgs);');
-  }
-
-  Future<String> _runWithResult(
-    String functionName, {
-    Map<String, dynamic>? data,
-  }) async {
-    await _initCompleter.future;
-
-    final varArgs = await _prepareData(data);
-
-    try {
-      final result = await webViewController.runJavaScriptReturningResult(
-        'player.$functionName($varArgs);',
-      );
-      return result.toString();
-    } catch (_) {
-      return '';
-    }
-  }
-
-  Future<void> _waitReady() {
-    return _eventHandler.isReady.timeout(
-      const Duration(seconds: 30),
-      onTimeout: () => throw TimeoutException(
-        'YouTube player failed to initialize within 30 seconds.',
-      ),
-    );
-  }
-
-  Future<void> _eval(String javascript) async {
-    await _waitReady();
-
-    return webViewController.runJavaScript(javascript);
-  }
-
-  Future<String> _evalWithResult(String javascript) async {
-    await _waitReady();
-
-    final result = await webViewController.runJavaScriptReturningResult(
-      javascript,
-    );
-
-    return result.toString();
-  }
-
-  Future<String> _prepareData(Map<String, dynamic>? data) async {
-    await _waitReady();
-    return data == null ? '' : jsonEncode(data);
   }
 
   /// The unique player id.
@@ -426,39 +383,36 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
 
   @override
   Future<double> get duration async {
-    final duration = await _runWithResult('getDuration');
+    final duration = await _bridge.runWithResult('getDuration');
     return double.tryParse(duration) ?? 0;
   }
 
   @override
   Future<List<String>> get playlist async {
-    final playlist = await _evalWithResult('getPlaylist()');
-
+    final playlist = await _bridge.evalWithResult('getPlaylist()');
     return List.from(jsonDecode(playlist));
   }
 
   @override
   Future<int> get playlistIndex async {
-    final index = await _runWithResult('getPlaylistIndex');
-
+    final index = await _bridge.runWithResult('getPlaylistIndex');
     return int.tryParse(index) ?? 0;
   }
 
   @override
   Future<VideoData> get videoData async {
-    final videoData = await _evalWithResult('getVideoData()');
-
+    final videoData = await _bridge.evalWithResult('getVideoData()');
     return VideoData.fromMap(jsonDecode(videoData));
   }
 
   @override
   Future<String> get videoEmbedCode {
-    return _runWithResult('getVideoEmbedCode');
+    return _bridge.runWithResult('getVideoEmbedCode');
   }
 
   @override
   Future<String> get videoUrl async {
-    final videoUrl = await _runWithResult('getVideoUrl');
+    final videoUrl = await _bridge.runWithResult('getVideoUrl');
 
     if (videoUrl.startsWith('"')) {
       return videoUrl.substring(1, videoUrl.length - 1);
@@ -469,8 +423,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
 
   @override
   Future<List<double>> get availablePlaybackRates async {
-    final rates = await _evalWithResult('getAvailablePlaybackRates()');
-
+    final rates = await _bridge.evalWithResult('getAvailablePlaybackRates()');
     return List<num>.from(jsonDecode(rates))
         .map((r) => r.toDouble())
         .toList(growable: false);
@@ -478,104 +431,101 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
 
   @override
   Future<double> get playbackRate async {
-    final rate = await _runWithResult('getPlaybackRate');
-
+    final rate = await _bridge.runWithResult('getPlaybackRate');
     return double.tryParse(rate) ?? 0;
   }
 
   @override
   Future<void> setLoop({required bool loopPlaylists}) {
-    return _eval('player.setLoop($loopPlaylists)');
+    return _bridge.eval('player.setLoop($loopPlaylists)');
   }
 
   @override
   Future<void> setPlaybackRate(double suggestedRate) {
-    return _eval('player.setPlaybackRate($suggestedRate)');
+    return _bridge.eval('player.setPlaybackRate($suggestedRate)');
   }
 
   @override
   Future<void> setShuffle({required bool shufflePlaylists}) {
-    return _eval('player.setShuffle($shufflePlaylists)');
+    return _bridge.eval('player.setShuffle($shufflePlaylists)');
   }
 
   @override
   Future<void> setSize(double width, double height) {
-    return _eval('player.setSize($width, $height)');
+    return _bridge.eval('player.setSize($width, $height)');
   }
 
   @override
   Future<bool> get isMuted async {
-    final isMuted = await _runWithResult('isMuted');
+    final isMuted = await _bridge.runWithResult('isMuted');
     return isMuted.toLowerCase() == 'true' || isMuted == '1';
   }
 
   @override
   Future<void> mute() {
-    return _run('mute');
+    return _bridge.run('mute');
   }
 
   @override
   Future<void> nextVideo() {
-    return _run('nextVideo');
+    return _bridge.run('nextVideo');
   }
 
   @override
   Future<void> pauseVideo() {
-    return _run('pauseVideo');
+    return _bridge.run('pauseVideo');
   }
 
   @override
   Future<void> playVideo() {
-    return _run('playVideo');
+    return _bridge.run('playVideo');
   }
 
   @override
   Future<void> playVideoAt(int index) {
-    return _eval('player.playVideoAt($index)');
+    return _bridge.eval('player.playVideoAt($index)');
   }
 
   @override
   Future<void> previousVideo() {
-    return _run('previousVideo');
+    return _bridge.run('previousVideo');
   }
 
   @override
   Future<void> seekTo({required double seconds, bool allowSeekAhead = false}) {
-    return _eval('player.seekTo($seconds, $allowSeekAhead)');
+    return _bridge.eval('player.seekTo($seconds, $allowSeekAhead)');
   }
 
   @override
   Future<void> setVolume(int volume) {
-    return _eval('player.setVolume($volume)');
+    return _bridge.eval('player.setVolume($volume)');
   }
 
   @override
   Future<void> stopVideo() {
-    return _run('stopVideo');
+    return _bridge.run('stopVideo');
   }
 
   @override
   Future<void> unMute() {
-    return _run('unMute');
+    return _bridge.run('unMute');
   }
 
   @override
   Future<int> get volume async {
-    final volume = await _runWithResult('getVolume');
-
+    final volume = await _bridge.runWithResult('getVolume');
     return int.tryParse(volume) ?? 0;
   }
 
   @override
   Future<double> get currentTime async {
-    final time = await _runWithResult('getCurrentTime');
-
+    final time = await _bridge.runWithResult('getCurrentTime');
     return double.tryParse(time) ?? 0;
   }
 
   @override
   Future<PlayerState> get playerState async {
-    final stateCode = await _runWithResult('getPlayerState');
+    final stateCode = await _bridge.runWithResult('getPlayerState');
 
     return PlayerState.values.firstWhere(
       (state) => state.code.toString() == stateCode,
@@ -585,8 +535,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
 
   @override
   Future<double> get videoLoadedFraction async {
-    final loadedFraction = await _runWithResult('getVideoLoadedFraction');
-
+    final loadedFraction = await _bridge.runWithResult('getVideoLoadedFraction');
     return double.tryParse(loadedFraction) ?? 0;
   }
 
@@ -642,7 +591,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   NavigationDecision _decideNavigation(Uri? uri) {
     if (uri == null) return NavigationDecision.prevent;
 
-    final params = uri.queryParameters;
+    final queryParams = uri.queryParameters;
     final host = uri.host;
     final path = uri.path;
 
@@ -651,8 +600,8 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
         host.contains('twitter') ||
         host == 'youtu') {
       featureName = 'social';
-    } else if (params.containsKey('feature')) {
-      featureName = params['feature'];
+    } else if (queryParams.containsKey('feature')) {
+      featureName = queryParams['feature'];
     } else if (path == '/watch') {
       featureName = 'emb_info';
     } else if (defaultTargetPlatform == TargetPlatform.iOS ||
@@ -664,7 +613,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
       case 'emb_rel_pause':
       case 'emb_rel_end':
       case 'emb_info':
-        final videoId = params['v'];
+        final videoId = queryParams['v'];
         if (videoId != null) loadVideoById(videoId: videoId);
         break;
       case 'emb_title':
@@ -678,50 +627,17 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     return NavigationDecision.prevent;
   }
 
-  Future<String> _buildPlayerHTML(Map<String, String> data) async {
-    final playerHtml = await rootBundle.loadString(
-      'packages/youtube_player_iframe/assets/player.html',
-    );
-
-    return playerHtml.replaceAllMapped(
-      RegExp(r'<<([a-zA-Z]+)>>'),
-      (m) => data[m.group(1)] ?? m.group(0)!,
-    );
-  }
-
   /// Disposes the resources created by [YoutubePlayerController].
   Future<void> close() async {
-    if (_initCompleter.isCompleted) await stopVideo();
+    if (_bridge.isInitCompleted) {
+      try {
+        await stopVideo();
+      } catch (_) {
+        // Player may be in an errored or disposed state; ignore stop failure.
+      }
+    }
     await webViewController.removeJavaScriptChannel(playerId);
     await _eventHandler.videoStateController.close();
     await _valueController.close();
   }
-}
-
-/// The current state of the Youtube video.
-class YoutubeVideoState {
-  /// Creates a new instance of [YoutubeVideoState].
-  const YoutubeVideoState({
-    this.position = Duration.zero,
-    this.loadedFraction = 0,
-  });
-
-  /// Creates a new instance of [YoutubeVideoState] from the given [json].
-  factory YoutubeVideoState.fromJson(String json) {
-    final state = jsonDecode(json);
-    final currentTime = state['currentTime'] as num? ?? 0;
-    final loadedFraction = state['loadedFraction'] as num? ?? 0;
-    final positionInMs = (currentTime * 1000).truncate();
-
-    return YoutubeVideoState(
-      position: Duration(milliseconds: positionInMs),
-      loadedFraction: loadedFraction.toDouble(),
-    );
-  }
-
-  /// The current position of the video.
-  final Duration position;
-
-  /// The fraction of the video that has been buffered.
-  final double loadedFraction;
 }

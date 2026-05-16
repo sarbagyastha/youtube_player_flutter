@@ -173,6 +173,53 @@ class YoutubePlayerParams {
   /// The serialized JSON representation of the [YoutubePlayerParams].
   String toJson() => jsonEncode(toMap());
 
+  // Sentinel used by copyWith to distinguish "set to null" from "not provided"
+  // for nullable fields.
+  static const Object _sentinel = Object();
+
+  /// Returns a copy of this params with the given fields replaced.
+  ///
+  /// To explicitly set a nullable field to null, pass `null` for that argument.
+  YoutubePlayerParams copyWith({
+    bool? mute,
+    String? captionLanguage,
+    bool? enableCaption,
+    PointerEvents? pointerEvents,
+    String? color,
+    bool? showControls,
+    bool? enableKeyboard,
+    bool? enableJavaScript,
+    bool? showFullscreenButton,
+    String? interfaceLanguage,
+    bool? showVideoAnnotations,
+    bool? loop,
+    Object? origin = _sentinel,
+    bool? playsInline,
+    bool? strictRelatedVideos,
+    Object? userAgent = _sentinel,
+    bool? privacyEnhancedMode,
+  }) {
+    return YoutubePlayerParams(
+      mute: mute ?? this.mute,
+      captionLanguage: captionLanguage ?? this.captionLanguage,
+      enableCaption: enableCaption ?? this.enableCaption,
+      pointerEvents: pointerEvents ?? this.pointerEvents,
+      color: color ?? this.color,
+      showControls: showControls ?? this.showControls,
+      enableKeyboard: enableKeyboard ?? this.enableKeyboard,
+      enableJavaScript: enableJavaScript ?? this.enableJavaScript,
+      showFullscreenButton: showFullscreenButton ?? this.showFullscreenButton,
+      interfaceLanguage: interfaceLanguage ?? this.interfaceLanguage,
+      showVideoAnnotations: showVideoAnnotations ?? this.showVideoAnnotations,
+      loop: loop ?? this.loop,
+      origin: origin == _sentinel ? this.origin : origin as String?,
+      playsInline: playsInline ?? this.playsInline,
+      strictRelatedVideos: strictRelatedVideos ?? this.strictRelatedVideos,
+      userAgent: userAgent == _sentinel ? this.userAgent : userAgent as String?,
+      privacyEnhancedMode: privacyEnhancedMode ?? this.privacyEnhancedMode,
+    );
+  }
+
   int _boolean(bool value) => value ? 1 : 0;
 }
 

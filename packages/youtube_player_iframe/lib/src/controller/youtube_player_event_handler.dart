@@ -8,19 +8,31 @@ import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 import '../helpers/platform.dart';
 
+abstract final class _EventNames {
+  static const ready = 'Ready';
+  static const stateChange = 'StateChange';
+  static const playbackQualityChange = 'PlaybackQualityChange';
+  static const playbackRateChange = 'PlaybackRateChange';
+  static const playerError = 'PlayerError';
+  static const fullscreenButtonPressed = 'FullscreenButtonPressed';
+  static const videoState = 'VideoState';
+  static const autoplayBlocked = 'AutoplayBlocked';
+  static const apiChange = 'ApiChange';
+}
+
 /// Handles all the player events received from the player iframe.
 class YoutubePlayerEventHandler {
   /// Creates [YoutubePlayerEventHandler] with the provided [controller].
   YoutubePlayerEventHandler(this.controller) {
     _events = {
-      'Ready': onReady,
-      'StateChange': onStateChange,
-      'PlaybackQualityChange': onPlaybackQualityChange,
-      'PlaybackRateChange': onPlaybackRateChange,
-      'PlayerError': onError,
-      'FullscreenButtonPressed': onFullscreenButtonPressed,
-      'VideoState': onVideoState,
-      'AutoplayBlocked': onAutoplayBlocked,
+      _EventNames.ready: onReady,
+      _EventNames.stateChange: onStateChange,
+      _EventNames.playbackQualityChange: onPlaybackQualityChange,
+      _EventNames.playbackRateChange: onPlaybackRateChange,
+      _EventNames.playerError: onError,
+      _EventNames.fullscreenButtonPressed: onFullscreenButtonPressed,
+      _EventNames.videoState: onVideoState,
+      _EventNames.autoplayBlocked: onAutoplayBlocked,
     };
   }
 
@@ -40,7 +52,7 @@ class YoutubePlayerEventHandler {
     if (data['playerId'] != controller.playerId) return;
 
     for (final entry in data.entries) {
-      if (entry.key == 'ApiChange') {
+      if (entry.key == _EventNames.apiChange) {
         onApiChange(entry.value);
       } else {
         _events[entry.key]?.call(entry.value ?? Object());

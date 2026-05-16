@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 export 'package:youtube_player_iframe/src/controller/youtube_player_controller.dart';
+export 'src/controller/youtube_video_state.dart';
 export 'package:youtube_player_iframe/src/iframe_api/youtube_player_iframe_api.dart';
 
 export 'src/enums/playback_rate.dart';
