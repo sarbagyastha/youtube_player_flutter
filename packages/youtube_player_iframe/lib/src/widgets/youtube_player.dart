@@ -144,7 +144,7 @@ class _YoutubePlayerState extends State<YoutubePlayer>
   Widget build(BuildContext context) {
     super.build(context);
 
-    if (kIsWeb) {
+    if (kIsWeb || defaultTargetPlatform == TargetPlatform.macOS) {
       return AspectRatio(
         aspectRatio: widget.aspectRatio,
         child: WebViewWidget(
