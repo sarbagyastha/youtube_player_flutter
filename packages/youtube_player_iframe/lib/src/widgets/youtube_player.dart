@@ -7,15 +7,11 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-import 'package:youtube_player_iframe/src/widgets/fullscreen_youtube_player.dart';
 
 import '../controller/youtube_player_controller.dart';
+import '../helpers/youtube_value_builder.dart';
 
 /// A widget to play or stream Youtube Videos.
-///
-/// See also:
-///
-///  * [FullscreenYoutubePlayer], which play or stream Youtube Videos in fullscreen mode.
 class YoutubePlayer extends StatefulWidget {
   /// A widget to play or stream Youtube Videos.
   const YoutubePlayer({
@@ -28,6 +24,7 @@ class YoutubePlayer extends StatefulWidget {
     this.userAgent,
     this.enableFullScreenOnVerticalDrag = true,
     this.keepAlive = false,
+    this.autoFullScreen = true,
   });
 
   /// The [controller] for this player.
@@ -69,20 +66,36 @@ class YoutubePlayer extends StatefulWidget {
   /// Whether to keep the state of the player alive when it is not visible.
   final bool keepAlive;
 
+  /// Whether to automatically enter fullscreen when the device rotates to landscape.
+  ///
+  /// Default is true.
+  final bool autoFullScreen;
+
   @override
   State<YoutubePlayer> createState() => _YoutubePlayerState();
 }
 
 class _YoutubePlayerState extends State<YoutubePlayer>
-    with AutomaticKeepAliveClientMixin {
+    with AutomaticKeepAliveClientMixin, WidgetsBindingObserver {
   late final YoutubePlayerController _controller;
+
+  final _overlayController = OverlayPortalController();
+  final _placeholderKey = GlobalKey();
+  Rect _playerRect = Rect.zero;
 
   @override
   void initState() {
     super.initState();
     _controller = widget.controller;
-
     _initPlayer();
+
+    if (!kIsWeb) {
+      WidgetsBinding.instance.addObserver(this);
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        _updatePlayerRect();
+        _overlayController.show();
+      });
+    }
   }
 
   @override
@@ -95,9 +108,113 @@ class _YoutubePlayerState extends State<YoutubePlayer>
   }
 
   @override
+  void dispose() {
+    if (!kIsWeb) WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeMetrics() {
+    if (!widget.autoFullScreen) return;
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      _updatePlayerRect();
+      if (!mounted) return;
+      final view = WidgetsBinding.instance.platformDispatcher.views.first;
+      final size = view.physicalSize / view.devicePixelRatio;
+      final isLandscape = size.width > size.height;
+      final opt = _controller.value.fullScreenOption;
+
+      if (isLandscape && !opt.enabled) {
+        _controller.enterFullScreen(lock: false);
+      } else if (!isLandscape && opt.enabled && !opt.locked) {
+        _controller.exitFullScreen(lock: false);
+      }
+    });
+  }
+
+  void _updatePlayerRect() {
+    final box =
+        _placeholderKey.currentContext?.findRenderObject() as RenderBox?;
+    if (box == null || !box.hasSize) return;
+    final newRect = box.localToGlobal(Offset.zero) & box.size;
+    if (newRect != _playerRect) setState(() => _playerRect = newRect);
+  }
+
+  @override
   Widget build(BuildContext context) {
     super.build(context);
 
+    if (kIsWeb) {
+      return AspectRatio(
+        aspectRatio: widget.aspectRatio,
+        child: WebViewWidget(
+          controller: _controller.webViewController,
+          gestureRecognizers: widget.gestureRecognizers,
+        ),
+      );
+    }
+
+    return YoutubeValueBuilder(
+      controller: _controller,
+      buildWhen: (o, n) => o.fullScreenOption != n.fullScreenOption,
+      builder: (context, value) {
+        return PopScope(
+          canPop: !value.fullScreenOption.enabled,
+          onPopInvokedWithResult: (didPop, _) {
+            if (!didPop && value.fullScreenOption.enabled) {
+              _controller.exitFullScreen();
+            }
+          },
+          child: OverlayPortal(
+            controller: _overlayController,
+            overlayChildBuilder: _buildOverlayContent,
+            child: AspectRatio(
+              aspectRatio: widget.aspectRatio,
+              child: SizedBox.expand(key: _placeholderKey),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildOverlayContent(BuildContext context) {
+    if (_playerRect.isEmpty) return const SizedBox.shrink();
+    final screenSize = MediaQuery.of(context).size;
+
+    return YoutubeValueBuilder(
+      controller: _controller,
+      buildWhen: (o, n) => o.fullScreenOption != n.fullScreenOption,
+      builder: (context, value) {
+        final isFullscreen = value.fullScreenOption.enabled;
+
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            IgnorePointer(
+              ignoring: !isFullscreen,
+              child: AnimatedOpacity(
+                duration: const Duration(milliseconds: 200),
+                opacity: isFullscreen ? 1.0 : 0.0,
+                child: const ColoredBox(color: Colors.black),
+              ),
+            ),
+            AnimatedPositioned(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              top: isFullscreen ? 0 : _playerRect.top,
+              left: isFullscreen ? 0 : _playerRect.left,
+              width: isFullscreen ? screenSize.width : _playerRect.width,
+              height: isFullscreen ? screenSize.height : _playerRect.height,
+              child: _buildWebView(),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildWebView() {
     Widget player = WebViewWidget(
       controller: _controller.webViewController,
       gestureRecognizers: widget.gestureRecognizers,
@@ -110,16 +227,7 @@ class _YoutubePlayerState extends State<YoutubePlayer>
       );
     }
 
-    return OrientationBuilder(
-      builder: (context, orientation) {
-        return AspectRatio(
-          aspectRatio: orientation == Orientation.landscape
-              ? MediaQuery.of(context).size.aspectRatio
-              : widget.aspectRatio,
-          child: player,
-        );
-      },
-    );
+    return player;
   }
 
   void _fullscreenGesture(DragUpdateDetails details) {
