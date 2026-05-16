@@ -2,12 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import '../controller/youtube_player_controller.dart';
+import '../enums/player_state.dart';
 import '../enums/thumbnail_format.dart';
+import '../player_value.dart';
 import '../enums/thumbnail_quality.dart';
 import 'youtube_player.dart';
 
@@ -83,8 +87,24 @@ class YoutubePlayerThumbnail extends StatefulWidget {
 
 class _YoutubePlayerThumbnailState extends State<YoutubePlayerThumbnail> {
   bool _playerActive = false;
+  StreamSubscription<YoutubePlayerValue>? _playSubscription;
 
-  void _activate() => setState(() => _playerActive = true);
+  void _activate() {
+    setState(() => _playerActive = true);
+    _playSubscription = widget.controller.stream.listen((value) {
+      if (value.playerState == PlayerState.cued) {
+        _playSubscription?.cancel();
+        _playSubscription = null;
+        widget.controller.playVideo();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _playSubscription?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -103,12 +123,7 @@ class _YoutubePlayerThumbnailState extends State<YoutubePlayerThumbnail> {
 
     return GestureDetector(
       onTap: () {
-        final videoId = widget.controller.key;
-        if (videoId != null) {
-          widget.controller.loadVideoById(videoId: videoId);
-        } else {
-          widget.controller.playVideo();
-        }
+        widget.controller.playVideo();
         _activate();
       },
       child: AspectRatio(

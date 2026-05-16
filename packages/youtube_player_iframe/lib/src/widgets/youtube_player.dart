@@ -9,6 +9,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import '../controller/youtube_player_controller.dart';
+import '../enums/player_state.dart';
 import '../helpers/youtube_value_builder.dart';
 
 /// A widget to play or stream Youtube Videos.
@@ -207,6 +208,34 @@ class _YoutubePlayerState extends State<YoutubePlayer>
               width: isFullscreen ? screenSize.width : _playerRect.width,
               height: isFullscreen ? screenSize.height : _playerRect.height,
               child: _buildWebView(),
+            ),
+            AnimatedPositioned(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              top: isFullscreen ? 0 : _playerRect.top,
+              left: isFullscreen ? 0 : _playerRect.left,
+              width: isFullscreen ? screenSize.width : _playerRect.width,
+              height: isFullscreen ? screenSize.height : _playerRect.height,
+              child: YoutubeValueBuilder(
+                controller: _controller,
+                buildWhen: (o, n) => o.playerState != n.playerState,
+                builder: (context, value) {
+                  final isInitializing =
+                      value.playerState == PlayerState.unknown ||
+                      value.playerState == PlayerState.unStarted;
+                  return IgnorePointer(
+                    ignoring: !isInitializing,
+                    child: AnimatedOpacity(
+                      duration: const Duration(milliseconds: 300),
+                      opacity: isInitializing ? 1.0 : 0.0,
+                      child: ColoredBox(
+                        color: widget.backgroundColor ??
+                            Theme.of(context).colorScheme.surface,
+                      ),
+                    ),
+                  );
+                },
+              ),
             ),
           ],
         );
