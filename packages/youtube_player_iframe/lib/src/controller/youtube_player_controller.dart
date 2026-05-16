@@ -270,7 +270,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
       'pointerEvents': params.pointerEvents.name,
       'playerVars': params.toJson(),
       'platform': platform,
-      'host': params.origin ?? 'https://www.youtube.com',
+      'host': params.host,
     };
 
     await webViewController.loadHtmlString(

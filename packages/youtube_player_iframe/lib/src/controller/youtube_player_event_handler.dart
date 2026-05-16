@@ -118,8 +118,9 @@ class YoutubePlayerEventHandler {
   /// The API will pass an event object to the event listener function.
   /// That [data] property will specify an integer that identifies the type of error that occurred.
   void onError(Object data) {
+    final errorCode = data is int ? data : int.tryParse(data.toString()) ?? -1;
     final error = YoutubeError.values.firstWhere(
-      (error) => error.code == data,
+      (error) => error.code == errorCode,
       orElse: () => YoutubeError.unknown,
     );
 

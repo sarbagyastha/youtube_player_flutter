@@ -94,7 +94,7 @@ class YoutubePlayerParams {
 
   /// This parameter provides an extra security measure for the IFrame API and is only supported for IFrame embeds.
   ///
-  /// Specify your domain as the value.
+  /// Specify your domain as the value. Defaults to [host] when not set.
   final String? origin;
 
   /// This parameter controls whether videos play inline or fullscreen in an HTML5 player on iOS.
@@ -110,6 +110,12 @@ class YoutubePlayerParams {
   /// The user agent for the player.
   final String? userAgent;
 
+  /// Uses the privacy-enhanced `youtube-nocookie.com` domain instead of `youtube.com`.
+  ///
+  /// YouTube will not store information about visitors on your web page
+  /// unless they play the video. Default is false.
+  final bool privacyEnhancedMode;
+
   /// Defines player parameters for the youtube player.
   const YoutubePlayerParams({
     this.mute = false,
@@ -124,10 +130,11 @@ class YoutubePlayerParams {
     this.interfaceLanguage = 'en',
     this.showVideoAnnotations = true,
     this.loop = false,
-    this.origin = 'https://www.youtube.com',
+    this.origin,
     this.playsInline = true,
     this.strictRelatedVideos = false,
     this.userAgent,
+    this.privacyEnhancedMode = true,
   });
 
   /// Creates [Map] representation of [YoutubePlayerParams].
@@ -149,14 +156,19 @@ class YoutubePlayerParams {
       if (kIsWeb) ...{
         'origin': Uri.base.origin,
         'widget_referrer': Uri.base.origin,
-      } else if (origin != null) ...{
-        'origin': origin,
-        'widget_referrer': origin,
+      } else ...{
+        'origin': origin ?? host,
+        'widget_referrer': origin ?? host,
       },
       'playsinline': _boolean(playsInline),
       'rel': _boolean(!strictRelatedVideos),
     };
   }
+
+  /// The YouTube host URL, based on [privacyEnhancedMode].
+  String get host => privacyEnhancedMode
+      ? 'https://www.youtube-nocookie.com'
+      : 'https://www.youtube.com';
 
   /// The serialized JSON representation of the [YoutubePlayerParams].
   String toJson() => jsonEncode(toMap());
