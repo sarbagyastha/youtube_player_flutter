@@ -113,7 +113,7 @@ class YoutubePlayerParams {
   /// Uses the privacy-enhanced `youtube-nocookie.com` domain instead of `youtube.com`.
   ///
   /// YouTube will not store information about visitors on your web page
-  /// unless they play the video. Default is false.
+  /// unless they play the video. Default is true.
   final bool privacyEnhancedMode;
 
   /// Defines player parameters for the youtube player.
@@ -156,9 +156,9 @@ class YoutubePlayerParams {
       if (kIsWeb) ...{
         'origin': Uri.base.origin,
         'widget_referrer': Uri.base.origin,
-      } else ...{
-        'origin': origin ?? host,
-        'widget_referrer': origin ?? host,
+      } else if (origin != null) ...{
+        'origin': origin,
+        'widget_referrer': origin,
       },
       'playsinline': _boolean(playsInline),
       'rel': _boolean(!strictRelatedVideos),

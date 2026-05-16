@@ -249,7 +249,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   Future<void> init() async {
     await load(
       params: params,
-      baseUrl: kIsWeb ? Uri.base.origin : params.origin,
+      baseUrl: kIsWeb ? Uri.base.origin : (params.origin ?? params.host),
       id: playerId,
     );
 
@@ -304,14 +304,23 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     return result.toString();
   }
 
+  Future<void> _waitReady() {
+    return _eventHandler.isReady.timeout(
+      const Duration(seconds: 30),
+      onTimeout: () => throw TimeoutException(
+        'YouTube player failed to initialize within 30 seconds.',
+      ),
+    );
+  }
+
   Future<void> _eval(String javascript) async {
-    await _eventHandler.isReady;
+    await _waitReady();
 
     return webViewController.runJavaScript(javascript);
   }
 
   Future<String> _evalWithResult(String javascript) async {
-    await _eventHandler.isReady;
+    await _waitReady();
 
     final result = await webViewController.runJavaScriptReturningResult(
       javascript,
@@ -321,7 +330,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   }
 
   Future<String> _prepareData(Map<String, dynamic>? data) async {
-    await _eventHandler.isReady;
+    await _waitReady();
     return data == null ? '' : jsonEncode(data);
   }
 
@@ -344,16 +353,16 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   }) {
     if (_valueController.isClosed) return;
 
-    final updatedValue = YoutubePlayerValue(
-      fullScreenOption: fullScreenOption ?? value.fullScreenOption,
-      playerState: playerState ?? value.playerState,
-      playbackRate: playbackRate ?? value.playbackRate,
-      playbackQuality: playbackQuality ?? value.playbackQuality,
-      error: error ?? value.error,
-      metaData: metaData ?? value.metaData,
+    _value = YoutubePlayerValue(
+      fullScreenOption: fullScreenOption ?? _value.fullScreenOption,
+      playerState: playerState ?? _value.playerState,
+      playbackRate: playbackRate ?? _value.playbackRate,
+      playbackQuality: playbackQuality ?? _value.playbackQuality,
+      error: error ?? _value.error,
+      metaData: metaData ?? _value.metaData,
     );
 
-    _valueController.add(updatedValue);
+    _valueController.add(_value);
   }
 
   /// Listen to updates in [YoutubePlayerController].
@@ -365,7 +374,6 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   }) {
     return _valueController.stream.listen(
       (value) {
-        _value = value;
         onData?.call(value);
       },
       onError: onError,
@@ -683,8 +691,8 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
 
   /// Disposes the resources created by [YoutubePlayerController].
   Future<void> close() async {
-    await stopVideo();
-    await webViewController.removeJavaScriptChannel('youtube-$hashCode');
+    if (_initCompleter.isCompleted) await stopVideo();
+    await webViewController.removeJavaScriptChannel(playerId);
     await _eventHandler.videoStateController.close();
     await _valueController.close();
   }

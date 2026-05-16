@@ -67,17 +67,22 @@ class YoutubePlayerEventHandler {
     if (playerState == PlayerState.playing) {
       controller.update(playerState: playerState, error: YoutubeError.none);
 
-      final duration = await controller.duration;
-      final videoData = await controller.videoData;
+      final cachedId = controller.value.metaData.videoId;
+      final durationFuture = controller.duration;
+      final videoDataFuture = controller.videoData;
+      final duration = await durationFuture;
+      final videoData = await videoDataFuture;
 
-      final metaData = YoutubeMetaData(
-        duration: Duration(milliseconds: (duration * 1000).truncate()),
-        videoId: videoData.videoId,
-        author: videoData.author,
-        title: videoData.title,
+      if (videoData.videoId == cachedId && cachedId.isNotEmpty) return;
+
+      controller.update(
+        metaData: YoutubeMetaData(
+          duration: Duration(milliseconds: (duration * 1000).truncate()),
+          videoId: videoData.videoId,
+          author: videoData.author,
+          title: videoData.title,
+        ),
       );
-
-      controller.update(metaData: metaData);
     } else {
       controller.update(playerState: playerState);
     }
