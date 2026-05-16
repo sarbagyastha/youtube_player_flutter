@@ -177,7 +177,14 @@ class _YoutubePlayerState extends State<YoutubePlayer>
             ),
             child: AspectRatio(
               aspectRatio: widget.aspectRatio,
-              child: SizedBox.expand(key: _placeholderKey),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  SchedulerBinding.instance.addPostFrameCallback((_) {
+                    if (mounted) _updatePlayerRect();
+                  });
+                  return SizedBox.expand(key: _placeholderKey);
+                },
+              ),
             ),
           ),
         );

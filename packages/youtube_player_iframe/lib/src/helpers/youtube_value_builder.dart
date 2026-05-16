@@ -54,6 +54,7 @@ class _YoutubeValueBuilderState extends State<YoutubeValueBuilder> {
   @override
   void didUpdateWidget(YoutubeValueBuilder oldWidget) {
     super.didUpdateWidget(oldWidget);
+    _child = widget.builder(context, _previousValue);
     final oldController = oldWidget.controller ?? context.ytController;
     final currentController = widget.controller ?? oldController;
     if (oldController != currentController) {
