@@ -168,7 +168,14 @@ class _YoutubePlayerState extends State<YoutubePlayer>
           },
           child: OverlayPortal(
             controller: _overlayController,
-            overlayChildBuilder: _buildOverlayContent,
+            overlayChildBuilder: (context) => _PlayerOverlayContent(
+              controller: _controller,
+              playerRect: _playerRect,
+              backgroundColor: widget.backgroundColor,
+              gestureRecognizers: widget.gestureRecognizers,
+              enableFullScreenOnVerticalDrag:
+                  widget.enableFullScreenOnVerticalDrag,
+            ),
             child: AspectRatio(
               aspectRatio: widget.aspectRatio,
               child: SizedBox.expand(key: _placeholderKey),
@@ -177,96 +184,6 @@ class _YoutubePlayerState extends State<YoutubePlayer>
         );
       },
     );
-  }
-
-  Widget _buildOverlayContent(BuildContext context) {
-    if (_playerRect.isEmpty) return const SizedBox.shrink();
-    final screenSize = MediaQuery.of(context).size;
-
-    return YoutubeValueBuilder(
-      controller: _controller,
-      buildWhen: (o, n) => o.fullScreenOption != n.fullScreenOption,
-      builder: (context, value) {
-        final isFullscreen = value.fullScreenOption.enabled;
-
-        return Stack(
-          fit: StackFit.expand,
-          children: [
-            IgnorePointer(
-              ignoring: !isFullscreen,
-              child: AnimatedOpacity(
-                duration: const Duration(milliseconds: 200),
-                opacity: isFullscreen ? 1.0 : 0.0,
-                child: const ColoredBox(color: Colors.black),
-              ),
-            ),
-            AnimatedPositioned(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-              top: isFullscreen ? 0 : _playerRect.top,
-              left: isFullscreen ? 0 : _playerRect.left,
-              width: isFullscreen ? screenSize.width : _playerRect.width,
-              height: isFullscreen ? screenSize.height : _playerRect.height,
-              child: _buildWebView(),
-            ),
-            AnimatedPositioned(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-              top: isFullscreen ? 0 : _playerRect.top,
-              left: isFullscreen ? 0 : _playerRect.left,
-              width: isFullscreen ? screenSize.width : _playerRect.width,
-              height: isFullscreen ? screenSize.height : _playerRect.height,
-              child: YoutubeValueBuilder(
-                controller: _controller,
-                buildWhen: (o, n) => o.playerState != n.playerState,
-                builder: (context, value) {
-                  final isInitializing =
-                      value.playerState == PlayerState.unknown ||
-                      value.playerState == PlayerState.unStarted;
-                  return IgnorePointer(
-                    ignoring: !isInitializing,
-                    child: AnimatedOpacity(
-                      duration: const Duration(milliseconds: 300),
-                      opacity: isInitializing ? 1.0 : 0.0,
-                      child: ColoredBox(
-                        color: widget.backgroundColor ??
-                            Theme.of(context).colorScheme.surface,
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildWebView() {
-    Widget player = WebViewWidget(
-      controller: _controller.webViewController,
-      gestureRecognizers: widget.gestureRecognizers,
-    );
-
-    if (widget.enableFullScreenOnVerticalDrag) {
-      player = GestureDetector(
-        onVerticalDragUpdate: _fullscreenGesture,
-        child: player,
-      );
-    }
-
-    return player;
-  }
-
-  void _fullscreenGesture(DragUpdateDetails details) {
-    final delta = details.delta.dy;
-
-    if (delta.abs() > 10) {
-      delta.isNegative
-          ? _controller.enterFullScreen()
-          : _controller.exitFullScreen();
-    }
   }
 
   void _updateBackgroundColor(Color? backgroundColor) {
@@ -286,4 +203,154 @@ class _YoutubePlayerState extends State<YoutubePlayer>
 
   @override
   bool get wantKeepAlive => widget.keepAlive;
+}
+
+class _PlayerOverlayContent extends StatelessWidget {
+  const _PlayerOverlayContent({
+    required this.controller,
+    required this.playerRect,
+    required this.backgroundColor,
+    required this.gestureRecognizers,
+    required this.enableFullScreenOnVerticalDrag,
+  });
+
+  final YoutubePlayerController controller;
+  final Rect playerRect;
+  final Color? backgroundColor;
+  final Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers;
+  final bool enableFullScreenOnVerticalDrag;
+
+  @override
+  Widget build(BuildContext context) {
+    if (playerRect.isEmpty) return const SizedBox.shrink();
+    final screenSize = MediaQuery.of(context).size;
+
+    return YoutubeValueBuilder(
+      controller: controller,
+      buildWhen: (o, n) => o.fullScreenOption != n.fullScreenOption,
+      builder: (context, value) {
+        final isFullscreen = value.fullScreenOption.enabled;
+
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            _FullscreenBackground(isFullscreen: isFullscreen),
+            AnimatedPositioned(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              top: isFullscreen ? 0 : playerRect.top,
+              left: isFullscreen ? 0 : playerRect.left,
+              width: isFullscreen ? screenSize.width : playerRect.width,
+              height: isFullscreen ? screenSize.height : playerRect.height,
+              child: _YoutubeWebView(
+                controller: controller,
+                gestureRecognizers: gestureRecognizers,
+                enableFullScreenOnVerticalDrag: enableFullScreenOnVerticalDrag,
+              ),
+            ),
+            AnimatedPositioned(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              top: isFullscreen ? 0 : playerRect.top,
+              left: isFullscreen ? 0 : playerRect.left,
+              width: isFullscreen ? screenSize.width : playerRect.width,
+              height: isFullscreen ? screenSize.height : playerRect.height,
+              child: _PlayerLoadingOverlay(
+                controller: controller,
+                backgroundColor: backgroundColor,
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _FullscreenBackground extends StatelessWidget {
+  const _FullscreenBackground({required this.isFullscreen});
+
+  final bool isFullscreen;
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      ignoring: !isFullscreen,
+      child: AnimatedOpacity(
+        duration: const Duration(milliseconds: 200),
+        opacity: isFullscreen ? 1.0 : 0.0,
+        child: const ColoredBox(color: Colors.black),
+      ),
+    );
+  }
+}
+
+class _PlayerLoadingOverlay extends StatelessWidget {
+  const _PlayerLoadingOverlay({
+    required this.controller,
+    required this.backgroundColor,
+  });
+
+  final YoutubePlayerController controller;
+  final Color? backgroundColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return YoutubeValueBuilder(
+      controller: controller,
+      buildWhen: (o, n) => o.playerState != n.playerState,
+      builder: (context, value) {
+        final isInitializing =
+            value.playerState == PlayerState.unknown ||
+            value.playerState == PlayerState.unStarted;
+        return IgnorePointer(
+          ignoring: !isInitializing,
+          child: AnimatedOpacity(
+            duration: const Duration(milliseconds: 300),
+            opacity: isInitializing ? 1.0 : 0.0,
+            child: ColoredBox(
+              color:
+                  backgroundColor ?? Theme.of(context).colorScheme.surface,
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _YoutubeWebView extends StatelessWidget {
+  const _YoutubeWebView({
+    required this.controller,
+    required this.gestureRecognizers,
+    required this.enableFullScreenOnVerticalDrag,
+  });
+
+  final YoutubePlayerController controller;
+  final Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers;
+  final bool enableFullScreenOnVerticalDrag;
+
+  void _onVerticalDrag(DragUpdateDetails details) {
+    final delta = details.delta.dy;
+    if (delta.abs() > 10) {
+      delta.isNegative
+          ? controller.enterFullScreen()
+          : controller.exitFullScreen();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final webView = WebViewWidget(
+      controller: controller.webViewController,
+      gestureRecognizers: gestureRecognizers,
+    );
+
+    if (!enableFullScreenOnVerticalDrag) return webView;
+
+    return GestureDetector(
+      onVerticalDragUpdate: _onVerticalDrag,
+      child: webView,
+    );
+  }
 }
