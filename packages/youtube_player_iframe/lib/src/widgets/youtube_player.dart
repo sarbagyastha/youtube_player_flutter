@@ -116,10 +116,9 @@ class _YoutubePlayerState extends State<YoutubePlayer>
 
   @override
   void didChangeMetrics() {
-    if (!widget.autoFullScreen) return;
     SchedulerBinding.instance.addPostFrameCallback((_) {
       _updatePlayerRect();
-      if (!mounted) return;
+      if (!mounted || !widget.autoFullScreen) return;
       final view = WidgetsBinding.instance.platformDispatcher.views.first;
       final size = view.physicalSize / view.devicePixelRatio;
       final isLandscape = size.width > size.height;

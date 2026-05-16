@@ -655,7 +655,8 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
       featureName = params['feature'];
     } else if (path == '/watch') {
       featureName = 'emb_info';
-    } else if (defaultTargetPlatform == TargetPlatform.iOS) {
+    } else if (defaultTargetPlatform == TargetPlatform.iOS ||
+        defaultTargetPlatform == TargetPlatform.macOS) {
       return NavigationDecision.navigate;
     }
 
