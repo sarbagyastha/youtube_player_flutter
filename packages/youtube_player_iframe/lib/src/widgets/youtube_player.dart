@@ -10,6 +10,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 
 import '../controller/youtube_player_controller.dart';
 import '../enums/player_state.dart';
+import '../helpers/platform.dart';
 import '../helpers/youtube_value_builder.dart';
 
 /// A widget to play or stream Youtube Videos.
@@ -90,7 +91,7 @@ class _YoutubePlayerState extends State<YoutubePlayer>
     _controller = widget.controller;
     _initPlayer();
 
-    if (!kIsWeb) {
+    if (isMobile) {
       WidgetsBinding.instance.addObserver(this);
       SchedulerBinding.instance.addPostFrameCallback((_) {
         _updatePlayerRect();
@@ -110,7 +111,7 @@ class _YoutubePlayerState extends State<YoutubePlayer>
 
   @override
   void dispose() {
-    if (!kIsWeb) WidgetsBinding.instance.removeObserver(this);
+    if (isMobile) WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
@@ -144,7 +145,7 @@ class _YoutubePlayerState extends State<YoutubePlayer>
   Widget build(BuildContext context) {
     super.build(context);
 
-    if (kIsWeb || defaultTargetPlatform == TargetPlatform.macOS) {
+    if (!isMobile) {
       return AspectRatio(
         aspectRatio: widget.aspectRatio,
         child: WebViewWidget(
@@ -194,7 +195,7 @@ class _YoutubePlayerState extends State<YoutubePlayer>
 
   void _updateBackgroundColor(Color? backgroundColor) {
     if (!mounted) return;
-    if (defaultTargetPlatform == TargetPlatform.macOS) return;
+    if (!isMobile) return;
     final bgColor = backgroundColor ?? Theme.of(context).colorScheme.surface;
     _controller.webViewController.setBackgroundColor(bgColor);
   }

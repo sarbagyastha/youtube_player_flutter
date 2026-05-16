@@ -6,6 +6,8 @@ import 'package:flutter/foundation.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
+import '../helpers/platform.dart';
+
 /// Handles all the player events received from the player iframe.
 class YoutubePlayerEventHandler {
   /// Creates [YoutubePlayerEventHandler] with the provided [controller].
@@ -116,6 +118,7 @@ class YoutubePlayerEventHandler {
 
   /// This event is fired to indicate that the fullscreen button was clicked.
   void onFullscreenButtonPressed(Object data) {
+    if (!isMobile) return;
     controller.toggleFullScreen();
   }
 
