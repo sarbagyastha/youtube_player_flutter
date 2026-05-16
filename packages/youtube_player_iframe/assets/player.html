@@ -89,7 +89,7 @@
             },
           },
         });
-        player.setSize(window.innerWidth, window.innerHeight);
+        if (platform !== 'web') player.setSize(window.innerWidth, window.innerHeight);
       }
 
       window.addEventListener('message', (event) => {
@@ -128,7 +128,7 @@
       }
 
       window.onresize = function () {
-        if (player) player.setSize(window.innerWidth, window.innerHeight);
+        if (player && platform !== 'web') player.setSize(window.innerWidth, window.innerHeight);
       };
 
       function sendPlatformMessage(message) {
