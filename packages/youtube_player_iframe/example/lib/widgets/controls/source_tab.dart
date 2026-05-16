@@ -1,19 +1,14 @@
-// Copyright 2020 Sarbagya Dhaubanjar. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 import 'package:flutter/material.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
-///
-class SourceInputSection extends StatefulWidget {
-  const SourceInputSection({super.key});
+class SourceTab extends StatefulWidget {
+  const SourceTab({super.key});
 
   @override
-  State<SourceInputSection> createState() => _SourceInputSectionState();
+  State<SourceTab> createState() => _SourceTabState();
 }
 
-class _SourceInputSectionState extends State<SourceInputSection> {
+class _SourceTabState extends State<SourceTab> {
   late TextEditingController _textController;
   ListType? _playlistType;
 
@@ -25,87 +20,96 @@ class _SourceInputSectionState extends State<SourceInputSection> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _PlaylistTypeDropDown(
-          onChanged: (type) {
-            _playlistType = type;
-            setState(() {});
-          },
-        ),
-        const SizedBox(height: 10),
-        AnimatedSize(
-          duration: const Duration(milliseconds: 300),
-          child: TextField(
-            controller: _textController,
-            decoration: InputDecoration(
-              border: InputBorder.none,
-              hintText: _hint,
-              helperText: _helperText,
-              fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-              filled: true,
-              hintStyle: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    fontWeight: FontWeight.w300,
-                  ),
-              suffixIcon: IconButton(
-                icon: const Icon(Icons.clear),
-                onPressed: () => _textController.clear(),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _PlaylistTypeDropDown(
+            onChanged: (type) {
+              _playlistType = type;
+              setState(() {});
+            },
+          ),
+          const SizedBox(height: 10),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 300),
+            child: TextField(
+              controller: _textController,
+              decoration: InputDecoration(
+                border: InputBorder.none,
+                hintText: _hint,
+                helperText: _helperText,
+                fillColor:
+                    Theme.of(context).colorScheme.surfaceContainerHighest,
+                filled: true,
+                hintStyle:
+                    Theme.of(context).textTheme.bodyLarge!.copyWith(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurfaceVariant,
+                          fontWeight: FontWeight.w300,
+                        ),
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.clear),
+                  onPressed: () => _textController.clear(),
+                ),
               ),
             ),
           ),
-        ),
-        const SizedBox(height: 10),
-        GridView.count(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          childAspectRatio: 4,
-          crossAxisSpacing: 10,
-          mainAxisSpacing: 10,
-          crossAxisCount: 2,
-          children: [
-            _Button(
-              action: 'Load',
-              onTap: () {
-                context.ytController.loadVideoById(
-                  videoId: _cleanId(_textController.text) ?? '',
-                );
-              },
-            ),
-            _Button(
-              action: 'Cue',
-              onTap: () {
-                context.ytController.cueVideoById(
-                  videoId: _cleanId(_textController.text) ?? '',
-                );
-              },
-            ),
-            _Button(
-              action: 'Load Playlist',
-              onTap: _playlistType == null
-                  ? null
-                  : () {
-                      context.ytController.loadPlaylist(
-                        list: [_textController.text],
-                        listType: _playlistType!,
-                      );
-                    },
-            ),
-            _Button(
-              action: 'Cue Playlist',
-              onTap: _playlistType == null
-                  ? null
-                  : () {
-                      context.ytController.cuePlaylist(
-                        list: [_textController.text],
-                        listType: _playlistType!,
-                      );
-                    },
-            ),
-          ],
-        ),
-      ],
+          const SizedBox(height: 10),
+          GridView.count(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            childAspectRatio: 4,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+            crossAxisCount: 2,
+            children: [
+              _Button(
+                action: 'Load',
+                onTap: () {
+                  final id = _cleanId(_textController.text);
+                  if (id != null) {
+                    context.ytController.loadVideoById(videoId: id);
+                  }
+                },
+              ),
+              _Button(
+                action: 'Cue',
+                onTap: () {
+                  final id = _cleanId(_textController.text);
+                  if (id != null) {
+                    context.ytController.cueVideoById(videoId: id);
+                  }
+                },
+              ),
+              _Button(
+                action: 'Load Playlist',
+                onTap: _playlistType == null
+                    ? null
+                    : () {
+                        context.ytController.loadPlaylist(
+                          list: [_textController.text],
+                          listType: _playlistType!,
+                        );
+                      },
+              ),
+              _Button(
+                action: 'Cue Playlist',
+                onTap: _playlistType == null
+                    ? null
+                    : () {
+                        context.ytController.cuePlaylist(
+                          list: [_textController.text],
+                          listType: _playlistType!,
+                        );
+                      },
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -134,10 +138,12 @@ class _SourceInputSectionState extends State<SourceInputSection> {
   String? _cleanId(String source) {
     if (source.startsWith('http://') || source.startsWith('https://')) {
       return YoutubePlayerController.convertUrlToId(source);
-    } else if (source.length != 11) {
+    } else if (source.length == 11) {
+      return source;
+    } else {
       _showSnackBar('Invalid Source');
+      return null;
     }
-    return source;
   }
 
   void _showSnackBar(String message) {

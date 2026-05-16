@@ -55,9 +55,39 @@ class _VideoListPageState extends State<VideoListPage> {
         itemBuilder: (context, index) {
           return ClipRRect(
             borderRadius: BorderRadius.circular(8),
-            child: YoutubePlayerThumbnail(
-              controller: _controllers[index],
-              enableFullScreenOnVerticalDrag: false,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                YoutubePlayerThumbnail(
+                  controller: _controllers[index],
+                  enableFullScreenOnVerticalDrag: false,
+                ),
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: DecoratedBox(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.bottomCenter,
+                        end: Alignment.topCenter,
+                        colors: [Colors.black87, Colors.transparent],
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: Text(
+                        'Video ${index + 1}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           );
         },
