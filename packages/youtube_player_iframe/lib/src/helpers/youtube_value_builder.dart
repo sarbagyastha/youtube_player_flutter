@@ -90,17 +90,14 @@ class _YoutubeValueBuilderState extends State<YoutubeValueBuilder> {
   Widget build(BuildContext context) => _child;
 
   void _subscribe() {
-    _subscription = _controller!.listen(
-      (value) {
-        if (widget.buildWhen?.call(_previousValue, value) ?? true) {
-          if (!mounted) return;
-          _child = widget.builder(context, value);
-          setState(() {});
-        }
-        _previousValue = value;
-      },
-      onError: (e) => log(e.toString()),
-    );
+    _subscription = _controller!.listen((value) {
+      if (widget.buildWhen?.call(_previousValue, value) ?? true) {
+        if (!mounted) return;
+        _child = widget.builder(context, value);
+        setState(() {});
+      }
+      _previousValue = value;
+    }, onError: (e) => log(e.toString()));
   }
 
   void _unsubscribe() {

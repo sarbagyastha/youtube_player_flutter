@@ -124,7 +124,9 @@ class _PlaybackTabState extends State<PlaybackTab> {
           Row(
             children: [
               Icon(
-                _volume == 0 ? Icons.volume_mute_rounded : Icons.volume_down_rounded,
+                _volume == 0
+                    ? Icons.volume_mute_rounded
+                    : Icons.volume_down_rounded,
                 size: 18,
                 color: cs.onSurfaceVariant,
               ),
@@ -152,9 +154,9 @@ class _PlaybackTabState extends State<PlaybackTab> {
             children: [
               Text(
                 'Speed',
-                style: Theme.of(context).textTheme.labelLarge!.copyWith(
-                      color: cs.onSurfaceVariant,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.labelLarge!.copyWith(color: cs.onSurfaceVariant),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -162,8 +164,9 @@ class _PlaybackTabState extends State<PlaybackTab> {
                   buildWhen: (o, n) => o.playbackRate != n.playbackRate,
                   builder: (context, value) {
                     final current = value.playbackRate;
-                    final selected =
-                        _speeds.contains(current) ? {current} : {1.0};
+                    final selected = _speeds.contains(current)
+                        ? {current}
+                        : {1.0};
                     return SegmentedButton<double>(
                       segments: _speeds
                           .map(

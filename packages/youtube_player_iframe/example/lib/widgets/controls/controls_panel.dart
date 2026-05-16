@@ -25,12 +25,7 @@ class ControlsPanel extends StatelessWidget {
           ),
           SizedBox(
             height: _kTabViewHeight,
-            child: const TabBarView(
-              children: [
-                PlaybackTab(),
-                SourceTab(),
-              ],
-            ),
+            child: const TabBarView(children: [PlaybackTab(), SourceTab()]),
           ),
         ],
       ),

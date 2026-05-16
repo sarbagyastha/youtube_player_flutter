@@ -24,9 +24,9 @@ class InfoTab extends StatelessWidget {
               Text(
                 meta.title.isEmpty ? 'No video loaded' : meta.title,
                 style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                      fontWeight: FontWeight.w700,
-                      height: 1.3,
-                    ),
+                  fontWeight: FontWeight.w700,
+                  height: 1.3,
+                ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -56,10 +56,7 @@ class InfoTab extends StatelessWidget {
                       label: value.playbackQuality!,
                     ),
                   if (meta.videoId.isNotEmpty)
-                    _InfoChip(
-                      icon: Icons.tag_rounded,
-                      label: meta.videoId,
-                    ),
+                    _InfoChip(icon: Icons.tag_rounded, label: meta.videoId),
                   if (value.hasError)
                     _InfoChip(
                       icon: Icons.error_outline_rounded,
@@ -107,9 +104,9 @@ class _ChannelRow extends StatelessWidget {
           child: Text(
             author,
             style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: cs.onSurfaceVariant,
-                ),
+              fontWeight: FontWeight.w600,
+              color: cs.onSurfaceVariant,
+            ),
             overflow: TextOverflow.ellipsis,
           ),
         ),
@@ -148,10 +145,7 @@ class _InfoChip extends StatelessWidget {
           const SizedBox(width: 4),
           Text(
             label,
-            style: Theme.of(context)
-                .textTheme
-                .labelSmall!
-                .copyWith(color: fg),
+            style: Theme.of(context).textTheme.labelSmall!.copyWith(color: fg),
           ),
         ],
       ),

@@ -316,8 +316,7 @@ class _PlayerLoadingOverlay extends StatelessWidget {
             duration: const Duration(milliseconds: 300),
             opacity: isInitializing ? 1.0 : 0.0,
             child: ColoredBox(
-              color:
-                  backgroundColor ?? Theme.of(context).colorScheme.surface,
+              color: backgroundColor ?? Theme.of(context).colorScheme.surface,
             ),
           ),
         );

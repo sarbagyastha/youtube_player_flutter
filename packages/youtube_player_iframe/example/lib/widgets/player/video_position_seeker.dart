@@ -10,10 +10,7 @@ class VideoPositionSeeker extends StatelessWidget {
 
     return Row(
       children: [
-        const Text(
-          'Seek',
-          style: TextStyle(fontWeight: FontWeight.w300),
-        ),
+        const Text('Seek', style: TextStyle(fontWeight: FontWeight.w300)),
         const SizedBox(width: 14),
         Expanded(
           child: StreamBuilder<YoutubeVideoState>(
@@ -21,8 +18,7 @@ class VideoPositionSeeker extends StatelessWidget {
             initialData: const YoutubeVideoState(),
             builder: (context, snapshot) {
               final position = snapshot.data?.position.inSeconds ?? 0;
-              final duration =
-                  context.ytController.metadata.duration.inSeconds;
+              final duration = context.ytController.metadata.duration.inSeconds;
 
               value = position == 0 || duration == 0 ? 0 : position / duration;
 

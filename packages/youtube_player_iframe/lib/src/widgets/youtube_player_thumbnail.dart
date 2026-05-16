@@ -147,9 +147,7 @@ class _YoutubePlayerThumbnailState extends State<YoutubePlayerThumbnail> {
               )
             else
               ColoredBox(color: Theme.of(context).colorScheme.surface),
-            Center(
-              child: widget.playIcon ?? const _DefaultPlayIcon(),
-            ),
+            Center(child: widget.playIcon ?? const _DefaultPlayIcon()),
           ],
         ),
       ),

@@ -84,7 +84,8 @@ class _VideoListPageState extends State<VideoListPage> {
                       ),
                       child: Text(
                         'Video ${index + 1}',
-                        style: Theme.of(context).textTheme.labelMedium!.copyWith(
+                        style: Theme.of(context).textTheme.labelMedium!
+                            .copyWith(
                               color: cs.onSurface,
                               fontWeight: FontWeight.w600,
                             ),

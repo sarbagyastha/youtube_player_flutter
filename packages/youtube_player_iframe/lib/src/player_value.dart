@@ -76,13 +76,13 @@ class YoutubePlayerValue {
 
   @override
   int get hashCode => Object.hash(
-        fullScreenOption,
-        playerState,
-        playbackRate,
-        playbackQuality,
-        error,
-        metaData,
-      );
+    fullScreenOption,
+    playerState,
+    playbackRate,
+    playbackQuality,
+    error,
+    metaData,
+  );
 
   @override
   String toString() {
@@ -99,10 +99,7 @@ class YoutubePlayerValue {
 /// The fullscreen option.
 class FullScreenOption {
   /// Creates [FullScreenOption].
-  const FullScreenOption({
-    required this.enabled,
-    this.locked = false,
-  });
+  const FullScreenOption({required this.enabled, this.locked = false});
 
   /// Denotes that the fullscreen mode is currently enabled.
   final bool enabled;

@@ -62,14 +62,16 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
       },
     );
 
-    webViewController = WebViewController.fromPlatformCreationParams(
-      webViewParams,
-    )
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setNavigationDelegate(navigationDelegate)
-      ..setUserAgent(params.userAgent)
-      ..addJavaScriptChannel(playerId, onMessageReceived: _eventHandler.call)
-      ..enableZoom(false);
+    webViewController =
+        WebViewController.fromPlatformCreationParams(webViewParams)
+          ..setJavaScriptMode(JavaScriptMode.unrestricted)
+          ..setNavigationDelegate(navigationDelegate)
+          ..setUserAgent(params.userAgent)
+          ..addJavaScriptChannel(
+            playerId,
+            onMessageReceived: _eventHandler.call,
+          )
+          ..enableZoom(false);
 
     final webViewPlatform = webViewController.platform;
     if (webViewPlatform is AndroidWebViewController) {
@@ -297,7 +299,10 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
 
   /// The unique player id.
   @internal
-  late final String playerId = 'youtube_${key ?? hashCode}'.replaceAll('-', '_');
+  late final String playerId = 'youtube_${key ?? hashCode}'.replaceAll(
+    '-',
+    '_',
+  );
 
   /// MetaData for the currently loaded or cued video.
   YoutubeMetaData get metadata => _value.metaData;
@@ -424,9 +429,9 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   @override
   Future<List<double>> get availablePlaybackRates async {
     final rates = await _bridge.evalWithResult('getAvailablePlaybackRates()');
-    return List<num>.from(jsonDecode(rates))
-        .map((r) => r.toDouble())
-        .toList(growable: false);
+    return List<num>.from(
+      jsonDecode(rates),
+    ).map((r) => r.toDouble()).toList(growable: false);
   }
 
   @override
@@ -535,7 +540,9 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
 
   @override
   Future<double> get videoLoadedFraction async {
-    final loadedFraction = await _bridge.runWithResult('getVideoLoadedFraction');
+    final loadedFraction = await _bridge.runWithResult(
+      'getVideoLoadedFraction',
+    );
     return double.tryParse(loadedFraction) ?? 0;
   }
 
