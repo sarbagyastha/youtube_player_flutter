@@ -41,10 +41,7 @@ abstract class PlaybackControls {
   /// without requesting new video streams by scrolling past unbuffered points in the video.
   /// When the user releases the mouse button, the player advances to the desired point
   /// in the video and requests a new video stream if necessary.
-  Future<void> seekTo({
-    required double seconds,
-    bool allowSeekAhead = false,
-  });
+  Future<void> seekTo({required double seconds, bool allowSeekAhead = false});
 
   /// This function loads and plays the next video in the playlist.
   Future<void> nextVideo();

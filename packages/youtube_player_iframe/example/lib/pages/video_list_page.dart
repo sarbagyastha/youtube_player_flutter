@@ -15,9 +15,7 @@ const List<String> _videoIds = [
   'j61j9X4xCnA',
 ];
 
-///
 class VideoListPage extends StatefulWidget {
-  ///
   const VideoListPage({super.key});
 
   @override
@@ -30,47 +28,23 @@ class _VideoListPageState extends State<VideoListPage> {
   @override
   void initState() {
     super.initState();
-
-    _controllers = List.generate(
-      _videoIds.length,
-      (index) {
-        final controller = YoutubePlayerController.fromVideoId(
-          videoId: _videoIds[index],
-          autoPlay: false,
+    _controllers = [
+      for (final id in _videoIds)
+        YoutubePlayerController.fromVideoId(
+          videoId: id,
           params: const YoutubePlayerParams(showFullscreenButton: true),
-        );
-        controller.setFullScreenListener(
-          (_) async {
-            final videoData = await controller.videoData;
-            final startSeconds = await controller.currentTime;
-
-            if (!mounted) return;
-
-            final currentTime = await FullscreenYoutubePlayer.launch(
-              context,
-              videoId: videoData.videoId,
-              startSeconds: startSeconds,
-            );
-
-            if (currentTime != null) {
-              controller.seekTo(seconds: currentTime);
-            }
-          },
-        );
-
-        return controller;
-      },
-    );
+        ),
+    ];
   }
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Video List Demo'),
-      ),
+      appBar: AppBar(title: const Text('Video List')),
       body: GridView.builder(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(8),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: MediaQuery.sizeOf(context).width > 500 ? 2 : 1,
           crossAxisSpacing: 8,
@@ -79,14 +53,48 @@ class _VideoListPageState extends State<VideoListPage> {
         ),
         itemCount: _controllers.length,
         itemBuilder: (context, index) {
-          final controller = _controllers[index];
-
-          return YoutubePlayer(
-            key: ObjectKey(controller),
-            aspectRatio: 16 / 9,
-            enableFullScreenOnVerticalDrag: false,
-            controller: controller,
-            keepAlive: true,
+          return Card(
+            clipBehavior: Clip.antiAlias,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                YoutubePlayerThumbnail(
+                  controller: _controllers[index],
+                  enableFullScreenOnVerticalDrag: false,
+                ),
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.bottomCenter,
+                        end: Alignment.topCenter,
+                        colors: [
+                          cs.surface.withValues(alpha: 0.85),
+                          cs.surface.withValues(alpha: 0),
+                        ],
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      child: Text(
+                        'Video ${index + 1}',
+                        style: Theme.of(context).textTheme.labelMedium!
+                            .copyWith(
+                              color: cs.onSurface,
+                              fontWeight: FontWeight.w600,
+                            ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           );
         },
       ),
@@ -98,7 +106,6 @@ class _VideoListPageState extends State<VideoListPage> {
     for (final controller in _controllers) {
       controller.close();
     }
-
     super.dispose();
   }
 }

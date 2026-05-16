@@ -1,23 +1,24 @@
 name: youtube_player_iframe_example
 description: Demonstrates how to use the youtube_player_iframe plugin.
 publish_to: none
-version: 5.0.0
+version: 6.0.0
 
 environment:
-  sdk: '>=3.5.4 <4.0.0'
+  sdk: '>=3.10.0 <4.0.0'
 
 dependencies:
   flutter:
     sdk: flutter
   flutter_web_plugins:
       sdk: flutter
-  youtube_player_iframe: ^5.2.0
-  go_router: ^14.6.0
+  youtube_player_iframe: ^6.0.0
+  go_router: ^17.2.3
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  icons_launcher: ^3.0.0
+  flutter_lints: ^6.0.0
+  icons_launcher: ^3.1.0
 
 flutter:
   uses-material-design: true

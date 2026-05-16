@@ -3,19 +3,24 @@
 // found in the LICENSE file.
 
 /// Quality of YouTube video thumbnail.
-class ThumbnailQuality {
-  /// 120*90
-  static const String defaultQuality = 'default';
+enum ThumbnailQuality {
+  /// 120x90
+  defaultQuality('default'),
 
-  /// 320*180
-  static const String medium = 'mqdefault';
+  /// 320x180
+  medium('mqdefault'),
 
-  /// 480*360
-  static const String high = 'hqdefault';
+  /// 480x360
+  high('hqdefault'),
 
-  /// 640*480
-  static const String standard = 'sddefault';
+  /// 640x480
+  standard('sddefault'),
 
   /// Unscaled thumbnail
-  static const String max = 'maxresdefault';
+  max('maxresdefault');
+
+  const ThumbnailQuality(this.value);
+
+  /// The YouTube thumbnail quality identifier.
+  final String value;
 }
