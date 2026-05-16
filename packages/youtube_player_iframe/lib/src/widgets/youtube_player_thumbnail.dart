@@ -1,0 +1,147 @@
+// Copyright 2024 Sarbagya Dhaubanjar. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter/material.dart';
+
+import '../controller/youtube_player_controller.dart';
+import '../enums/thumbnail_quality.dart';
+import 'youtube_player.dart';
+
+/// A widget that shows a YouTube video thumbnail and loads the player in-place
+/// when tapped.
+///
+/// This is more performant than embedding [YoutubePlayer] directly in a list,
+/// since the WebView is only created after the user taps.
+///
+/// ```dart
+/// YoutubePlayerThumbnail(
+///   controller: YoutubePlayerController.fromVideoId(videoId: 'dQw4w9WgXcQ'),
+/// )
+/// ```
+class YoutubePlayerThumbnail extends StatefulWidget {
+  /// Creates a [YoutubePlayerThumbnail].
+  const YoutubePlayerThumbnail({
+    super.key,
+    required this.controller,
+    this.aspectRatio = 16 / 9,
+    this.thumbnailQuality = ThumbnailQuality.high,
+    this.gestureRecognizers = const <Factory<OneSequenceGestureRecognizer>>{},
+    this.backgroundColor,
+    this.enableFullScreenOnVerticalDrag = true,
+    this.autoFullScreen = true,
+    this.playIcon,
+  });
+
+  /// The controller for the player.
+  final YoutubePlayerController controller;
+
+  /// Aspect ratio for the player and thumbnail.
+  ///
+  /// Defaults to 16/9.
+  final double aspectRatio;
+
+  /// Quality of the thumbnail image.
+  ///
+  /// Defaults to [ThumbnailQuality.high].
+  final String thumbnailQuality;
+
+  /// Which gestures should be consumed by the youtube player once active.
+  final Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers;
+
+  /// The background color of the [YoutubePlayer].
+  final Color? backgroundColor;
+
+  /// Enables switching to full screen on vertical drag in the player.
+  ///
+  /// Defaults to true.
+  final bool enableFullScreenOnVerticalDrag;
+
+  /// Whether to automatically enter fullscreen when the device rotates to
+  /// landscape while the player is active.
+  ///
+  /// Defaults to true.
+  final bool autoFullScreen;
+
+  /// Widget shown in the center of the thumbnail as the play button.
+  ///
+  /// Defaults to a red circular play button.
+  final Widget? playIcon;
+
+  @override
+  State<YoutubePlayerThumbnail> createState() => _YoutubePlayerThumbnailState();
+}
+
+class _YoutubePlayerThumbnailState extends State<YoutubePlayerThumbnail> {
+  bool _playerActive = false;
+
+  void _activate() => setState(() => _playerActive = true);
+
+  @override
+  Widget build(BuildContext context) {
+    if (_playerActive) {
+      return YoutubePlayer(
+        controller: widget.controller,
+        aspectRatio: widget.aspectRatio,
+        gestureRecognizers: widget.gestureRecognizers,
+        backgroundColor: widget.backgroundColor,
+        enableFullScreenOnVerticalDrag: widget.enableFullScreenOnVerticalDrag,
+        autoFullScreen: widget.autoFullScreen,
+      );
+    }
+
+    final videoId = widget.controller.key;
+
+    return GestureDetector(
+      onTap: () {
+        widget.controller.playVideo();
+        _activate();
+      },
+      child: AspectRatio(
+        aspectRatio: widget.aspectRatio,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            if (videoId != null)
+              Image.network(
+                ThumbnailQuality.thumbnailUrl(
+                  videoId,
+                  quality: widget.thumbnailQuality,
+                ),
+                fit: BoxFit.cover,
+                loadingBuilder: (_, child, progress) =>
+                    progress == null ? child : const ColoredBox(color: Colors.black),
+                errorBuilder: (_, _, _) =>
+                    const ColoredBox(color: Colors.black),
+              )
+            else
+              const ColoredBox(color: Colors.black),
+            Center(
+              child: widget.playIcon ?? const _DefaultPlayIcon(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DefaultPlayIcon extends StatelessWidget {
+  const _DefaultPlayIcon();
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        color: Colors.red,
+        shape: BoxShape.circle,
+      ),
+      child: const Padding(
+        padding: EdgeInsets.all(12),
+        child: Icon(Icons.play_arrow, color: Colors.white, size: 32),
+      ),
+    );
+  }
+}

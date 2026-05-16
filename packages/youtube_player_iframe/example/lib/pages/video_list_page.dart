@@ -30,25 +30,19 @@ class _VideoListPageState extends State<VideoListPage> {
   @override
   void initState() {
     super.initState();
-
-    _controllers = List.generate(
-      _videoIds.length,
-      (index) {
-        return YoutubePlayerController.fromVideoId(
-          videoId: _videoIds[index],
-          autoPlay: false,
+    _controllers = [
+      for (final id in _videoIds)
+        YoutubePlayerController.fromVideoId(
+          videoId: id,
           params: const YoutubePlayerParams(showFullscreenButton: true),
-        );
-      },
-    );
+        ),
+    ];
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Video List Demo'),
-      ),
+      appBar: AppBar(title: const Text('Video List Demo')),
       body: GridView.builder(
         padding: const EdgeInsets.all(16),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -59,14 +53,12 @@ class _VideoListPageState extends State<VideoListPage> {
         ),
         itemCount: _controllers.length,
         itemBuilder: (context, index) {
-          final controller = _controllers[index];
-
-          return YoutubePlayer(
-            key: ObjectKey(controller),
-            aspectRatio: 16 / 9,
-            enableFullScreenOnVerticalDrag: false,
-            controller: controller,
-            keepAlive: true,
+          return ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: YoutubePlayerThumbnail(
+              controller: _controllers[index],
+              enableFullScreenOnVerticalDrag: false,
+            ),
           );
         },
       ),
@@ -78,7 +70,6 @@ class _VideoListPageState extends State<VideoListPage> {
     for (final controller in _controllers) {
       controller.close();
     }
-
     super.dispose();
   }
 }

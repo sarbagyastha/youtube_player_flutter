@@ -18,4 +18,12 @@ class ThumbnailQuality {
 
   /// Unscaled thumbnail
   static const String max = 'maxresdefault';
+
+  /// Returns the YouTube thumbnail URL for [videoId] at the given [quality].
+  static String thumbnailUrl(
+    String videoId, {
+    String quality = ThumbnailQuality.high,
+  }) {
+    return 'https://img.youtube.com/vi/$videoId/$quality.jpg';
+  }
 }
