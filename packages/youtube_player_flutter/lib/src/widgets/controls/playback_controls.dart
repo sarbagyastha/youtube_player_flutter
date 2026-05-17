@@ -28,10 +28,8 @@ class PlaybackControls extends StatelessWidget {
           buildWhen: (o, n) => o.playerState != n.playerState,
           builder: (context, value) {
             final isPlaying = value.playerState == PlayerState.playing;
-            return _CircleButton(
-              icon: isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-              diameter: 72,
-              iconSize: 36,
+            return _AnimatedPlayPauseButton(
+              isPlaying: isPlaying,
               onTap: () {
                 isPlaying
                     ? controller.pauseVideo()
@@ -54,31 +52,95 @@ class PlaybackControls extends StatelessWidget {
   }
 }
 
-class _CircleButton extends StatelessWidget {
-  const _CircleButton({
-    required this.icon,
+class _AnimatedPlayPauseButton extends StatefulWidget {
+  const _AnimatedPlayPauseButton({
+    required this.isPlaying,
     required this.onTap,
-    this.diameter = 56,
-    this.iconSize = 28,
   });
 
-  final IconData icon;
+  final bool isPlaying;
   final VoidCallback onTap;
-  final double diameter;
-  final double iconSize;
+
+  @override
+  State<_AnimatedPlayPauseButton> createState() =>
+      _AnimatedPlayPauseButtonState();
+}
+
+class _AnimatedPlayPauseButtonState extends State<_AnimatedPlayPauseButton>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _animController;
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+      value: widget.isPlaying ? 1.0 : 0.0,
+    );
+  }
+
+  @override
+  void didUpdateWidget(_AnimatedPlayPauseButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.isPlaying != widget.isPlaying) {
+      widget.isPlaying
+          ? _animController.forward()
+          : _animController.reverse();
+    }
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.black54,
+      color: Colors.black38,
+      shape: const CircleBorder(),
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        onTap: widget.onTap,
+        child: Center(
+          child: SizedBox.square(
+            dimension: 56,
+            child: AnimatedIcon(
+              icon: AnimatedIcons.play_pause,
+              progress: _animController,
+              color: Colors.white,
+              size: 54,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CircleButton extends StatelessWidget {
+  const _CircleButton({
+    required this.icon,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.black38,
       shape: const CircleBorder(),
       child: InkWell(
         customBorder: const CircleBorder(),
         onTap: onTap,
         child: SizedBox(
-          width: diameter,
-          height: diameter,
-          child: Icon(icon, color: Colors.white, size: iconSize),
+          width: 40,
+          height: 40,
+          child: Icon(icon, color: Colors.white, size: 32),
         ),
       ),
     );
