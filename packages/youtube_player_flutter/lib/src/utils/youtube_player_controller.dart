@@ -159,7 +159,7 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
   /// Creates [YoutubePlayerController].
   YoutubePlayerController({
     required this.initialVideoId,
-    this.flags = const YoutubePlayerFlags(),
+    this.flags = const YoutubePlayerFlags(hideControls: true),
   }) : super(const YoutubePlayerValue()) {
     iframeController = iframe.YoutubePlayerController.fromVideoId(
       videoId: initialVideoId,
