@@ -11,17 +11,7 @@ class App extends StatelessWidget {
     return MaterialApp(
       title: 'YouTube Player Flutter Demo',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.red),
-      ),
-      darkTheme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.red,
-          brightness: Brightness.dark,
-        ),
-      ),
+      theme: ThemeData(colorSchemeSeed: Colors.green),
       home: const PlayerPage(),
     );
   }
