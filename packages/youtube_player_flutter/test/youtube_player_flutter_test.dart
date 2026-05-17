@@ -97,7 +97,8 @@ class TestApp extends StatelessWidget {
 R provideMockedNetworkImages<R>(R Function() body) {
   return HttpOverrides.runZoned(
     body,
-    createHttpClient: (_) => _createMockImageHttpClient(_, _transparentImage),
+    createHttpClient: (context) =>
+        _createMockImageHttpClient(context, _transparentImage),
   );
 }
 

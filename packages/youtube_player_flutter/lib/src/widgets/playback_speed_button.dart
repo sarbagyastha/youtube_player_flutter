@@ -4,7 +4,6 @@
 
 import 'package:flutter/material.dart';
 
-import '../enums/playback_rate.dart';
 import '../utils/youtube_player_controller.dart';
 
 /// A widget to display playback speed changing button.

@@ -4,7 +4,6 @@
 
 import 'package:flutter/material.dart';
 
-import '../enums/player_state.dart';
 import '../utils/youtube_player_controller.dart';
 
 /// A widget to display play/pause button.

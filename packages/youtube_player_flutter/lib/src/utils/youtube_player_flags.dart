@@ -2,6 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:youtube_player_iframe/youtube_player_iframe.dart' as iframe;
+
+const _kDesktopUserAgent =
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 '
+    '(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+
 /// Defines player flags for [YoutubePlayer].
 class YoutubePlayerFlags {
   /// If set to true, hides the controls.
@@ -19,12 +25,12 @@ class YoutubePlayerFlags {
   /// Default is true.
   final bool autoPlay;
 
-  /// Mutes the player initially
+  /// Mutes the player initially.
   ///
   /// Default is false.
   final bool mute;
 
-  /// if true, Live Playback controls will be shown instead of default one.
+  /// If true, Live Playback controls will be shown instead of default ones.
   ///
   /// Default is false.
   final bool isLive;
@@ -49,29 +55,29 @@ class YoutubePlayerFlags {
   /// Default is true.
   final bool enableCaption;
 
-  /// Specifies the default language that the player will use to display captions. Set the parameter's value to an [ISO 639-1 two-letter language code](http://www.loc.gov/standards/iso639-2/php/code_list.php).
+  /// Specifies the default language that the player will use to display captions.
+  /// Set the parameter's value to an [ISO 639-1 two-letter language code](http://www.loc.gov/standards/iso639-2/php/code_list.php).
   ///
   /// Default is `en`.
   final String captionLanguage;
 
-  /// Forces High Definition video quality when possible
+  /// Forces High Definition video quality when possible by setting a desktop user agent.
   ///
   /// Default is false.
   final bool forceHD;
 
-  /// Specifies the default starting point of the video in seconds
+  /// Specifies the default starting point of the video in seconds.
   ///
   /// Default is 0.
   final int startAt;
 
-  /// Specifies the default end point of the video in seconds
+  /// Specifies the default end point of the video in seconds.
   final int? endAt;
 
-  /// Set to `true` to enable Flutter's new Hybrid Composition. The default value is `true`.
-  /// Hybrid Composition is supported starting with Flutter v1.20+.
-  ///
-  /// **NOTE**: It is recommended to use Hybrid Composition only on Android 10+ for a release app,
-  /// as it can cause framerate drops on animations in Android 9 and lower (see [Hybrid-Composition#performance](https://github.com/flutter/flutter/wiki/Hybrid-Composition#performance)).
+  /// Has no effect. webview_flutter manages hybrid composition automatically.
+  @Deprecated(
+    'Has no effect. webview_flutter manages hybrid composition automatically.',
+  )
   final bool useHybridComposition;
 
   /// Defines whether to show or hide the fullscreen button in the live player.
@@ -94,6 +100,7 @@ class YoutubePlayerFlags {
     this.forceHD = false,
     this.startAt = 0,
     this.endAt,
+    // ignore: deprecated_member_use_from_same_package
     this.useHybridComposition = true,
     this.showLiveFullscreenButton = true,
   });
@@ -103,7 +110,6 @@ class YoutubePlayerFlags {
     bool? hideControls,
     bool? autoPlay,
     bool? mute,
-    bool? showVideoProgressIndicator,
     bool? isLive,
     bool? hideThumbnail,
     bool? disableDragSeek,
@@ -114,7 +120,8 @@ class YoutubePlayerFlags {
     int? startAt,
     int? endAt,
     bool? controlsVisibleAtStart,
-    bool? useHybridComposition,
+    // ignore: deprecated_member_use_from_same_package
+    @Deprecated('Has no effect.') bool? useHybridComposition,
     bool? showLiveFullscreenButton,
   }) {
     return YoutubePlayerFlags(
@@ -132,9 +139,27 @@ class YoutubePlayerFlags {
       endAt: endAt ?? this.endAt,
       controlsVisibleAtStart:
           controlsVisibleAtStart ?? this.controlsVisibleAtStart,
+      // ignore: deprecated_member_use_from_same_package
       useHybridComposition: useHybridComposition ?? this.useHybridComposition,
       showLiveFullscreenButton:
           showLiveFullscreenButton ?? this.showLiveFullscreenButton,
+    );
+  }
+
+  /// Converts this flags object to [iframe.YoutubePlayerParams] for the iframe controller.
+  iframe.YoutubePlayerParams toParams() {
+    return iframe.YoutubePlayerParams(
+      mute: mute,
+      enableCaption: enableCaption,
+      captionLanguage: captionLanguage,
+      loop: loop,
+      // Always hide native controls — Flutter overlay controls are used instead.
+      showControls: false,
+      // Always hide native fullscreen button — FullScreenButton widget is used.
+      showFullscreenButton: false,
+      playsInline: true,
+      privacyEnhancedMode: true,
+      userAgent: forceHD ? _kDesktopUserAgent : null,
     );
   }
 }

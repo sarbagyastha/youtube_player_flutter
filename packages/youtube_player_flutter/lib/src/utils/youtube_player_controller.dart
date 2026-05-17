@@ -2,27 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'dart:developer';
+import 'dart:async';
 
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:youtube_player_iframe/youtube_player_iframe.dart' as iframe;
 
-import '../enums/playback_rate.dart';
-import '../enums/player_state.dart';
-import '../utils/youtube_meta_data.dart';
+// Direct imports for types used in default parameter values and re-exported below.
+import 'package:youtube_player_iframe/src/enums/player_state.dart';
+import 'package:youtube_player_iframe/src/enums/playback_rate.dart';
+import 'package:youtube_player_iframe/src/meta_data.dart';
+
+import '../enums/thumbnail_quality.dart';
 import '../widgets/progress_bar.dart';
 import 'youtube_player_flags.dart';
 
-/// [ValueNotifier] for [YoutubePlayerController].
+// Re-export core iframe types as part of this package's public API.
+export 'package:youtube_player_iframe/src/enums/player_state.dart';
+export 'package:youtube_player_iframe/src/enums/playback_rate.dart';
+export 'package:youtube_player_iframe/src/meta_data.dart';
+
+/// The state snapshot for [YoutubePlayerController].
 class YoutubePlayerValue {
-  /// The duration, current position, buffering state, error state and settings
-  /// of a [YoutubePlayerController].
-  YoutubePlayerValue({
+  /// Creates [YoutubePlayerValue].
+  const YoutubePlayerValue({
     this.isReady = false,
     this.isControlsVisible = false,
     this.hasPlayed = false,
-    this.position = const Duration(),
+    this.position = Duration.zero,
     this.buffered = 0.0,
     this.isPlaying = false,
     this.isFullScreen = false,
@@ -31,67 +38,59 @@ class YoutubePlayerValue {
     this.playbackRate = PlaybackRate.normal,
     this.playbackQuality,
     this.errorCode = 0,
-    this.webViewController,
     this.isDragging = false,
     this.metaData = const YoutubeMetaData(),
   });
 
-  /// Returns true when the player is ready to play videos.
+  /// Returns true when the player is ready to accept control method calls.
   final bool isReady;
 
-  /// Defines whether or not the controls are visible.
+  /// Defines whether or not the controls overlay is currently visible.
   final bool isControlsVisible;
 
-  /// Returns true once the video start playing for the first time.
+  /// Returns true once the video has started playing for the first time.
   final bool hasPlayed;
 
-  /// The current position of the video.
+  /// The current playback position.
   final Duration position;
 
-  /// The position up to which the video is buffered.i
+  /// The fraction of the video that has been buffered (0.0–1.0).
   final double buffered;
 
-  /// Reports true if video is playing.
+  /// Reports true if the video is currently playing.
   final bool isPlaying;
 
-  /// Reports true if video is fullscreen.
+  /// Reports true if the player is in fullscreen mode.
   final bool isFullScreen;
 
-  /// The current volume assigned for the player.
+  /// The current volume level (0–100).
   final int volume;
 
-  /// The current state of the player defined as [PlayerState].
+  /// The current state of the player.
   final PlayerState playerState;
 
-  /// The current video playback rate defined as [PlaybackRate].
+  /// The current playback rate.
   final double playbackRate;
 
-  /// Reports the error code as described [here](https://developers.google.com/youtube/iframe_api_reference#Events).
-  ///
-  /// See the onError Section.
-  final int errorCode;
-
-  /// Reports the [WebViewController].
-  final InAppWebViewController? webViewController;
-
-  /// Returns true is player has errors.
-  bool get hasError => errorCode != 0;
-
-  /// Reports the current playback quality.
+  /// The current playback quality, if available.
   final String? playbackQuality;
 
-  /// Returns true if [ProgressBar] is being dragged.
+  /// The last YouTube API error code (0 means no error).
+  final int errorCode;
+
+  /// Returns true when the player has an active error.
+  bool get hasError => errorCode != 0;
+
+  /// Returns true if the [ProgressBar] is being dragged.
   final bool isDragging;
 
-  /// Returns meta data of the currently loaded/cued video.
+  /// Metadata for the currently loaded or cued video.
   final YoutubeMetaData metaData;
 
-  /// Creates new [YoutubePlayerValue] with assigned parameters and overrides
-  /// the old one.
+  /// Creates a copy of this value with given fields replaced.
   YoutubePlayerValue copyWith({
     bool? isReady,
     bool? isControlsVisible,
-    bool? isLoaded,
     bool? hasPlayed,
     Duration? position,
     double? buffered,
@@ -102,7 +101,6 @@ class YoutubePlayerValue {
     double? playbackRate,
     String? playbackQuality,
     int? errorCode,
-    InAppWebViewController? webViewController,
     bool? isDragging,
     YoutubeMetaData? metaData,
   }) {
@@ -119,7 +117,6 @@ class YoutubePlayerValue {
       playbackRate: playbackRate ?? this.playbackRate,
       playbackQuality: playbackQuality ?? this.playbackQuality,
       errorCode: errorCode ?? this.errorCode,
-      webViewController: webViewController ?? this.webViewController,
       isDragging: isDragging ?? this.isDragging,
       metaData: metaData ?? this.metaData,
     );
@@ -128,10 +125,10 @@ class YoutubePlayerValue {
   @override
   String toString() {
     return '$runtimeType('
-        'metaData: ${metaData.toString()}, '
+        'metaData: $metaData, '
         'isReady: $isReady, '
         'isControlsVisible: $isControlsVisible, '
-        'position: ${position.inSeconds} sec. , '
+        'position: ${position.inSeconds}s, '
         'buffered: $buffered, '
         'isPlaying: $isPlaying, '
         'volume: $volume, '
@@ -142,139 +139,153 @@ class YoutubePlayerValue {
   }
 }
 
-/// Controls a youtube player, and provides updates when the state is
-/// changing.
+/// Controls a YouTube player and provides state updates via [ValueNotifier].
 ///
-/// The video is displayed in a Flutter app by creating a [YoutubePlayer] widget.
-///
-/// To reclaim the resources used by the player call [dispose].
-///
-/// After [dispose] all further calls are ignored.
+/// The video is displayed by creating a [YoutubePlayer] widget.
+/// Call [dispose] to release resources when done.
 class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
-  /// The video id with which the player initializes.
+  /// The video ID used to initialise the player.
   final String initialVideoId;
 
-  /// Composes all the flags required to control the player.
+  /// Configuration flags for the player.
   final YoutubePlayerFlags flags;
+
+  /// The underlying iframe controller. Exposed for advanced use cases.
+  late final iframe.YoutubePlayerController iframeController;
+
+  StreamSubscription<iframe.YoutubePlayerValue>? _valueSub;
+  StreamSubscription<iframe.YoutubeVideoState>? _videoStateSub;
 
   /// Creates [YoutubePlayerController].
   YoutubePlayerController({
     required this.initialVideoId,
     this.flags = const YoutubePlayerFlags(),
-  }) : super(YoutubePlayerValue());
+  }) : super(const YoutubePlayerValue()) {
+    iframeController = iframe.YoutubePlayerController.fromVideoId(
+      videoId: initialVideoId,
+      autoPlay: flags.autoPlay,
+      startSeconds: flags.startAt.toDouble(),
+      endSeconds: flags.endAt?.toDouble(),
+      params: flags.toParams(),
+    );
+    _bridgeStreams();
+  }
 
-  /// Finds [YoutubePlayerController] in the provided context.
+  void _bridgeStreams() {
+    _valueSub = iframeController.stream.listen((iframeValue) {
+      final ps = iframeValue.playerState;
+      updateValue(value.copyWith(
+        isReady: ps != PlayerState.unknown && ps != PlayerState.unStarted,
+        hasPlayed: value.hasPlayed || ps == PlayerState.playing,
+        isPlaying: ps == PlayerState.playing,
+        isFullScreen: iframeValue.fullScreenOption.enabled,
+        playerState: ps,
+        playbackRate: iframeValue.playbackRate,
+        playbackQuality: iframeValue.playbackQuality,
+        errorCode: iframeValue.error.code,
+        metaData: iframeValue.metaData,
+      ));
+    });
+
+    _videoStateSub = iframeController.videoStateStream.listen((state) {
+      updateValue(value.copyWith(
+        position: state.position,
+        buffered: state.loadedFraction,
+      ));
+    });
+  }
+
+  /// Finds the nearest [YoutubePlayerController] in [context].
   static YoutubePlayerController? of(BuildContext context) {
     return context
         .dependOnInheritedWidgetOfExactType<InheritedYoutubePlayer>()
         ?.controller;
   }
 
-  void _callMethod(String methodString) {
-    if (value.isReady) {
-      value.webViewController?.evaluateJavascript(source: methodString);
-    } else {
-      log('The controller is not ready for method calls.');
-    }
-  }
-
-  /// Updates the old [YoutubePlayerValue] with new one provided.
+  /// Replaces the current state value and notifies listeners.
   // ignore: use_setters_to_change_properties
   void updateValue(YoutubePlayerValue newValue) => value = newValue;
 
   /// Plays the video.
-  void play() => _callMethod('play()');
+  Future<void> play() => iframeController.playVideo();
 
   /// Pauses the video.
-  void pause() => _callMethod('pause()');
+  Future<void> pause() => iframeController.pauseVideo();
 
-  /// Loads the video as per the [videoId] provided.
-  void load(String videoId, {int startAt = 0, int? endAt}) {
-    var loadParams = 'videoId:"$videoId",startSeconds:$startAt';
-    if (endAt != null && endAt > startAt) {
-      loadParams += ',endSeconds:$endAt';
+  /// Loads and plays the video with the given [videoId].
+  Future<void> load(String videoId, {int startAt = 0, int? endAt}) {
+    if (videoId.length != 11) {
+      updateValue(value.copyWith(errorCode: 1));
+      return Future.value();
     }
-    _updateValues(videoId);
-    if (value.errorCode == 1) {
-      pause();
-    } else {
-      _callMethod('loadById({$loadParams})');
-    }
+    updateValue(value.copyWith(errorCode: 0, hasPlayed: false));
+    return iframeController.loadVideoById(
+      videoId: videoId,
+      startSeconds: startAt.toDouble(),
+      endSeconds: endAt?.toDouble(),
+    );
   }
 
-  /// Cues the video as per the [videoId] provided.
-  void cue(String videoId, {int startAt = 0, int? endAt}) {
-    var cueParams = 'videoId:"$videoId",startSeconds:$startAt';
-    if (endAt != null && endAt > startAt) {
-      cueParams += ',endSeconds:$endAt';
+  /// Cues the video with the given [videoId] without auto-playing.
+  Future<void> cue(String videoId, {int startAt = 0, int? endAt}) {
+    if (videoId.length != 11) {
+      updateValue(value.copyWith(errorCode: 1));
+      return Future.value();
     }
-    _updateValues(videoId);
-    if (value.errorCode == 1) {
-      pause();
-    } else {
-      _callMethod('cueById({$cueParams})');
-    }
-  }
-
-  void _updateValues(String id) {
-    if (id.length != 11) {
-      updateValue(
-        value.copyWith(
-          errorCode: 1,
-        ),
-      );
-      return;
-    }
-    updateValue(
-      value.copyWith(errorCode: 0, hasPlayed: false),
+    updateValue(value.copyWith(errorCode: 0, hasPlayed: false));
+    return iframeController.cueVideoById(
+      videoId: videoId,
+      startSeconds: startAt.toDouble(),
+      endSeconds: endAt?.toDouble(),
     );
   }
 
   /// Mutes the player.
-  void mute() => _callMethod('mute()');
+  Future<void> mute() => iframeController.mute();
 
-  /// Un mutes the player.
-  void unMute() => _callMethod('unMute()');
+  /// Unmutes the player.
+  Future<void> unMute() => iframeController.unMute();
 
-  /// Sets the volume of player.
-  /// Max = 100 , Min = 0
-  void setVolume(int volume) => volume >= 0 && volume <= 100
-      ? _callMethod('setVolume($volume)')
-      : throw Exception("Volume should be between 0 and 100");
+  /// Sets the player volume. Must be between 0 and 100.
+  Future<void> setVolume(int volume) {
+    assert(volume >= 0 && volume <= 100, 'Volume must be between 0 and 100');
+    updateValue(value.copyWith(volume: volume));
+    return iframeController.setVolume(volume);
+  }
 
-  /// Seek to any position. Video auto plays after seeking.
-  /// The optional allowSeekAhead parameter determines whether the player will make a new request to the server
-  /// if the seconds parameter specifies a time outside of the currently buffered video data.
-  /// Default allowSeekAhead = true
-  void seekTo(Duration position, {bool allowSeekAhead = true}) {
-    _callMethod('seekTo(${position.inMilliseconds / 1000},$allowSeekAhead)');
-    play();
+  /// Seeks to [position] in the video.
+  ///
+  /// If [allowSeekAhead] is true, the player may make a new network request
+  /// when the target is outside the buffered range.
+  Future<void> seekTo(Duration position, {bool allowSeekAhead = true}) async {
     updateValue(value.copyWith(position: position));
-  }
-
-  /// Sets the size in pixels of the player.
-  void setSize(Size size) =>
-      _callMethod('setSize(${size.width}, ${size.height})');
-
-  /// Fits the video to screen width.
-  void fitWidth(Size screenSize) {
-    var adjustedHeight = 9 / 16 * screenSize.width;
-    setSize(Size(screenSize.width, adjustedHeight));
-    _callMethod(
-      'setTopMargin("-${((adjustedHeight - screenSize.height) / 2 * 100).abs()}px")',
+    await iframeController.seekTo(
+      seconds: position.inMilliseconds / 1000,
+      allowSeekAhead: allowSeekAhead,
     );
+    return play();
   }
 
-  /// Fits the video to screen height.
-  void fitHeight(Size screenSize) {
-    setSize(screenSize);
-    _callMethod('setTopMargin("0px")');
-  }
+  /// Sets the playback rate (e.g. 0.5, 1.0, 1.5, 2.0).
+  Future<void> setPlaybackRate(double rate) =>
+      iframeController.setPlaybackRate(rate);
 
-  /// Sets the playback speed for the video.
-  void setPlaybackRate(double rate) => _callMethod('setPlaybackRate($rate)');
+  /// No-op. Player size is managed by Flutter layout constraints.
+  @Deprecated('Player sizing is handled by Flutter layout. Has no effect.')
+  void setSize(Size size) {}
 
-  /// Toggles the player's full screen mode.
+  /// No-op. Player sizing is handled by Flutter layout constraints.
+  @Deprecated('Player sizing is handled by Flutter layout. Has no effect.')
+  void fitWidth(Size screenSize) {}
+
+  /// No-op. Player sizing is handled by Flutter layout constraints.
+  @Deprecated('Player sizing is handled by Flutter layout. Has no effect.')
+  void fitHeight(Size screenSize) {}
+
+  /// Toggles between fullscreen and normal mode.
+  ///
+  /// Uses [SystemChrome] orientation locks rather than the iframe's OverlayPortal
+  /// mechanism, so Flutter overlay controls stay correctly aligned.
   void toggleFullScreenMode() {
     updateValue(value.copyWith(isFullScreen: !value.isFullScreen));
     if (value.isFullScreen) {
@@ -287,49 +298,53 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
     }
   }
 
-  /// MetaData for the currently loaded or cued video.
+  /// Reloads the player HTML, resetting it to [initialVideoId].
+  Future<void> reload() => iframeController.load(
+        params: iframeController.params,
+      );
+
+  /// Resets the controller state to defaults without reloading the player.
+  void reset() => updateValue(const YoutubePlayerValue());
+
+  /// Metadata for the currently loaded or cued video.
   YoutubeMetaData get metadata => value.metaData;
 
-  /// Reloads the player.
-  ///
-  /// The video id will reset to [initialVideoId] after reload.
-  void reload() => value.webViewController?.reload();
-
-  /// Resets the value of [YoutubePlayerController].
-  void reset() => updateValue(
-        value.copyWith(
-          isReady: false,
-          isFullScreen: false,
-          isControlsVisible: false,
-          playerState: PlayerState.unknown,
-          hasPlayed: false,
-          position: Duration.zero,
-          buffered: 0.0,
-          errorCode: 0,
-          isLoaded: false,
-          isPlaying: false,
-          isDragging: false,
-          metaData: const YoutubeMetaData(),
-        ),
+  /// Converts a fully-qualified YouTube URL to its 11-character video ID.
+  static String? convertUrlToId(String url, {bool trimWhitespaces = true}) =>
+      iframe.YoutubePlayerController.convertUrlToId(
+        url,
+        trimWhitespaces: trimWhitespaces,
       );
+
+  /// Returns a thumbnail URL for [videoId] at the given [quality].
+  static String getThumbnail({
+    required String videoId,
+    String quality = ThumbnailQuality.standard,
+    bool webp = true,
+  }) =>
+      webp
+          ? 'https://i3.ytimg.com/vi_webp/$videoId/$quality.webp'
+          : 'https://i3.ytimg.com/vi/$videoId/$quality.jpg';
 
   @override
   void dispose() {
-    value.webViewController?.dispose();
+    _valueSub?.cancel();
+    _videoStateSub?.cancel();
+    iframeController.close();
     super.dispose();
   }
 }
 
-/// An inherited widget to provide [YoutubePlayerController] to it's descendants.
+/// Provides [YoutubePlayerController] to its widget subtree via [InheritedWidget].
 class InheritedYoutubePlayer extends InheritedWidget {
-  /// Creates [InheritedYoutubePlayer]
+  /// Creates [InheritedYoutubePlayer].
   const InheritedYoutubePlayer({
     super.key,
     required this.controller,
     required super.child,
   });
 
-  /// A [YoutubePlayerController] which controls the player.
+  /// The controller available to all descendants.
   final YoutubePlayerController controller;
 
   @override
