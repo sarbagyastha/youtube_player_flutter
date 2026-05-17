@@ -108,6 +108,7 @@ class _YoutubePlayerState extends State<YoutubePlayer>
   late final OverlayController _overlayCtrl;
   final _overlayPortalCtrl = OverlayPortalController();
   final _placeholderKey = GlobalKey();
+  final _layerLink = LayerLink();
   Rect _playerRect = Rect.zero;
   StreamSubscription<YoutubePlayerValue>? _playerStateSub;
 
@@ -230,6 +231,7 @@ class _YoutubePlayerState extends State<YoutubePlayer>
             overlayChildBuilder: (_) => PlayerOverlayContent(
               controller: widget.controller,
               playerRect: _playerRect,
+              layerLink: _layerLink,
               overlayController: _overlayCtrl,
               backgroundColor: widget.backgroundColor,
               gestureRecognizers: widget.gestureRecognizers,
@@ -244,7 +246,10 @@ class _YoutubePlayerState extends State<YoutubePlayer>
                   SchedulerBinding.instance.addPostFrameCallback((_) {
                     if (mounted) _updatePlayerRect();
                   });
-                  return SizedBox.expand(key: _placeholderKey);
+                  return CompositedTransformTarget(
+                    link: _layerLink,
+                    child: SizedBox.expand(key: _placeholderKey),
+                  );
                 },
               ),
             ),

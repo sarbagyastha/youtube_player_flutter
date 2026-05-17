@@ -18,6 +18,7 @@ class PlayerOverlayContent extends StatelessWidget {
     super.key,
     required this.controller,
     required this.playerRect,
+    required this.layerLink,
     required this.overlayController,
     required this.backgroundColor,
     required this.gestureRecognizers,
@@ -27,6 +28,7 @@ class PlayerOverlayContent extends StatelessWidget {
 
   final YoutubePlayerController controller;
   final Rect playerRect;
+  final LayerLink layerLink;
   final OverlayController overlayController;
   final Color? backgroundColor;
   final Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers;
@@ -54,27 +56,47 @@ class PlayerOverlayContent extends StatelessWidget {
       builder: (context, value) {
         final isFullscreen = value.fullScreenOption.enabled;
 
-        final targetTop = isFullscreen ? 0.0 : playerRect.top;
-        final targetLeft = isFullscreen ? 0.0 : playerRect.left;
-        final targetWidth = isFullscreen ? screenSize.width : playerRect.width;
-        final targetHeight =
-            isFullscreen ? screenSize.height : playerRect.height;
+        final fsWidth = screenSize.width;
+        final fsHeight = screenSize.height;
+        final normalWidth = playerRect.width;
+        final normalHeight = playerRect.height;
+
+        Widget positionedLayer(Widget child) {
+          if (isFullscreen) {
+            return AnimatedPositioned(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              top: 0,
+              left: 0,
+              width: fsWidth,
+              height: fsHeight,
+              child: child,
+            );
+          }
+          // CompositedTransformFollower tracks the placeholder's position
+          // every frame through the layer tree — no scroll lag.
+          return Positioned(
+            top: 0,
+            left: 0,
+            child: CompositedTransformFollower(
+              link: layerLink,
+              showWhenUnlinked: false,
+              child: SizedBox(
+                width: normalWidth,
+                height: normalHeight,
+                child: child,
+              ),
+            ),
+          );
+        }
 
         return Stack(
           fit: StackFit.expand,
           children: [
-            // Black backdrop that fades in during fullscreen
             _FullscreenBackground(isFullscreen: isFullscreen),
 
-            // The actual WebView
-            AnimatedPositioned(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-              top: targetTop,
-              left: targetLeft,
-              width: targetWidth,
-              height: targetHeight,
-              child: GestureDetector(
+            positionedLayer(
+              GestureDetector(
                 onVerticalDragUpdate: enableFullScreenOnVerticalDrag
                     ? _onVerticalDrag
                     : null,
@@ -85,18 +107,14 @@ class PlayerOverlayContent extends StatelessWidget {
               ),
             ),
 
-            // Controls overlay (or custom builder output)
-            AnimatedPositioned(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-              top: targetTop,
-              left: targetLeft,
-              width: targetWidth,
-              height: targetHeight,
-              child: builder != null
+            positionedLayer(
+              builder != null
                   ? builder!(
                       context,
-                      SizedBox(width: targetWidth, height: targetHeight),
+                      SizedBox(
+                        width: isFullscreen ? fsWidth : normalWidth,
+                        height: isFullscreen ? fsHeight : normalHeight,
+                      ),
                       controller,
                     )
                   : _DefaultControlsLayer(
@@ -105,15 +123,8 @@ class PlayerOverlayContent extends StatelessWidget {
                     ),
             ),
 
-            // Loading overlay (hides while player initialises)
-            AnimatedPositioned(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-              top: targetTop,
-              left: targetLeft,
-              width: targetWidth,
-              height: targetHeight,
-              child: _LoadingOverlay(
+            positionedLayer(
+              _LoadingOverlay(
                 controller: controller,
                 backgroundColor: backgroundColor,
               ),
