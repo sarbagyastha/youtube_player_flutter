@@ -1,121 +1,317 @@
 import 'package:flutter/material.dart';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
-void main() {
-  runApp(const MyApp());
-}
+void main() => runApp(const App());
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class App extends StatelessWidget {
+  const App({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'YouTube Player Flutter Demo',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.red),
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      darkTheme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.red,
+          brightness: Brightness.dark,
+        ),
+      ),
+      home: const PlayerPage(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+// A small playlist of public videos.
+const _videoIds = [
+  'tcodrIK2P_I',
+  'jNQXAC9IVRw',
+  'M7FIvfx5J10',
+];
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
+class PlayerPage extends StatefulWidget {
+  const PlayerPage({super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<PlayerPage> createState() => _PlayerPageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _PlayerPageState extends State<PlayerPage> {
+  late YoutubePlayerController _controller;
+  int _currentIndex = 0;
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+  @override
+  void initState() {
+    super.initState();
+    _controller = YoutubePlayerController.fromVideoId(
+      videoId: _videoIds[_currentIndex],
+      autoPlay: false,
+      params: const YoutubePlayerParams(
+        mute: false,
+        enableCaption: false,
+        strictRelatedVideos: true,
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.close();
+    super.dispose();
+  }
+
+  void _loadVideo(int index) {
+    setState(() => _currentIndex = index);
+    _controller.loadVideoById(videoId: _videoIds[index]);
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+        title: const Text('YouTube Player Flutter'),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.info_outline),
+            onPressed: _showThemeDemo,
+            tooltip: 'Theme demo',
+          ),
+        ],
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: .center,
-          children: [
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+      body: ListView(
+        children: [
+          // Default player — inherits theme automatically
+          YoutubePlayer(controller: _controller),
+
+          const SizedBox(height: 16),
+
+          // Video list
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Text(
+              'Playlist',
+              style: Theme.of(context).textTheme.titleMedium,
             ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 8),
+          ...List.generate(_videoIds.length, (i) {
+            final selected = i == _currentIndex;
+            return ListTile(
+              leading: CircleAvatar(
+                backgroundColor: selected
+                    ? Theme.of(context).colorScheme.primary
+                    : Theme.of(context).colorScheme.surfaceContainerHighest,
+                child: Icon(
+                  selected ? Icons.play_arrow_rounded : Icons.ondemand_video,
+                  color: selected
+                      ? Theme.of(context).colorScheme.onPrimary
+                      : Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+              title: Text('Video ${i + 1}'),
+              subtitle: Text(_videoIds[i]),
+              selected: selected,
+              onTap: () => _loadVideo(i),
+            );
+          }),
+
+          const Divider(height: 32),
+
+          // Custom controls demo
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Text(
+              'Custom controls builder',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+          ),
+          const SizedBox(height: 8),
+          _CustomBuilderDemo(),
+
+          const SizedBox(height: 32),
+        ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+    );
+  }
+
+  void _showThemeDemo() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => const ThemeDemoPage()),
+    );
+  }
+}
+
+/// Demonstrates the [YoutubePlayerBuilder] callback for fully custom controls.
+class _CustomBuilderDemo extends StatefulWidget {
+  @override
+  State<_CustomBuilderDemo> createState() => _CustomBuilderDemoState();
+}
+
+class _CustomBuilderDemoState extends State<_CustomBuilderDemo> {
+  late final YoutubePlayerController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = YoutubePlayerController.fromVideoId(
+      videoId: 'jNQXAC9IVRw',
+      autoPlay: false,
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.close();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return YoutubePlayer(
+      controller: _controller,
+      // Custom builder replaces the entire default controls overlay.
+      // Use Stack to overlay controls on top of the player surface.
+      builder: (context, player, ctrl) => Stack(
+        children: [
+          player,
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: _MinimalControls(controller: ctrl),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// A minimal custom controls bar — the simplest possible builder output.
+class _MinimalControls extends StatelessWidget {
+  const _MinimalControls({required this.controller});
+
+  final YoutubePlayerController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return ColoredBox(
+      color: cs.surfaceContainerHighest,
+      child: Row(
+        children: [
+          const SizedBox(width: 8),
+          Text(
+            'Custom controls',
+            style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12),
+          ),
+          const Spacer(),
+          YoutubeValueBuilder(
+            controller: controller,
+            buildWhen: (o, n) => o.playerState != n.playerState,
+            builder: (context, value) {
+              final isPlaying = value.playerState == PlayerState.playing;
+              return IconButton(
+                icon: Icon(
+                  isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                  color: cs.primary,
+                ),
+                onPressed: isPlaying
+                    ? controller.pauseVideo
+                    : controller.playVideo,
+              );
+            },
+          ),
+          IconButton(
+            icon: Icon(Icons.stop_rounded, color: cs.onSurfaceVariant),
+            onPressed: controller.stopVideo,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Demonstrates [YoutubePlayerTheme] overriding the progress bar color.
+class ThemeDemoPage extends StatefulWidget {
+  const ThemeDemoPage({super.key});
+
+  @override
+  State<ThemeDemoPage> createState() => _ThemeDemoPageState();
+}
+
+class _ThemeDemoPageState extends State<ThemeDemoPage> {
+  late final YoutubePlayerController _controller;
+  Color _accentColor = Colors.red;
+
+  static const _colorOptions = [
+    (label: 'Red', color: Colors.red),
+    (label: 'Green', color: Colors.green),
+    (label: 'Blue', color: Colors.blue),
+    (label: 'Amber', color: Colors.amber),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = YoutubePlayerController.fromVideoId(
+      videoId: 'M7FIvfx5J10',
+      autoPlay: false,
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.close();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Theme Demo')),
+      body: ListView(
+        children: [
+          // Wrap the player in a Theme with a YoutubePlayerTheme extension
+          Theme(
+            data: Theme.of(context).copyWith(
+              extensions: [
+                YoutubePlayerTheme(progressBarActiveColor: _accentColor),
+              ],
+            ),
+            child: YoutubePlayer(controller: _controller),
+          ),
+          const SizedBox(height: 24),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Text(
+              'Accent color',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Wrap(
+              spacing: 8,
+              children: _colorOptions.map((opt) {
+                final selected = _accentColor == opt.color;
+                return ChoiceChip(
+                  label: Text(opt.label),
+                  selected: selected,
+                  selectedColor: opt.color,
+                  onSelected: (_) => setState(() => _accentColor = opt.color),
+                );
+              }).toList(),
+            ),
+          ),
+          const SizedBox(height: 32),
+        ],
       ),
     );
   }

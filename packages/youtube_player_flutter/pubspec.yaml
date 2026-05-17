@@ -19,14 +19,17 @@ dependencies:
   flutter:
     sdk: flutter
   youtube_player_iframe: ^6.0.0
+  webview_flutter: ^4.13.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_lints: ^6.0.0
   mocktail: ^1.0.4
 
 flutter:
   uses-material-design: true
 
-  assets:
-    - assets/speedometer.webp
+dependency_overrides:
+  youtube_player_iframe:
+    path: ../youtube_player_iframe

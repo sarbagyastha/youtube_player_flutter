@@ -1,3 +1,10 @@
-library youtube_player_flutter;
+// Re-export the full youtube_player_iframe public API.
+// YoutubePlayer is hidden here; this package's widget uses the same name.
+export 'package:youtube_player_iframe/youtube_player_iframe.dart'
+    hide YoutubePlayer;
 
+// This package's additions.
+export 'src/theme/youtube_player_theme.dart';
+export 'src/widgets/typedefs.dart';
+export 'src/widgets/youtube_player.dart';
 

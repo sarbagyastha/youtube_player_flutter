@@ -107,7 +107,6 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   final YoutubePlayerParams params;
 
   /// The [WebViewController] that drives the player
-  @internal
   late final WebViewController webViewController;
 
   late final YoutubePlayerEventHandler _eventHandler;
@@ -254,6 +253,21 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     await load(
       params: params,
       baseUrl: kIsWeb ? Uri.base.origin : (params.origin ?? params.host),
+      id: playerId,
+    );
+
+    _bridge.completeInit();
+  }
+
+  /// Like [init] but accepts overridden [params] — for wrappers that need to
+  /// force-disable native controls without changing the user-supplied params.
+  Future<void> initWithParams({
+    required YoutubePlayerParams params,
+    String? baseUrl,
+  }) async {
+    await load(
+      params: params,
+      baseUrl: baseUrl ?? (kIsWeb ? Uri.base.origin : (params.origin ?? params.host)),
       id: playerId,
     );
 

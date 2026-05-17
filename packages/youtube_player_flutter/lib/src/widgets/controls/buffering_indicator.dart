@@ -1,0 +1,28 @@
+import 'package:flutter/material.dart';
+import 'package:youtube_player_iframe/youtube_player_iframe.dart';
+
+/// Shows a [CircularProgressIndicator] only while the player is buffering.
+class BufferingIndicator extends StatelessWidget {
+  const BufferingIndicator({super.key, required this.controller});
+
+  final YoutubePlayerController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return YoutubeValueBuilder(
+      controller: controller,
+      buildWhen: (o, n) => o.playerState != n.playerState,
+      builder: (context, value) {
+        final isBuffering = value.playerState == PlayerState.buffering;
+        return IgnorePointer(
+          ignoring: !isBuffering,
+          child: AnimatedOpacity(
+            duration: const Duration(milliseconds: 200),
+            opacity: isBuffering ? 1.0 : 0.0,
+            child: const Center(child: CircularProgressIndicator()),
+          ),
+        );
+      },
+    );
+  }
+}
