@@ -27,11 +27,18 @@ class App extends StatelessWidget {
   }
 }
 
-// A small playlist of public videos.
 const _videoIds = [
   'tcodrIK2P_I',
-  'jNQXAC9IVRw',
-  'M7FIvfx5J10',
+  'H5v3kku4y6Q',
+  'nPt8bK2gbaU',
+  'K18cpp_-gP8',
+  'iLnmTe5Q2Qw',
+  '_WoCV4c6XOE',
+  'KmzdUe0RSJo',
+  '6jZDSSZZxjQ',
+  'p2lYr3vM_1w',
+  '7QUtEmBT_-w',
+  '34_PXCzGw1M',
 ];
 
 class PlayerPage extends StatefulWidget {
@@ -86,40 +93,24 @@ class _PlayerPageState extends State<PlayerPage> {
       ),
       body: ListView(
         children: [
-          // Default player — inherits theme automatically
           YoutubePlayer(controller: _controller),
-
           const SizedBox(height: 16),
-
-          // Video list
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Text(
-              'Playlist',
-              style: Theme.of(context).textTheme.titleMedium,
+          SizedBox(
+            height: 90,
+            child: CarouselView(
+              itemExtent: 180,
+              shrinkExtent: 100,
+              itemSnapping: false,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              onTap: _loadVideo,
+              children: List.generate(_videoIds.length, (i) {
+                return _ThumbnailCard(
+                  videoId: _videoIds[i],
+                  selected: i == _currentIndex,
+                );
+              }),
             ),
           ),
-          const SizedBox(height: 8),
-          ...List.generate(_videoIds.length, (i) {
-            final selected = i == _currentIndex;
-            return ListTile(
-              leading: CircleAvatar(
-                backgroundColor: selected
-                    ? Theme.of(context).colorScheme.primary
-                    : Theme.of(context).colorScheme.surfaceContainerHighest,
-                child: Icon(
-                  selected ? Icons.play_arrow_rounded : Icons.ondemand_video,
-                  color: selected
-                      ? Theme.of(context).colorScheme.onPrimary
-                      : Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-              title: Text('Video ${i + 1}'),
-              subtitle: Text(_videoIds[i]),
-              selected: selected,
-              onTap: () => _loadVideo(i),
-            );
-          }),
 
           const Divider(height: 32),
 
@@ -141,8 +132,58 @@ class _PlayerPageState extends State<PlayerPage> {
   }
 
   void _showThemeDemo() {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => const ThemeDemoPage()),
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute<void>(builder: (_) => const ThemeDemoPage()));
+  }
+}
+
+class _ThumbnailCard extends StatelessWidget {
+  const _ThumbnailCard({required this.videoId, required this.selected});
+
+  final String videoId;
+  final bool selected;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final borderRadius = BorderRadius.circular(30);
+
+    return Material(
+      shape: RoundedRectangleBorder(borderRadius: borderRadius),
+      clipBehavior: .antiAlias,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.network(
+            YoutubePlayerController.getThumbnail(
+              videoId: videoId,
+              quality: .high,
+            ),
+            fit: BoxFit.fitWidth,
+            errorBuilder: (_, _, _) => const ColoredBox(
+              color: Colors.black12,
+              child: Icon(Icons.ondemand_video, color: Colors.white54),
+            ),
+          ),
+          if (selected) ...[
+            DecoratedBox(
+              decoration: BoxDecoration(
+                border: Border.all(color: colorScheme.primary, width: 3),
+                borderRadius: borderRadius,
+                color: colorScheme.primary.withValues(alpha: 0.4),
+              ),
+              child: Center(
+                child: Icon(
+                  Icons.play_circle_filled_rounded,
+                  color: colorScheme.onPrimary,
+                  size: 36,
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
     );
   }
 }
