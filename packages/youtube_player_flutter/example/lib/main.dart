@@ -84,7 +84,7 @@ class _PlayerPageState extends State<PlayerPage> {
       body: ListView(
         children: [
           YoutubePlayer(controller: _controller),
-          const SizedBox(height: 16),
+          const SizedBox(height: 32),
           SizedBox(
             height: 90,
             child: CarouselView(
@@ -102,14 +102,17 @@ class _PlayerPageState extends State<PlayerPage> {
             ),
           ),
 
-          const Divider(height: 32),
+          const SizedBox(height: 32),
+          const Divider(height: 0),
+          const SizedBox(height: 16),
 
           // Custom controls demo
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Text(
-              'Custom controls builder',
+              'Custom Controls',
               style: Theme.of(context).textTheme.titleMedium,
+              textAlign: .center,
             ),
           ),
           const SizedBox(height: 8),
@@ -191,7 +194,7 @@ class _CustomBuilderDemoState extends State<_CustomBuilderDemo> {
   void initState() {
     super.initState();
     _controller = YoutubePlayerController.fromVideoId(
-      videoId: 'jNQXAC9IVRw',
+      videoId: 'j4lDDQTKN8s',
       autoPlay: false,
     );
   }
