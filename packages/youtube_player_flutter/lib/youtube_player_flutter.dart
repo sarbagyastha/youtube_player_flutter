@@ -8,3 +8,4 @@ export 'src/utils/youtube_meta_data.dart';
 export 'src/utils/youtube_player_controller.dart';
 export 'src/utils/youtube_player_flags.dart';
 export 'src/widgets/widgets.dart';
+export 'src/styles/playback_popup_style.dart';

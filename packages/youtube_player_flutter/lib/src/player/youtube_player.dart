@@ -5,6 +5,7 @@
 import 'package:flutter/material.dart';
 
 import '../enums/thumbnail_quality.dart';
+import '../styles/playback_popup_style.dart';
 import '../utils/errors.dart';
 import '../utils/youtube_meta_data.dart';
 import '../utils/youtube_player_controller.dart';
@@ -40,24 +41,25 @@ import 'raw_youtube_player.dart';
 ///
 class YoutubePlayer extends StatefulWidget {
   /// Creates [YoutubePlayer] widget.
-  const YoutubePlayer({
-    super.key,
-    required this.controller,
-    this.width,
-    this.aspectRatio = 16 / 9,
-    this.controlsTimeOut = const Duration(seconds: 3),
-    this.bufferIndicator,
-    Color? progressIndicatorColor,
-    ProgressBarColors? progressColors,
-    this.onReady,
-    this.onEnded,
-    this.liveUIColor = Colors.red,
-    this.topActions,
-    this.bottomActions,
-    this.actionsPadding = const EdgeInsets.all(8.0),
-    this.thumbnail,
-    this.showVideoProgressIndicator = false,
-  })  : progressColors = progressColors ?? const ProgressBarColors(),
+  const YoutubePlayer(
+      {super.key,
+      required this.controller,
+      this.width,
+      this.aspectRatio = 16 / 9,
+      this.controlsTimeOut = const Duration(seconds: 3),
+      this.bufferIndicator,
+      Color? progressIndicatorColor,
+      ProgressBarColors? progressColors,
+      this.onReady,
+      this.onEnded,
+      this.liveUIColor = Colors.red,
+      this.topActions,
+      this.bottomActions,
+      this.actionsPadding = const EdgeInsets.all(8.0),
+      this.thumbnail,
+      this.showVideoProgressIndicator = false,
+      this.playbackSpeedPopStyle})
+      : progressColors = progressColors ?? const ProgressBarColors(),
         progressIndicatorColor = progressIndicatorColor ?? Colors.red;
 
   /// A [YoutubePlayerController] to control the player.
@@ -147,6 +149,13 @@ class YoutubePlayer extends StatefulWidget {
   /// Default is false.
   /// {@endtemplate}
   final bool showVideoProgressIndicator;
+
+  /// {@template youtube_player_flutter.playbackSpeedPopStyle}
+  /// Defines styling options for the Playback Popup Button.
+  ///
+  /// Default is null and follows UI Guidelines.
+  /// {@endtemplate}
+  final PlaybackPopupStyle? playbackSpeedPopStyle;
 
   /// Converts fully qualified YouTube Url to video id.
   ///
@@ -368,7 +377,9 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                                   colors: widget.progressColors,
                                 ),
                                 const RemainingDuration(),
-                                const PlaybackSpeedButton(),
+                                PlaybackSpeedButton(
+                                  style: widget.playbackSpeedPopStyle,
+                                ),
                                 const FullScreenButton(),
                               ],
                         ),

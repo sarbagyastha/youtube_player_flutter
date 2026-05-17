@@ -5,6 +5,7 @@
 import 'package:flutter/material.dart';
 
 import '../enums/playback_rate.dart';
+import '../styles/playback_popup_style.dart';
 import '../utils/youtube_player_controller.dart';
 
 /// A widget to display playback speed changing button.
@@ -14,6 +15,7 @@ class PlaybackSpeedButton extends StatefulWidget {
     super.key,
     this.controller,
     this.icon,
+    this.style,
   });
 
   /// Overrides the default [YoutubePlayerController].
@@ -21,6 +23,9 @@ class PlaybackSpeedButton extends StatefulWidget {
 
   /// Defines icon for the button.
   final Widget? icon;
+
+  /// Consolidated style object for playback popupmenu
+  final PlaybackPopupStyle? style;
 
   @override
   State<PlaybackSpeedButton> createState() => _PlaybackSpeedButtonState();
@@ -50,6 +55,11 @@ class _PlaybackSpeedButtonState extends State<PlaybackSpeedButton> {
     return PopupMenuButton<double>(
       onSelected: _controller.setPlaybackRate,
       tooltip: 'PlayBack Rate',
+      color: widget.style?.backgroundColor,
+      shape: widget.style?.shape,
+      offset: widget.style?.offset ?? Offset.zero,
+      elevation: widget.style?.elevation,
+      padding: widget.style?.padding ?? const EdgeInsets.all(8.0),
       itemBuilder: (context) => [
         _popUpItem('2.0x', PlaybackRate.twice),
         _popUpItem('1.75x', PlaybackRate.oneAndAThreeQuarter),
@@ -68,7 +78,7 @@ class _PlaybackSpeedButtonState extends State<PlaybackSpeedButton> {
               package: 'youtube_player_flutter',
               width: 20.0,
               height: 20.0,
-              color: Colors.white,
+              color: widget.style?.iconColor ?? Colors.white,
             ),
       ),
     );
@@ -78,7 +88,10 @@ class _PlaybackSpeedButtonState extends State<PlaybackSpeedButton> {
     return CheckedPopupMenuItem(
       checked: _controller.value.playbackRate == rate,
       value: rate,
-      child: Text(text),
+      child: Text(
+        text,
+        style: widget.style?.textStyle,
+      ),
     );
   }
 }
