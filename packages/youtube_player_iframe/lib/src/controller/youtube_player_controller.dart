@@ -395,7 +395,9 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   @override
   Future<List<String>> get playlist async {
     final playlist = await _bridge.evalWithResult('getPlaylist()');
-    return List.from(jsonDecode(playlist));
+    final decoded = jsonDecode(playlist);
+    if (decoded == null) return [];
+    return List.from(decoded);
   }
 
   @override
