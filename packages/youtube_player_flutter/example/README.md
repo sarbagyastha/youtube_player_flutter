@@ -1,35 +1,3 @@
-# Youtube Player for Flutter Example
+# Youtube Player Flutter Example
 
-[Detailed Example](https://github.com/sarbagyastha/youtube_player_flutter/blob/master/example/lib/main.dart)
-
-```dart
-YoutubePlayerController _controller;
-
-@override
-void initState(){
-    _controller = YoutubePlayerController(
-        initialVideoId: 'iLnmTe5Q2Qw',
-        flags: YoutubePlayerFlags(
-            mute: false,
-            autoPlay: true,
-        ),
-    );
-    super.initState();
-}
-
-@override
-Widget build(BuildContext context){
-    return YoutubePlayer(
-       controller: _controller,
-       showVideoProgressIndicator: true,
-       videoProgressIndicatorColor: Colors.amber,
-       progressColors: ProgressColors(
-          playedColor: Colors.amber,
-          handleColor: Colors.amberAccent,
-       ),
-       onReady: () {
-          print('Player is ready.');
-       },
-    );
-}
-```
+This is a simple example of how to use the `youtube_player_flutter` package. It demonstrates how to create a basic YouTube player and control it using the `YoutubePlayerController`.

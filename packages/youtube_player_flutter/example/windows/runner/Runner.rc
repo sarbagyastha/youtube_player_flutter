@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "np.com.sarbagyastha" "\0"
-            VALUE "FileDescription", "youtube_player_flutter_example" "\0"
+            VALUE "FileDescription", "ypf_example" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "youtube_player_flutter_example" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2023 np.com.sarbagyastha. All rights reserved." "\0"
-            VALUE "OriginalFilename", "youtube_player_flutter_example.exe" "\0"
-            VALUE "ProductName", "youtube_player_flutter_example" "\0"
+            VALUE "InternalName", "ypf_example" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 np.com.sarbagyastha. All rights reserved." "\0"
+            VALUE "OriginalFilename", "ypf_example.exe" "\0"
+            VALUE "ProductName", "ypf_example" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END
