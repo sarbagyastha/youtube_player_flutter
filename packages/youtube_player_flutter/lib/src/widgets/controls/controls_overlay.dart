@@ -3,11 +3,12 @@ import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 import 'bottom_bar.dart';
 import 'buffering_indicator.dart';
+import 'playback_controls.dart';
 import 'title_bar.dart';
 
 /// The default Material 3 controls overlay.
 ///
-/// Composed of a top [TitleBar], a transparent centre tap region, and a
+/// Composed of a top [TitleBar], centered [PlaybackControls], and a
 /// bottom [BottomBar]. A [BufferingIndicator] floats in the centre.
 class ControlsOverlay extends StatelessWidget {
   const ControlsOverlay({super.key, required this.controller});
@@ -21,7 +22,6 @@ class ControlsOverlay extends StatelessWidget {
       buildWhen: (o, n) => o.fullScreenOption != n.fullScreenOption,
       builder: (context, value) {
         return SafeArea(
-          // Apply SafeArea insets only when fullscreen
           top: value.fullScreenOption.enabled,
           bottom: value.fullScreenOption.enabled,
           left: value.fullScreenOption.enabled,
@@ -35,6 +35,7 @@ class ControlsOverlay extends StatelessWidget {
                   BottomBar(controller: controller),
                 ],
               ),
+              Center(child: PlaybackControls(controller: controller)),
               Center(child: BufferingIndicator(controller: controller)),
             ],
           ),

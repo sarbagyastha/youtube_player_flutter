@@ -3,7 +3,6 @@ import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 import '../../controller/overlay_controller_scope.dart';
 import '../../theme/youtube_player_theme.dart';
-import '../../utils/duration_formatter.dart';
 
 /// Seek bar with elapsed/remaining time labels, driven by [YoutubeVideoState].
 class ProgressBar extends StatefulWidget {
@@ -41,59 +40,35 @@ class _ProgressBarState extends State<ProgressBar> {
           totalSeconds,
         );
 
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SliderTheme(
-              data: SliderTheme.of(context).copyWith(
-                activeTrackColor: theme.progressBarActiveColor,
-                thumbColor: theme.progressBarActiveColor,
-                inactiveTrackColor: theme.progressBarBackgroundColor,
-                secondaryActiveTrackColor: theme.progressBarBufferedColor,
-                overlayColor: theme.progressBarActiveColor.withValues(
-                  alpha: 0.2,
-                ),
-                trackHeight: 3,
-                thumbShape: const RoundSliderThumbShape(
-                  enabledThumbRadius: 6,
-                ),
-              ),
-              child: Slider(
-                value: sliderValue,
-                secondaryTrackValue: totalSeconds > 0 ? buffered : 0,
-                max: totalSeconds > 0 ? totalSeconds : 1,
-                onChangeStart: (_) {
-                  _isSeeking = true;
-                  OverlayControllerScope.of(context).cancelTimer();
-                },
-                onChanged: (value) {
-                  setState(() => _seekValue = value);
-                  widget.controller.seekTo(
-                    seconds: value,
-                    allowSeekAhead: false,
-                  );
-                },
-                onChangeEnd: (value) {
-                  widget.controller.seekTo(
-                    seconds: value,
-                    allowSeekAhead: true,
-                  );
-                  setState(() => _isSeeking = false);
-                  OverlayControllerScope.of(context).resetTimer();
-                },
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                children: [
-                  Text(position.toHhMmSs(), style: theme.timerStyle),
-                  const Spacer(),
-                  Text(duration.toHhMmSs(), style: theme.timerStyle),
-                ],
-              ),
-            ),
-          ],
+        return SliderTheme(
+          data: SliderTheme.of(context).copyWith(
+            activeTrackColor: theme.progressBarActiveColor,
+            thumbColor: theme.progressBarActiveColor,
+            inactiveTrackColor: theme.progressBarBackgroundColor,
+            secondaryActiveTrackColor: theme.progressBarBufferedColor,
+            overlayColor: theme.progressBarActiveColor.withValues(alpha: 0.2),
+            trackHeight: 2,
+            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 5),
+          ),
+          child: Slider(
+            value: sliderValue,
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            secondaryTrackValue: totalSeconds > 0 ? buffered : 0,
+            max: totalSeconds > 0 ? totalSeconds : 1,
+            onChangeStart: (_) {
+              _isSeeking = true;
+              OverlayControllerScope.of(context).cancelTimer();
+            },
+            onChanged: (value) {
+              setState(() => _seekValue = value);
+              widget.controller.seekTo(seconds: value, allowSeekAhead: false);
+            },
+            onChangeEnd: (value) {
+              widget.controller.seekTo(seconds: value, allowSeekAhead: true);
+              setState(() => _isSeeking = false);
+              OverlayControllerScope.of(context).resetTimer();
+            },
+          ),
         );
       },
     );
