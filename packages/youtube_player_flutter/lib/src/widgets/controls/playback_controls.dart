@@ -1,30 +1,78 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 import '../../controller/overlay_controller_scope.dart';
 
-/// Three centered circular buttons: previous | play-pause | next.
-class PlaybackControls extends StatelessWidget {
+/// Centered circular buttons: [previous |] play-pause [| next].
+/// Skip buttons are only shown when a previous/next video is available.
+class PlaybackControls extends StatefulWidget {
   const PlaybackControls({super.key, required this.controller});
 
   final YoutubePlayerController controller;
 
   @override
+  State<PlaybackControls> createState() => _PlaybackControlsState();
+}
+
+class _PlaybackControlsState extends State<PlaybackControls> {
+  int _playlistIndex = 0;
+  int _playlistSize = 0;
+  String _lastVideoId = '';
+  StreamSubscription<YoutubePlayerValue>? _sub;
+
+  @override
+  void initState() {
+    super.initState();
+    _sub = widget.controller.listen((value) {
+      final videoId = value.metaData.videoId;
+      if (videoId != _lastVideoId) {
+        _lastVideoId = videoId;
+        _refreshPlaylistInfo();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _sub?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _refreshPlaylistInfo() async {
+    final results = await Future.wait([
+      widget.controller.playlist,
+      widget.controller.playlistIndex,
+    ]);
+    if (!mounted) return;
+    setState(() {
+      _playlistSize = (results[0] as List).length;
+      _playlistIndex = results[1] as int;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final hasPrevious = _playlistIndex > 0;
+    final hasNext = _playlistSize > 1 && _playlistIndex < _playlistSize - 1;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
       children: [
-        _CircleButton(
-          icon: Icons.skip_previous_rounded,
-          onTap: () {
-            controller.previousVideo();
-            OverlayControllerScope.of(context).resetTimer();
-          },
-        ),
-        const SizedBox(width: 16),
+        if (hasPrevious) ...[
+          _CircleButton(
+            icon: Icons.skip_previous_rounded,
+            onTap: () {
+              widget.controller.previousVideo();
+              OverlayControllerScope.of(context).resetTimer();
+            },
+          ),
+          const SizedBox(width: 16),
+        ],
         YoutubeValueBuilder(
-          controller: controller,
+          controller: widget.controller,
           buildWhen: (o, n) => o.playerState != n.playerState,
           builder: (context, value) {
             final isPlaying = value.playerState == PlayerState.playing;
@@ -32,21 +80,23 @@ class PlaybackControls extends StatelessWidget {
               isPlaying: isPlaying,
               onTap: () {
                 isPlaying
-                    ? controller.pauseVideo()
-                    : controller.playVideo();
+                    ? widget.controller.pauseVideo()
+                    : widget.controller.playVideo();
                 OverlayControllerScope.of(context).resetTimer();
               },
             );
           },
         ),
-        const SizedBox(width: 16),
-        _CircleButton(
-          icon: Icons.skip_next_rounded,
-          onTap: () {
-            controller.nextVideo();
-            OverlayControllerScope.of(context).resetTimer();
-          },
-        ),
+        if (hasNext) ...[
+          const SizedBox(width: 16),
+          _CircleButton(
+            icon: Icons.skip_next_rounded,
+            onTap: () {
+              widget.controller.nextVideo();
+              OverlayControllerScope.of(context).resetTimer();
+            },
+          ),
+        ],
       ],
     );
   }
