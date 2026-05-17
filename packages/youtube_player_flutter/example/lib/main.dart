@@ -117,7 +117,6 @@ class _PlayerPageState extends State<PlayerPage> {
           ),
           const SizedBox(height: 8),
           _CustomBuilderDemo(),
-
           const SizedBox(height: 32),
         ],
       ),
@@ -213,7 +212,7 @@ class _CustomBuilderDemoState extends State<_CustomBuilderDemo> {
       // Use Stack to overlay controls on top of the player surface.
       builder: (context, player, ctrl) => Stack(
         children: [
-          player,
+          AbsorbPointer(child: player),
           Positioned(
             bottom: 0,
             left: 0,
