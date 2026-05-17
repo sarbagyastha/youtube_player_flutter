@@ -46,7 +46,12 @@ class PlayerOverlayContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (playerRect.isEmpty) return const SizedBox.shrink();
+    // Guard NaN: Rect.isEmpty returns false for NaN dimensions because
+    // NaN comparisons are always false, so check isFinite explicitly.
+    if (!playerRect.width.isFinite || !playerRect.height.isFinite ||
+        playerRect.isEmpty) {
+      return const SizedBox.shrink();
+    }
 
     final screenSize = MediaQuery.of(context).size;
 
@@ -56,34 +61,29 @@ class PlayerOverlayContent extends StatelessWidget {
       builder: (context, value) {
         final isFullscreen = value.fullScreenOption.enabled;
 
-        final fsWidth = screenSize.width;
-        final fsHeight = screenSize.height;
-        final normalWidth = playerRect.width;
-        final normalHeight = playerRect.height;
-
+        // Always use CompositedTransformFollower so the widget element is
+        // never recreated when fullscreen toggles — this preserves the
+        // AnimatedContainer's animation state for the slide transition.
+        // In normal mode: follower tracks the placeholder, no transform.
+        // In fullscreen: AnimatedContainer shifts by (-rect.left, -rect.top)
+        // to cancel the follower's offset, landing the content at (0, 0),
+        // and expands to screen size — the same path AnimatedPositioned took.
         Widget positionedLayer(Widget child) {
-          if (isFullscreen) {
-            return AnimatedPositioned(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-              top: 0,
-              left: 0,
-              width: fsWidth,
-              height: fsHeight,
-              child: child,
-            );
-          }
-          // CompositedTransformFollower tracks the placeholder's position
-          // every frame through the layer tree — no scroll lag.
           return Positioned(
             top: 0,
             left: 0,
             child: CompositedTransformFollower(
               link: layerLink,
               showWhenUnlinked: false,
-              child: SizedBox(
-                width: normalWidth,
-                height: normalHeight,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+                transform: isFullscreen
+                    ? Matrix4.translationValues(
+                        -playerRect.left, -playerRect.top, 0)
+                    : Matrix4.identity(),
+                width: isFullscreen ? screenSize.width : playerRect.width,
+                height: isFullscreen ? screenSize.height : playerRect.height,
                 child: child,
               ),
             ),
@@ -112,8 +112,11 @@ class PlayerOverlayContent extends StatelessWidget {
                   ? builder!(
                       context,
                       SizedBox(
-                        width: isFullscreen ? fsWidth : normalWidth,
-                        height: isFullscreen ? fsHeight : normalHeight,
+                        width:
+                            isFullscreen ? screenSize.width : playerRect.width,
+                        height: isFullscreen
+                            ? screenSize.height
+                            : playerRect.height,
                       ),
                       controller,
                     )

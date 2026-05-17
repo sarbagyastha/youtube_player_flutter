@@ -183,7 +183,15 @@ class _YoutubePlayerState extends State<YoutubePlayer>
     final box =
         _placeholderKey.currentContext?.findRenderObject() as RenderBox?;
     if (box == null || !box.hasSize) return;
-    final newRect = box.localToGlobal(Offset.zero) & box.size;
+    final offset = box.localToGlobal(Offset.zero);
+    final size = box.size;
+    // localToGlobal can return non-finite values when the render object is
+    // kept alive but outside the layout viewport. Ignore those frames.
+    if (!offset.dx.isFinite || !offset.dy.isFinite ||
+        !size.width.isFinite || !size.height.isFinite || size.isEmpty) {
+      return;
+    }
+    final newRect = offset & size;
     if (newRect != _playerRect) setState(() => _playerRect = newRect);
   }
 
@@ -304,6 +312,13 @@ class _YoutubePlayerState extends State<YoutubePlayer>
     );
   }
 
+  // On mobile the WebView lives inside OverlayPortal, which is owned by this
+  // state. If the state is disposed (keepAlive:false, widget recycled by the
+  // list), OverlayPortal is removed and WebViewWidget is torn down. When the
+  // placeholder re-enters the list a new state calls _initPlayer() →
+  // loadHtmlString(), which reloads the entire YouTube IFrame and causes an
+  // error. Always keep alive on mobile so the overlay/WebView is never torn
+  // down while the controller is still live.
   @override
-  bool get wantKeepAlive => widget.keepAlive;
+  bool get wantKeepAlive => _isMobile || widget.keepAlive;
 }
