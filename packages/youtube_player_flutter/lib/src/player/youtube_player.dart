@@ -57,6 +57,9 @@ class YoutubePlayer extends StatefulWidget {
     this.actionsPadding = const EdgeInsets.all(8.0),
     this.thumbnail,
     this.showVideoProgressIndicator = false,
+    this.customMuteButton,
+    this.showForwardRewindControls = false,
+    this.showCaptionControls = false,
   })  : progressColors = progressColors ?? const ProgressBarColors(),
         progressIndicatorColor = progressIndicatorColor ?? Colors.red;
 
@@ -148,6 +151,27 @@ class YoutubePlayer extends StatefulWidget {
   /// {@endtemplate}
   final bool showVideoProgressIndicator;
 
+  /// {@template youtube_player_flutter.customMuteButton}
+  /// Custom widget to replace the default mute button.
+  ///
+  /// If provided, this widget will be placed before the current time display.
+  /// {@endtemplate}
+  final Widget? customMuteButton;
+
+  /// {@template youtube_player_flutter.showForwardRewindControls}
+  /// Defines whether to show forward and rewind controls with double-tap gestures.
+  ///
+  /// Default is false.
+  /// {@endtemplate}
+  final bool showForwardRewindControls;
+
+  /// {@template youtube_player_flutter.showCaptionControls}
+  /// Defines whether to show caption toggle controls in the video player.
+  ///
+  /// Default is false.
+  /// {@endtemplate}
+  final bool showCaptionControls;
+
   /// Converts fully qualified YouTube Url to video id.
   ///
   /// If videoId is passed as url then no conversion is done.
@@ -156,14 +180,10 @@ class YoutubePlayer extends StatefulWidget {
     if (trimWhitespaces) url = url.trim();
 
     for (var exp in [
-      RegExp(
-          r"^https:\/\/(?:www\.|m\.)?youtube\.com\/watch\?v=([_\-a-zA-Z0-9]{11}).*$"),
-      RegExp(
-          r"^https:\/\/(?:music\.)?youtube\.com\/watch\?v=([_\-a-zA-Z0-9]{11}).*$"),
-      RegExp(
-          r"^https:\/\/(?:www\.|m\.)?youtube\.com\/shorts\/([_\-a-zA-Z0-9]{11}).*$"),
-      RegExp(
-          r"^https:\/\/(?:www\.|m\.)?youtube(?:-nocookie)?\.com\/embed\/([_\-a-zA-Z0-9]{11}).*$"),
+      RegExp(r"^https:\/\/(?:www\.|m\.)?youtube\.com\/watch\?v=([_\-a-zA-Z0-9]{11}).*$"),
+      RegExp(r"^https:\/\/(?:music\.)?youtube\.com\/watch\?v=([_\-a-zA-Z0-9]{11}).*$"),
+      RegExp(r"^https:\/\/(?:www\.|m\.)?youtube\.com\/shorts\/([_\-a-zA-Z0-9]{11}).*$"),
+      RegExp(r"^https:\/\/(?:www\.|m\.)?youtube(?:-nocookie)?\.com\/embed\/([_\-a-zA-Z0-9]{11}).*$"),
       RegExp(r"^https:\/\/youtu\.be\/([_\-a-zA-Z0-9]{11}).*$")
     ]) {
       Match? match = exp.firstMatch(url);
@@ -179,9 +199,7 @@ class YoutubePlayer extends StatefulWidget {
     String quality = ThumbnailQuality.standard,
     bool webp = true,
   }) =>
-      webp
-          ? 'https://i3.ytimg.com/vi_webp/$videoId/$quality.webp'
-          : 'https://i3.ytimg.com/vi/$videoId/$quality.jpg';
+      webp ? 'https://i3.ytimg.com/vi_webp/$videoId/$quality.webp' : 'https://i3.ytimg.com/vi/$videoId/$quality.jpg';
 
   @override
   State<YoutubePlayer> createState() => _YoutubePlayerState();
@@ -241,8 +259,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
           child: _buildPlayer(
             errorWidget: Container(
               color: Colors.black87,
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 40.0, vertical: 20.0),
+              padding: const EdgeInsets.symmetric(horizontal: 40.0, vertical: 20.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -300,8 +317,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
             onEnded: (YoutubeMetaData metaData) {
               if (controller.flags.loop) {
                 controller.load(controller.metadata.videoId,
-                    startAt: controller.flags.startAt,
-                    endAt: controller.flags.endAt);
+                    startAt: controller.flags.startAt, endAt: controller.flags.endAt);
               }
 
               widget.onEnded?.call(metaData);
@@ -337,30 +353,33 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
               disableDragSeek: controller.flags.disableDragSeek,
               timeOut: widget.controlsTimeOut,
             ),
+            if (widget.showForwardRewindControls)
+              ForwardRewindControls(
+                controlsTimeOut: widget.controlsTimeOut,
+              ),
             Positioned(
               bottom: 0,
               left: 0,
               right: 0,
               child: AnimatedOpacity(
-                opacity: !controller.flags.hideControls &&
-                        controller.value.isControlsVisible
-                    ? 1
-                    : 0,
+                opacity: !controller.flags.hideControls && controller.value.isControlsVisible ? 1 : 0,
                 duration: const Duration(milliseconds: 300),
                 child: controller.flags.isLive
                     ? LiveBottomBar(
                         liveUIColor: widget.liveUIColor,
-                        showLiveFullscreenButton:
-                            widget.controller.flags.showLiveFullscreenButton,
+                        showLiveFullscreenButton: widget.controller.flags.showLiveFullscreenButton,
+                        customMuteButton: widget.customMuteButton,
                       )
                     : Padding(
-                        padding: widget.bottomActions == null
-                            ? const EdgeInsets.all(0.0)
-                            : widget.actionsPadding,
+                        padding: widget.bottomActions == null ? const EdgeInsets.all(0.0) : widget.actionsPadding,
                         child: Row(
                           children: widget.bottomActions ??
                               [
                                 const SizedBox(width: 14.0),
+                                if (widget.customMuteButton != null) ...[
+                                  widget.customMuteButton!,
+                                  const SizedBox(width: 8.0),
+                                ],
                                 const CurrentPosition(),
                                 const SizedBox(width: 8.0),
                                 ProgressBar(
@@ -380,10 +399,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
               left: 0,
               right: 0,
               child: AnimatedOpacity(
-                opacity: !controller.flags.hideControls &&
-                        controller.value.isControlsVisible
-                    ? 1
-                    : 0,
+                opacity: !controller.flags.hideControls && controller.value.isControlsVisible ? 1 : 0,
                 duration: const Duration(milliseconds: 300),
                 child: Padding(
                   padding: widget.actionsPadding,
@@ -394,9 +410,13 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
               ),
             ),
           ],
-          if (!controller.flags.hideControls)
-            const Center(child: PlayPauseButton()),
+          if (!controller.flags.hideControls) const Center(child: PlayPauseButton()),
           if (controller.value.hasError) errorWidget,
+          if (widget.showCaptionControls)
+            CaptionControls(
+              iconColor: Colors.white,
+              iconSize: 22.0,
+            ),
         ],
       ),
     );
@@ -404,23 +424,17 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
 
   Widget get _thumbnail => Image.network(
         YoutubePlayer.getThumbnail(
-          videoId: controller.metadata.videoId.isEmpty
-              ? controller.initialVideoId
-              : controller.metadata.videoId,
+          videoId: controller.metadata.videoId.isEmpty ? controller.initialVideoId : controller.metadata.videoId,
         ),
         fit: BoxFit.cover,
-        loadingBuilder: (_, child, progress) =>
-            progress == null ? child : Container(color: Colors.black),
+        loadingBuilder: (_, child, progress) => progress == null ? child : Container(color: Colors.black),
         errorBuilder: (context, _, __) => Image.network(
           YoutubePlayer.getThumbnail(
-            videoId: controller.metadata.videoId.isEmpty
-                ? controller.initialVideoId
-                : controller.metadata.videoId,
+            videoId: controller.metadata.videoId.isEmpty ? controller.initialVideoId : controller.metadata.videoId,
             webp: false,
           ),
           fit: BoxFit.cover,
-          loadingBuilder: (_, child, progress) =>
-              progress == null ? child : Container(color: Colors.black),
+          loadingBuilder: (_, child, progress) => progress == null ? child : Container(color: Colors.black),
           errorBuilder: (context, _, __) => Container(),
         ),
       );

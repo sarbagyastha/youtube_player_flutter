@@ -165,9 +165,7 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
 
   /// Finds [YoutubePlayerController] in the provided context.
   static YoutubePlayerController? of(BuildContext context) {
-    return context
-        .dependOnInheritedWidgetOfExactType<InheritedYoutubePlayer>()
-        ?.controller;
+    return context.dependOnInheritedWidgetOfExactType<InheritedYoutubePlayer>()?.controller;
   }
 
   void _callMethod(String methodString) {
@@ -236,6 +234,15 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
   /// Un mutes the player.
   void unMute() => _callMethod('unMute()');
 
+  /// Toggles captions on/off.
+  void toggleCaptions() => _callMethod('toggleCaptions()');
+
+  /// Shows captions.
+  void showCaptions() => _callMethod('showCaptions()');
+
+  /// Hides captions.
+  void hideCaptions() => _callMethod('hideCaptions()');
+
   /// Sets the volume of player.
   /// Max = 100 , Min = 0
   void setVolume(int volume) => volume >= 0 && volume <= 100
@@ -253,8 +260,7 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
   }
 
   /// Sets the size in pixels of the player.
-  void setSize(Size size) =>
-      _callMethod('setSize(${size.width}, ${size.height})');
+  void setSize(Size size) => _callMethod('setSize(${size.width}, ${size.height})');
 
   /// Fits the video to screen width.
   void fitWidth(Size screenSize) {
@@ -283,7 +289,14 @@ class YoutubePlayerController extends ValueNotifier<YoutubePlayerValue> {
         DeviceOrientation.landscapeRight,
       ]);
     } else {
-      SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+      // Don't force portrait mode when exiting full screen
+      // Let the app handle orientation as needed
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+      ]);
     }
   }
 
