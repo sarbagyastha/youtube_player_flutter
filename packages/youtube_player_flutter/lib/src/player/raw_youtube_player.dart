@@ -205,12 +205,17 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
             ..addJavaScriptHandler(
               handlerName: 'VideoTime',
               callback: (args) {
-                final position = args.first * 1000;
-                final num buffered = args.last;
+                final num positionNum = (args.isNotEmpty && args.first != null)
+                    ? args.first as num
+                    : 0;
+                final num bufferedNum = (args.isNotEmpty && args.last != null)
+                    ? args.last as num
+                    : 0;
                 controller!.updateValue(
                   controller!.value.copyWith(
-                    position: Duration(milliseconds: position.floor()),
-                    buffered: buffered.toDouble(),
+                    position:
+                        Duration(milliseconds: (positionNum * 1000).floor()),
+                    buffered: bufferedNum.toDouble(),
                   ),
                 );
               },
@@ -274,8 +279,16 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
                         'cc_lang_pref': '${controller!.flags.captionLanguage}',
                         'autoplay': ${boolean(value: controller!.flags.autoPlay)},
                         'start': ${controller!.flags.startAt},
-                        'end': ${controller!.flags.endAt}
-                    },
+                        'end': ${controller!.flags.endAt},
+                        ${controller!.flags.audioLanguage == null
+                          ? "'original': 1,"
+                          : """
+                            'hl': '${controller!.flags.audioLanguage}',
+                            'lang': '${controller!.flags.audioLanguage}',
+                            'audio_lang': '${controller!.flags.audioLanguage}',
+                            """
+                        }
+                      },
                     events: {
                         onReady: function(event) { window.flutter_inappwebview.callHandler('Ready'); },
                         onStateChange: function(event) { sendPlayerStateChange(event.data); },

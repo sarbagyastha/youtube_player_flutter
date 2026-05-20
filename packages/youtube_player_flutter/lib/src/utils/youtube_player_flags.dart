@@ -79,6 +79,12 @@ class YoutubePlayerFlags {
   /// Default is true.
   final bool showLiveFullscreenButton;
 
+
+  /// Preferred audio language for the video.
+  /// If null, the player will use the original audio track.
+  /// Uses ISO 639-1 language codes (e.g. 'en', 'ar').
+  final String? audioLanguage;
+
   /// Creates [YoutubePlayerFlags].
   const YoutubePlayerFlags({
     this.hideControls = false,
@@ -96,6 +102,7 @@ class YoutubePlayerFlags {
     this.endAt,
     this.useHybridComposition = true,
     this.showLiveFullscreenButton = true,
+    this.audioLanguage,
   });
 
   /// Copies new values assigned to the [YoutubePlayerFlags].
@@ -116,6 +123,7 @@ class YoutubePlayerFlags {
     bool? controlsVisibleAtStart,
     bool? useHybridComposition,
     bool? showLiveFullscreenButton,
+    String? audioLanguage,
   }) {
     return YoutubePlayerFlags(
       autoPlay: autoPlay ?? this.autoPlay,
@@ -135,6 +143,7 @@ class YoutubePlayerFlags {
       useHybridComposition: useHybridComposition ?? this.useHybridComposition,
       showLiveFullscreenButton:
           showLiveFullscreenButton ?? this.showLiveFullscreenButton,
+      audioLanguage: audioLanguage ?? this.audioLanguage,
     );
   }
 }
