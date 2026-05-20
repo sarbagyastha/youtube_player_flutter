@@ -52,14 +52,26 @@ class _CurrentPositionState extends State<CurrentPosition> {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      durationFormatter(
-        _controller.value.position.inMilliseconds,
-      ),
-      style: const TextStyle(
-        color: Colors.white,
-        fontSize: 12.0,
-      ),
+    return Stack(
+      children: [
+        Text(
+          "${_controller.value.position.inHours != 0 ? '66:' : ''}66:66",
+          key: const Key('hidden-current-position-text'),
+          style: const TextStyle(
+            color: Colors.transparent,
+            fontSize: 12.0,
+          ),
+        ),
+        Text(
+          durationFormatter(
+            _controller.value.position.inMilliseconds,
+          ),
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 12.0,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -109,15 +121,27 @@ class _RemainingDurationState extends State<RemainingDuration> {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      "- ${durationFormatter(
-        (_controller.metadata.duration.inMilliseconds) -
-            (_controller.value.position.inMilliseconds),
-      )}",
-      style: const TextStyle(
-        color: Colors.white,
-        fontSize: 12.0,
-      ),
+    return Stack(
+      children: [
+        Text(
+          "- ${_controller.value.position.inHours != 0 ? '66:' : ''}66:66",
+          key: const Key('hidden-remaining-duration-text'),
+          style: const TextStyle(
+            color: Colors.transparent,
+            fontSize: 12.0,
+          ),
+        ),
+        Text(
+          "- ${durationFormatter(
+            (_controller.metadata.duration.inMilliseconds) -
+                (_controller.value.position.inMilliseconds),
+          )}",
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 12.0,
+          ),
+        ),
+      ],
     );
   }
 }
