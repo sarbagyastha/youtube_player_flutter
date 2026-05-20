@@ -59,6 +59,7 @@ class _CurrentPositionState extends State<CurrentPosition> {
       style: const TextStyle(
         color: Colors.white,
         fontSize: 12.0,
+        height: 1.0,
       ),
     );
   }
@@ -117,6 +118,7 @@ class _RemainingDurationState extends State<RemainingDuration> {
       style: const TextStyle(
         color: Colors.white,
         fontSize: 12.0,
+        height: 1.0,
       ),
     );
   }
