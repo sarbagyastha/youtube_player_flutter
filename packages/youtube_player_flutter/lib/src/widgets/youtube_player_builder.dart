@@ -49,21 +49,21 @@ class _YoutubePlayerBuilderState extends State<YoutubePlayerBuilder>
     super.dispose();
   }
 
-  @override
-  void didChangeMetrics() {
-    final physicalSize = PlatformDispatcher.instance.views.first.physicalSize;
-    final controller = widget.player.controller;
-    if (physicalSize.width > physicalSize.height) {
-      controller.updateValue(controller.value.copyWith(isFullScreen: true));
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-      widget.onEnterFullScreen?.call();
-    } else {
-      controller.updateValue(controller.value.copyWith(isFullScreen: false));
-      SystemChrome.restoreSystemUIOverlays();
-      widget.onExitFullScreen?.call();
-    }
-    super.didChangeMetrics();
-  }
+  // @override
+  // void didChangeMetrics() {
+  //   final physicalSize = PlatformDispatcher.instance.views.first.physicalSize;
+  //   final controller = widget.player.controller;
+  //   if (physicalSize.width > physicalSize.height) {
+  //     controller.updateValue(controller.value.copyWith(isFullScreen: true));
+  //     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+  //     widget.onEnterFullScreen?.call();
+  //   } else {
+  //     controller.updateValue(controller.value.copyWith(isFullScreen: false));
+  //     SystemChrome.restoreSystemUIOverlays();
+  //     widget.onExitFullScreen?.call();
+  //   }
+  //   super.didChangeMetrics();
+  // }
 
   @override
   Widget build(BuildContext context) {
