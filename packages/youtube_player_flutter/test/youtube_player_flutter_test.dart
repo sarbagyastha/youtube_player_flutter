@@ -214,3 +214,23 @@ const List<int> _transparentImage = <int>[
   0x44,
   0xAE,
 ];
+
+extension WidgetTesterExtension on WidgetTester {
+  Future<void> waitFor(Finder finder, {
+    Duration timeout = const Duration(seconds: 20),
+  }) async {
+    final end = DateTime.now().add(timeout);
+
+    while (finder
+        .hitTestable()
+        .evaluate()
+        .isEmpty) {
+      if (DateTime.now().isAfter(end)) {
+        throw Exception('Timed out waiting for $finder');
+      }
+      await pump();
+      await idle();
+      await Future.delayed(const Duration(milliseconds: 100));
+    }
+  }
+}
