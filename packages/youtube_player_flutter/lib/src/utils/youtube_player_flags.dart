@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:flutter/material.dart';
+
 /// Defines player flags for [YoutubePlayer].
 class YoutubePlayerFlags {
   /// If set to true, hides the controls.
@@ -27,6 +29,8 @@ class YoutubePlayerFlags {
   /// if true, Live Playback controls will be shown instead of default one.
   ///
   /// Default is false.
+  @Deprecated('This value is ignored. Metadata from the YouTube API call is '
+      'now used to check if video is live.')
   final bool isLive;
 
   /// Hides thumbnail if true.
@@ -79,12 +83,22 @@ class YoutubePlayerFlags {
   /// Default is true.
   final bool showLiveFullscreenButton;
 
+  /// Defines the decoration to display around the time remaining / current time widget
+  final Decoration? timeDecoration;
+
+  /// Defines the text color for the time remaining / current time widget
+  ///
+  /// Default is white
+  final Color timeTextColor;
+
   /// Creates [YoutubePlayerFlags].
   const YoutubePlayerFlags({
     this.hideControls = false,
     this.controlsVisibleAtStart = false,
     this.autoPlay = true,
     this.mute = false,
+    @Deprecated('This value is ignored. Metadata from the YouTube API call is '
+        'now used to check if video is live.')
     this.isLive = false,
     this.hideThumbnail = false,
     this.disableDragSeek = false,
@@ -96,6 +110,8 @@ class YoutubePlayerFlags {
     this.endAt,
     this.useHybridComposition = true,
     this.showLiveFullscreenButton = true,
+    this.timeDecoration,
+    this.timeTextColor = Colors.white,
   });
 
   /// Copies new values assigned to the [YoutubePlayerFlags].
@@ -104,6 +120,8 @@ class YoutubePlayerFlags {
     bool? autoPlay,
     bool? mute,
     bool? showVideoProgressIndicator,
+    @Deprecated('This value is ignored. Metadata from the YouTube API call is '
+        'now used to check if video is live.')
     bool? isLive,
     bool? hideThumbnail,
     bool? disableDragSeek,

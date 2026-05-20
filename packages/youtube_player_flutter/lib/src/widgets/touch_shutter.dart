@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 
 import '../utils/duration_formatter.dart';
 import '../utils/youtube_player_controller.dart';
+
+import 'dart:async';
 
 /// A widget to display darkened translucent overlay, when video area is touched.
 ///
