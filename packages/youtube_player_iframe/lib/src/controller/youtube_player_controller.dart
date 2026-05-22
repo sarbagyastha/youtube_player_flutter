@@ -230,7 +230,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   /// i.e. https://www.youtube.com/watch?v=VIDEO_ID
   Future<void> loadVideo(String url) {
     assert(
-      RegExp(r'^https://(?:www\.|m\.)?youtube\.com/watch.*').hasMatch(url),
+      RegExp(r'^https?://(?:www\.|m\.)?youtube\.com/watch.*').hasMatch(url),
       'Only YouTube watch URLs are supported.',
     );
 
@@ -341,12 +341,12 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     if (!url.contains("http") && (url.length == 11)) return url;
     if (trimWhitespaces) url = url.trim();
 
-    const contentUrlPattern = r'^https:\/\/(?:www\.|m\.)?youtube\.com\/watch\?';
+    const contentUrlPattern = r'^https?:\/\/(?:www\.|m\.)?youtube\.com\/watch\?';
     const embedUrlPattern =
-        r'^https:\/\/(?:www\.|m\.)?youtube(?:-nocookie)?\.com\/embed\/';
-    const altUrlPattern = r'^https:\/\/youtu\.be\/';
-    const shortsUrlPattern = r'^https:\/\/(?:www\.|m\.)?youtube\.com\/shorts\/';
-    const musicUrlPattern = r'^https:\/\/(?:music\.)?youtube\.com\/watch\?';
+        r'^https?:\/\/(?:www\.|m\.)?youtube(?:-nocookie)?\.com\/embed\/';
+    const altUrlPattern = r'^https?:\/\/youtu\.be\/';
+    const shortsUrlPattern = r'^https?:\/\/(?:www\.|m\.)?youtube\.com\/shorts\/';
+    const musicUrlPattern = r'^https?:\/\/(?:music\.)?youtube\.com\/watch\?';
     const idPattern = r'([_\-a-zA-Z0-9]{11}).*$';
 
     for (var regex in [
