@@ -83,6 +83,7 @@ class _YoutubePlayerState extends State<YoutubePlayer>
 
   final _overlayController = OverlayPortalController();
   final _placeholderKey = GlobalKey();
+  final _layerLink = LayerLink();
   Rect _playerRect = Rect.zero;
 
   @override
@@ -171,6 +172,8 @@ class _YoutubePlayerState extends State<YoutubePlayer>
             overlayChildBuilder: (context) => _PlayerOverlayContent(
               controller: _controller,
               playerRect: _playerRect,
+              layerLink: _layerLink,
+              aspectRatio: widget.aspectRatio,
               backgroundColor: widget.backgroundColor,
               gestureRecognizers: widget.gestureRecognizers,
               enableFullScreenOnVerticalDrag:
@@ -183,7 +186,10 @@ class _YoutubePlayerState extends State<YoutubePlayer>
                   SchedulerBinding.instance.addPostFrameCallback((_) {
                     if (mounted) _updatePlayerRect();
                   });
-                  return SizedBox.expand(key: _placeholderKey);
+                  return CompositedTransformTarget(
+                    link: _layerLink,
+                    child: SizedBox.expand(key: _placeholderKey),
+                  );
                 },
               ),
             ),
@@ -216,20 +222,29 @@ class _PlayerOverlayContent extends StatelessWidget {
   const _PlayerOverlayContent({
     required this.controller,
     required this.playerRect,
+    required this.layerLink,
     required this.backgroundColor,
     required this.gestureRecognizers,
     required this.enableFullScreenOnVerticalDrag,
+    this.aspectRatio = 16 / 9,
   });
 
   final YoutubePlayerController controller;
   final Rect playerRect;
+  final LayerLink layerLink;
   final Color? backgroundColor;
   final Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers;
   final bool enableFullScreenOnVerticalDrag;
+  final double aspectRatio;
 
   @override
   Widget build(BuildContext context) {
-    if (playerRect.isEmpty) return const SizedBox.shrink();
+    if (!playerRect.width.isFinite ||
+        !playerRect.height.isFinite ||
+        playerRect.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     final screenSize = MediaQuery.of(context).size;
 
     return YoutubeValueBuilder(
@@ -238,31 +253,72 @@ class _PlayerOverlayContent extends StatelessWidget {
       builder: (context, value) {
         final isFullscreen = value.fullScreenOption.enabled;
 
+        // Compute fullscreen dimensions that maintain the video aspect ratio.
+        // Portrait: fit to screen width with letterbox (black bars top/bottom).
+        // Landscape: fit to height (pillarbox) or width, whichever fills more.
+        final double fsWidth;
+        final double fsHeight;
+        final double fsOffsetX;
+        final double fsOffsetY;
+        if (isFullscreen) {
+          final isPortrait = screenSize.width < screenSize.height;
+          if (isPortrait || screenSize.width / screenSize.height <= aspectRatio) {
+            fsWidth = screenSize.width;
+            fsHeight = screenSize.width / aspectRatio;
+          } else {
+            fsHeight = screenSize.height;
+            fsWidth = screenSize.height * aspectRatio;
+          }
+          fsOffsetX = (screenSize.width - fsWidth) / 2;
+          fsOffsetY = (screenSize.height - fsHeight) / 2;
+        } else {
+          fsWidth = playerRect.width;
+          fsHeight = playerRect.height;
+          fsOffsetX = 0;
+          fsOffsetY = 0;
+        }
+
+        // CompositedTransformFollower tracks the placeholder at the render
+        // layer (immediate, no animation on scroll). AnimatedContainer handles
+        // the fullscreen expand/collapse animation only.
+        Widget positionedLayer(Widget child) {
+          return Positioned(
+            top: 0,
+            left: 0,
+            child: CompositedTransformFollower(
+              link: layerLink,
+              showWhenUnlinked: false,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+                transform: isFullscreen
+                    ? Matrix4.translationValues(
+                        -playerRect.left + fsOffsetX,
+                        -playerRect.top + fsOffsetY,
+                        0,
+                      )
+                    : Matrix4.identity(),
+                width: isFullscreen ? fsWidth : playerRect.width,
+                height: isFullscreen ? fsHeight : playerRect.height,
+                child: child,
+              ),
+            ),
+          );
+        }
+
         return Stack(
           fit: StackFit.expand,
           children: [
             _FullscreenBackground(isFullscreen: isFullscreen),
-            AnimatedPositioned(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-              top: isFullscreen ? 0 : playerRect.top,
-              left: isFullscreen ? 0 : playerRect.left,
-              width: isFullscreen ? screenSize.width : playerRect.width,
-              height: isFullscreen ? screenSize.height : playerRect.height,
-              child: _YoutubeWebView(
+            positionedLayer(
+              _YoutubeWebView(
                 controller: controller,
                 gestureRecognizers: gestureRecognizers,
                 enableFullScreenOnVerticalDrag: enableFullScreenOnVerticalDrag,
               ),
             ),
-            AnimatedPositioned(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-              top: isFullscreen ? 0 : playerRect.top,
-              left: isFullscreen ? 0 : playerRect.left,
-              width: isFullscreen ? screenSize.width : playerRect.width,
-              height: isFullscreen ? screenSize.height : playerRect.height,
-              child: _PlayerLoadingOverlay(
+            positionedLayer(
+              _PlayerLoadingOverlay(
                 controller: controller,
                 backgroundColor: backgroundColor,
               ),
