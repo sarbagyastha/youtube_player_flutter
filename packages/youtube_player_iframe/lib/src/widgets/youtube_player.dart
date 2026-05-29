@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +14,7 @@ import '../controller/youtube_player_controller.dart';
 import '../enums/player_state.dart';
 import '../helpers/platform.dart';
 import '../helpers/youtube_value_builder.dart';
+import '../player_value.dart';
 
 /// A widget to play or stream Youtube Videos.
 class YoutubePlayer extends StatefulWidget {
@@ -86,6 +89,13 @@ class _YoutubePlayerState extends State<YoutubePlayer>
   final _layerLink = LayerLink();
   Rect _playerRect = Rect.zero;
 
+  StreamSubscription<YoutubePlayerValue>? _valueSub;
+  PlayerState _lastPlayerState = PlayerState.unknown;
+  bool _prevFullscreen = false;
+  bool _inFullscreenTransition = false;
+  Timer? _transitionTimer;
+  int _lastPlayingMs = 0;
+
   @override
   void initState() {
     super.initState();
@@ -94,10 +104,46 @@ class _YoutubePlayerState extends State<YoutubePlayer>
 
     if (isMobile) {
       WidgetsBinding.instance.addObserver(this);
+      _valueSub = _controller.stream.listen(_onValueChanged);
       SchedulerBinding.instance.addPostFrameCallback((_) {
         _updatePlayerRect();
         _overlayController.show();
       });
+    }
+  }
+
+  void _onValueChanged(YoutubePlayerValue value) {
+    final isFullscreen = value.fullScreenOption.enabled;
+    if (isFullscreen != _prevFullscreen) {
+      _prevFullscreen = isFullscreen;
+      _transitionTimer?.cancel();
+      _inFullscreenTransition = false;
+      // On button press the iframe fires StateChange=paused *before*
+      // FullscreenButtonPressed, so _lastPlayerState is already paused by
+      // the time we see the fullscreen toggle. The timestamp check catches
+      // that case: if the video was playing within the last 500 ms, the
+      // pause was iframe-generated, not user-initiated.
+      final nowMs = DateTime.now().millisecondsSinceEpoch;
+      final wasPlaying = _lastPlayerState == PlayerState.playing ||
+          _lastPlayerState == PlayerState.buffering ||
+          (nowMs - _lastPlayingMs) < 500;
+      if (wasPlaying) {
+        _inFullscreenTransition = true;
+        _transitionTimer = Timer(const Duration(milliseconds: 600), () {
+          _inFullscreenTransition = false;
+        });
+      }
+    } else if (value.playerState != PlayerState.unknown) {
+      if (_inFullscreenTransition && value.playerState == PlayerState.paused) {
+        // Spurious pause from WebView relayout during fullscreen transition.
+        if (mounted) _controller.playVideo();
+      } else {
+        if (value.playerState == PlayerState.playing ||
+            value.playerState == PlayerState.buffering) {
+          _lastPlayingMs = DateTime.now().millisecondsSinceEpoch;
+        }
+        _lastPlayerState = value.playerState;
+      }
     }
   }
 
@@ -112,6 +158,8 @@ class _YoutubePlayerState extends State<YoutubePlayer>
 
   @override
   void dispose() {
+    _transitionTimer?.cancel();
+    _valueSub?.cancel();
     if (isMobile) WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -392,10 +440,10 @@ class _YoutubeWebView extends StatelessWidget {
   final Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers;
   final bool enableFullScreenOnVerticalDrag;
 
-  void _onVerticalDrag(DragUpdateDetails details) {
-    final delta = details.delta.dy;
-    if (delta.abs() > 10) {
-      delta.isNegative
+  void _onVerticalDragEnd(DragEndDetails details) {
+    final velocity = details.primaryVelocity ?? 0;
+    if (velocity.abs() > 300) {
+      velocity.isNegative
           ? controller.enterFullScreen()
           : controller.exitFullScreen();
     }
@@ -411,7 +459,7 @@ class _YoutubeWebView extends StatelessWidget {
     if (!enableFullScreenOnVerticalDrag) return webView;
 
     return GestureDetector(
-      onVerticalDragUpdate: _onVerticalDrag,
+      onVerticalDragEnd: _onVerticalDragEnd,
       child: webView,
     );
   }
