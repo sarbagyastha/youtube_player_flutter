@@ -6,7 +6,7 @@ import 'buffering_indicator.dart';
 import 'playback_controls.dart';
 import 'title_bar.dart';
 
-/// The default Material 3 controls overlay.
+/// The default controls overlay.
 ///
 /// Composed of a top [TitleBar], centered [PlaybackControls], and a
 /// bottom [BottomBar]. A [BufferingIndicator] floats in the centre.
@@ -21,11 +21,15 @@ class ControlsOverlay extends StatelessWidget {
       controller: controller,
       buildWhen: (o, n) => o.fullScreenOption != n.fullScreenOption,
       builder: (context, value) {
+        final screenSize = MediaQuery.sizeOf(context);
+        final isLandscapeFullscreen =
+            value.fullScreenOption.enabled &&
+            screenSize.width > screenSize.height;
         return SafeArea(
-          top: value.fullScreenOption.enabled,
-          bottom: value.fullScreenOption.enabled,
-          left: value.fullScreenOption.enabled,
-          right: value.fullScreenOption.enabled,
+          top: isLandscapeFullscreen,
+          bottom: isLandscapeFullscreen,
+          left: isLandscapeFullscreen,
+          right: isLandscapeFullscreen,
           child: Stack(
             children: [
               Column(

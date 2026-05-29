@@ -248,6 +248,7 @@ class _YoutubePlayerState extends State<YoutubePlayer>
               enableFullScreenOnVerticalDrag:
                   widget.enableFullScreenOnVerticalDrag,
               builder: widget.builder,
+              aspectRatio: widget.aspectRatio,
             ),
             child: AspectRatio(
               aspectRatio: widget.aspectRatio,

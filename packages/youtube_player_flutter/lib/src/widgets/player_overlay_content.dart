@@ -24,6 +24,7 @@ class PlayerOverlayContent extends StatelessWidget {
     required this.gestureRecognizers,
     required this.enableFullScreenOnVerticalDrag,
     required this.builder,
+    this.aspectRatio = 16 / 9,
   });
 
   final YoutubePlayerController controller;
@@ -34,6 +35,7 @@ class PlayerOverlayContent extends StatelessWidget {
   final Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers;
   final bool enableFullScreenOnVerticalDrag;
   final YoutubePlayerBuilder? builder;
+  final double aspectRatio;
 
   void _onVerticalDrag(DragUpdateDetails details) {
     final delta = details.delta.dy;
@@ -62,6 +64,22 @@ class PlayerOverlayContent extends StatelessWidget {
       builder: (context, value) {
         final isFullscreen = value.fullScreenOption.enabled;
 
+        // In portrait fullscreen, constrain to the aspect ratio and center
+        // vertically so the video is not stretched to fill the full screen.
+        final isPortrait = screenSize.width < screenSize.height;
+        final double fsWidth;
+        final double fsHeight;
+        final double fsOffsetY;
+        if (isFullscreen && isPortrait) {
+          fsWidth = screenSize.width;
+          fsHeight = screenSize.width / aspectRatio;
+          fsOffsetY = (screenSize.height - fsHeight) / 2;
+        } else {
+          fsWidth = screenSize.width;
+          fsHeight = screenSize.height;
+          fsOffsetY = 0;
+        }
+
         // Always use CompositedTransformFollower so the widget element is
         // never recreated when fullscreen toggles — this preserves the
         // AnimatedContainer's animation state for the slide transition.
@@ -82,12 +100,12 @@ class PlayerOverlayContent extends StatelessWidget {
                 transform: isFullscreen
                     ? Matrix4.translationValues(
                         -playerRect.left,
-                        -playerRect.top,
+                        -playerRect.top + fsOffsetY,
                         0,
                       )
                     : Matrix4.identity(),
-                width: isFullscreen ? screenSize.width : playerRect.width,
-                height: isFullscreen ? screenSize.height : playerRect.height,
+                width: isFullscreen ? fsWidth : playerRect.width,
+                height: isFullscreen ? fsHeight : playerRect.height,
                 child: child,
               ),
             ),
@@ -116,12 +134,8 @@ class PlayerOverlayContent extends StatelessWidget {
                   ? builder!(
                       context,
                       SizedBox(
-                        width: isFullscreen
-                            ? screenSize.width
-                            : playerRect.width,
-                        height: isFullscreen
-                            ? screenSize.height
-                            : playerRect.height,
+                        width: isFullscreen ? fsWidth : playerRect.width,
+                        height: isFullscreen ? fsHeight : playerRect.height,
                       ),
                       controller,
                     )
