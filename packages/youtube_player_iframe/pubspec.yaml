@@ -4,6 +4,8 @@ version: 6.0.0
 repository: https://github.com/sarbagyastha/youtube_player_flutter
 homepage: https://github.com/sarbagyastha/youtube_player_flutter/tree/main/packages/youtube_player_iframe
 
+resolution: workspace
+
 environment:
   sdk: ^3.10.0
   flutter: '>=3.38.0'

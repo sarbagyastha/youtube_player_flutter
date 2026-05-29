@@ -11,6 +11,8 @@ topics:
   - iframe
   - multimedia
 
+resolution: workspace
+
 environment:
   sdk: ^3.10.0
   flutter: '>=3.38.0'
@@ -28,7 +30,3 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-
-dependency_overrides:
-  youtube_player_iframe:
-    path: ../youtube_player_iframe

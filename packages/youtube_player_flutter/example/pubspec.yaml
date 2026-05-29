@@ -3,23 +3,20 @@ description: This is an example of using youtube_player_flutter package.
 publish_to: none
 version: 1.0.0+1
 
+resolution: workspace
+
 environment:
-  sdk: ^3.11.5
+  sdk: '>=3.10.0 <4.0.0'
 
 dependencies:
   flutter:
     sdk: flutter
-  youtube_player_flutter:
-    path: ../
+  youtube_player_flutter: 
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
-
-dependency_overrides:
-  youtube_player_iframe:
-    path: ../../youtube_player_iframe
 
 flutter:
   uses-material-design: true

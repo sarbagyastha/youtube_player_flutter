@@ -3,6 +3,8 @@ description: Web implementation of webview_flutter plugin tailored for using wit
 version: 3.1.2
 homepage: https://github.com/sarbagyastha/youtube_player_flutter/tree/main/packages/youtube_player_iframe_web
 
+resolution: workspace
+
 environment:
   sdk: ^3.10.0
   flutter: '>=3.38.0'
