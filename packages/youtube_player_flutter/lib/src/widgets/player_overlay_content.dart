@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
+import 'package:youtube_player_iframe/webview.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 import '../controller/overlay_controller.dart';
@@ -48,7 +48,8 @@ class PlayerOverlayContent extends StatelessWidget {
   Widget build(BuildContext context) {
     // Guard NaN: Rect.isEmpty returns false for NaN dimensions because
     // NaN comparisons are always false, so check isFinite explicitly.
-    if (!playerRect.width.isFinite || !playerRect.height.isFinite ||
+    if (!playerRect.width.isFinite ||
+        !playerRect.height.isFinite ||
         playerRect.isEmpty) {
       return const SizedBox.shrink();
     }
@@ -80,7 +81,10 @@ class PlayerOverlayContent extends StatelessWidget {
                 curve: Curves.easeInOut,
                 transform: isFullscreen
                     ? Matrix4.translationValues(
-                        -playerRect.left, -playerRect.top, 0)
+                        -playerRect.left,
+                        -playerRect.top,
+                        0,
+                      )
                     : Matrix4.identity(),
                 width: isFullscreen ? screenSize.width : playerRect.width,
                 height: isFullscreen ? screenSize.height : playerRect.height,
@@ -112,8 +116,9 @@ class PlayerOverlayContent extends StatelessWidget {
                   ? builder!(
                       context,
                       SizedBox(
-                        width:
-                            isFullscreen ? screenSize.width : playerRect.width,
+                        width: isFullscreen
+                            ? screenSize.width
+                            : playerRect.width,
                         height: isFullscreen
                             ? screenSize.height
                             : playerRect.height,

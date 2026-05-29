@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:webview_flutter/webview_flutter.dart';
+import 'package:youtube_player_iframe/webview.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 import '../controller/overlay_controller.dart';
@@ -112,8 +112,7 @@ class _YoutubePlayerState extends State<YoutubePlayer>
   Rect _playerRect = Rect.zero;
   StreamSubscription<YoutubePlayerValue>? _playerStateSub;
 
-  bool get _isMobile =>
-      !kIsWeb && (Platform.isAndroid || Platform.isIOS);
+  bool get _isMobile => !kIsWeb && (Platform.isAndroid || Platform.isIOS);
 
   @override
   void initState() {
@@ -187,8 +186,11 @@ class _YoutubePlayerState extends State<YoutubePlayer>
     final size = box.size;
     // localToGlobal can return non-finite values when the render object is
     // kept alive but outside the layout viewport. Ignore those frames.
-    if (!offset.dx.isFinite || !offset.dy.isFinite ||
-        !size.width.isFinite || !size.height.isFinite || size.isEmpty) {
+    if (!offset.dx.isFinite ||
+        !offset.dy.isFinite ||
+        !size.width.isFinite ||
+        !size.height.isFinite ||
+        size.isEmpty) {
       return;
     }
     final newRect = offset & size;
