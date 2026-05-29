@@ -152,13 +152,21 @@ class PlayerOverlayContent extends StatelessWidget {
 
                 positionedLayer(maybeHide(
                   builder != null
-                      ? builder!(
-                          context,
-                          SizedBox(
-                            width: isFullscreen ? fsWidth : playerRect.width,
-                            height: isFullscreen ? fsHeight : playerRect.height,
+                      ? OverlayControllerScope(
+                          overlayController: overlayController,
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: overlayController.toggle,
+                            child: builder!(
+                              context,
+                              SizedBox(
+                                width: isFullscreen ? fsWidth : playerRect.width,
+                                height:
+                                    isFullscreen ? fsHeight : playerRect.height,
+                              ),
+                              controller,
+                            ),
                           ),
-                          controller,
                         )
                       : _DefaultControlsLayer(
                           controller: controller,
