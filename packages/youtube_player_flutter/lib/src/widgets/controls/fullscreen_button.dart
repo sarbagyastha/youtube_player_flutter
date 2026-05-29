@@ -28,7 +28,7 @@ class FullscreenButton extends StatelessWidget {
           ),
           onPressed: () {
             controller.toggleFullScreen();
-            OverlayControllerScope.of(context).resetTimer();
+            OverlayControllerScope.maybeOf(context)?.resetTimer();
           },
         );
       },

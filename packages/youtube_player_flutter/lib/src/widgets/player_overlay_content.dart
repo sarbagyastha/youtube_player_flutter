@@ -24,6 +24,7 @@ class PlayerOverlayContent extends StatelessWidget {
     required this.gestureRecognizers,
     required this.enableFullScreenOnVerticalDrag,
     required this.builder,
+    required this.fullscreenCount,
     this.aspectRatio = 16 / 9,
   });
 
@@ -36,6 +37,10 @@ class PlayerOverlayContent extends StatelessWidget {
   final bool enableFullScreenOnVerticalDrag;
   final YoutubePlayerBuilder? builder;
   final double aspectRatio;
+  /// Shared counter of how many players are currently in fullscreen.
+  /// When non-zero and this player is not fullscreen, its overlay layers are
+  /// hidden so they don't surface above the fullscreen player's background.
+  final ValueListenable<int> fullscreenCount;
 
   void _onVerticalDrag(DragUpdateDetails details) {
     final delta = details.delta.dy;
@@ -112,46 +117,64 @@ class PlayerOverlayContent extends StatelessWidget {
           );
         }
 
-        return Stack(
-          fit: StackFit.expand,
-          children: [
-            _FullscreenBackground(isFullscreen: isFullscreen),
+        return ValueListenableBuilder<int>(
+          valueListenable: fullscreenCount,
+          builder: (context, count, _) {
+            // Hide this player's layers when another player owns the
+            // fullscreen — the other player's OverlayPortal entry is higher
+            // in z-order so without hiding it would surface above the
+            // fullscreen background. Opacity+IgnorePointer keeps the WebView
+            // alive (no reload on exit) while making it invisible.
+            final hideForOther = !isFullscreen && count > 0;
 
-            positionedLayer(
-              GestureDetector(
-                onVerticalDragUpdate: enableFullScreenOnVerticalDrag
-                    ? _onVerticalDrag
-                    : null,
-                child: WebViewWidget(
-                  controller: controller.webViewController,
-                  gestureRecognizers: gestureRecognizers,
-                ),
-              ),
-            ),
+            // Wrap content (not the Positioned itself) so Positioned stays a
+            // direct Stack child — required by Flutter's parent-data protocol.
+            Widget maybeHide(Widget w) => hideForOther
+                ? IgnorePointer(child: Opacity(opacity: 0, child: w))
+                : w;
 
-            positionedLayer(
-              builder != null
-                  ? builder!(
-                      context,
-                      SizedBox(
-                        width: isFullscreen ? fsWidth : playerRect.width,
-                        height: isFullscreen ? fsHeight : playerRect.height,
-                      ),
-                      controller,
-                    )
-                  : _DefaultControlsLayer(
-                      controller: controller,
-                      overlayController: overlayController,
+            return Stack(
+              fit: StackFit.expand,
+              children: [
+                _FullscreenBackground(isFullscreen: isFullscreen),
+
+                positionedLayer(maybeHide(
+                  GestureDetector(
+                    onVerticalDragUpdate: enableFullScreenOnVerticalDrag
+                        ? _onVerticalDrag
+                        : null,
+                    child: WebViewWidget(
+                      controller: controller.webViewController,
+                      gestureRecognizers: gestureRecognizers,
                     ),
-            ),
+                  ),
+                )),
 
-            positionedLayer(
-              _LoadingOverlay(
-                controller: controller,
-                backgroundColor: backgroundColor,
-              ),
-            ),
-          ],
+                positionedLayer(maybeHide(
+                  builder != null
+                      ? builder!(
+                          context,
+                          SizedBox(
+                            width: isFullscreen ? fsWidth : playerRect.width,
+                            height: isFullscreen ? fsHeight : playerRect.height,
+                          ),
+                          controller,
+                        )
+                      : _DefaultControlsLayer(
+                          controller: controller,
+                          overlayController: overlayController,
+                        ),
+                )),
+
+                positionedLayer(maybeHide(
+                  _LoadingOverlay(
+                    controller: controller,
+                    backgroundColor: backgroundColor,
+                  ),
+                )),
+              ],
+            );
+          },
         );
       },
     );

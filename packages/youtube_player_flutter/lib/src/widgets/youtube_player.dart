@@ -105,12 +105,17 @@ class YoutubePlayer extends StatefulWidget {
 
 class _YoutubePlayerState extends State<YoutubePlayer>
     with AutomaticKeepAliveClientMixin, WidgetsBindingObserver {
+  // Tracks how many YoutubePlayer instances are currently in fullscreen so
+  // other players can hide their overlay content and avoid surfacing on top.
+  static final _fullscreenCount = ValueNotifier<int>(0);
+
   late final OverlayController _overlayCtrl;
   final _overlayPortalCtrl = OverlayPortalController();
   final _placeholderKey = GlobalKey();
   final _layerLink = LayerLink();
   Rect _playerRect = Rect.zero;
   StreamSubscription<YoutubePlayerValue>? _playerStateSub;
+  bool _wasFullscreen = false;
 
   bool get _isMobile => !kIsWeb && (Platform.isAndroid || Platform.isIOS);
 
@@ -144,6 +149,10 @@ class _YoutubePlayerState extends State<YoutubePlayer>
     _playerStateSub?.cancel();
     _overlayCtrl.dispose();
     if (_isMobile) WidgetsBinding.instance.removeObserver(this);
+    if (_wasFullscreen) {
+      _fullscreenCount.value =
+          (_fullscreenCount.value - 1).clamp(0, _fullscreenCount.value);
+    }
     super.dispose();
   }
 
@@ -165,6 +174,17 @@ class _YoutubePlayerState extends State<YoutubePlayer>
   }
 
   void _onPlayerStateChanged(YoutubePlayerValue value) {
+    final isNowFullscreen = value.fullScreenOption.enabled;
+    if (isNowFullscreen != _wasFullscreen) {
+      _wasFullscreen = isNowFullscreen;
+      if (isNowFullscreen) {
+        _fullscreenCount.value++;
+      } else {
+        _fullscreenCount.value =
+            (_fullscreenCount.value - 1).clamp(0, _fullscreenCount.value);
+      }
+    }
+
     switch (value.playerState) {
       case PlayerState.playing:
         _overlayCtrl.resetTimer();
@@ -249,6 +269,7 @@ class _YoutubePlayerState extends State<YoutubePlayer>
                   widget.enableFullScreenOnVerticalDrag,
               builder: widget.builder,
               aspectRatio: widget.aspectRatio,
+              fullscreenCount: _fullscreenCount,
             ),
             child: AspectRatio(
               aspectRatio: widget.aspectRatio,

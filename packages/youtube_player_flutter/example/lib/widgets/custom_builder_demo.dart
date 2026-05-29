@@ -85,6 +85,7 @@ class _MinimalControls extends StatelessWidget {
             icon: Icon(Icons.stop_rounded, color: cs.onSurfaceVariant),
             onPressed: controller.stopVideo,
           ),
+          FullscreenButton(controller: controller),
         ],
       ),
     );

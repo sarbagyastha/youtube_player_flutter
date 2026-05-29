@@ -5,6 +5,7 @@ export 'package:youtube_player_iframe/youtube_player_iframe.dart'
 
 // This package's additions.
 export 'src/theme/youtube_player_theme.dart';
+export 'src/widgets/controls/fullscreen_button.dart';
 export 'src/widgets/typedefs.dart';
 export 'src/widgets/youtube_player.dart';
 

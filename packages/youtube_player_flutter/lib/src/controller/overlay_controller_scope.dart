@@ -19,6 +19,12 @@ class OverlayControllerScope extends InheritedWidget {
     return scope!.overlayController;
   }
 
+  static OverlayController? maybeOf(BuildContext context) {
+    return context
+        .dependOnInheritedWidgetOfExactType<OverlayControllerScope>()
+        ?.overlayController;
+  }
+
   @override
   bool updateShouldNotify(OverlayControllerScope old) =>
       old.overlayController != overlayController;
