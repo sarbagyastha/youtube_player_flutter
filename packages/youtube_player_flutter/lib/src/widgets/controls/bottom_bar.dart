@@ -32,7 +32,7 @@ class BottomBar extends StatelessWidget {
             ),
           ),
           ProgressBar(controller: controller),
-          const SizedBox(height: 16),
+          const SizedBox(height: 8),
         ],
       ),
     );
