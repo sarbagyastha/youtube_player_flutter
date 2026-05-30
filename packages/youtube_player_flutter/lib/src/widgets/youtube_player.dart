@@ -256,11 +256,16 @@ class _YoutubePlayerState extends State<YoutubePlayer>
       _updateBackgroundColor();
     });
 
-    // Force-disable YouTube's native controls so our overlay is the only UI.
-    final params = widget.controller.params.copyWith(
-      showControls: false,
-      showFullscreenButton: false,
-    );
+    // On web, let YouTube's native iframe controls handle interaction (gesture
+    // events don't propagate through the iframe element on web, so custom
+    // Flutter overlays are unusable). On other platforms, force-hide native
+    // controls so our overlay is the only UI.
+    final params = kIsWeb
+        ? widget.controller.params
+        : widget.controller.params.copyWith(
+            showControls: false,
+            showFullscreenButton: false,
+          );
     await widget.controller.initWithParams(params: params);
   }
 
@@ -323,6 +328,25 @@ class _YoutubePlayerState extends State<YoutubePlayer>
       controller: widget.controller.webViewController,
       gestureRecognizers: widget.gestureRecognizers,
     );
+
+    // On web, gesture events don't reach Flutter overlays through the iframe.
+    // Render the bare WebView so users interact with YouTube's native controls.
+    if (kIsWeb) {
+      if (widget.builder != null) {
+        return AspectRatio(
+          aspectRatio: widget.aspectRatio,
+          child: widget.builder!(
+            context,
+            AspectRatio(aspectRatio: widget.aspectRatio, child: webView),
+            widget.controller,
+          ),
+        );
+      }
+      return AspectRatio(
+        aspectRatio: widget.aspectRatio,
+        child: webView,
+      );
+    }
 
     if (widget.builder != null) {
       return AspectRatio(
