@@ -12,6 +12,8 @@ import 'package:webview_flutter/webview_flutter.dart';
 
 import '../controller/youtube_player_controller.dart';
 import '../enums/player_state.dart';
+import '../enums/thumbnail_format.dart';
+import '../enums/thumbnail_quality.dart';
 import '../helpers/platform.dart';
 import '../helpers/youtube_value_builder.dart';
 import '../player_params.dart';
@@ -31,6 +33,8 @@ class YoutubePlayer extends StatefulWidget {
     this.enableFullScreenOnVerticalDrag = true,
     this.keepAlive = false,
     this.autoFullScreen = true,
+    this.thumbnailQuality = ThumbnailQuality.high,
+    this.thumbnailFormat = ThumbnailFormat.webp,
     this.initParams,
     this.controlsBuilder,
   });
@@ -84,10 +88,21 @@ class YoutubePlayer extends StatefulWidget {
   /// mutating the user-supplied controller.
   final YoutubePlayerParams? initParams;
 
+  /// Quality of the thumbnail shown while the iframe is loading.
+  ///
+  /// Defaults to [ThumbnailQuality.high].
+  final ThumbnailQuality thumbnailQuality;
+
+  /// Format of the thumbnail shown while the iframe is loading.
+  ///
+  /// Defaults to [ThumbnailFormat.webp].
+  final ThumbnailFormat thumbnailFormat;
+
   /// If provided, renders custom controls on top of the player surface.
   /// On mobile, rendered inside the overlay portal. On desktop/web, rendered
   /// in a [Stack] on top of the [WebViewWidget].
-  final Widget Function(BuildContext context, bool isFullscreen)? controlsBuilder;
+  final Widget Function(BuildContext context, bool isFullscreen)?
+  controlsBuilder;
 
   @override
   State<YoutubePlayer> createState() => _YoutubePlayerState();
@@ -169,8 +184,10 @@ class _YoutubePlayerState extends State<YoutubePlayer>
       if (isFullscreen) {
         _fullscreenCount.value++;
       } else {
-        _fullscreenCount.value =
-            (_fullscreenCount.value - 1).clamp(0, _fullscreenCount.value);
+        _fullscreenCount.value = (_fullscreenCount.value - 1).clamp(
+          0,
+          _fullscreenCount.value,
+        );
       }
       _transitionTimer?.cancel();
       _inFullscreenTransition = false;
@@ -180,7 +197,8 @@ class _YoutubePlayerState extends State<YoutubePlayer>
       // that case: if the video was playing within the last 500 ms, the
       // pause was iframe-generated, not user-initiated.
       final nowMs = DateTime.now().millisecondsSinceEpoch;
-      final wasPlaying = _lastPlayerState == PlayerState.playing ||
+      final wasPlaying =
+          _lastPlayerState == PlayerState.playing ||
           _lastPlayerState == PlayerState.buffering ||
           (nowMs - _lastPlayingMs) < 500;
       if (wasPlaying) {
@@ -234,8 +252,10 @@ class _YoutubePlayerState extends State<YoutubePlayer>
     }
     if (_mostRecentlyActive == this) _mostRecentlyActive = null;
     if (_prevFullscreen) {
-      _fullscreenCount.value =
-          (_fullscreenCount.value - 1).clamp(0, _fullscreenCount.value);
+      _fullscreenCount.value = (_fullscreenCount.value - 1).clamp(
+        0,
+        _fullscreenCount.value,
+      );
     }
     super.dispose();
   }
@@ -276,21 +296,30 @@ class _YoutubePlayerState extends State<YoutubePlayer>
     super.build(context);
 
     if (!isMobile) {
-      Widget child = _webViewReady
+      final webView = _webViewReady
           ? WebViewWidget(
               controller: _controller.webViewController,
               gestureRecognizers: widget.gestureRecognizers,
             )
           : const SizedBox.expand();
 
-      if (widget.controlsBuilder != null) {
-        child = Stack(
+      return AspectRatio(
+        aspectRatio: widget.aspectRatio,
+        child: Stack(
           fit: StackFit.expand,
-          children: [child, widget.controlsBuilder!(context, false)],
-        );
-      }
-
-      return AspectRatio(aspectRatio: widget.aspectRatio, child: child);
+          children: [
+            webView,
+            if (widget.controlsBuilder != null)
+              widget.controlsBuilder!(context, false),
+            _PlayerLoadingOverlay(
+              controller: _controller,
+              backgroundColor: widget.backgroundColor,
+              thumbnailQuality: widget.thumbnailQuality,
+              thumbnailFormat: widget.thumbnailFormat,
+            ),
+          ],
+        ),
+      );
     }
 
     return YoutubeValueBuilder(
@@ -317,6 +346,8 @@ class _YoutubePlayerState extends State<YoutubePlayer>
                   widget.enableFullScreenOnVerticalDrag,
               controlsBuilder: widget.controlsBuilder,
               fullscreenCount: _fullscreenCount,
+              thumbnailQuality: widget.thumbnailQuality,
+              thumbnailFormat: widget.thumbnailFormat,
             ),
             child: AspectRatio(
               aspectRatio: widget.aspectRatio,
@@ -372,6 +403,8 @@ class _PlayerOverlayContent extends StatelessWidget {
     required this.fullscreenCount,
     this.aspectRatio = 16 / 9,
     this.controlsBuilder,
+    this.thumbnailQuality = ThumbnailQuality.high,
+    this.thumbnailFormat = ThumbnailFormat.webp,
   });
 
   final YoutubePlayerController controller;
@@ -381,8 +414,11 @@ class _PlayerOverlayContent extends StatelessWidget {
   final Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers;
   final bool enableFullScreenOnVerticalDrag;
   final double aspectRatio;
-  final Widget Function(BuildContext context, bool isFullscreen)? controlsBuilder;
+  final Widget Function(BuildContext context, bool isFullscreen)?
+  controlsBuilder;
   final ValueListenable<int> fullscreenCount;
+  final ThumbnailQuality thumbnailQuality;
+  final ThumbnailFormat thumbnailFormat;
 
   @override
   Widget build(BuildContext context) {
@@ -421,7 +457,8 @@ class _PlayerOverlayContent extends StatelessWidget {
         final double fsOffsetY;
         if (isFullscreen) {
           final isPortrait = screenSize.width < screenSize.height;
-          if (isPortrait || screenSize.width / screenSize.height <= aspectRatio) {
+          if (isPortrait ||
+              screenSize.width / screenSize.height <= aspectRatio) {
             fsWidth = screenSize.width;
             fsHeight = screenSize.width / aspectRatio;
           } else {
@@ -498,23 +535,34 @@ class _PlayerOverlayContent extends StatelessWidget {
               fit: StackFit.expand,
               children: [
                 _FullscreenBackground(isFullscreen: isFullscreen),
-                positionedLayer(maybeHide(
-                  _YoutubeWebView(
-                    controller: controller,
-                    gestureRecognizers: gestureRecognizers,
-                    enableFullScreenOnVerticalDrag: enableFullScreenOnVerticalDrag,
+                positionedLayer(
+                  maybeHide(
+                    _YoutubeWebView(
+                      controller: controller,
+                      gestureRecognizers: gestureRecognizers,
+                      enableFullScreenOnVerticalDrag:
+                          enableFullScreenOnVerticalDrag,
+                    ),
                   ),
-                )),
+                ),
                 if (controlsBuilder != null)
-                  positionedControls(maybeHide(
-                    Builder(builder: (ctx) => controlsBuilder!(ctx, isFullscreen)),
-                  )),
-                positionedLayer(maybeHide(
-                  _PlayerLoadingOverlay(
-                    controller: controller,
-                    backgroundColor: backgroundColor,
+                  positionedControls(
+                    maybeHide(
+                      Builder(
+                        builder: (ctx) => controlsBuilder!(ctx, isFullscreen),
+                      ),
+                    ),
                   ),
-                )),
+                positionedLayer(
+                  maybeHide(
+                    _PlayerLoadingOverlay(
+                      controller: controller,
+                      backgroundColor: backgroundColor,
+                      thumbnailQuality: thumbnailQuality,
+                      thumbnailFormat: thumbnailFormat,
+                    ),
+                  ),
+                ),
               ],
             );
           },
@@ -546,10 +594,14 @@ class _PlayerLoadingOverlay extends StatelessWidget {
   const _PlayerLoadingOverlay({
     required this.controller,
     required this.backgroundColor,
+    this.thumbnailQuality = ThumbnailQuality.high,
+    this.thumbnailFormat = ThumbnailFormat.webp,
   });
 
   final YoutubePlayerController controller;
   final Color? backgroundColor;
+  final ThumbnailQuality thumbnailQuality;
+  final ThumbnailFormat thumbnailFormat;
 
   @override
   Widget build(BuildContext context) {
@@ -560,14 +612,40 @@ class _PlayerLoadingOverlay extends StatelessWidget {
         final isInitializing =
             value.playerState == PlayerState.unknown ||
             value.playerState == PlayerState.unStarted;
+        final fallbackColor =
+            backgroundColor ?? Theme.of(context).colorScheme.surface;
+        final videoId = controller.key;
         return IgnorePointer(
           ignoring: !isInitializing,
           child: AnimatedOpacity(
             duration: const Duration(milliseconds: 300),
             opacity: isInitializing ? 1.0 : 0.0,
-            child: ColoredBox(
-              color: backgroundColor ?? Theme.of(context).colorScheme.surface,
-            ),
+            child: videoId != null
+                ? Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      ColoredBox(color: fallbackColor),
+                      Image.network(
+                        YoutubePlayerController.getThumbnail(
+                          videoId: videoId,
+                          quality: thumbnailQuality,
+                          format: thumbnailFormat,
+                        ),
+                        fit: BoxFit.cover,
+                        frameBuilder: (_, child, frame, wasSynchronouslyLoaded) {
+                          if (wasSynchronouslyLoaded) return child;
+                          return AnimatedOpacity(
+                            opacity: frame == null ? 0.0 : 1.0,
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeIn,
+                            child: child,
+                          );
+                        },
+                        errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                      ),
+                    ],
+                  )
+                : ColoredBox(color: fallbackColor),
           ),
         );
       },
