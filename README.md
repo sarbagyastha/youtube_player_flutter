@@ -1,8 +1,9 @@
 <p align="center">
-<img src="https://raw.githubusercontent.com/sarbagyastha/youtube_player_flutter/main/packages/youtube_player_iframe/screenshots/logo.png" height="100" alt="Youtube Player Flutter" />
+<img src="https://raw.githubusercontent.com/sarbagyastha/youtube_player_flutter/main/packages/youtube_player_iframe/misc/ypi.webp" width="200" alt="Youtube Player iFrame" />
+<img src="https://raw.githubusercontent.com/sarbagyastha/youtube_player_flutter/main/packages/youtube_player_flutter/misc/ypf.webp" width="200" alt="Youtube Player Flutter" />
 </p>
 
-<h2 align="center">Youtube Player Flutter</h2>
+<h2 align="center">Youtube Player for Flutter</h2>
 
 <p align="center">
 A Flutter monorepo for seamless YouTube video playback, powered by the official <a href="https://developers.google.com/youtube/iframe_api_reference">iFrame Player API</a>.
