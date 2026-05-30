@@ -1,4 +1,11 @@
 # Changelog
+## 6.0.1
+**May 30, 2026**
+
+- Fixes fullscreen button not appearing on Web.
+- Fixes null crash when `getPlaylist` returns an empty response.
+- Improves documentation for `PlayerState` and `YoutubeError` enums.
+
 ## 6.0.0
 **May 16, 2026**
 

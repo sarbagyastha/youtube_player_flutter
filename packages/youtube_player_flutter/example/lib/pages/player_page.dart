@@ -70,7 +70,10 @@ class _PlayerPageState extends State<PlayerPage> {
                 decoration: BoxDecoration(
                   color: cs.primary,
                   shape: BoxShape.circle,
-                  border: Border.all(color: cs.onSurface.withValues(alpha: 0.3), width: 1.5),
+                  border: Border.all(
+                    color: cs.onSurface.withValues(alpha: 0.3),
+                    width: 1.5,
+                  ),
                 ),
               ),
               onPressed: () => ColorPickerSheet.show(
@@ -106,14 +109,20 @@ class _PlayerPageState extends State<PlayerPage> {
               onTap: _loadVideo,
               children: [
                 for (var i = 0; i < videoIds.length; i++)
-                  ThumbnailCard(videoId: videoIds[i], selected: i == _currentIndex),
+                  ThumbnailCard(
+                    videoId: videoIds[i],
+                    selected: i == _currentIndex,
+                  ),
               ],
             ),
           ),
           const SizedBox(height: 28),
           const Divider(height: 0, indent: 16, endIndent: 16),
           const SizedBox(height: 20),
-          const SectionHeader(icon: Icons.tune_rounded, title: 'Custom Controls'),
+          const SectionHeader(
+            icon: Icons.tune_rounded,
+            title: 'Custom Controls',
+          ),
           const SizedBox(height: 10),
           const CustomBuilderDemo(),
           const SizedBox(height: 32),

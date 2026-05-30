@@ -1,3 +1,18 @@
+## 10.0.0
+**May 30, 2026**
+
+**Breaking Changes**
+* Complete rewrite powered by `youtube_player_iframe`. The underlying engine has switched from `flutter_inappwebview` to the official YouTube IFrame API via `webview_flutter`. Most APIs have changed — see the README for the new API.
+* `YoutubePlayerBuilder` has been removed. Fullscreen is now handled internally by the player.
+* `YoutubePlayerController` is now re-exported from `youtube_player_iframe`. Refer to its changelog for the full API surface.
+* Bumps minimum Flutter version to `>=3.38.0` / Dart SDK `^3.10.0`.
+
+**New Features**
+* Adds macOS and Web support.
+* Adds built-in Material-style controls overlay with progress bar, playback speed picker, title bar, and fullscreen button.
+* Adds `YoutubePlayerTheme` for customizing the default controls (colors, text styles).
+* Adds `YoutubePlayerThumbnail` widget — shows a thumbnail and only initializes the WebView on tap, ideal for lists.
+
 ## 9.1.3
 * Bumps dependencies to latest version.
 
