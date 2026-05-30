@@ -1,5 +1,5 @@
 <p align="center">
-<img src="https://raw.githubusercontent.com/sarbagyastha/youtube_player_flutter/main/packages/youtube_player_iframe/screenshots/logo.png" height="100" alt="Youtube Player Flutter" />
+<img src="https://raw.githubusercontent.com/sarbagyastha/youtube_player_flutter/main/packages/youtube_player_flutter/misc/ypf.webp" height="100" alt="Youtube Player Flutter" />
 </p>
 
 <h2 align="center">youtube_player_flutter</h2>

@@ -4,6 +4,13 @@ version: 6.0.0
 repository: https://github.com/sarbagyastha/youtube_player_flutter
 homepage: https://github.com/sarbagyastha/youtube_player_flutter/tree/main/packages/youtube_player_iframe
 
+topics:
+  - youtube
+  - video
+  - player
+  - iframe
+  - multimedia
+
 resolution: workspace
 
 environment:
@@ -40,11 +47,4 @@ platforms:
 
 screenshots:
   - description: Youtube Player iFrame Logo
-    path: screenshots/logo.png
-
-topics:
-  - youtube
-  - video
-  - player
-  - iframe
-  - multimedia
+    path: misc/ypi.webp

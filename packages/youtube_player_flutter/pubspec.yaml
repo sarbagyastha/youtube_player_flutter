@@ -30,3 +30,13 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+platforms:
+  android:
+  ios:
+  macos:
+  web:
+
+screenshots:
+  - description: Youtube Player iFrame Logo
+    path: misc/ypf.webp
