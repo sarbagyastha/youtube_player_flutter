@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="ypf_example"
+        android:label="Youtube Player Flutter"
         android:name="${applicationName}"
         android:icon="@mipmap/ypf_icon">
         <activity
