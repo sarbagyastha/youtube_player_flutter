@@ -7,7 +7,7 @@ import 'src/functions/queueing_functions.dart';
 
 export 'src/functions/queueing_functions.dart' show ListType;
 
-/// The skeleton for YouTube IFrame Player API.
+/// Interface for the YouTube IFrame Player API, implemented by [YoutubePlayerController].
 abstract class YoutubePlayerIFrameAPI
     implements
         QueueingFunctions,

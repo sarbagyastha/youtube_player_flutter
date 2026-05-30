@@ -35,10 +35,10 @@ class YoutubePlayer extends StatefulWidget {
     this.controlsBuilder,
   });
 
-  /// The [controller] for this player.
+  /// The controller for this player.
   final YoutubePlayerController controller;
 
-  /// Aspect ratio for the player.
+  /// Aspect ratio of the player. Defaults to `16 / 9`.
   final double aspectRatio;
 
   /// Which gestures should be consumed by the youtube player.
