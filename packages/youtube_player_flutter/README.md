@@ -1,8 +1,8 @@
 <p align="center">
-<img src="https://raw.githubusercontent.com/sarbagyastha/youtube_player_flutter/main/packages/youtube_player_flutter/misc/ypf.webp" height="100" alt="Youtube Player Flutter" />
+<img src="https://raw.githubusercontent.com/sarbagyastha/youtube_player_flutter/main/packages/youtube_player_flutter/misc/ypf.webp" width="250" alt="Youtube Player Flutter" />
 </p>
 
-<h2 align="center">youtube_player_flutter</h2>
+<h2 align="center">Youtube Player Flutter</h2>
 
 <p align="center">
 A batteries-included YouTube player for Flutter. Drop it in and get a fully working player (controls, gestures, live stream support, and more) with just a few lines of code.

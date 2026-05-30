@@ -1,8 +1,8 @@
 <p align="center">
-<img src="https://raw.githubusercontent.com/sarbagyastha/youtube_player_flutter/main/packages/youtube_player_iframe/misc/ypi.webp" height="100" alt="Youtube Player iFrame" />
+<img src="https://raw.githubusercontent.com/sarbagyastha/youtube_player_flutter/main/packages/youtube_player_iframe/misc/ypi.webp" width="250" alt="Youtube Player iFrame" />
 </p>
 
-<h2 align="center">youtube_player_iframe</h2>
+<h2 align="center">Youtube Player iFrame</h2>
 
 <p align="center">
 Embed YouTube videos in your Flutter app with full control over playback. Powered by the official <a href="https://developers.google.com/youtube/iframe_api_reference">iFrame Player API</a>. No API key required.
