@@ -138,6 +138,7 @@ class _YoutubePlayerThumbnailState extends State<YoutubePlayerThumbnail> {
                   quality: widget.thumbnailQuality,
                   format: widget.thumbnailFormat,
                 ),
+                webHtmlElementStrategy: .prefer,
                 fit: BoxFit.cover,
                 loadingBuilder: (_, child, progress) => progress == null
                     ? child

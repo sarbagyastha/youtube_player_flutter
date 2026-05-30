@@ -61,3 +61,7 @@ This is the web platform implementation consumed automatically by `youtube_playe
 ## License
 
 BSD-3-Clause. See [LICENSE](LICENSE) for details.
+
+This project uses the [YouTube IFrame Player API](https://developers.google.com/youtube/iframe_api_reference). By using these packages, you agree to the [YouTube API Services Terms of Service](https://developers.google.com/youtube/terms/api-services-tos).
+
+API method documentation is adapted from the [YouTube IFrame Player API Reference](https://developers.google.com/youtube/iframe_api_reference), © Google LLC, licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). See [NOTICE](NOTICE) for details.
