@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
@@ -16,7 +15,7 @@ import '../controller/overlay_controller_scope.dart';
 import 'controls/controls_overlay.dart';
 import 'typedefs.dart';
 
-/// A YouTube player widget with Material 3 custom controls.
+/// A YouTube player widget with YouTube-styled custom controls.
 ///
 /// Wraps [YoutubePlayerController] from `youtube_player_iframe` and renders
 /// a fully themed controls overlay instead of YouTube's native controls.
@@ -110,7 +109,9 @@ class _YoutubePlayerState extends State<YoutubePlayer>
   late final OverlayController _overlayCtrl;
   StreamSubscription<YoutubePlayerValue>? _playerStateSub;
 
-  bool get _isMobile => !kIsWeb && (Platform.isAndroid || Platform.isIOS);
+  bool get _isMobile =>
+      !kIsWeb &&
+      (defaultTargetPlatform == .android || defaultTargetPlatform == .iOS);
 
   @override
   void initState() {
