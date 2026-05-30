@@ -1,3 +1,9 @@
+## 10.0.1
+**May 31, 2026**
+
+- Patch release to trigger pub.dev documentation refresh.
+- Bumps `youtube_player_iframe` dependency to `^6.0.2`.
+
 ## 10.0.0
 **May 30, 2026**
 
