@@ -17,3 +17,11 @@ jobs:
           workingDir: packages/youtube_player_iframe/example
           baseHref: /
           customArgs: --wasm
+          targetBranch: ypi
+
+      - uses: sarbagyastha/flutter-gh-pages@main
+        with:
+          workingDir: packages/youtube_player_flutter/example
+          baseHref: /
+          customArgs: --wasm
+          targetBranch: ypf
