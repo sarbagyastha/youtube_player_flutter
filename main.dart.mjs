@@ -222,7 +222,6 @@ class CompiledApp {
       _747: x0 => x0.timeStamp,
       _748: x0 => x0.type,
       _750: (x0,x1,x2,x3) => x0.initEvent(x1,x2,x3),
-      _756: x0 => x0.baseURI,
       _757: x0 => x0.firstChild,
       _761: x0 => x0.parentElement,
       _763: (x0,x1) => { x0.textContent = x1 },
@@ -497,12 +496,9 @@ class CompiledApp {
       _1483: (ms, c) =>
       setTimeout(() => dartInstance.exports.$invokeCallback(c),ms),
       _1484: (handle) => clearTimeout(handle),
-      _1485: (ms, c) =>
-      setInterval(() => dartInstance.exports.$invokeCallback(c), ms),
       _1486: (handle) => clearInterval(handle),
       _1487: (c) =>
       queueMicrotask(() => dartInstance.exports.$invokeCallback(c)),
-      _1488: () => Date.now(),
       _1489: () => new Error().stack,
       _1490: (exn) => {
         let stackString = exn.toString();
@@ -522,7 +518,6 @@ class CompiledApp {
       },
       _1492: (x0,x1) => x0.exec(x1),
       _1493: (x0,x1) => x0.test(x1),
-      _1494: x0 => x0.pop(),
       _1496: o => o === undefined,
       _1498: o => typeof o === 'function' && o[jsWrappedDartFunctionSymbol] === true,
       _1500: o => {
@@ -556,7 +551,6 @@ class CompiledApp {
             constructor, [null, ...args]);
         return new factoryFunction();
       },
-      _1518: (o, p) => p in o,
       _1519: (o, p) => o[p],
       _1520: (o, p, v) => o[p] = v,
       _1521: (o, m, a) => o[m].apply(o, a),
@@ -659,7 +653,6 @@ class CompiledApp {
         return s;
       },
       _1546: x0 => x0.index,
-      _1547: x0 => x0.groups,
       _1548: x0 => x0.flags,
       _1549: x0 => x0.multiline,
       _1550: x0 => x0.ignoreCase,
