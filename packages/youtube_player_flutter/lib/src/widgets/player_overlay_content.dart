@@ -79,16 +79,27 @@ class PlayerOverlayContent extends StatelessWidget {
         final double fsWidth = screenSize.width;
         final double fsHeight = screenSize.height;
 
+        // Whether the placeholder is within the visible viewport. When it is,
+        // CompositedTransformTarget paints its LeaderLayer and the follower is
+        // "linked" — it places the child at the placeholder's screen position.
+        // When off-screen (e.g. second player scrolled below the fold in
+        // landscape), the SliverList doesn't paint the placeholder so the
+        // LeaderLayer is absent and the follower is "unlinked".
+        final screenRect = Offset.zero & screenSize;
+        final isOnScreen = playerRect.overlaps(screenRect);
+
         // CompositedTransformFollower places the child at the placeholder's
         // current screen position (tracked at the render layer — smooth during
         // scroll with no setState). The AnimatedContainer then:
         //   • normal: identity transform, natural size
-        //   • fullscreen: translate to (fsLeft, fsTop) by subtracting the
-        //     placeholder offset (playerRect.left/top), expand to fsWidth/fsHeight.
-        //
-        // playerRect is only read in the non-fullscreen width/height and in the
-        // fullscreen transform offset. Two-frame delay in didChangeMetrics ensures
-        // playerRect is refreshed before fullscreen is triggered on rotation.
+        //   • fullscreen + on-screen: translate to (fsLeft, fsTop) by
+        //     subtracting the placeholder offset (playerRect.left/top), expand
+        //     to fsWidth/fsHeight.
+        //   • fullscreen + off-screen: follower is unlinked; showWhenUnlinked
+        //     places the child at its own layout origin (0,0), so identity
+        //     transform is correct. showWhenUnlinked is true only when
+        //     fullscreen so the child is never shown at a wrong position while
+        //     the player is scrolled off-screen in normal mode.
         return Stack(
           fit: StackFit.expand,
           children: [
@@ -98,16 +109,18 @@ class PlayerOverlayContent extends StatelessWidget {
               left: 0,
               child: CompositedTransformFollower(
                 link: layerLink,
-                showWhenUnlinked: false,
+                showWhenUnlinked: isFullscreen,
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 300),
                   curve: Curves.easeInOut,
                   transform: isFullscreen
-                      ? Matrix4.translationValues(
-                          -playerRect.left + fsLeft,
-                          -playerRect.top + fsTop,
-                          0,
-                        )
+                      ? (isOnScreen
+                          ? Matrix4.translationValues(
+                              -playerRect.left + fsLeft,
+                              -playerRect.top + fsTop,
+                              0,
+                            )
+                          : Matrix4.identity())
                       : Matrix4.identity(),
                   width: isFullscreen ? fsWidth : playerRect.width,
                   height: isFullscreen ? fsHeight : playerRect.height,
@@ -165,11 +178,17 @@ class PlayerOverlayContent extends StatelessWidget {
                         ],
                       );
 
-                      return hideForOther
-                          ? IgnorePointer(
-                              child: Opacity(opacity: 0, child: content),
-                            )
-                          : content;
+                      // Offstage removes the WebView from Flutter's compositing
+                      // pipeline entirely — the platform view texture is not
+                      // rendered, so it cannot bleed through another player's
+                      // fullscreen overlay regardless of overlay z-order.
+                      // Opacity(opacity:0) is insufficient because Android
+                      // platform views render in a native surface layer that is
+                      // independent of Flutter's opacity compositing.
+                      // Using a stable Offstage wrapper (rather than
+                      // conditionally wrapping) prevents the WebView from being
+                      // torn down and recreated when hideForOther toggles.
+                      return Offstage(offstage: hideForOther, child: content);
                     },
                   ),
                 ),

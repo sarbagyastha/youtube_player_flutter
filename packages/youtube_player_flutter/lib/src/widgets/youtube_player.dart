@@ -109,6 +109,12 @@ class _YoutubePlayerState extends State<YoutubePlayer>
   // other players can hide their overlay content and avoid surfacing on top.
   static final _fullscreenCount = ValueNotifier<int>(0);
 
+  // Tracks which controller was most recently active (playing/buffering).
+  // Used to break the tie when multiple players are live during rotation:
+  // only the last-active player auto-enters fullscreen, preventing the
+  // first-registered player from stealing fullscreen from the playing one.
+  static YoutubePlayerController? _lastActiveController;
+
   late final OverlayController _overlayCtrl;
   final _overlayPortalCtrl = OverlayPortalController();
   final _placeholderKey = GlobalKey();
@@ -153,6 +159,7 @@ class _YoutubePlayerState extends State<YoutubePlayer>
       _fullscreenCount.value =
           (_fullscreenCount.value - 1).clamp(0, _fullscreenCount.value);
     }
+    if (_lastActiveController == widget.controller) _lastActiveController = null;
     super.dispose();
   }
 
@@ -171,13 +178,20 @@ class _YoutubePlayerState extends State<YoutubePlayer>
         final isLandscape = size.width > size.height;
         final opt = widget.controller.value.fullScreenOption;
         if (isLandscape && !opt.enabled) {
-          // Only enter fullscreen if this player is active. When multiple
-          // players are on screen all receive didChangeMetrics; without this
-          // guard every player would enter fullscreen on rotation.
+          // Only enter fullscreen if this player is active AND was the most
+          // recently active player. All players receive didChangeMetrics; the
+          // isActive guard prevents paused players from entering, and the
+          // _lastActiveController guard prevents a player that was active
+          // earlier (but is now background) from stealing fullscreen from the
+          // player the user is currently watching.
           final state = widget.controller.value.playerState;
           final isActive = state == PlayerState.playing ||
               state == PlayerState.buffering;
-          if (isActive) widget.controller.enterFullScreen(lock: false);
+          final isLastActive = _lastActiveController == null ||
+              _lastActiveController == widget.controller;
+          if (isActive && isLastActive) {
+            widget.controller.enterFullScreen(lock: false);
+          }
         } else if (!isLandscape && opt.enabled && !opt.locked) {
           widget.controller.exitFullScreen(lock: false);
         }
@@ -199,6 +213,7 @@ class _YoutubePlayerState extends State<YoutubePlayer>
 
     switch (value.playerState) {
       case PlayerState.playing:
+        _lastActiveController = widget.controller;
         _overlayCtrl.resetTimer();
       case PlayerState.paused:
       case PlayerState.buffering:

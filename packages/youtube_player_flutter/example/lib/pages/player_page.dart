@@ -4,7 +4,6 @@ import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import '../data.dart';
 import '../widgets/custom_builder_demo.dart';
 import '../widgets/thumbnail_card.dart';
-import 'theme_demo_page.dart';
 
 class PlayerPage extends StatefulWidget {
   const PlayerPage({super.key});
@@ -42,25 +41,12 @@ class _PlayerPageState extends State<PlayerPage> {
     _controller.loadVideoById(videoId: videoIds[index]);
   }
 
-  void _showThemeDemo() {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => const ThemeDemoPage()),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('YouTube Player Flutter'),
         centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.info_outline),
-            onPressed: _showThemeDemo,
-            tooltip: 'Theme demo',
-          ),
-        ],
       ),
       body: ListView(
         children: [
