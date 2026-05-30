@@ -18,11 +18,11 @@ A Flutter monorepo for seamless YouTube video playback, powered by the official 
 
 ## Packages
 
-| Package | Version | Description | Platforms |
-|---|---|---|---|
-| [youtube_player_flutter](packages/youtube_player_flutter) | [![pub](https://img.shields.io/pub/v/youtube_player_flutter.svg)](https://pub.dev/packages/youtube_player_flutter) | Batteries-included YouTube player with built-in controls, gestures, and live stream UI | Android, iOS, macOS, Web |
-| [youtube_player_iframe](packages/youtube_player_iframe) | [![pub](https://img.shields.io/pub/v/youtube_player_iframe.svg)](https://pub.dev/packages/youtube_player_iframe) | Full-control Flutter port of the YouTube iFrame API. Build your own UI. | Android, iOS, macOS, Web |
-| [youtube_player_iframe_web](packages/youtube_player_iframe_web) | [![pub](https://img.shields.io/pub/v/youtube_player_iframe_web.svg)](https://pub.dev/packages/youtube_player_iframe_web) | Web platform implementation for `youtube_player_iframe` (added automatically) | Web |
+| Package | Version | Demo | Description | Platforms |
+|---|---|---|---|---|
+| [youtube_player_flutter](packages/youtube_player_flutter) | [![pub](https://img.shields.io/pub/v/youtube_player_flutter.svg)](https://pub.dev/packages/youtube_player_flutter) | [![demo](https://img.shields.io/badge/Web-Demo-deeppink.svg)](https://yt.sarbagyastha.com.np) | Batteries-included YouTube player with built-in controls, gestures, and live stream UI | Android, iOS, macOS, Web |
+| [youtube_player_iframe](packages/youtube_player_iframe) | [![pub](https://img.shields.io/pub/v/youtube_player_iframe.svg)](https://pub.dev/packages/youtube_player_iframe) | [![demo](https://img.shields.io/badge/Web-Demo-deeppink.svg)](https://youtube.sarbagyastha.com.np) | Full-control Flutter port of the YouTube iFrame API. Build your own UI. | Android, iOS, macOS, Web |
+| [youtube_player_iframe_web](packages/youtube_player_iframe_web) | [![pub](https://img.shields.io/pub/v/youtube_player_iframe_web.svg)](https://pub.dev/packages/youtube_player_iframe_web) | | Web platform implementation for `youtube_player_iframe` (added automatically) | Web |
 
 ---
 

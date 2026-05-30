@@ -10,6 +10,7 @@ A batteries-included YouTube player for Flutter. Drop it in and get a fully work
 
 <p align="center">
 <a href="https://pub.dev/packages/youtube_player_flutter"><img src="https://img.shields.io/pub/v/youtube_player_flutter.svg" alt="pub"></a>
+<a href="https://yt.sarbagyastha.com.np"><img src="https://img.shields.io/badge/Web-Demo-deeppink.svg" alt="Web Demo"></a>
 <a href="https://github.com/sarbagyastha/youtube_player_flutter"><img src="https://img.shields.io/github/stars/sarbagyastha/youtube_player_flutter?color=deeppink" alt="Stars"></a>
 <a href="https://github.com/sarbagyastha/youtube_player_flutter/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-BSD--3-blueviolet" alt="BSD-3 License"></a>
 </p>
@@ -162,7 +163,7 @@ For Android and iOS setup details, see the [webview_flutter docs](https://pub.de
 
 ## Example
 
-See the [example app](example/lib/main.dart) for a complete working demo.
+Try the [live web demo](https://yt.sarbagyastha.com.np) or see the [example app](example/lib/main.dart) for a complete working demo.
 
 ---
 
