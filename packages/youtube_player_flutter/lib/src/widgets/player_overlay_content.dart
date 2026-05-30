@@ -11,8 +11,10 @@ import 'typedefs.dart';
 
 /// The content rendered inside the [OverlayPortal] on mobile.
 ///
-/// Positions the [WebViewWidget] at [playerRect] (animating to full-screen
-/// when [fullScreenOption.enabled] is true) and overlays the controls on top.
+/// [CompositedTransformFollower] tracks the placeholder's scroll position at
+/// the render layer (smooth, no setState). In fullscreen the transform is
+/// computed from [screenSize] only — no [playerRect] dependency — so rotation
+/// while fullscreen is always correct.
 class PlayerOverlayContent extends StatelessWidget {
   const PlayerOverlayContent({
     super.key,
@@ -37,9 +39,10 @@ class PlayerOverlayContent extends StatelessWidget {
   final bool enableFullScreenOnVerticalDrag;
   final YoutubePlayerBuilder? builder;
   final double aspectRatio;
-  /// Shared counter of how many players are currently in fullscreen.
-  /// When non-zero and this player is not fullscreen, its overlay layers are
-  /// hidden so they don't surface above the fullscreen player's background.
+
+  /// Tracks how many players are currently in fullscreen.
+  /// When non-zero and this player is not fullscreen, its overlay is hidden
+  /// so it doesn't surface above another player's fullscreen background.
   final ValueListenable<int> fullscreenCount;
 
   void _onVerticalDrag(DragUpdateDetails details) {
@@ -53,8 +56,6 @@ class PlayerOverlayContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Guard NaN: Rect.isEmpty returns false for NaN dimensions because
-    // NaN comparisons are always false, so check isFinite explicitly.
     if (!playerRect.width.isFinite ||
         !playerRect.height.isFinite ||
         playerRect.isEmpty) {
@@ -69,120 +70,112 @@ class PlayerOverlayContent extends StatelessWidget {
       builder: (context, value) {
         final isFullscreen = value.fullScreenOption.enabled;
 
-        // In portrait fullscreen, constrain to the aspect ratio and center
-        // vertically so the video is not stretched to fill the full screen.
-        final isPortrait = screenSize.width < screenSize.height;
-        final double fsWidth;
-        final double fsHeight;
-        final double fsOffsetY;
-        if (isFullscreen && isPortrait) {
-          fsWidth = screenSize.width;
-          fsHeight = screenSize.width / aspectRatio;
-          fsOffsetY = (screenSize.height - fsHeight) / 2;
-        } else {
-          fsWidth = screenSize.width;
-          fsHeight = screenSize.height;
-          fsOffsetY = 0;
-        }
+        // Fullscreen target bounds — always fill the full screen so both the
+        // video and controls cover the entire display. YouTube handles its own
+        // aspect ratio internally inside the WebView.
+        // Derived from screenSize only (no playerRect) so rotation while
+        // fullscreen is always correct.
+        const double fsLeft = 0, fsTop = 0;
+        final double fsWidth = screenSize.width;
+        final double fsHeight = screenSize.height;
 
-        // Always use CompositedTransformFollower so the widget element is
-        // never recreated when fullscreen toggles — this preserves the
-        // AnimatedContainer's animation state for the slide transition.
-        // In normal mode: follower tracks the placeholder, no transform.
-        // In fullscreen: AnimatedContainer shifts by (-rect.left, -rect.top)
-        // to cancel the follower's offset, landing the content at (0, 0),
-        // and expands to screen size — the same path AnimatedPositioned took.
-        Widget positionedLayer(Widget child) {
-          return Positioned(
-            top: 0,
-            left: 0,
-            child: CompositedTransformFollower(
-              link: layerLink,
-              showWhenUnlinked: false,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
-                transform: isFullscreen
-                    ? Matrix4.translationValues(
-                        -playerRect.left,
-                        -playerRect.top + fsOffsetY,
-                        0,
-                      )
-                    : Matrix4.identity(),
-                width: isFullscreen ? fsWidth : playerRect.width,
-                height: isFullscreen ? fsHeight : playerRect.height,
-                child: child,
-              ),
-            ),
-          );
-        }
+        // CompositedTransformFollower places the child at the placeholder's
+        // current screen position (tracked at the render layer — smooth during
+        // scroll with no setState). The AnimatedContainer then:
+        //   • normal: identity transform, natural size
+        //   • fullscreen: translate to (fsLeft, fsTop) by subtracting the
+        //     placeholder offset (playerRect.left/top), expand to fsWidth/fsHeight.
+        //
+        // playerRect is only read in the non-fullscreen width/height and in the
+        // fullscreen transform offset. Two-frame delay in didChangeMetrics ensures
+        // playerRect is refreshed before fullscreen is triggered on rotation.
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            _FullscreenBackground(isFullscreen: isFullscreen),
+            Positioned(
+              top: 0,
+              left: 0,
+              child: CompositedTransformFollower(
+                link: layerLink,
+                showWhenUnlinked: false,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                  transform: isFullscreen
+                      ? Matrix4.translationValues(
+                          -playerRect.left + fsLeft,
+                          -playerRect.top + fsTop,
+                          0,
+                        )
+                      : Matrix4.identity(),
+                  width: isFullscreen ? fsWidth : playerRect.width,
+                  height: isFullscreen ? fsHeight : playerRect.height,
+                  child: ValueListenableBuilder<int>(
+                    valueListenable: fullscreenCount,
+                    builder: (context, count, _) {
+                      final hideForOther = !isFullscreen && count > 0;
 
-        return ValueListenableBuilder<int>(
-          valueListenable: fullscreenCount,
-          builder: (context, count, _) {
-            // Hide this player's layers when another player owns the
-            // fullscreen — the other player's OverlayPortal entry is higher
-            // in z-order so without hiding it would surface above the
-            // fullscreen background. Opacity+IgnorePointer keeps the WebView
-            // alive (no reload on exit) while making it invisible.
-            final hideForOther = !isFullscreen && count > 0;
-
-            // Wrap content (not the Positioned itself) so Positioned stays a
-            // direct Stack child — required by Flutter's parent-data protocol.
-            Widget maybeHide(Widget w) => hideForOther
-                ? IgnorePointer(child: Opacity(opacity: 0, child: w))
-                : w;
-
-            return Stack(
-              fit: StackFit.expand,
-              children: [
-                _FullscreenBackground(isFullscreen: isFullscreen),
-
-                positionedLayer(maybeHide(
-                  GestureDetector(
-                    onVerticalDragUpdate: enableFullScreenOnVerticalDrag
-                        ? _onVerticalDrag
-                        : null,
-                    child: WebViewWidget(
-                      controller: controller.webViewController,
-                      gestureRecognizers: gestureRecognizers,
-                    ),
-                  ),
-                )),
-
-                positionedLayer(maybeHide(
-                  builder != null
-                      ? OverlayControllerScope(
-                          overlayController: overlayController,
-                          child: GestureDetector(
-                            behavior: HitTestBehavior.opaque,
-                            onTap: overlayController.toggle,
-                            child: builder!(
-                              context,
-                              SizedBox(
-                                width: isFullscreen ? fsWidth : playerRect.width,
-                                height:
-                                    isFullscreen ? fsHeight : playerRect.height,
+                      final content = Stack(
+                        children: [
+                          Positioned.fill(
+                            child: GestureDetector(
+                              onVerticalDragUpdate:
+                                  enableFullScreenOnVerticalDrag
+                                      ? _onVerticalDrag
+                                      : null,
+                              child: WebViewWidget(
+                                controller: controller.webViewController,
+                                gestureRecognizers: gestureRecognizers,
                               ),
-                              controller,
                             ),
                           ),
-                        )
-                      : _DefaultControlsLayer(
-                          controller: controller,
-                          overlayController: overlayController,
-                        ),
-                )),
+                          Positioned.fill(
+                            child: builder != null
+                                ? OverlayControllerScope(
+                                    overlayController: overlayController,
+                                    child: GestureDetector(
+                                      behavior: HitTestBehavior.opaque,
+                                      onTap: overlayController.toggle,
+                                      child: builder!(
+                                        context,
+                                        SizedBox(
+                                          width: isFullscreen
+                                              ? fsWidth
+                                              : playerRect.width,
+                                          height: isFullscreen
+                                              ? fsHeight
+                                              : playerRect.height,
+                                        ),
+                                        controller,
+                                      ),
+                                    ),
+                                  )
+                                : _DefaultControlsLayer(
+                                    controller: controller,
+                                    overlayController: overlayController,
+                                  ),
+                          ),
+                          Positioned.fill(
+                            child: _LoadingOverlay(
+                              controller: controller,
+                              backgroundColor: backgroundColor,
+                            ),
+                          ),
+                        ],
+                      );
 
-                positionedLayer(maybeHide(
-                  _LoadingOverlay(
-                    controller: controller,
-                    backgroundColor: backgroundColor,
+                      return hideForOther
+                          ? IgnorePointer(
+                              child: Opacity(opacity: 0, child: content),
+                            )
+                          : content;
+                    },
                   ),
-                )),
-              ],
-            );
-          },
+                ),
+              ),
+            ),
+          ],
         );
       },
     );
@@ -252,8 +245,7 @@ class _LoadingOverlay extends StatelessWidget {
       controller: controller,
       buildWhen: (o, n) => o.playerState != n.playerState,
       builder: (context, value) {
-        final isInitializing =
-            value.playerState == PlayerState.unknown ||
+        final isInitializing = value.playerState == PlayerState.unknown ||
             value.playerState == PlayerState.unStarted;
         return IgnorePointer(
           ignoring: !isInitializing,

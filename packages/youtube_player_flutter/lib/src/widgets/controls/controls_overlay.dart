@@ -26,10 +26,10 @@ class ControlsOverlay extends StatelessWidget {
             value.fullScreenOption.enabled &&
             screenSize.width > screenSize.height;
         return SafeArea(
-          top: isLandscapeFullscreen,
+          top: false,
           bottom: isLandscapeFullscreen,
-          left: isLandscapeFullscreen,
-          right: isLandscapeFullscreen,
+          left: false,
+          right: false,
           child: Stack(
             children: [
               Column(

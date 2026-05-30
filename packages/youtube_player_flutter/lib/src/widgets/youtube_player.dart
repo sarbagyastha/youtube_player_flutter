@@ -158,18 +158,30 @@ class _YoutubePlayerState extends State<YoutubePlayer>
 
   @override
   void didChangeMetrics() {
+    // Two-phase: first let the layout settle and update playerRect, then
+    // toggle fullscreen. This ensures PlayerOverlayContent never sees
+    // isFullscreen=true with a stale playerRect from the previous orientation,
+    // which would cause the AnimatedPositioned to animate from the wrong origin.
     SchedulerBinding.instance.addPostFrameCallback((_) {
       _updatePlayerRect();
-      if (!mounted || !widget.autoFullScreen) return;
-      final view = WidgetsBinding.instance.platformDispatcher.views.first;
-      final size = view.physicalSize / view.devicePixelRatio;
-      final isLandscape = size.width > size.height;
-      final opt = widget.controller.value.fullScreenOption;
-      if (isLandscape && !opt.enabled) {
-        widget.controller.enterFullScreen(lock: false);
-      } else if (!isLandscape && opt.enabled && !opt.locked) {
-        widget.controller.exitFullScreen(lock: false);
-      }
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || !widget.autoFullScreen) return;
+        final view = WidgetsBinding.instance.platformDispatcher.views.first;
+        final size = view.physicalSize / view.devicePixelRatio;
+        final isLandscape = size.width > size.height;
+        final opt = widget.controller.value.fullScreenOption;
+        if (isLandscape && !opt.enabled) {
+          // Only enter fullscreen if this player is active. When multiple
+          // players are on screen all receive didChangeMetrics; without this
+          // guard every player would enter fullscreen on rotation.
+          final state = widget.controller.value.playerState;
+          final isActive = state == PlayerState.playing ||
+              state == PlayerState.buffering;
+          if (isActive) widget.controller.enterFullScreen(lock: false);
+        } else if (!isLandscape && opt.enabled && !opt.locked) {
+          widget.controller.exitFullScreen(lock: false);
+        }
+      });
     });
   }
 
