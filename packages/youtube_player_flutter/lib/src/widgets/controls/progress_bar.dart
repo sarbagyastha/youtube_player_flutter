@@ -55,8 +55,11 @@ class _ProgressBarState extends State<ProgressBar> {
             padding: EdgeInsets.symmetric(horizontal: 16),
             secondaryTrackValue: totalSeconds > 0 ? buffered : 0,
             max: totalSeconds > 0 ? totalSeconds : 1,
-            onChangeStart: (_) {
-              _isSeeking = true;
+            onChangeStart: (value) {
+              setState(() {
+                _isSeeking = true;
+                _seekValue = value;
+              });
               OverlayControllerScope.of(context).cancelTimer();
             },
             onChanged: (value) {
