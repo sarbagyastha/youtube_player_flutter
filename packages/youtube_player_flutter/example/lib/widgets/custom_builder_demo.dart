@@ -183,15 +183,18 @@ class _PlayPauseCenter extends StatelessWidget {
             );
           }
           final isPlaying = value.playerState == PlayerState.playing;
-          return GestureDetector(
-            onTap: isPlaying ? controller.pauseVideo : controller.playVideo,
-            child: Icon(
-              isPlaying
-                  ? Icons.pause_circle_filled_rounded
-                  : Icons.play_circle_filled_rounded,
-              color: theme.progressBarActiveColor,
-              size: 64,
-              shadows: const [Shadow(blurRadius: 12, color: Colors.black54)],
+          return Material(
+            color: theme.progressBarBackgroundColor,
+            shape: const CircleBorder(),
+            child: GestureDetector(
+              onTap: isPlaying ? controller.pauseVideo : controller.playVideo,
+              child: Icon(
+                isPlaying
+                    ? Icons.pause_circle_filled_rounded
+                    : Icons.play_circle_filled_rounded,
+                color: theme.progressBarActiveColor,
+                size: 64,
+              ),
             ),
           );
         },
