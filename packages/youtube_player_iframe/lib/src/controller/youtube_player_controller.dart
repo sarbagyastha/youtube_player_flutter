@@ -385,7 +385,8 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
       '$shortsUrlPattern$idPattern',
       '$musicUrlPattern?v=$idPattern',
     ]) {
-      if (RegExp(regex).firstMatch(url) case final match? when match.groupCount >= 1) {
+      if (RegExp(regex).firstMatch(url) case final match?
+          when match.groupCount >= 1) {
         return match.group(1);
       }
     }

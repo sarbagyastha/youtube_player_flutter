@@ -244,5 +244,5 @@ enum PointerEvents {
   initial,
 
   /// The player does not react to any pointer events.
-  none;
+  none,
 }
