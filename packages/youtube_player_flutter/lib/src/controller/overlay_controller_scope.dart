@@ -17,8 +17,8 @@ class OverlayControllerScope extends InheritedWidget {
   final OverlayController overlayController;
 
   static OverlayController of(BuildContext context) {
-    final scope =
-        context.dependOnInheritedWidgetOfExactType<OverlayControllerScope>();
+    final scope = context
+        .dependOnInheritedWidgetOfExactType<OverlayControllerScope>();
     assert(scope != null, 'No OverlayControllerScope found in context');
     return scope!.overlayController;
   }

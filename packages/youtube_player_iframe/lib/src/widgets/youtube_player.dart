@@ -632,15 +632,16 @@ class _PlayerLoadingOverlay extends StatelessWidget {
                           format: thumbnailFormat,
                         ),
                         fit: BoxFit.cover,
-                        frameBuilder: (_, child, frame, wasSynchronouslyLoaded) {
-                          if (wasSynchronouslyLoaded) return child;
-                          return AnimatedOpacity(
-                            opacity: frame == null ? 0.0 : 1.0,
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.easeIn,
-                            child: child,
-                          );
-                        },
+                        frameBuilder:
+                            (_, child, frame, wasSynchronouslyLoaded) {
+                              if (wasSynchronouslyLoaded) return child;
+                              return AnimatedOpacity(
+                                opacity: frame == null ? 0.0 : 1.0,
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeIn,
+                                child: child,
+                              );
+                            },
                         errorBuilder: (_, _, _) => const SizedBox.shrink(),
                       ),
                     ],

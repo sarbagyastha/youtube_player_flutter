@@ -46,7 +46,6 @@ class _HomePageState extends State<HomePage> {
         mute: false,
         showFullscreenButton: true,
         loop: false,
-        
       ),
     );
 

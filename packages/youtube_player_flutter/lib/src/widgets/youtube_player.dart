@@ -162,22 +162,22 @@ class _YoutubePlayerState extends State<YoutubePlayer>
     if (!kIsWeb) {
       if (_isMobile && widget.builder != null) {
         controlsBuilder = (ctx, _) => OverlayControllerScope(
-              overlayController: _overlayCtrl,
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: _overlayCtrl.toggle,
-                child: widget.builder!(
-                  ctx,
-                  const SizedBox.expand(),
-                  widget.controller,
-                ),
-              ),
-            );
+          overlayController: _overlayCtrl,
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: _overlayCtrl.toggle,
+            child: widget.builder!(
+              ctx,
+              const SizedBox.expand(),
+              widget.controller,
+            ),
+          ),
+        );
       } else if (widget.builder == null) {
         controlsBuilder = (ctx, _) => _DefaultControlsLayer(
-              controller: widget.controller,
-              overlayController: _overlayCtrl,
-            );
+          controller: widget.controller,
+          overlayController: _overlayCtrl,
+        );
       }
       // Non-mobile with builder: controlsBuilder stays null; builder wraps
       // the iframe player directly (see return below).
@@ -314,12 +314,14 @@ class _DefaultControlsLayerState extends State<_DefaultControlsLayer> {
               Center(
                 child: _SeekIndicator(
                   deltaSeconds: _seekDeltaSeconds,
-                  targetSeconds: (_videoState.position.inSeconds.toDouble() +
-                          _seekDeltaSeconds)
-                      .clamp(
-                    0.0,
-                    widget.controller.metadata.duration.inSeconds.toDouble(),
-                  ),
+                  targetSeconds:
+                      (_videoState.position.inSeconds.toDouble() +
+                              _seekDeltaSeconds)
+                          .clamp(
+                            0.0,
+                            widget.controller.metadata.duration.inSeconds
+                                .toDouble(),
+                          ),
                 ),
               ),
           ],
@@ -385,10 +387,7 @@ class _SeekIndicator extends StatelessWidget {
           const SizedBox(width: 6),
           Text(
             '(${_formatTarget()})',
-            style: const TextStyle(
-              color: Colors.white70,
-              fontSize: 14,
-            ),
+            style: const TextStyle(color: Colors.white70, fontSize: 14),
           ),
         ],
       ),

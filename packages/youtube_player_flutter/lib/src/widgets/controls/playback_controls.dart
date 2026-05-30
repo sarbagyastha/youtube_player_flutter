@@ -146,9 +146,7 @@ class _AnimatedPlayPauseButtonState extends State<_AnimatedPlayPauseButton>
   void didUpdateWidget(_AnimatedPlayPauseButton oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.isPlaying != widget.isPlaying) {
-      widget.isPlaying
-          ? _animController.forward()
-          : _animController.reverse();
+      widget.isPlaying ? _animController.forward() : _animController.reverse();
     }
   }
 
@@ -183,10 +181,7 @@ class _AnimatedPlayPauseButtonState extends State<_AnimatedPlayPauseButton>
 }
 
 class _CircleButton extends StatelessWidget {
-  const _CircleButton({
-    required this.icon,
-    required this.onTap,
-  });
+  const _CircleButton({required this.icon, required this.onTap});
 
   final IconData icon;
   final VoidCallback onTap;

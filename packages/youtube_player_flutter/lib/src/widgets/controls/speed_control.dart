@@ -47,8 +47,9 @@ class SpeedControl extends StatelessWidget {
       buildWhen: (o, n) => o.playbackRate != n.playbackRate,
       builder: (context, value) {
         final rate = value.playbackRate;
-        final label =
-            rate == rate.truncateToDouble() ? '${rate.toInt()}×' : '$rate×';
+        final label = rate == rate.truncateToDouble()
+            ? '${rate.toInt()}×'
+            : '$rate×';
 
         return TextButton(
           style: TextButton.styleFrom(
@@ -71,10 +72,8 @@ class SpeedControl extends StatelessWidget {
     final overlayCtrl = OverlayControllerScope.of(context);
     showModalBottomSheet<void>(
       context: context,
-      builder: (_) => _SpeedPickerSheet(
-        controller: controller,
-        initialRate: currentRate,
-      ),
+      builder: (_) =>
+          _SpeedPickerSheet(controller: controller, initialRate: currentRate),
     ).whenComplete(overlayCtrl.resetTimer);
   }
 }
@@ -101,10 +100,9 @@ class _SpeedPickerSheetState extends State<_SpeedPickerSheet> {
   void initState() {
     super.initState();
     _currentRate = _presetSpeeds.reduce(
-      (a, b) =>
-          (a - widget.initialRate).abs() < (b - widget.initialRate).abs()
-              ? a
-              : b,
+      (a, b) => (a - widget.initialRate).abs() < (b - widget.initialRate).abs()
+          ? a
+          : b,
     );
   }
 
@@ -142,8 +140,8 @@ class _SpeedPickerSheetState extends State<_SpeedPickerSheet> {
             Text(
               _rateLabel,
               style: textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                fontWeight: FontWeight.w600,
+              ),
             ),
             const SizedBox(height: 16),
             Row(
@@ -209,12 +207,12 @@ class _SpeedPickerSheetState extends State<_SpeedPickerSheet> {
                       Text(
                         speed == 1.0 ? 'Normal' : '',
                         style: textTheme.labelSmall?.copyWith(
-                              color: speed == 1.0
-                                  ? (selected
-                                      ? colorScheme.primary
-                                      : colorScheme.onSurfaceVariant)
-                                  : Colors.transparent,
-                            ),
+                          color: speed == 1.0
+                              ? (selected
+                                    ? colorScheme.primary
+                                    : colorScheme.onSurfaceVariant)
+                              : Colors.transparent,
+                        ),
                       ),
                     ],
                   ),

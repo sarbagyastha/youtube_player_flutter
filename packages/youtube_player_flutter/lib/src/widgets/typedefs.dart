@@ -23,8 +23,9 @@ import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 ///   ),
 /// )
 /// ```
-typedef YoutubePlayerBuilder = Widget Function(
-  BuildContext context,
-  Widget player,
-  YoutubePlayerController controller,
-);
+typedef YoutubePlayerBuilder =
+    Widget Function(
+      BuildContext context,
+      Widget player,
+      YoutubePlayerController controller,
+    );

@@ -89,8 +89,11 @@ class YoutubePlayerTheme extends ThemeExtension<YoutubePlayerTheme> {
   YoutubePlayerTheme lerp(YoutubePlayerTheme? other, double t) {
     if (other == null) return this;
     return YoutubePlayerTheme(
-      progressBarActiveColor:
-          Color.lerp(progressBarActiveColor, other.progressBarActiveColor, t),
+      progressBarActiveColor: Color.lerp(
+        progressBarActiveColor,
+        other.progressBarActiveColor,
+        t,
+      ),
       progressBarBufferedColor: Color.lerp(
         progressBarBufferedColor,
         other.progressBarBufferedColor,

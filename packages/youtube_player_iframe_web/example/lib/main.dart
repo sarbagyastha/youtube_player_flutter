@@ -24,9 +24,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Youtube Player Iframe Web Demo'),
-        ),
+        appBar: AppBar(title: const Text('Youtube Player Iframe Web Demo')),
         body: SingleChildScrollView(
           padding: const EdgeInsets.all(32),
           child: SizedBox(

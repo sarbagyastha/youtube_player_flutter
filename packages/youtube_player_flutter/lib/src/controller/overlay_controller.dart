@@ -8,9 +8,7 @@ import 'package:flutter/foundation.dart';
 
 /// Controls the visibility of the player controls overlay with an auto-hide timer.
 class OverlayController {
-  OverlayController({
-    this.autoHideDuration = const Duration(seconds: 3),
-  });
+  OverlayController({this.autoHideDuration = const Duration(seconds: 3)});
 
   /// How long after the last interaction before controls auto-hide. Defaults to 3 seconds.
   final Duration autoHideDuration;

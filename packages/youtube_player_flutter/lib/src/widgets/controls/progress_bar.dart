@@ -71,11 +71,13 @@ class _ProgressBarState extends State<ProgressBar> {
 
   void _onDragStart(double localX, double trackWidth) {
     if (trackWidth <= 0) return;
-    final totalSeconds =
-        widget.controller.metadata.duration.inSeconds.toDouble();
+    final totalSeconds = widget.controller.metadata.duration.inSeconds
+        .toDouble();
     if (totalSeconds <= 0) return;
-    final seconds =
-        ((localX / trackWidth) * totalSeconds).clamp(0.0, totalSeconds);
+    final seconds = ((localX / trackWidth) * totalSeconds).clamp(
+      0.0,
+      totalSeconds,
+    );
     _seekClearTimer?.cancel();
     setState(() {
       _isSeeking = true;
@@ -86,11 +88,13 @@ class _ProgressBarState extends State<ProgressBar> {
 
   void _onDragUpdate(double localX, double trackWidth) {
     if (trackWidth <= 0) return;
-    final totalSeconds =
-        widget.controller.metadata.duration.inSeconds.toDouble();
+    final totalSeconds = widget.controller.metadata.duration.inSeconds
+        .toDouble();
     if (totalSeconds <= 0) return;
-    final seconds =
-        ((localX / trackWidth) * totalSeconds).clamp(0.0, totalSeconds);
+    final seconds = ((localX / trackWidth) * totalSeconds).clamp(
+      0.0,
+      totalSeconds,
+    );
     setState(() => _seekValue = seconds);
   }
 
@@ -106,11 +110,9 @@ class _ProgressBarState extends State<ProgressBar> {
     final totalSeconds = duration.inSeconds.toDouble();
 
     final playedFraction = totalSeconds > 0
-        ? (_isSeeking
-                ? _seekValue
-                : _videoState.position.inSeconds.toDouble())
-            .clamp(0.0, totalSeconds) /
-            totalSeconds
+        ? (_isSeeking ? _seekValue : _videoState.position.inSeconds.toDouble())
+                  .clamp(0.0, totalSeconds) /
+              totalSeconds
         : 0.0;
     final bufferedFraction = totalSeconds > 0
         ? _videoState.loadedFraction.clamp(0.0, 1.0)
@@ -125,8 +127,7 @@ class _ProgressBarState extends State<ProgressBar> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final trackWidth =
-            constraints.maxWidth - hPad.left - hPad.right;
+        final trackWidth = constraints.maxWidth - hPad.left - hPad.right;
 
         return GestureDetector(
           behavior: HitTestBehavior.opaque,
@@ -213,7 +214,12 @@ class _TrackPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     const radius = Radius.circular(1.5);
     final cy = size.height / 2;
-    final trackRect = Rect.fromLTWH(0, cy - size.height / 2, size.width, size.height);
+    final trackRect = Rect.fromLTWH(
+      0,
+      cy - size.height / 2,
+      size.width,
+      size.height,
+    );
 
     // Background
     canvas.drawRRect(
@@ -225,7 +231,12 @@ class _TrackPainter extends CustomPainter {
     if (buffered > 0) {
       canvas.drawRRect(
         RRect.fromRectAndRadius(
-          Rect.fromLTWH(0, cy - size.height / 2, size.width * buffered, size.height),
+          Rect.fromLTWH(
+            0,
+            cy - size.height / 2,
+            size.width * buffered,
+            size.height,
+          ),
           radius,
         ),
         Paint()..color = bufferedColor,
@@ -236,7 +247,12 @@ class _TrackPainter extends CustomPainter {
     if (played > 0) {
       canvas.drawRRect(
         RRect.fromRectAndRadius(
-          Rect.fromLTWH(0, cy - size.height / 2, size.width * played, size.height),
+          Rect.fromLTWH(
+            0,
+            cy - size.height / 2,
+            size.width * played,
+            size.height,
+          ),
           radius,
         ),
         Paint()..color = activeColor,

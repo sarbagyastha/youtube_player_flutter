@@ -12,4 +12,3 @@ export 'src/theme/youtube_player_theme.dart';
 export 'src/widgets/controls/fullscreen_button.dart';
 export 'src/widgets/typedefs.dart';
 export 'src/widgets/youtube_player.dart';
-

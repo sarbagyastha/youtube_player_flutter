@@ -17,7 +17,8 @@ class NowPlaying extends StatelessWidget {
 
     return YoutubeValueBuilder(
       controller: controller,
-      buildWhen: (o, n) => o.metaData != n.metaData || o.playerState != n.playerState,
+      buildWhen: (o, n) =>
+          o.metaData != n.metaData || o.playerState != n.playerState,
       builder: (context, value) {
         final title = value.metaData.title;
         final author = value.metaData.author;
@@ -43,7 +44,9 @@ class NowPlaying extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         author,
-                        style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                        style: tt.bodySmall?.copyWith(
+                          color: cs.onSurfaceVariant,
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -100,7 +103,12 @@ class PlayerStateChip extends StatelessWidget {
 }
 
 class SectionHeader extends StatelessWidget {
-  const SectionHeader({super.key, required this.icon, required this.title, this.trailing});
+  const SectionHeader({
+    super.key,
+    required this.icon,
+    required this.title,
+    this.trailing,
+  });
 
   final IconData icon;
   final String title;

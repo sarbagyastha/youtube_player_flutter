@@ -271,7 +271,9 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   }) async {
     await load(
       params: params,
-      baseUrl: baseUrl ?? (kIsWeb ? Uri.base.origin : (params.origin ?? params.host)),
+      baseUrl:
+          baseUrl ??
+          (kIsWeb ? Uri.base.origin : (params.origin ?? params.host)),
       id: playerId,
     );
 

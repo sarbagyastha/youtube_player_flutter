@@ -36,7 +36,8 @@ class ColorPickerSheet extends StatelessWidget {
   }) {
     showModalBottomSheet<void>(
       context: context,
-      builder: (_) => ColorPickerSheet(selected: selected, onSelected: onSelected),
+      builder: (_) =>
+          ColorPickerSheet(selected: selected, onSelected: onSelected),
     );
   }
 
@@ -91,7 +92,11 @@ class ColorPickerSheet extends StatelessWidget {
                           : null,
                     ),
                     child: isSelected
-                        ? const Icon(Icons.check_rounded, color: Colors.white, size: 22)
+                        ? const Icon(
+                            Icons.check_rounded,
+                            color: Colors.white,
+                            size: 22,
+                          )
                         : null,
                   ),
                 ),
