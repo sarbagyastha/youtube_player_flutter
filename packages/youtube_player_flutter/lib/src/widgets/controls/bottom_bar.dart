@@ -35,7 +35,7 @@ class BottomBar extends StatelessWidget {
             p.bottom,
           );
         } else {
-          insets = EdgeInsets.zero;
+          insets = EdgeInsets.only(left: 16);
         }
 
         return Container(
@@ -44,12 +44,7 @@ class BottomBar extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Padding(
-                padding: EdgeInsets.fromLTRB(
-                  insets.left,
-                  8,
-                  insets.right,
-                  0,
-                ),
+                padding: EdgeInsets.fromLTRB(insets.left, 4, insets.right, 0),
                 child: Row(
                   children: [
                     _TimePill(controller: controller, theme: theme),
@@ -63,7 +58,7 @@ class BottomBar extends StatelessWidget {
                 leftPadding: insets.left,
                 rightPadding: insets.right,
               ),
-              SizedBox(height: 8 + insets.bottom),
+              SizedBox(height: insets.bottom),
             ],
           ),
         );

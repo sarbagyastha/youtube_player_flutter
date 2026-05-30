@@ -36,7 +36,6 @@ class _ProgressBarState extends State<ProgressBar> {
     _subscription = widget.controller.videoStateStream.listen((state) {
       if (!mounted) return;
       if (_isSeeking) {
-        // Keep blocking until the stream position catches up to where we seeked.
         final diff = state.position.inSeconds.toDouble() - _seekValue;
         if (diff.abs() < 1.0) {
           _seekClearTimer?.cancel();
@@ -58,61 +57,199 @@ class _ProgressBarState extends State<ProgressBar> {
     super.dispose();
   }
 
+  void _seekTo(double seconds) {
+    widget.controller.seekTo(seconds: seconds, allowSeekAhead: true);
+    _seekClearTimer?.cancel();
+    _seekClearTimer = Timer(const Duration(milliseconds: 1500), () {
+      if (mounted) setState(() => _isSeeking = false);
+    });
+  }
+
+  void _onDragStart(double localX, double trackWidth) {
+    if (trackWidth <= 0) return;
+    final totalSeconds =
+        widget.controller.metadata.duration.inSeconds.toDouble();
+    if (totalSeconds <= 0) return;
+    final seconds =
+        ((localX / trackWidth) * totalSeconds).clamp(0.0, totalSeconds);
+    _seekClearTimer?.cancel();
+    setState(() {
+      _isSeeking = true;
+      _seekValue = seconds;
+    });
+    OverlayControllerScope.of(context).cancelTimer();
+  }
+
+  void _onDragUpdate(double localX, double trackWidth) {
+    if (trackWidth <= 0) return;
+    final totalSeconds =
+        widget.controller.metadata.duration.inSeconds.toDouble();
+    if (totalSeconds <= 0) return;
+    final seconds =
+        ((localX / trackWidth) * totalSeconds).clamp(0.0, totalSeconds);
+    setState(() => _seekValue = seconds);
+  }
+
+  void _onDragEnd() {
+    _seekTo(_seekValue);
+    OverlayControllerScope.of(context).resetTimer();
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = YoutubePlayerThemeResolver(context);
     final duration = widget.controller.metadata.duration;
     final totalSeconds = duration.inSeconds.toDouble();
 
-    final sliderValue = totalSeconds > 0
-        ? (_isSeeking ? _seekValue : _videoState.position.inSeconds.toDouble())
-            .clamp(0.0, totalSeconds)
+    final playedFraction = totalSeconds > 0
+        ? (_isSeeking
+                ? _seekValue
+                : _videoState.position.inSeconds.toDouble())
+            .clamp(0.0, totalSeconds) /
+            totalSeconds
         : 0.0;
-    final buffered =
-        (_videoState.loadedFraction * totalSeconds).clamp(0.0, totalSeconds);
+    final bufferedFraction = totalSeconds > 0
+        ? _videoState.loadedFraction.clamp(0.0, 1.0)
+        : 0.0;
 
-    return SliderTheme(
-      data: SliderTheme.of(context).copyWith(
-        activeTrackColor: theme.progressBarActiveColor,
-        thumbColor: theme.progressBarActiveColor,
-        inactiveTrackColor: theme.progressBarBackgroundColor,
-        secondaryActiveTrackColor: theme.progressBarBufferedColor,
-        overlayColor: theme.progressBarActiveColor.withValues(alpha: 0.2),
-        trackHeight: 2,
-        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 5),
-      ),
-      child: Slider(
-        value: sliderValue,
-        padding: EdgeInsets.fromLTRB(
-          widget.leftPadding > 0 ? widget.leftPadding : 16,
-          0,
-          widget.rightPadding > 0 ? widget.rightPadding : 16,
-          0,
-        ),
-        secondaryTrackValue: totalSeconds > 0 ? buffered : 0,
-        max: totalSeconds > 0 ? totalSeconds : 1,
-        onChangeStart: (value) {
-          _seekClearTimer?.cancel();
-          setState(() {
-            _isSeeking = true;
-            _seekValue = value;
-          });
-          OverlayControllerScope.of(context).cancelTimer();
-        },
-        onChanged: (value) {
-          setState(() => _seekValue = value);
-        },
-        onChangeEnd: (value) {
-          widget.controller.seekTo(seconds: value, allowSeekAhead: true);
-          // Safety fallback: clear seeking state after 1.5 s if the stream
-          // never reports a position close enough (e.g. seeking to end of video).
-          _seekClearTimer?.cancel();
-          _seekClearTimer = Timer(const Duration(milliseconds: 1500), () {
-            if (mounted) setState(() => _isSeeking = false);
-          });
-          OverlayControllerScope.of(context).resetTimer();
-        },
+    final hPad = EdgeInsets.fromLTRB(
+      widget.leftPadding > 0 ? widget.leftPadding : 16,
+      0,
+      widget.rightPadding > 0 ? widget.rightPadding : 16,
+      0,
+    );
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final trackWidth =
+            constraints.maxWidth - hPad.left - hPad.right;
+
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onHorizontalDragStart: (d) =>
+              _onDragStart(d.localPosition.dx - hPad.left, trackWidth),
+          onHorizontalDragUpdate: (d) =>
+              _onDragUpdate(d.localPosition.dx - hPad.left, trackWidth),
+          onHorizontalDragEnd: (_) => _onDragEnd(),
+          onTapDown: (d) {
+            _onDragStart(d.localPosition.dx - hPad.left, trackWidth);
+            _onDragEnd();
+          },
+          child: SizedBox(
+            height: 44,
+            child: Padding(
+              padding: hPad.copyWith(top: 8),
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: _SeekTrack(
+                  playedFraction: playedFraction,
+                  bufferedFraction: bufferedFraction,
+                  activeColor: theme.progressBarActiveColor,
+                  bufferedColor: theme.progressBarBufferedColor,
+                  backgroundColor: theme.progressBarBackgroundColor,
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _SeekTrack extends StatelessWidget {
+  const _SeekTrack({
+    required this.playedFraction,
+    required this.bufferedFraction,
+    required this.activeColor,
+    required this.bufferedColor,
+    required this.backgroundColor,
+  });
+
+  final double playedFraction;
+  final double bufferedFraction;
+  final Color activeColor;
+  final Color bufferedColor;
+  final Color backgroundColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      size: const Size(double.infinity, 3),
+      painter: _TrackPainter(
+        played: playedFraction,
+        buffered: bufferedFraction,
+        activeColor: activeColor,
+        bufferedColor: bufferedColor,
+        backgroundColor: backgroundColor,
+        thumbRadius: 6,
       ),
     );
   }
+}
+
+class _TrackPainter extends CustomPainter {
+  const _TrackPainter({
+    required this.played,
+    required this.buffered,
+    required this.activeColor,
+    required this.bufferedColor,
+    required this.backgroundColor,
+    required this.thumbRadius,
+  });
+
+  final double played;
+  final double buffered;
+  final Color activeColor;
+  final Color bufferedColor;
+  final Color backgroundColor;
+  final double thumbRadius;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    const radius = Radius.circular(1.5);
+    final cy = size.height / 2;
+    final trackRect = Rect.fromLTWH(0, cy - size.height / 2, size.width, size.height);
+
+    // Background
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(trackRect, radius),
+      Paint()..color = backgroundColor,
+    );
+
+    // Buffered
+    if (buffered > 0) {
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(0, cy - size.height / 2, size.width * buffered, size.height),
+          radius,
+        ),
+        Paint()..color = bufferedColor,
+      );
+    }
+
+    // Played
+    if (played > 0) {
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(0, cy - size.height / 2, size.width * played, size.height),
+          radius,
+        ),
+        Paint()..color = activeColor,
+      );
+    }
+
+    // Thumb
+    canvas.drawCircle(
+      Offset(size.width * played, cy),
+      thumbRadius,
+      Paint()..color = activeColor,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_TrackPainter old) =>
+      old.played != played ||
+      old.buffered != buffered ||
+      old.activeColor != activeColor;
 }
