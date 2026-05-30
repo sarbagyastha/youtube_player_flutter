@@ -1,3 +1,6 @@
+## 3.1.3
+- Makes `credentialless` iframe configurable via `WebYoutubePlayerIframeControllerCreationParams`. Defaults to `false`.
+
 ## 3.1.2
 - Bumps dependencies.
 

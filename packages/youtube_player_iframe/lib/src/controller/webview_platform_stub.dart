@@ -3,9 +3,14 @@
 // found in the LICENSE file.
 
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:youtube_player_iframe_web/youtube_player_iframe_web.dart';
 
-PlatformWebViewControllerCreationParams buildWebViewParams() {
-  return const PlatformWebViewControllerCreationParams();
+PlatformWebViewControllerCreationParams buildWebViewParams({
+  bool credentialless = false,
+}) {
+  return WebYoutubePlayerIframeControllerCreationParams(
+    credentialless: credentialless,
+  );
 }
 
 void configureWebViewController(WebViewController controller) {}

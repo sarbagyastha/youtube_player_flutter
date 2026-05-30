@@ -42,10 +42,11 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     this.params = const YoutubePlayerParams(),
     ValueChanged<YoutubeWebResourceError>? onWebResourceError,
     this.key,
+    this.credentialless = false,
   }) {
     _eventHandler = YoutubePlayerEventHandler(this);
 
-    final webViewParams = buildWebViewParams();
+    final webViewParams = buildWebViewParams(credentialless: credentialless);
 
     final navigationDelegate = NavigationDelegate(
       onWebResourceError: (error) {
@@ -84,8 +85,13 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     bool autoPlay = false,
     double? startSeconds,
     double? endSeconds,
+    bool credentialless = false,
   }) {
-    final controller = YoutubePlayerController(params: params, key: videoId);
+    final controller = YoutubePlayerController(
+      params: params,
+      key: videoId,
+      credentialless: credentialless,
+    );
 
     if (autoPlay) {
       controller.loadVideoById(
@@ -109,6 +115,13 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
 
   /// Defines player parameters for the youtube player.
   final YoutubePlayerParams params;
+
+  /// Whether to use a credentialless iframe on web.
+  ///
+  /// When `true`, the iframe loads without cookies or storage access, which
+  /// allows playback on pages with `Cross-Origin-Embedder-Policy` set.
+  /// Has no effect on non-web platforms.
+  final bool credentialless;
 
   /// The [WebViewController] that drives the player
   late final WebViewController webViewController;

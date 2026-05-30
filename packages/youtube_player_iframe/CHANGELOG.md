@@ -2,6 +2,7 @@
 ## 6.0.1
 **May 31, 2026**
 
+- Adds `credentialless` to `YoutubePlayerController` and `YoutubePlayerController.fromVideoId`. On web, enables credentialless iframe mode for pages with `Cross-Origin-Embedder-Policy` set.
 - Adds `videoStateUpdateInterval` to `YoutubePlayerParams`. Controls how often (in milliseconds) the player polls for current time and loaded fraction while playing. Defaults to `100` (10 Hz), preserving existing behaviour.
 - Improves fullscreen-on-rotate transitions. The overlay now animates smoothly when the device rotates into and out of landscape.
 - Fixes fullscreen button not appearing on Web.

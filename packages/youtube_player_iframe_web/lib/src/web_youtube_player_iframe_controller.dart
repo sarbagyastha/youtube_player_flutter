@@ -24,6 +24,7 @@ class WebYoutubePlayerIframeControllerCreationParams
   /// Creates a new [WebYoutubePlayerIframeControllerCreationParams] instance.
   WebYoutubePlayerIframeControllerCreationParams({
     this.httpRequestFactory = const HttpRequestFactory(),
+    this.credentialless = false,
   }) : super();
 
   /// Creates a [WebYoutubePlayerIframeControllerCreationParams] instance based on [PlatformWebViewControllerCreationParams].
@@ -32,18 +33,33 @@ class WebYoutubePlayerIframeControllerCreationParams
     // ignore: avoid_unused_constructor_parameters
     PlatformWebViewControllerCreationParams params, {
     HttpRequestFactory httpRequestFactory = const HttpRequestFactory(),
-  }) : this(httpRequestFactory: httpRequestFactory);
+    bool credentialless = false,
+  }) : this(
+         httpRequestFactory: httpRequestFactory,
+         credentialless: credentialless,
+       );
 
   /// Handles creating and sending URL requests.
   final HttpRequestFactory httpRequestFactory;
+
+  /// Whether to use a credentialless iframe.
+  ///
+  /// When `true`, the iframe is loaded without cookies, storage, or access to
+  /// the parent frame, which allows videos to play on pages with
+  /// `Cross-Origin-Embedder-Policy` set.
+  ///
+  /// See also:
+  /// - [MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/Security/IFrame_credentialless)
+  /// - [Chrome Developers](https://developer.chrome.com/blog/anonymous-iframe-origin-trial)
+  final bool credentialless;
 
   static int _nextIFrameId = 0;
 
   /// The underlying element used as the WebView.
   @visibleForTesting
-  final YoutubeIframeElement ytiFrame = YoutubeIframeElement(
+  late final YoutubeIframeElement ytiFrame = YoutubeIframeElement(
     id: _nextIFrameId++,
-  )..credentialless = true;
+  )..credentialless = credentialless;
 }
 
 /// An implementation of [PlatformWebViewController] using Flutter for Web API.
