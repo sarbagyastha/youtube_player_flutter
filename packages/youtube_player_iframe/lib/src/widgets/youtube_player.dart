@@ -96,6 +96,13 @@ class _YoutubePlayerState extends State<YoutubePlayer>
   Timer? _transitionTimer;
   int _lastPlayingMs = 0;
 
+  // Hot restart (debug only): the Dart isolate restarts without calling
+  // dispose(), leaving old platform views alive on the native side.  The new
+  // run assigns the same IDs (starting from 0), causing a recreating_view
+  // exception.  Deferring WebViewWidget creation by one extra frame gives the
+  // engine time to finish cleaning up stale views before new ones are created.
+  bool _webViewReady = !kDebugMode;
+
   @override
   void initState() {
     super.initState();
@@ -105,11 +112,27 @@ class _YoutubePlayerState extends State<YoutubePlayer>
     if (isMobile) {
       WidgetsBinding.instance.addObserver(this);
       _valueSub = _controller.stream.listen(_onValueChanged);
-      SchedulerBinding.instance.addPostFrameCallback((_) {
-        _updatePlayerRect();
-        _overlayController.show();
-      });
     }
+
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (kDebugMode) {
+        // Second post-frame callback: one extra frame of delay so the engine
+        // can process platform-view disposal from the previous run.
+        SchedulerBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          setState(() => _webViewReady = true);
+          if (isMobile) {
+            _updatePlayerRect();
+            _overlayController.show();
+          }
+        });
+      } else {
+        if (isMobile) {
+          _updatePlayerRect();
+          _overlayController.show();
+        }
+      }
+    });
   }
 
   void _onValueChanged(YoutubePlayerValue value) {
@@ -197,10 +220,12 @@ class _YoutubePlayerState extends State<YoutubePlayer>
     if (!isMobile) {
       return AspectRatio(
         aspectRatio: widget.aspectRatio,
-        child: WebViewWidget(
-          controller: _controller.webViewController,
-          gestureRecognizers: widget.gestureRecognizers,
-        ),
+        child: _webViewReady
+            ? WebViewWidget(
+                controller: _controller.webViewController,
+                gestureRecognizers: widget.gestureRecognizers,
+              )
+            : const SizedBox.expand(),
       );
     }
 
