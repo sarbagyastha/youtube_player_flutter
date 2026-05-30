@@ -4,12 +4,10 @@ import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 import '../../controller/overlay_controller_scope.dart';
 import '../../theme/youtube_player_theme.dart';
 
-/// A button that opens a speed picker or settings sheet.
+/// A button that opens a playback speed picker.
 ///
-/// When [useIcon] is true, renders as a settings gear icon that opens a
-/// YouTube-style settings sheet (Quality, Playback speed, Captions, etc.).
-/// When false, renders as a text chip showing the current rate that opens the
-/// speed picker directly.
+/// When [useIcon] is true, renders as a speed icon button.
+/// When false, renders as a text chip showing the current rate.
 class SpeedControl extends StatelessWidget {
   const SpeedControl({
     super.key,
@@ -20,21 +18,22 @@ class SpeedControl extends StatelessWidget {
   final YoutubePlayerController controller;
   final bool useIcon;
 
-  String _speedLabel(double rate) {
-    if (rate == 1.0) return 'Normal';
-    return rate == rate.truncateToDouble() ? '${rate.toInt()}×' : '$rate×';
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = YoutubePlayerThemeResolver(context);
 
     if (useIcon) {
-      return IconButton(
-        icon: Icon(Icons.settings_rounded, color: theme.controlsColor),
-        onPressed: () {
-          OverlayControllerScope.of(context).cancelTimer();
-          _showSettingsSheet(context);
+      return YoutubeValueBuilder(
+        controller: controller,
+        buildWhen: (o, n) => o.playbackRate != n.playbackRate,
+        builder: (context, value) {
+          return IconButton(
+            icon: Icon(Icons.speed_rounded, color: theme.controlsColor),
+            onPressed: () {
+              OverlayControllerScope.of(context).cancelTimer();
+              _showSpeedSheet(context, value.playbackRate);
+            },
+          );
         },
       );
     }
@@ -64,46 +63,6 @@ class SpeedControl extends StatelessWidget {
     );
   }
 
-  void _showSettingsSheet(BuildContext context) {
-    final overlayCtrl = OverlayControllerScope.of(context);
-    showModalBottomSheet<void>(
-      context: context,
-      builder: (sheetContext) {
-        final rate = controller.value.playbackRate;
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _SettingsTile(
-                icon: Icons.tune_rounded,
-                title: 'Quality',
-                value: 'Auto',
-                onTap: () => Navigator.of(sheetContext).pop(),
-              ),
-              _SettingsTile(
-                icon: Icons.speed_rounded,
-                title: 'Playback speed',
-                value: _speedLabel(rate),
-                onTap: () {
-                  Navigator.of(sheetContext).pop();
-                  overlayCtrl.cancelTimer();
-                  _showSpeedSheet(context, rate);
-                },
-              ),
-              _SettingsTile(
-                icon: Icons.closed_caption_rounded,
-                title: 'Captions',
-                value: 'Off',
-                onTap: () => Navigator.of(sheetContext).pop(),
-              ),
-              const SizedBox(height: 8),
-            ],
-          ),
-        );
-      },
-    ).whenComplete(overlayCtrl.resetTimer);
-  }
-
   void _showSpeedSheet(BuildContext context, double currentRate) {
     final overlayCtrl = OverlayControllerScope.of(context);
     showModalBottomSheet<void>(
@@ -113,48 +72,6 @@ class SpeedControl extends StatelessWidget {
         initialRate: currentRate,
       ),
     ).whenComplete(overlayCtrl.resetTimer);
-  }
-}
-
-class _SettingsTile extends StatelessWidget {
-  const _SettingsTile({
-    required this.icon,
-    required this.title,
-    this.value,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String title;
-  final String? value;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    Widget? trailing;
-    if (value != null) {
-      trailing = Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            value!,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
-          ),
-          const SizedBox(width: 4),
-          Icon(Icons.chevron_right_rounded, color: colorScheme.onSurfaceVariant),
-        ],
-      );
-    }
-
-    return ListTile(
-      leading: Icon(icon),
-      title: Text(title),
-      trailing: trailing,
-      onTap: onTap,
-    );
   }
 }
 
