@@ -5,7 +5,7 @@
 // 'flutter create' template.
 
 // The application's name. By default this is also the title of the Flutter window.
-PRODUCT_NAME = ypf_example
+PRODUCT_NAME = YP Flutter
 
 // The application's bundle identifier
 PRODUCT_BUNDLE_IDENTIFIER = np.com.sarbagyastha.ypfExample

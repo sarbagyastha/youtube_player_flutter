@@ -19,3 +19,13 @@ dev_dependencies:
 melos:
   name: youtube_player
   repository: https://github.com/sarbagyastha/youtube_player_flutter
+  categories:
+    examples:
+      - packages/youtube_player_flutter/example
+      - packages/youtube_player_iframe/example
+  scripts:
+    icon:
+      exec: dart run flutter_launcher_icons
+      description: Generate icons for all platforms
+      packageFilters:
+        category: examples
