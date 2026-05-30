@@ -127,6 +127,7 @@ class _SpeedPickerSheetState extends State<_SpeedPickerSheet> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
     return SafeArea(
       child: Padding(
@@ -136,7 +137,7 @@ class _SpeedPickerSheetState extends State<_SpeedPickerSheet> {
           children: [
             Text(
               _rateLabel,
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+              style: textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
             ),
@@ -202,8 +203,8 @@ class _SpeedPickerSheetState extends State<_SpeedPickerSheet> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        speed == 1.0 ? 'Normal' : 'Normal',
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        speed == 1.0 ? 'Normal' : '',
+                        style: textTheme.labelSmall?.copyWith(
                               color: speed == 1.0
                                   ? (selected
                                       ? colorScheme.primary

@@ -251,5 +251,7 @@ class _TrackPainter extends CustomPainter {
   bool shouldRepaint(_TrackPainter old) =>
       old.played != played ||
       old.buffered != buffered ||
-      old.activeColor != activeColor;
+      old.activeColor != activeColor ||
+      old.bufferedColor != bufferedColor ||
+      old.backgroundColor != backgroundColor;
 }

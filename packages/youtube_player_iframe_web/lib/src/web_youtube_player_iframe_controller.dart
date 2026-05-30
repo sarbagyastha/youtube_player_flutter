@@ -62,6 +62,7 @@ class WebYoutubePlayerIframeController extends PlatformWebViewController {
   }
 
   JavaScriptChannelParams? _javaScriptChannelParams;
+  StreamSubscription<MessageEvent>? _messageSubscription;
 
   @override
   Future<void> loadHtmlString(String html, {String? baseUrl}) {
@@ -204,7 +205,8 @@ class YoutubePlayerIframeWeb extends PlatformWebViewWidget {
         final channelParams = _controller._javaScriptChannelParams;
 
         if (channelParams != null) {
-          window.onMessage.listen(
+          _controller._messageSubscription?.cancel();
+          _controller._messageSubscription = window.onMessage.listen(
             (event) {
               channelParams.onMessageReceived(
                 JavaScriptMessage(message: event.data.dartify() as String),

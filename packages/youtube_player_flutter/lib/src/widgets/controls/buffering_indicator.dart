@@ -19,7 +19,7 @@ class BufferingIndicator extends StatelessWidget {
           child: AnimatedOpacity(
             duration: const Duration(milliseconds: 200),
             opacity: isBuffering ? 1.0 : 0.0,
-            child:  Center(child: CircularProgressIndicator(
+            child: const Center(child: CircularProgressIndicator(
               strokeWidth: 1,
               color: Colors.white,
             )),

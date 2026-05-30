@@ -82,9 +82,9 @@ class _TimePill extends StatelessWidget {
         final duration = controller.metadata.duration;
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             color: Colors.black54,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.all(Radius.circular(20)),
           ),
           child: Text(
             '${position.toHhMmSs()} / ${duration.toHhMmSs()}',

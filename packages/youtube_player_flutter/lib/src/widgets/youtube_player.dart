@@ -356,9 +356,9 @@ class _SeekIndicator extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Colors.black54,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.all(Radius.circular(8)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
