@@ -12,7 +12,7 @@ class App extends StatefulWidget {
 }
 
 class _AppState extends State<App> {
-  Color _seedColor = const Color(0xFF4CAF50);
+  Color _seedColor = const Color(0xFF2196F3);
 
   @override
   Widget build(BuildContext context) {
@@ -20,10 +20,8 @@ class _AppState extends State<App> {
       title: 'YouTube Player Flutter Demo',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: _seedColor,
-          brightness: Brightness.dark,
-        ),
+        colorSchemeSeed: _seedColor,
+        brightness: Brightness.dark,
       ),
       home: PlayerPage(
         seedColor: _seedColor,

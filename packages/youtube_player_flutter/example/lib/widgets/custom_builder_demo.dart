@@ -15,8 +15,9 @@ class _CustomBuilderDemoState extends State<CustomBuilderDemo> {
   void initState() {
     super.initState();
     _controller = YoutubePlayerController.fromVideoId(
-      videoId: 'j4lDDQTKN8s',
+      videoId: 'tcodrIK2P_I',
       autoPlay: false,
+      startSeconds: 80,
     );
   }
 
@@ -68,7 +69,8 @@ class _CustomControlsState extends State<_CustomControls> {
 
     // Respect a custom controlsBackgroundGradient if set; otherwise use the
     // standard dark-edges overlay that works on any video content.
-    final gradient = ext?.controlsBackgroundGradient ??
+    final gradient =
+        ext?.controlsBackgroundGradient ??
         LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
@@ -85,32 +87,41 @@ class _CustomControlsState extends State<_CustomControls> {
       decoration: BoxDecoration(gradient: gradient),
       child: Stack(
         children: [
-          Center(child: _PlayPauseCenter(controller: widget.controller, theme: theme)),
+          Center(
+            child: _PlayPauseCenter(
+              controller: widget.controller,
+              theme: theme,
+            ),
+          ),
           Positioned(
-            top: 0, left: 0, right: 0,
+            top: 0,
+            left: 0,
+            right: 0,
             child: _TitleBar(controller: widget.controller, theme: theme),
           ),
           Positioned(
-            bottom: 0, left: 0, right: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
             child: _BottomControls(
-            controller: widget.controller,
-            theme: theme,
-            isMuted: _isMuted,
-            isSeeking: _isSeeking,
-            seekValue: _seekValue,
-            fmt: _fmt,
-            onMuteToggle: () {
-              if (_isMuted) {
-                widget.controller.unMute();
-              } else {
-                widget.controller.mute();
-              }
-              setState(() => _isMuted = !_isMuted);
-            },
-            onSeekStart: () => setState(() => _isSeeking = true),
-            onSeekChanged: (v) => setState(() => _seekValue = v),
-            onSeekEnd: () => setState(() => _isSeeking = false),
-          ),
+              controller: widget.controller,
+              theme: theme,
+              isMuted: _isMuted,
+              isSeeking: _isSeeking,
+              seekValue: _seekValue,
+              fmt: _fmt,
+              onMuteToggle: () {
+                if (_isMuted) {
+                  widget.controller.unMute();
+                } else {
+                  widget.controller.mute();
+                }
+                setState(() => _isMuted = !_isMuted);
+              },
+              onSeekStart: () => setState(() => _isSeeking = true),
+              onSeekChanged: (v) => setState(() => _seekValue = v),
+              onSeekEnd: () => setState(() => _isSeeking = false),
+            ),
           ),
         ],
       ),
@@ -222,8 +233,9 @@ class _BottomControls extends StatelessWidget {
         final state = snapshot.data ?? const YoutubeVideoState();
         final duration = controller.metadata.duration;
         final totalSeconds = duration.inSeconds.toDouble();
-        final position =
-            isSeeking ? Duration(seconds: seekValue.toInt()) : state.position;
+        final position = isSeeking
+            ? Duration(seconds: seekValue.toInt())
+            : state.position;
         final sliderValue = totalSeconds > 0
             ? position.inSeconds.toDouble().clamp(0.0, totalSeconds)
             : 0.0;
@@ -247,7 +259,9 @@ class _BottomControls extends StatelessWidget {
                 thumbColor: theme.progressBarActiveColor,
                 inactiveTrackColor: theme.progressBarBackgroundColor,
                 secondaryActiveTrackColor: theme.progressBarBufferedColor,
-                overlayColor: theme.progressBarActiveColor.withValues(alpha: 0.2),
+                overlayColor: theme.progressBarActiveColor.withValues(
+                  alpha: 0.2,
+                ),
                 trackHeight: 2,
                 thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 5),
               ),
@@ -271,7 +285,9 @@ class _BottomControls extends StatelessWidget {
                 children: [
                   IconButton(
                     icon: Icon(
-                      isMuted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
+                      isMuted
+                          ? Icons.volume_off_rounded
+                          : Icons.volume_up_rounded,
                       color: theme.progressBarActiveColor,
                       size: 22,
                     ),
@@ -280,7 +296,8 @@ class _BottomControls extends StatelessWidget {
                   const Spacer(),
                   YoutubeValueBuilder(
                     controller: controller,
-                    buildWhen: (o, n) => o.fullScreenOption != n.fullScreenOption,
+                    buildWhen: (o, n) =>
+                        o.fullScreenOption != n.fullScreenOption,
                     builder: (context, value) => IconButton(
                       icon: Icon(
                         value.fullScreenOption.enabled
