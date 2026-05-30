@@ -8,9 +8,16 @@ import '../../theme/youtube_player_theme.dart';
 
 /// Seek bar with elapsed/remaining time labels, driven by [YoutubeVideoState].
 class ProgressBar extends StatefulWidget {
-  const ProgressBar({super.key, required this.controller});
+  const ProgressBar({
+    super.key,
+    required this.controller,
+    this.leftPadding = 0,
+    this.rightPadding = 0,
+  });
 
   final YoutubePlayerController controller;
+  final double leftPadding;
+  final double rightPadding;
 
   @override
   State<ProgressBar> createState() => _ProgressBarState();
@@ -76,7 +83,12 @@ class _ProgressBarState extends State<ProgressBar> {
       ),
       child: Slider(
         value: sliderValue,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: EdgeInsets.fromLTRB(
+          widget.leftPadding > 0 ? widget.leftPadding : 16,
+          0,
+          widget.rightPadding > 0 ? widget.rightPadding : 16,
+          0,
+        ),
         secondaryTrackValue: totalSeconds > 0 ? buffered : 0,
         max: totalSeconds > 0 ? totalSeconds : 1,
         onChangeStart: (value) {

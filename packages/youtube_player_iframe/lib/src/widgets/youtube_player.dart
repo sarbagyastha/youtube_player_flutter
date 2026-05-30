@@ -471,6 +471,18 @@ class _PlayerOverlayContent extends StatelessWidget {
           );
         }
 
+        // Controls always cover the full screen in fullscreen so they can
+        // render over letterbox/pillarbox areas, not just the video bounds.
+        // Positioned.fill is used instead of an explicit size so the controls
+        // always match the Stack (which already fills the screen via
+        // StackFit.expand), avoiding any MediaQuery size mismatch.
+        Widget positionedControls(Widget child) {
+          if (isFullscreen) {
+            return Positioned.fill(child: child);
+          }
+          return positionedLayer(child);
+        }
+
         return ValueListenableBuilder<int>(
           valueListenable: fullscreenCount,
           builder: (context, count, _) {
@@ -494,7 +506,7 @@ class _PlayerOverlayContent extends StatelessWidget {
                   ),
                 )),
                 if (controlsBuilder != null)
-                  positionedLayer(maybeHide(
+                  positionedControls(maybeHide(
                     Builder(builder: (ctx) => controlsBuilder!(ctx, isFullscreen)),
                   )),
                 positionedLayer(maybeHide(

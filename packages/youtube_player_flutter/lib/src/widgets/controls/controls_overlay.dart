@@ -17,34 +17,22 @@ class ControlsOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return YoutubeValueBuilder(
-      controller: controller,
-      buildWhen: (o, n) => o.fullScreenOption != n.fullScreenOption,
-      builder: (context, value) {
-        final screenSize = MediaQuery.sizeOf(context);
-        final isLandscapeFullscreen =
-            value.fullScreenOption.enabled &&
-            screenSize.width > screenSize.height;
-        return SafeArea(
-          top: false,
-          bottom: isLandscapeFullscreen,
-          left: false,
-          right: false,
-          child: Stack(
-            children: [
-              Column(
-                children: [
-                  TitleBar(controller: controller),
-                  const Spacer(),
-                  BottomBar(controller: controller),
-                ],
-              ),
-              Center(child: PlaybackControls(controller: controller)),
-              Center(child: BufferingIndicator(controller: controller)),
-            ],
-          ),
-        );
-      },
+    // Stack fills the full screen (StackFit.expand). Safe-area padding for the
+    // home indicator in landscape fullscreen is handled inside BottomBar so the
+    // gradient can extend all the way to the screen edge.
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Column(
+          children: [
+            TitleBar(controller: controller),
+            const Spacer(),
+            BottomBar(controller: controller),
+          ],
+        ),
+        Center(child: PlaybackControls(controller: controller)),
+        Center(child: BufferingIndicator(controller: controller)),
+      ],
     );
   }
 }

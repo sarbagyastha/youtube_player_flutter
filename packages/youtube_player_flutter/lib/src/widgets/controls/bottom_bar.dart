@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
@@ -16,25 +18,56 @@ class BottomBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = YoutubePlayerThemeResolver(context);
 
-    return Container(
-      decoration: BoxDecoration(gradient: theme.bottomGradient),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 8, 4, 0),
-            child: Row(
-              children: [
-                _TimePill(controller: controller, theme: theme),
-                const Spacer(),
-                FullscreenButton(controller: controller),
-              ],
-            ),
+    return YoutubeValueBuilder(
+      controller: controller,
+      buildWhen: (o, n) => o.fullScreenOption != n.fullScreenOption,
+      builder: (context, value) {
+        // In fullscreen, use safe-area insets as a floor for horizontal padding
+        // (max rather than add) so controls clear the notch without doubling
+        // the existing spacing. Bottom inset is added for the home indicator.
+        final EdgeInsets insets;
+        if (value.fullScreenOption.enabled) {
+          final p = MediaQuery.paddingOf(context);
+          insets = EdgeInsets.fromLTRB(
+            math.max(12.0, p.left),
+            0,
+            math.max(4.0, p.right),
+            p.bottom,
+          );
+        } else {
+          insets = EdgeInsets.zero;
+        }
+
+        return Container(
+          decoration: BoxDecoration(gradient: theme.bottomGradient),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: EdgeInsets.fromLTRB(
+                  insets.left,
+                  8,
+                  insets.right,
+                  0,
+                ),
+                child: Row(
+                  children: [
+                    _TimePill(controller: controller, theme: theme),
+                    const Spacer(),
+                    FullscreenButton(controller: controller),
+                  ],
+                ),
+              ),
+              ProgressBar(
+                controller: controller,
+                leftPadding: insets.left,
+                rightPadding: insets.right,
+              ),
+              SizedBox(height: 8 + insets.bottom),
+            ],
           ),
-          ProgressBar(controller: controller),
-          const SizedBox(height: 8),
-        ],
-      ),
+        );
+      },
     );
   }
 }
