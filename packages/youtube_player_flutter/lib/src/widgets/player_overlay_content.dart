@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -201,7 +203,7 @@ class PlayerOverlayContent extends StatelessWidget {
   }
 }
 
-class _DefaultControlsLayer extends StatelessWidget {
+class _DefaultControlsLayer extends StatefulWidget {
   const _DefaultControlsLayer({
     required this.controller,
     required this.overlayController,
@@ -211,20 +213,107 @@ class _DefaultControlsLayer extends StatelessWidget {
   final OverlayController overlayController;
 
   @override
+  State<_DefaultControlsLayer> createState() => _DefaultControlsLayerState();
+}
+
+class _DefaultControlsLayerState extends State<_DefaultControlsLayer> {
+  late StreamSubscription<YoutubeVideoState> _subscription;
+  YoutubeVideoState _videoState = const YoutubeVideoState();
+  bool _isSeeking = false;
+  double _seekDeltaSeconds = 0;
+  double _dragStartX = 0;
+
+  // Full player-width drag = 120 s of seek (VLC-like fixed physical feel).
+  static const double _seekWidthRatio = 120.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _subscription = widget.controller.videoStateStream.listen((state) {
+      if (mounted && !_isSeeking) setState(() => _videoState = state);
+    });
+  }
+
+  @override
+  void dispose() {
+    _subscription.cancel();
+    super.dispose();
+  }
+
+  void _onHorizontalDragStart(DragStartDetails details) {
+    if (widget.controller.metadata.duration == Duration.zero) return;
+    _dragStartX = details.localPosition.dx;
+    widget.overlayController.cancelTimer();
+    setState(() {
+      _isSeeking = true;
+      _seekDeltaSeconds = 0;
+    });
+  }
+
+  void _onHorizontalDragUpdate(DragUpdateDetails details) {
+    if (!_isSeeking) return;
+    final playerWidth = context.size?.width ?? 1;
+    final dx = details.localPosition.dx - _dragStartX;
+    setState(() => _seekDeltaSeconds = (dx / playerWidth) * _seekWidthRatio);
+  }
+
+  void _onHorizontalDragEnd(DragEndDetails _) {
+    if (!_isSeeking) return;
+    final duration = widget.controller.metadata.duration.inSeconds.toDouble();
+    final currentPos = _videoState.position.inSeconds.toDouble();
+    final newPos = (currentPos + _seekDeltaSeconds).clamp(0.0, duration);
+    widget.controller.seekTo(seconds: newPos, allowSeekAhead: true);
+    widget.overlayController.resetTimer();
+    setState(() {
+      _isSeeking = false;
+      _seekDeltaSeconds = 0;
+    });
+  }
+
+  void _onHorizontalDragCancel() {
+    if (!_isSeeking) return;
+    widget.overlayController.resetTimer();
+    setState(() {
+      _isSeeking = false;
+      _seekDeltaSeconds = 0;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return OverlayControllerScope(
-      overlayController: overlayController,
+      overlayController: widget.overlayController,
       child: GestureDetector(
         behavior: HitTestBehavior.translucent,
-        onTap: overlayController.toggle,
-        child: ValueListenableBuilder<bool>(
-          valueListenable: overlayController.isVisible,
-          builder: (context, visible, child) => AnimatedOpacity(
-            duration: const Duration(milliseconds: 300),
-            opacity: visible ? 1.0 : 0.0,
-            child: child,
-          ),
-          child: ControlsOverlay(controller: controller),
+        onTap: widget.overlayController.toggle,
+        onHorizontalDragStart: _onHorizontalDragStart,
+        onHorizontalDragUpdate: _onHorizontalDragUpdate,
+        onHorizontalDragEnd: _onHorizontalDragEnd,
+        onHorizontalDragCancel: _onHorizontalDragCancel,
+        child: Stack(
+          children: [
+            ValueListenableBuilder<bool>(
+              valueListenable: widget.overlayController.isVisible,
+              builder: (context, visible, child) => AnimatedOpacity(
+                duration: const Duration(milliseconds: 300),
+                opacity: visible ? 1.0 : 0.0,
+                child: child,
+              ),
+              child: ControlsOverlay(controller: widget.controller),
+            ),
+            if (_isSeeking)
+              Center(
+                child: _SeekIndicator(
+                  deltaSeconds: _seekDeltaSeconds,
+                  targetSeconds: (_videoState.position.inSeconds.toDouble() +
+                          _seekDeltaSeconds)
+                      .clamp(
+                    0.0,
+                    widget.controller.metadata.duration.inSeconds.toDouble(),
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );
@@ -277,6 +366,73 @@ class _LoadingOverlay extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class _SeekIndicator extends StatelessWidget {
+  const _SeekIndicator({
+    required this.deltaSeconds,
+    required this.targetSeconds,
+  });
+
+  final double deltaSeconds;
+  final double targetSeconds;
+
+  String _formatDelta() {
+    final abs = deltaSeconds.abs().round();
+    final sign = deltaSeconds >= 0 ? '+' : '-';
+    final m = abs ~/ 60;
+    final s = abs % 60;
+    return m > 0 ? '$sign$m:${s.toString().padLeft(2, '0')}' : '$sign${s}s';
+  }
+
+  String _formatTarget() {
+    final total = targetSeconds.round();
+    final h = total ~/ 3600;
+    final m = (total % 3600) ~/ 60;
+    final s = total % 60;
+    if (h > 0) {
+      return '$h:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+    }
+    return '$m:${s.toString().padLeft(2, '0')}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.black54,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            deltaSeconds >= 0 ? Icons.fast_forward : Icons.fast_rewind,
+            color: Colors.white,
+            size: 20,
+          ),
+          const SizedBox(width: 8),
+          Text(
+            _formatDelta(),
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            '(${_formatTarget()})',
+            style: const TextStyle(
+              color: Colors.white70,
+              fontSize: 14,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
