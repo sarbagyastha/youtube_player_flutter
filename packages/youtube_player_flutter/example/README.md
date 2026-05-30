@@ -1,35 +1,19 @@
-# Youtube Player for Flutter Example
+# youtube_player_flutter – Example
 
-[Detailed Example](https://github.com/sarbagyastha/youtube_player_flutter/blob/master/example/lib/main.dart)
+Demonstrates the `youtube_player_flutter` package with a ready-to-run Flutter app.
 
-```dart
-YoutubePlayerController _controller;
+## What's inside
 
-@override
-void initState(){
-    _controller = YoutubePlayerController(
-        initialVideoId: 'iLnmTe5Q2Qw',
-        flags: YoutubePlayerFlags(
-            mute: false,
-            autoPlay: true,
-        ),
-    );
-    super.initState();
-}
+- **Playlist carousel** – swipeable thumbnail strip that loads videos into the player on tap.
+- **Built-in controls** – progress bar, play/pause, seek, captions, and fullscreen handled automatically by `YoutubePlayer`.
+- **Custom controls builder** – a second player instance showing how to replace the default UI with your own overlay (play/pause button, seek slider, mute, fullscreen) via the `builder` parameter.
+- **Dynamic theming** – a color-picker sheet that swaps the app's Material seed color at runtime.
 
-@override
-Widget build(BuildContext context){
-    return YoutubePlayer(
-       controller: _controller,
-       showVideoProgressIndicator: true,
-       videoProgressIndicatorColor: Colors.amber,
-       progressColors: ProgressColors(
-          playedColor: Colors.amber,
-          handleColor: Colors.amberAccent,
-       ),
-       onReady: () {
-          print('Player is ready.');
-       },
-    );
-}
+## Running the app
+
+```sh
+cd packages/youtube_player_flutter/example
+flutter run
 ```
+
+Supported platforms: **Android**, **iOS**, **macOS**, **Web**.

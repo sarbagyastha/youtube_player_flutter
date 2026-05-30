@@ -1,16 +1,22 @@
-# youtube_player_iframe_example
+# youtube_player_iframe – Example
 
-Demonstrates how to use the youtube_player_iframe plugin.
+Demonstrates the `youtube_player_iframe` package with a full interactive Flutter app. A live version is available at [youtube.sarbagyastha.com.np](https://youtube.sarbagyastha.com.np).
 
-## Getting Started
+## What's inside
 
-This project is a starting point for a Flutter application.
+- **Player view** – `YoutubePlayer` with a seek slider (`YoutubeValueBuilder` + `videoStateStream`) and fullscreen support.
+- **Info panel** – displays video title, channel, duration, playback quality, and player state using `YoutubeValueBuilder`.
+- **Playback tab** – runtime controls: play, pause, stop, seek, set playback rate, mute/unmute.
+- **Source tab** – load a video by ID or URL, or switch between playlist entries.
+- **Video list page** – browsable playlist using `YoutubeThumbnail` for lazy-loaded thumbnails.
+- **Responsive layout** – side-by-side player + controls panel on wide screens; stacked list on narrow screens.
+- **Fullscreen listener** – `setFullScreenListener` callback logged to the console.
 
-A few resources to get you started if this is your first Flutter project:
+## Running the app
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+```sh
+cd packages/youtube_player_iframe/example
+flutter run
+```
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Supported platforms: **Android**, **iOS**, **macOS**, **Web**.

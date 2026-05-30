@@ -1,23 +1,23 @@
-name: youtube_player_flutter_example
-description: Demonstrates how to use the youtube_player_flutter plugin.
-version: 7.0.0
-publish_to: 'none'
+name: ypf_example
+description: This is an example of using youtube_player_flutter package.
+publish_to: none
+version: 1.0.0+1
+
+resolution: workspace
 
 environment:
-  sdk: ">=3.0.0 <4.0.0"
+  sdk: '>=3.10.0 <4.0.0'
 
 dependencies:
   flutter:
     sdk: flutter
-  
-  youtube_player_flutter:
-    path: ../
+  youtube_player_flutter: 
 
 dev_dependencies:
+  flutter_launcher_icons: ^0.14.1
+  flutter_lints: ^6.0.0
   flutter_test:
     sdk: flutter
 
 flutter:
   uses-material-design: true
-
-  

@@ -1,30 +1,13 @@
-// Copyright 2020 Sarbagya Dhaubanjar. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
+// Copyright 2021 Sarbagya Dhaubanjar. All rights reserved.
+// Use of this source code is governed by a BSD-3-Clause license that can be
 // found in the LICENSE file.
 
-/// Formats duration in milliseconds to xx:xx:xx format.
-String durationFormatter(int milliSeconds) {
-  var seconds = milliSeconds ~/ 1000;
-  final hours = seconds ~/ 3600;
-  seconds = seconds % 3600;
-  var minutes = seconds ~/ 60;
-  seconds = seconds % 60;
-  final hoursString = hours >= 10
-      ? '$hours'
-      : hours == 0
-          ? '00'
-          : '0$hours';
-  final minutesString = minutes >= 10
-      ? '$minutes'
-      : minutes == 0
-          ? '00'
-          : '0$minutes';
-  final secondsString = seconds >= 10
-      ? '$seconds'
-      : seconds == 0
-          ? '00'
-          : '0$seconds';
-  final formattedTime =
-      '${hoursString == '00' ? '' : '$hoursString:'}$minutesString:$secondsString';
-  return formattedTime;
+extension DurationFormatter on Duration {
+  /// Formats as `MM:SS` or `H:MM:SS` when >= 1 hour.
+  String toHhMmSs() {
+    final h = inHours;
+    final m = inMinutes.remainder(60).toString().padLeft(2, '0');
+    final s = inSeconds.remainder(60).toString().padLeft(2, '0');
+    return h > 0 ? '$h:$m:$s' : '$m:$s';
+  }
 }

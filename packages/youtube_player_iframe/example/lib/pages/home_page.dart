@@ -1,5 +1,5 @@
 // Copyright 2024 Sarbagya Dhaubanjar. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
+// Use of this source code is governed by a BSD-3-Clause license that can be
 // found in the LICENSE file.
 
 import 'dart:developer';

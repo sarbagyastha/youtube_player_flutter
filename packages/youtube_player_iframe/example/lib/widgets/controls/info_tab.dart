@@ -1,3 +1,7 @@
+// Copyright 2021 Sarbagya Dhaubanjar. All rights reserved.
+// Use of this source code is governed by a BSD-3-Clause license that can be
+// found in the LICENSE file.
+
 import 'package:flutter/material.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 import 'package:youtube_player_iframe_example/widgets/shared/player_state_badge.dart';

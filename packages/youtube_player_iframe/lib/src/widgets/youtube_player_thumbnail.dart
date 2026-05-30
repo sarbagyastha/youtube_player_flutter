@@ -1,5 +1,5 @@
 // Copyright 2024 Sarbagya Dhaubanjar. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
+// Use of this source code is governed by a BSD-3-Clause license that can be
 // found in the LICENSE file.
 
 import 'dart:async';
@@ -32,8 +32,8 @@ class YoutubePlayerThumbnail extends StatefulWidget {
     super.key,
     required this.controller,
     this.aspectRatio = 16 / 9,
-    this.thumbnailQuality = ThumbnailQuality.high,
-    this.thumbnailFormat = ThumbnailFormat.webp,
+    this.thumbnailQuality = .high,
+    this.thumbnailFormat = .webp,
     this.gestureRecognizers = const <Factory<OneSequenceGestureRecognizer>>{},
     this.backgroundColor,
     this.enableFullScreenOnVerticalDrag = true,
@@ -138,6 +138,7 @@ class _YoutubePlayerThumbnailState extends State<YoutubePlayerThumbnail> {
                   quality: widget.thumbnailQuality,
                   format: widget.thumbnailFormat,
                 ),
+                webHtmlElementStrategy: .prefer,
                 fit: BoxFit.cover,
                 loadingBuilder: (_, child, progress) => progress == null
                     ? child

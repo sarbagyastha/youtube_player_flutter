@@ -1,22 +1,14 @@
 // Copyright 2020 Sarbagya Dhaubanjar. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
+// Use of this source code is governed by a BSD-3-Clause license that can be
 // found in the LICENSE file.
 
-/// Meta data for Youtube Video.
+/// Metadata for the currently loaded video. Fields are empty or zero until a video loads.
 class YoutubeMetaData {
-  /// Youtube video ID of the currently loaded video.
   final String videoId;
-
-  /// Video title of the currently loaded video.
   final String title;
-
-  /// Channel name or uploader of the currently loaded video.
   final String author;
-
-  /// Total duration of the currently loaded video.
   final Duration duration;
 
-  /// Creates [YoutubeMetaData] for Youtube Video.
   const YoutubeMetaData({
     this.videoId = '',
     this.title = '',

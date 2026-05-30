@@ -1,3 +1,7 @@
+// Copyright 2021 Sarbagya Dhaubanjar. All rights reserved.
+// Use of this source code is governed by a BSD-3-Clause license that can be
+// found in the LICENSE file.
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
@@ -144,16 +148,16 @@ class _SourceTabState extends State<SourceTab> {
 
   String? get _helperText {
     return switch (_playlistType) {
-      ListType.playlist => '"PLj0L3ZL0ijTdhFSueRKK-mLFAtDuvzdje"',
-      ListType.userUploads => '"pewdiepie", "tseries"',
+      .playlist => '"PLj0L3ZL0ijTdhFSueRKK-mLFAtDuvzdje"',
+      .userUploads => '"pewdiepie", "tseries"',
       _ => null,
     };
   }
 
   String get _hint {
     return switch (_playlistType) {
-      ListType.playlist => 'Enter playlist id',
-      ListType.userUploads => 'Enter channel name',
+      .playlist => 'Enter playlist id',
+      .userUploads => 'Enter channel name',
       _ => r'Enter youtube <video id> or <link>',
     };
   }
