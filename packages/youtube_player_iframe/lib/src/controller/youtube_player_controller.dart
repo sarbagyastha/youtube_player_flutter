@@ -292,8 +292,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
       'playerVars': params.toJson(),
       'platform': platform,
       'host': params.host,
-      'videoStateUpdateInterval':
-          params.videoStateUpdateInterval.toString(),
+      'videoStateUpdateInterval': params.videoStateUpdateInterval.toString(),
     };
 
     await webViewController.loadHtmlString(
@@ -444,9 +443,9 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     final rates = await _bridge.evalWithResult('getAvailablePlaybackRates()');
     if (rates.isEmpty) return [];
     try {
-      return List<num>.from(jsonDecode(rates))
-          .map((r) => r.toDouble())
-          .toList(growable: false);
+      return List<num>.from(
+        jsonDecode(rates),
+      ).map((r) => r.toDouble()).toList(growable: false);
     } catch (_) {
       return [];
     }
