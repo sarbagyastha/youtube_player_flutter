@@ -130,7 +130,7 @@ class YoutubePlayerEventHandler {
 
   /// This event is fired to indicate that the fullscreen button was clicked.
   void onFullscreenButtonPressed(Object data) {
-    if (!isMobile) return;
+    if (!isMobile && !kIsWeb) return;
     controller.toggleFullScreen();
   }
 

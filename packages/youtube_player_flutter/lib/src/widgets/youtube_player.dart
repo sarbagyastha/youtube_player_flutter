@@ -142,9 +142,10 @@ class _YoutubePlayerState extends State<YoutubePlayer>
 
     // On non-web platforms, hide YouTube's native controls so the custom
     // overlay is the only UI. On web, gesture events don't reach Flutter
-    // overlays through the iframe element, so keep native controls.
+    // overlays through the iframe element, so keep native controls and show
+    // the native fullscreen button.
     final initParams = kIsWeb
-        ? null
+        ? widget.controller.params.copyWith(showFullscreenButton: true)
         : widget.controller.params.copyWith(
             showControls: false,
             showFullscreenButton: false,
