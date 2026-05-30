@@ -4,14 +4,12 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:youtube_player_iframe/webview.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
+import 'package:youtube_player_iframe/youtube_player_iframe.dart' as yp_iframe;
 
 import '../controller/overlay_controller.dart';
 import '../controller/overlay_controller_scope.dart';
 import 'controls/controls_overlay.dart';
-import 'player_overlay_content.dart';
 import 'typedefs.dart';
 
 /// A YouTube player widget with Material 3 custom controls.
@@ -104,24 +102,9 @@ class YoutubePlayer extends StatefulWidget {
 }
 
 class _YoutubePlayerState extends State<YoutubePlayer>
-    with AutomaticKeepAliveClientMixin, WidgetsBindingObserver {
-  // Tracks how many YoutubePlayer instances are currently in fullscreen so
-  // other players can hide their overlay content and avoid surfacing on top.
-  static final _fullscreenCount = ValueNotifier<int>(0);
-
-  // Tracks which controller was most recently active (playing/buffering).
-  // Used to break the tie when multiple players are live during rotation:
-  // only the last-active player auto-enters fullscreen, preventing the
-  // first-registered player from stealing fullscreen from the playing one.
-  static YoutubePlayerController? _lastActiveController;
-
+    with AutomaticKeepAliveClientMixin {
   late final OverlayController _overlayCtrl;
-  final _overlayPortalCtrl = OverlayPortalController();
-  final _placeholderKey = GlobalKey();
-  final _layerLink = LayerLink();
-  Rect _playerRect = Rect.zero;
   StreamSubscription<YoutubePlayerValue>? _playerStateSub;
-  bool _wasFullscreen = false;
 
   bool get _isMobile => !kIsWeb && (Platform.isAndroid || Platform.isIOS);
 
@@ -129,91 +112,19 @@ class _YoutubePlayerState extends State<YoutubePlayer>
   void initState() {
     super.initState();
     _overlayCtrl = OverlayController(autoHideDuration: widget.autoHideDuration);
-    _initPlayer();
     _playerStateSub = widget.controller.stream.listen(_onPlayerStateChanged);
-
-    if (_isMobile) {
-      WidgetsBinding.instance.addObserver(this);
-      SchedulerBinding.instance.addPostFrameCallback((_) {
-        _updateBackgroundColor();
-        _updatePlayerRect();
-        _overlayPortalCtrl.show();
-      });
-    }
-  }
-
-  @override
-  void didUpdateWidget(YoutubePlayer oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.backgroundColor != oldWidget.backgroundColor) {
-      _updateBackgroundColor();
-    }
   }
 
   @override
   void dispose() {
     _playerStateSub?.cancel();
     _overlayCtrl.dispose();
-    if (_isMobile) WidgetsBinding.instance.removeObserver(this);
-    if (_wasFullscreen) {
-      _fullscreenCount.value =
-          (_fullscreenCount.value - 1).clamp(0, _fullscreenCount.value);
-    }
-    if (_lastActiveController == widget.controller) _lastActiveController = null;
     super.dispose();
   }
 
-  @override
-  void didChangeMetrics() {
-    // Two-phase: first let the layout settle and update playerRect, then
-    // toggle fullscreen. This ensures PlayerOverlayContent never sees
-    // isFullscreen=true with a stale playerRect from the previous orientation,
-    // which would cause the AnimatedPositioned to animate from the wrong origin.
-    SchedulerBinding.instance.addPostFrameCallback((_) {
-      _updatePlayerRect();
-      SchedulerBinding.instance.addPostFrameCallback((_) {
-        if (!mounted || !widget.autoFullScreen) return;
-        final view = WidgetsBinding.instance.platformDispatcher.views.first;
-        final size = view.physicalSize / view.devicePixelRatio;
-        final isLandscape = size.width > size.height;
-        final opt = widget.controller.value.fullScreenOption;
-        if (isLandscape && !opt.enabled) {
-          // Only enter fullscreen if this player is active AND was the most
-          // recently active player. All players receive didChangeMetrics; the
-          // isActive guard prevents paused players from entering, and the
-          // _lastActiveController guard prevents a player that was active
-          // earlier (but is now background) from stealing fullscreen from the
-          // player the user is currently watching.
-          final state = widget.controller.value.playerState;
-          final isActive = state == PlayerState.playing ||
-              state == PlayerState.buffering;
-          final isLastActive = _lastActiveController == null ||
-              _lastActiveController == widget.controller;
-          if (isActive && isLastActive) {
-            widget.controller.enterFullScreen(lock: false);
-          }
-        } else if (!isLandscape && opt.enabled && !opt.locked) {
-          widget.controller.exitFullScreen(lock: false);
-        }
-      });
-    });
-  }
-
   void _onPlayerStateChanged(YoutubePlayerValue value) {
-    final isNowFullscreen = value.fullScreenOption.enabled;
-    if (isNowFullscreen != _wasFullscreen) {
-      _wasFullscreen = isNowFullscreen;
-      if (isNowFullscreen) {
-        _fullscreenCount.value++;
-      } else {
-        _fullscreenCount.value =
-            (_fullscreenCount.value - 1).clamp(0, _fullscreenCount.value);
-      }
-    }
-
     switch (value.playerState) {
       case PlayerState.playing:
-        _lastActiveController = widget.controller;
         _overlayCtrl.resetTimer();
       case PlayerState.paused:
       case PlayerState.buffering:
@@ -225,175 +136,257 @@ class _YoutubePlayerState extends State<YoutubePlayer>
     }
   }
 
-  void _updatePlayerRect() {
-    final box =
-        _placeholderKey.currentContext?.findRenderObject() as RenderBox?;
-    if (box == null || !box.hasSize) return;
-    final offset = box.localToGlobal(Offset.zero);
-    final size = box.size;
-    // localToGlobal can return non-finite values when the render object is
-    // kept alive but outside the layout viewport. Ignore those frames.
-    if (!offset.dx.isFinite ||
-        !offset.dy.isFinite ||
-        !size.width.isFinite ||
-        !size.height.isFinite ||
-        size.isEmpty) {
-      return;
-    }
-    final newRect = offset & size;
-    if (newRect != _playerRect) setState(() => _playerRect = newRect);
-  }
-
-  void _updateBackgroundColor() {
-    if (!mounted) return;
-    final color =
-        widget.backgroundColor ?? Theme.of(context).colorScheme.surface;
-    widget.controller.webViewController.setBackgroundColor(color);
-  }
-
-  Future<void> _initPlayer() async {
-    SchedulerBinding.instance.addPostFrameCallback((_) {
-      _updateBackgroundColor();
-    });
-
-    // On web, let YouTube's native iframe controls handle interaction (gesture
-    // events don't propagate through the iframe element on web, so custom
-    // Flutter overlays are unusable). On other platforms, force-hide native
-    // controls so our overlay is the only UI.
-    final params = kIsWeb
-        ? widget.controller.params
-        : widget.controller.params.copyWith(
-            showControls: false,
-            showFullscreenButton: false,
-          );
-    await widget.controller.initWithParams(params: params);
-  }
-
   @override
   Widget build(BuildContext context) {
     super.build(context);
 
-    if (!_isMobile) {
-      return _buildNonMobile(context);
-    }
+    // On non-web platforms, hide YouTube's native controls so the custom
+    // overlay is the only UI. On web, gesture events don't reach Flutter
+    // overlays through the iframe element, so keep native controls.
+    final initParams = kIsWeb
+        ? null
+        : widget.controller.params.copyWith(
+            showControls: false,
+            showFullscreenButton: false,
+          );
 
-    return YoutubeValueBuilder(
-      controller: widget.controller,
-      buildWhen: (o, n) => o.fullScreenOption != n.fullScreenOption,
-      builder: (context, value) {
-        return PopScope(
-          canPop: !value.fullScreenOption.enabled,
-          onPopInvokedWithResult: (didPop, _) {
-            if (!didPop && value.fullScreenOption.enabled) {
-              widget.controller.exitFullScreen();
-            }
-          },
-          child: OverlayPortal(
-            controller: _overlayPortalCtrl,
-            overlayChildBuilder: (_) => PlayerOverlayContent(
-              controller: widget.controller,
-              playerRect: _playerRect,
-              layerLink: _layerLink,
-              overlayController: _overlayCtrl,
-              backgroundColor: widget.backgroundColor,
-              gestureRecognizers: widget.gestureRecognizers,
-              enableFullScreenOnVerticalDrag:
-                  widget.enableFullScreenOnVerticalDrag,
-              builder: widget.builder,
-              aspectRatio: widget.aspectRatio,
-              fullscreenCount: _fullscreenCount,
-            ),
-            child: AspectRatio(
-              aspectRatio: widget.aspectRatio,
-              child: LayoutBuilder(
-                builder: (context, _) {
-                  SchedulerBinding.instance.addPostFrameCallback((_) {
-                    if (mounted) _updatePlayerRect();
-                  });
-                  return CompositedTransformTarget(
-                    link: _layerLink,
-                    child: SizedBox.expand(key: _placeholderKey),
-                  );
-                },
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildNonMobile(BuildContext context) {
-    final webView = WebViewWidget(
-      controller: widget.controller.webViewController,
-      gestureRecognizers: widget.gestureRecognizers,
-    );
-
-    // On web, gesture events don't reach Flutter overlays through the iframe.
-    // Render the bare WebView so users interact with YouTube's native controls.
-    if (kIsWeb) {
-      if (widget.builder != null) {
-        return AspectRatio(
-          aspectRatio: widget.aspectRatio,
-          child: widget.builder!(
-            context,
-            AspectRatio(aspectRatio: widget.aspectRatio, child: webView),
-            widget.controller,
-          ),
-        );
-      }
-      return AspectRatio(
-        aspectRatio: widget.aspectRatio,
-        child: webView,
-      );
-    }
-
-    if (widget.builder != null) {
-      return AspectRatio(
-        aspectRatio: widget.aspectRatio,
-        child: widget.builder!(
-          context,
-          AspectRatio(aspectRatio: widget.aspectRatio, child: webView),
-          widget.controller,
-        ),
-      );
-    }
-
-    return AspectRatio(
-      aspectRatio: widget.aspectRatio,
-      child: Stack(
-        children: [
-          Positioned.fill(child: webView),
-          Positioned.fill(
-            child: OverlayControllerScope(
+    // On mobile, the player WebView lives inside an OverlayPortal managed by
+    // iframe's YoutubePlayer. Controls must also be in that overlay so they
+    // render above the WebView. On desktop and web, a simple Stack suffices.
+    Widget Function(BuildContext, bool)? controlsBuilder;
+    if (!kIsWeb) {
+      if (_isMobile && widget.builder != null) {
+        controlsBuilder = (ctx, _) => OverlayControllerScope(
               overlayController: _overlayCtrl,
               child: GestureDetector(
-                behavior: HitTestBehavior.translucent,
+                behavior: HitTestBehavior.opaque,
                 onTap: _overlayCtrl.toggle,
-                child: ValueListenableBuilder<bool>(
-                  valueListenable: _overlayCtrl.isVisible,
-                  builder: (context, visible, child) => AnimatedOpacity(
-                    duration: const Duration(milliseconds: 300),
-                    opacity: visible ? 1.0 : 0.0,
-                    child: child,
-                  ),
-                  child: ControlsOverlay(controller: widget.controller),
+                child: widget.builder!(
+                  ctx,
+                  const SizedBox.expand(),
+                  widget.controller,
                 ),
               ),
+            );
+      } else if (widget.builder == null) {
+        controlsBuilder = (ctx, _) => _DefaultControlsLayer(
+              controller: widget.controller,
+              overlayController: _overlayCtrl,
+            );
+      }
+      // Non-mobile with builder: controlsBuilder stays null; builder wraps
+      // the iframe player directly (see return below).
+    }
+
+    final iframePlayer = yp_iframe.YoutubePlayer(
+      controller: widget.controller,
+      aspectRatio: widget.aspectRatio,
+      gestureRecognizers: widget.gestureRecognizers,
+      backgroundColor: widget.backgroundColor,
+      enableFullScreenOnVerticalDrag: widget.enableFullScreenOnVerticalDrag,
+      keepAlive: _isMobile || widget.keepAlive,
+      autoFullScreen: widget.autoFullScreen,
+      initParams: initParams,
+      controlsBuilder: controlsBuilder,
+    );
+
+    // On non-mobile with a custom builder, hand the bare iframe player to
+    // the builder so the user controls the entire layout.
+    if (!_isMobile && widget.builder != null) {
+      return widget.builder!(context, iframePlayer, widget.controller);
+    }
+
+    return iframePlayer;
+  }
+
+  @override
+  bool get wantKeepAlive => _isMobile || widget.keepAlive;
+}
+
+// ---------------------------------------------------------------------------
+// Default controls layer — auto-hide overlay with horizontal seek gesture.
+// ---------------------------------------------------------------------------
+
+class _DefaultControlsLayer extends StatefulWidget {
+  const _DefaultControlsLayer({
+    required this.controller,
+    required this.overlayController,
+  });
+
+  final YoutubePlayerController controller;
+  final OverlayController overlayController;
+
+  @override
+  State<_DefaultControlsLayer> createState() => _DefaultControlsLayerState();
+}
+
+class _DefaultControlsLayerState extends State<_DefaultControlsLayer> {
+  late StreamSubscription<YoutubeVideoState> _subscription;
+  YoutubeVideoState _videoState = const YoutubeVideoState();
+  bool _isSeeking = false;
+  double _seekDeltaSeconds = 0;
+  double _dragStartX = 0;
+
+  // Full player-width drag = 120 s of seek (VLC-like fixed physical feel).
+  static const double _seekWidthRatio = 120.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _subscription = widget.controller.videoStateStream.listen((state) {
+      if (mounted && !_isSeeking) setState(() => _videoState = state);
+    });
+  }
+
+  @override
+  void dispose() {
+    _subscription.cancel();
+    super.dispose();
+  }
+
+  void _onHorizontalDragStart(DragStartDetails details) {
+    if (widget.controller.metadata.duration == Duration.zero) return;
+    _dragStartX = details.localPosition.dx;
+    widget.overlayController.cancelTimer();
+    setState(() {
+      _isSeeking = true;
+      _seekDeltaSeconds = 0;
+    });
+  }
+
+  void _onHorizontalDragUpdate(DragUpdateDetails details) {
+    if (!_isSeeking) return;
+    final playerWidth = context.size?.width ?? 1;
+    final dx = details.localPosition.dx - _dragStartX;
+    setState(() => _seekDeltaSeconds = (dx / playerWidth) * _seekWidthRatio);
+  }
+
+  void _onHorizontalDragEnd(DragEndDetails _) {
+    if (!_isSeeking) return;
+    final duration = widget.controller.metadata.duration.inSeconds.toDouble();
+    final currentPos = _videoState.position.inSeconds.toDouble();
+    final newPos = (currentPos + _seekDeltaSeconds).clamp(0.0, duration);
+    widget.controller.seekTo(seconds: newPos, allowSeekAhead: true);
+    widget.overlayController.resetTimer();
+    setState(() {
+      _isSeeking = false;
+      _seekDeltaSeconds = 0;
+    });
+  }
+
+  void _onHorizontalDragCancel() {
+    if (!_isSeeking) return;
+    widget.overlayController.resetTimer();
+    setState(() {
+      _isSeeking = false;
+      _seekDeltaSeconds = 0;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return OverlayControllerScope(
+      overlayController: widget.overlayController,
+      child: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: widget.overlayController.toggle,
+        onHorizontalDragStart: _onHorizontalDragStart,
+        onHorizontalDragUpdate: _onHorizontalDragUpdate,
+        onHorizontalDragEnd: _onHorizontalDragEnd,
+        onHorizontalDragCancel: _onHorizontalDragCancel,
+        child: Stack(
+          children: [
+            ValueListenableBuilder<bool>(
+              valueListenable: widget.overlayController.isVisible,
+              builder: (context, visible, child) => AnimatedOpacity(
+                duration: const Duration(milliseconds: 300),
+                opacity: visible ? 1.0 : 0.0,
+                child: child,
+              ),
+              child: ControlsOverlay(controller: widget.controller),
+            ),
+            if (_isSeeking)
+              Center(
+                child: _SeekIndicator(
+                  deltaSeconds: _seekDeltaSeconds,
+                  targetSeconds: (_videoState.position.inSeconds.toDouble() +
+                          _seekDeltaSeconds)
+                      .clamp(
+                    0.0,
+                    widget.controller.metadata.duration.inSeconds.toDouble(),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SeekIndicator extends StatelessWidget {
+  const _SeekIndicator({
+    required this.deltaSeconds,
+    required this.targetSeconds,
+  });
+
+  final double deltaSeconds;
+  final double targetSeconds;
+
+  String _formatDelta() {
+    final abs = deltaSeconds.abs().round();
+    final sign = deltaSeconds >= 0 ? '+' : '-';
+    final m = abs ~/ 60;
+    final s = abs % 60;
+    return m > 0 ? '$sign$m:${s.toString().padLeft(2, '0')}' : '$sign${s}s';
+  }
+
+  String _formatTarget() {
+    final total = targetSeconds.round();
+    final h = total ~/ 3600;
+    final m = (total % 3600) ~/ 60;
+    final s = total % 60;
+    if (h > 0) {
+      return '$h:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+    }
+    return '$m:${s.toString().padLeft(2, '0')}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.black54,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            deltaSeconds >= 0 ? Icons.fast_forward : Icons.fast_rewind,
+            color: Colors.white,
+            size: 20,
+          ),
+          const SizedBox(width: 8),
+          Text(
+            _formatDelta(),
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            '(${_formatTarget()})',
+            style: const TextStyle(
+              color: Colors.white70,
+              fontSize: 14,
             ),
           ),
         ],
       ),
     );
   }
-
-  // On mobile the WebView lives inside OverlayPortal, which is owned by this
-  // state. If the state is disposed (keepAlive:false, widget recycled by the
-  // list), OverlayPortal is removed and WebViewWidget is torn down. When the
-  // placeholder re-enters the list a new state calls _initPlayer() →
-  // loadHtmlString(), which reloads the entire YouTube IFrame and causes an
-  // error. Always keep alive on mobile so the overlay/WebView is never torn
-  // down while the controller is still live.
-  @override
-  bool get wantKeepAlive => _isMobile || widget.keepAlive;
 }

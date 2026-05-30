@@ -14,6 +14,7 @@ import '../controller/youtube_player_controller.dart';
 import '../enums/player_state.dart';
 import '../helpers/platform.dart';
 import '../helpers/youtube_value_builder.dart';
+import '../player_params.dart';
 import '../player_value.dart';
 
 /// A widget to play or stream Youtube Videos.
@@ -30,6 +31,8 @@ class YoutubePlayer extends StatefulWidget {
     this.enableFullScreenOnVerticalDrag = true,
     this.keepAlive = false,
     this.autoFullScreen = true,
+    this.initParams,
+    this.controlsBuilder,
   });
 
   /// The [controller] for this player.
@@ -76,12 +79,35 @@ class YoutubePlayer extends StatefulWidget {
   /// Default is true.
   final bool autoFullScreen;
 
+  /// If provided, used instead of [YoutubePlayerController.params] during initialization.
+  /// Allows wrappers to force-override params (e.g. hide native controls) without
+  /// mutating the user-supplied controller.
+  final YoutubePlayerParams? initParams;
+
+  /// If provided, renders custom controls on top of the player surface.
+  /// On mobile, rendered inside the overlay portal. On desktop/web, rendered
+  /// in a [Stack] on top of the [WebViewWidget].
+  final Widget Function(BuildContext context, bool isFullscreen)? controlsBuilder;
+
   @override
   State<YoutubePlayer> createState() => _YoutubePlayerState();
 }
 
 class _YoutubePlayerState extends State<YoutubePlayer>
     with AutomaticKeepAliveClientMixin, WidgetsBindingObserver {
+  // All live instances on mobile — used to exit fullscreen on sibling players
+  // when a new player starts and to hide overlays during fullscreen.
+  static final _instances = <_YoutubePlayerState>{};
+
+  // Shared across all instances so players can hide their overlay when another
+  // player is in fullscreen.
+  static final _fullscreenCount = ValueNotifier<int>(0);
+
+  // The instance that most recently transitioned into playing. Used by
+  // autoFullScreen to ensure only the active player enters fullscreen on
+  // device rotation, even when multiple players exist on the same screen.
+  static _YoutubePlayerState? _mostRecentlyActive;
+
   late final YoutubePlayerController _controller;
 
   final _overlayController = OverlayPortalController();
@@ -110,6 +136,7 @@ class _YoutubePlayerState extends State<YoutubePlayer>
     _initPlayer();
 
     if (isMobile) {
+      _instances.add(this);
       WidgetsBinding.instance.addObserver(this);
       _valueSub = _controller.stream.listen(_onValueChanged);
     }
@@ -139,6 +166,12 @@ class _YoutubePlayerState extends State<YoutubePlayer>
     final isFullscreen = value.fullScreenOption.enabled;
     if (isFullscreen != _prevFullscreen) {
       _prevFullscreen = isFullscreen;
+      if (isFullscreen) {
+        _fullscreenCount.value++;
+      } else {
+        _fullscreenCount.value =
+            (_fullscreenCount.value - 1).clamp(0, _fullscreenCount.value);
+      }
       _transitionTimer?.cancel();
       _inFullscreenTransition = false;
       // On button press the iframe fires StateChange=paused *before*
@@ -164,6 +197,18 @@ class _YoutubePlayerState extends State<YoutubePlayer>
         if (value.playerState == PlayerState.playing ||
             value.playerState == PlayerState.buffering) {
           _lastPlayingMs = DateTime.now().millisecondsSinceEpoch;
+          // When this player transitions into playing, exit fullscreen on any
+          // other player that owns the overlay — but only on the transition
+          // (not every frame while playing) to avoid unnecessary work.
+          if (_lastPlayerState != PlayerState.playing &&
+              _lastPlayerState != PlayerState.buffering) {
+            _mostRecentlyActive = this;
+            for (final other in _instances) {
+              if (other != this && other._prevFullscreen) {
+                other._controller.exitFullScreen();
+              }
+            }
+          }
         }
         _lastPlayerState = value.playerState;
       }
@@ -183,7 +228,15 @@ class _YoutubePlayerState extends State<YoutubePlayer>
   void dispose() {
     _transitionTimer?.cancel();
     _valueSub?.cancel();
-    if (isMobile) WidgetsBinding.instance.removeObserver(this);
+    if (isMobile) {
+      _instances.remove(this);
+      WidgetsBinding.instance.removeObserver(this);
+    }
+    if (_mostRecentlyActive == this) _mostRecentlyActive = null;
+    if (_prevFullscreen) {
+      _fullscreenCount.value =
+          (_fullscreenCount.value - 1).clamp(0, _fullscreenCount.value);
+    }
     super.dispose();
   }
 
@@ -198,7 +251,12 @@ class _YoutubePlayerState extends State<YoutubePlayer>
       final opt = _controller.value.fullScreenOption;
 
       if (isLandscape && !opt.enabled) {
-        _controller.enterFullScreen(lock: false);
+        // Only auto-fullscreen the most recently active player on rotation.
+        // When _mostRecentlyActive is null no player has ever played, so all
+        // players are eligible (single-player case still works as expected).
+        if (_mostRecentlyActive == null || _mostRecentlyActive == this) {
+          _controller.enterFullScreen(lock: false);
+        }
       } else if (!isLandscape && opt.enabled && !opt.locked) {
         _controller.exitFullScreen(lock: false);
       }
@@ -218,15 +276,21 @@ class _YoutubePlayerState extends State<YoutubePlayer>
     super.build(context);
 
     if (!isMobile) {
-      return AspectRatio(
-        aspectRatio: widget.aspectRatio,
-        child: _webViewReady
-            ? WebViewWidget(
-                controller: _controller.webViewController,
-                gestureRecognizers: widget.gestureRecognizers,
-              )
-            : const SizedBox.expand(),
-      );
+      Widget child = _webViewReady
+          ? WebViewWidget(
+              controller: _controller.webViewController,
+              gestureRecognizers: widget.gestureRecognizers,
+            )
+          : const SizedBox.expand();
+
+      if (widget.controlsBuilder != null) {
+        child = Stack(
+          fit: StackFit.expand,
+          children: [child, widget.controlsBuilder!(context, false)],
+        );
+      }
+
+      return AspectRatio(aspectRatio: widget.aspectRatio, child: child);
     }
 
     return YoutubeValueBuilder(
@@ -251,6 +315,8 @@ class _YoutubePlayerState extends State<YoutubePlayer>
               gestureRecognizers: widget.gestureRecognizers,
               enableFullScreenOnVerticalDrag:
                   widget.enableFullScreenOnVerticalDrag,
+              controlsBuilder: widget.controlsBuilder,
+              fullscreenCount: _fullscreenCount,
             ),
             child: AspectRatio(
               aspectRatio: widget.aspectRatio,
@@ -284,7 +350,11 @@ class _YoutubePlayerState extends State<YoutubePlayer>
       _updateBackgroundColor(widget.backgroundColor);
     });
 
-    await _controller.init();
+    if (widget.initParams != null) {
+      await _controller.initWithParams(params: widget.initParams!);
+    } else {
+      await _controller.init();
+    }
   }
 
   @override
@@ -299,7 +369,9 @@ class _PlayerOverlayContent extends StatelessWidget {
     required this.backgroundColor,
     required this.gestureRecognizers,
     required this.enableFullScreenOnVerticalDrag,
+    required this.fullscreenCount,
     this.aspectRatio = 16 / 9,
+    this.controlsBuilder,
   });
 
   final YoutubePlayerController controller;
@@ -309,22 +381,36 @@ class _PlayerOverlayContent extends StatelessWidget {
   final Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers;
   final bool enableFullScreenOnVerticalDrag;
   final double aspectRatio;
+  final Widget Function(BuildContext context, bool isFullscreen)? controlsBuilder;
+  final ValueListenable<int> fullscreenCount;
 
   @override
   Widget build(BuildContext context) {
-    if (!playerRect.width.isFinite ||
-        !playerRect.height.isFinite ||
-        playerRect.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    final screenSize = MediaQuery.of(context).size;
+    // Register a dependency on screen size so this widget rebuilds on rotation,
+    // keeping the builder closure's screenSize in sync via didUpdateWidget.
+    MediaQuery.sizeOf(context);
 
     return YoutubeValueBuilder(
       controller: controller,
       buildWhen: (o, n) => o.fullScreenOption != n.fullScreenOption,
       builder: (context, value) {
+        // Read screenSize here (not in the outer scope) so the builder always
+        // uses the current dimensions, even when fullscreen and rotation fire
+        // in the same frame before _PlayerOverlayContent has rebuilt.
+        final screenSize = MediaQuery.sizeOf(context);
         final isFullscreen = value.fullScreenOption.enabled;
+
+        // Guard against an uninitialised playerRect only when not in fullscreen.
+        // In fullscreen we use absolute screen coordinates, so playerRect is
+        // irrelevant — skipping the guard ensures the black background and
+        // video layer are always rendered even when the inline placeholder has
+        // not yet been measured (e.g. player scrolled off-screen).
+        if (!isFullscreen &&
+            (!playerRect.width.isFinite ||
+                !playerRect.height.isFinite ||
+                playerRect.isEmpty)) {
+          return const SizedBox.shrink();
+        }
 
         // Compute fullscreen dimensions that maintain the video aspect ratio.
         // Portrait: fit to screen width with letterbox (black bars top/bottom).
@@ -351,52 +437,75 @@ class _PlayerOverlayContent extends StatelessWidget {
           fsOffsetY = 0;
         }
 
-        // CompositedTransformFollower tracks the placeholder at the render
-        // layer (immediate, no animation on scroll). AnimatedContainer handles
-        // the fullscreen expand/collapse animation only.
+        // When fullscreen: use absolute screen coordinates so the layer is
+        // always visible even when the inline placeholder is off-screen
+        // (CompositedTransformFollower hides its child when the LayerLink
+        // target is not composited, which happens for off-screen players).
+        // When not fullscreen: CompositedTransformFollower tracks the
+        // placeholder at the render layer so the overlay follows the player
+        // accurately during scroll without per-frame Dart callbacks.
         Widget positionedLayer(Widget child) {
+          if (isFullscreen) {
+            return AnimatedPositioned(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              top: fsOffsetY,
+              left: fsOffsetX,
+              width: fsWidth,
+              height: fsHeight,
+              child: child,
+            );
+          }
           return Positioned(
             top: 0,
             left: 0,
             child: CompositedTransformFollower(
               link: layerLink,
               showWhenUnlinked: false,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
-                transform: isFullscreen
-                    ? Matrix4.translationValues(
-                        -playerRect.left + fsOffsetX,
-                        -playerRect.top + fsOffsetY,
-                        0,
-                      )
-                    : Matrix4.identity(),
-                width: isFullscreen ? fsWidth : playerRect.width,
-                height: isFullscreen ? fsHeight : playerRect.height,
+              child: SizedBox(
+                width: playerRect.width,
+                height: playerRect.height,
                 child: child,
               ),
             ),
           );
         }
 
-        return Stack(
-          fit: StackFit.expand,
-          children: [
-            _FullscreenBackground(isFullscreen: isFullscreen),
-            positionedLayer(
-              _YoutubeWebView(
-                controller: controller,
-                gestureRecognizers: gestureRecognizers,
-                enableFullScreenOnVerticalDrag: enableFullScreenOnVerticalDrag,
-              ),
-            ),
-            positionedLayer(
-              _PlayerLoadingOverlay(
-                controller: controller,
-                backgroundColor: backgroundColor,
-              ),
-            ),
-          ],
+        return ValueListenableBuilder<int>(
+          valueListenable: fullscreenCount,
+          builder: (context, count, _) {
+            // Hide this player's layers when another player owns the fullscreen
+            // so its overlay doesn't surface above the fullscreen background.
+            // Opacity+IgnorePointer keeps the WebView alive (no reload on exit).
+            final hideForOther = !isFullscreen && count > 0;
+            Widget maybeHide(Widget w) => hideForOther
+                ? IgnorePointer(child: Opacity(opacity: 0, child: w))
+                : w;
+
+            return Stack(
+              fit: StackFit.expand,
+              children: [
+                _FullscreenBackground(isFullscreen: isFullscreen),
+                positionedLayer(maybeHide(
+                  _YoutubeWebView(
+                    controller: controller,
+                    gestureRecognizers: gestureRecognizers,
+                    enableFullScreenOnVerticalDrag: enableFullScreenOnVerticalDrag,
+                  ),
+                )),
+                if (controlsBuilder != null)
+                  positionedLayer(maybeHide(
+                    Builder(builder: (ctx) => controlsBuilder!(ctx, isFullscreen)),
+                  )),
+                positionedLayer(maybeHide(
+                  _PlayerLoadingOverlay(
+                    controller: controller,
+                    backgroundColor: backgroundColor,
+                  ),
+                )),
+              ],
+            );
+          },
         );
       },
     );
