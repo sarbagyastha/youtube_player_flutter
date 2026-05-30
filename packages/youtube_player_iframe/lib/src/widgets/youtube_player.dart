@@ -33,8 +33,8 @@ class YoutubePlayer extends StatefulWidget {
     this.enableFullScreenOnVerticalDrag = true,
     this.keepAlive = false,
     this.autoFullScreen = true,
-    this.thumbnailQuality = ThumbnailQuality.high,
-    this.thumbnailFormat = ThumbnailFormat.webp,
+    this.thumbnailQuality = .high,
+    this.thumbnailFormat = .webp,
     this.initParams,
     this.controlsBuilder,
   });
@@ -131,7 +131,7 @@ class _YoutubePlayerState extends State<YoutubePlayer>
   Rect _playerRect = Rect.zero;
 
   StreamSubscription<YoutubePlayerValue>? _valueSub;
-  PlayerState _lastPlayerState = PlayerState.unknown;
+  PlayerState _lastPlayerState = .unknown;
   bool _prevFullscreen = false;
   bool _inFullscreenTransition = false;
   Timer? _transitionTimer;
@@ -403,8 +403,8 @@ class _PlayerOverlayContent extends StatelessWidget {
     required this.fullscreenCount,
     this.aspectRatio = 16 / 9,
     this.controlsBuilder,
-    this.thumbnailQuality = ThumbnailQuality.high,
-    this.thumbnailFormat = ThumbnailFormat.webp,
+    this.thumbnailQuality = .high,
+    this.thumbnailFormat = .webp,
   });
 
   final YoutubePlayerController controller;
@@ -594,8 +594,8 @@ class _PlayerLoadingOverlay extends StatelessWidget {
   const _PlayerLoadingOverlay({
     required this.controller,
     required this.backgroundColor,
-    this.thumbnailQuality = ThumbnailQuality.high,
-    this.thumbnailFormat = ThumbnailFormat.webp,
+    this.thumbnailQuality = .high,
+    this.thumbnailFormat = .webp,
   });
 
   final YoutubePlayerController controller;

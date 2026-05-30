@@ -74,10 +74,10 @@ class PlayerStateChip extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     final (label, color) = switch (playerState) {
-      PlayerState.playing => ('Playing', cs.primary),
-      PlayerState.paused => ('Paused', cs.onSurfaceVariant),
-      PlayerState.buffering => ('Buffering', cs.tertiary),
-      PlayerState.ended => ('Ended', cs.error),
+      .playing => ('Playing', cs.primary),
+      .paused => ('Paused', cs.onSurfaceVariant),
+      .buffering => ('Buffering', cs.tertiary),
+      .ended => ('Ended', cs.error),
       _ => ('', cs.onSurfaceVariant),
     };
 

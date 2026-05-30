@@ -43,14 +43,14 @@ enum YoutubeError {
 
   /// Returns the [YoutubeError] matching [code], or [YoutubeError.unknown] if unrecognised.
   static YoutubeError fromCode(int code) => switch (code) {
-    0 => YoutubeError.none,
-    2 => YoutubeError.invalidParam,
-    5 => YoutubeError.html5Error,
-    100 => YoutubeError.videoNotFound,
-    101 => YoutubeError.notEmbeddable,
-    105 => YoutubeError.cannotFindVideo,
-    150 => YoutubeError.sameAsNotEmbeddable,
-    152 => YoutubeError.sameAsNotEmbeddable2,
-    _ => YoutubeError.unknown,
+    0 => .none,
+    2 => .invalidParam,
+    5 => .html5Error,
+    100 => .videoNotFound,
+    101 => .notEmbeddable,
+    105 => .cannotFindVideo,
+    150 => .sameAsNotEmbeddable,
+    152 => .sameAsNotEmbeddable2,
+    _ => .unknown,
   };
 }

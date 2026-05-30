@@ -396,8 +396,8 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   /// Grabs YouTube video's thumbnail for provided video id.
   static String getThumbnail({
     required String videoId,
-    ThumbnailQuality quality = ThumbnailQuality.standard,
-    ThumbnailFormat format = ThumbnailFormat.webp,
+    ThumbnailQuality quality = .standard,
+    ThumbnailFormat format = .webp,
   }) {
     return format.buildUrl(videoId, quality.value);
   }

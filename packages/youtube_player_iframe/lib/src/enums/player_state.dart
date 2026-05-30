@@ -34,12 +34,12 @@ enum PlayerState {
 
   /// Returns the [PlayerState] matching [code], or [PlayerState.unknown] if unrecognised.
   static PlayerState fromCode(int code) => switch (code) {
-    -1 => PlayerState.unStarted,
-    0 => PlayerState.ended,
-    1 => PlayerState.playing,
-    2 => PlayerState.paused,
-    3 => PlayerState.buffering,
-    5 => PlayerState.cued,
-    _ => PlayerState.unknown,
+    -1 => .unStarted,
+    0 => .ended,
+    1 => .playing,
+    2 => .paused,
+    3 => .buffering,
+    5 => .cued,
+    _ => .unknown,
   };
 }

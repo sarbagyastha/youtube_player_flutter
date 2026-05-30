@@ -11,10 +11,10 @@ class YoutubePlayerValue {
   /// Creates a [YoutubePlayerValue].
   YoutubePlayerValue({
     this.fullScreenOption = const FullScreenOption(enabled: false),
-    this.playerState = PlayerState.unknown,
+    this.playerState = .unknown,
     this.playbackRate = PlaybackRate.normal,
     this.playbackQuality,
-    this.error = YoutubeError.none,
+    this.error = .none,
     this.metaData = const YoutubeMetaData(),
   });
 

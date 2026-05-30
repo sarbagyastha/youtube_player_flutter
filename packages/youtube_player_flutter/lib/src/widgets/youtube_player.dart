@@ -128,11 +128,11 @@ class _YoutubePlayerState extends State<YoutubePlayer>
 
   void _onPlayerStateChanged(YoutubePlayerValue value) {
     switch (value.playerState) {
-      case PlayerState.playing:
+      case .playing:
         _overlayCtrl.resetTimer();
-      case PlayerState.paused:
-      case PlayerState.buffering:
-      case PlayerState.ended:
+      case .paused:
+      case .buffering:
+      case .ended:
         _overlayCtrl.cancelTimer();
         _overlayCtrl.isVisible.value = true;
       default:

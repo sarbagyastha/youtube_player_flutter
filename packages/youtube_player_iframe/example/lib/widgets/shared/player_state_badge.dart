@@ -34,11 +34,11 @@ class PlayerStateBadge extends StatelessWidget {
 
   (Color, Color) _colorsForState(PlayerState state, ColorScheme cs) {
     return switch (state) {
-      PlayerState.playing => (cs.primaryContainer, cs.onPrimaryContainer),
-      PlayerState.paused => (cs.tertiaryContainer, cs.onTertiaryContainer),
-      PlayerState.buffering => (cs.secondaryContainer, cs.onSecondaryContainer),
-      PlayerState.ended => (cs.errorContainer, cs.onErrorContainer),
-      PlayerState.cued => (cs.secondaryContainer, cs.onSecondaryContainer),
+      .playing => (cs.primaryContainer, cs.onPrimaryContainer),
+      .paused => (cs.tertiaryContainer, cs.onTertiaryContainer),
+      .buffering => (cs.secondaryContainer, cs.onSecondaryContainer),
+      .ended => (cs.errorContainer, cs.onErrorContainer),
+      .cued => (cs.secondaryContainer, cs.onSecondaryContainer),
       _ => (cs.surfaceContainerHighest, cs.onSurfaceVariant),
     };
   }

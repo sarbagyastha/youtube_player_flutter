@@ -148,16 +148,16 @@ class _SourceTabState extends State<SourceTab> {
 
   String? get _helperText {
     return switch (_playlistType) {
-      ListType.playlist => '"PLj0L3ZL0ijTdhFSueRKK-mLFAtDuvzdje"',
-      ListType.userUploads => '"pewdiepie", "tseries"',
+      .playlist => '"PLj0L3ZL0ijTdhFSueRKK-mLFAtDuvzdje"',
+      .userUploads => '"pewdiepie", "tseries"',
       _ => null,
     };
   }
 
   String get _hint {
     return switch (_playlistType) {
-      ListType.playlist => 'Enter playlist id',
-      ListType.userUploads => 'Enter channel name',
+      .playlist => 'Enter playlist id',
+      .userUploads => 'Enter channel name',
       _ => r'Enter youtube <video id> or <link>',
     };
   }
