@@ -1,3 +1,7 @@
+// Copyright 2021 Sarbagya Dhaubanjar. All rights reserved.
+// Use of this source code is governed by a BSD-3-Clause license that can be
+// found in the LICENSE file.
+
 import 'package:flutter/material.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
@@ -30,11 +34,11 @@ class PlayerStateBadge extends StatelessWidget {
 
   (Color, Color) _colorsForState(PlayerState state, ColorScheme cs) {
     return switch (state) {
-      PlayerState.playing => (cs.primaryContainer, cs.onPrimaryContainer),
-      PlayerState.paused => (cs.tertiaryContainer, cs.onTertiaryContainer),
-      PlayerState.buffering => (cs.secondaryContainer, cs.onSecondaryContainer),
-      PlayerState.ended => (cs.errorContainer, cs.onErrorContainer),
-      PlayerState.cued => (cs.secondaryContainer, cs.onSecondaryContainer),
+      .playing => (cs.primaryContainer, cs.onPrimaryContainer),
+      .paused => (cs.tertiaryContainer, cs.onTertiaryContainer),
+      .buffering => (cs.secondaryContainer, cs.onSecondaryContainer),
+      .ended => (cs.errorContainer, cs.onErrorContainer),
+      .cued => (cs.secondaryContainer, cs.onSecondaryContainer),
       _ => (cs.surfaceContainerHighest, cs.onSurfaceVariant),
     };
   }

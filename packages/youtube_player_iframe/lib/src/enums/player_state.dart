@@ -1,35 +1,45 @@
 // Copyright 2022 Sarbagya Dhaubanjar. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
+// Use of this source code is governed by a BSD-3-Clause license that can be
 // found in the LICENSE file.
 
 /// Current state of the player.
 ///
 /// Find more about it [here](https://developers.google.com/youtube/iframe_api_reference#Playback_status).
 enum PlayerState {
-  /// Denotes State when player is not loaded with video.
+  /// No video has been loaded. Initial state.
   unknown(-2),
 
-  /// Denotes state when player loads first video.
+  /// Player is ready but playback has not started.
   unStarted(-1),
 
-  /// Denotes state when player has ended playing a video.
+  /// Playback has finished.
   ended(0),
 
-  /// Denotes state when player is playing video.
+  /// Video is playing.
   playing(1),
 
-  /// Denotes state when player is paused.
+  /// Video is paused.
   paused(2),
 
-  /// Denotes state when player is buffering bytes from the internet.
+  /// Buffering. Show a loading indicator.
   buffering(3),
 
-  /// Denotes state when player loads video and is ready to be played.
+  /// A video is loaded and ready, but autoPlay is false.
   cued(5);
 
-  /// Returns the [PlayerState] from the given code.
   const PlayerState(this.code);
 
-  /// Code of the player state.
+  /// The raw code returned by the YouTube IFrame API.
   final int code;
+
+  /// Returns the [PlayerState] matching [code], or [PlayerState.unknown] if unrecognised.
+  static PlayerState fromCode(int code) => switch (code) {
+    -1 => .unStarted,
+    0 => .ended,
+    1 => .playing,
+    2 => .paused,
+    3 => .buffering,
+    5 => .cued,
+    _ => .unknown,
+  };
 }

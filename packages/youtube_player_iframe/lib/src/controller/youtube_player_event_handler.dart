@@ -1,3 +1,7 @@
+// Copyright 2021 Sarbagya Dhaubanjar. All rights reserved.
+// Use of this source code is governed by a BSD-3-Clause license that can be
+// found in the LICENSE file.
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
@@ -71,21 +75,16 @@ class YoutubePlayerEventHandler {
   /// The data property of the event object that the API passes to your event listener function
   /// will specify an integer that corresponds to the new player state.
   Future<void> onStateChange(Object data) async {
-    final stateCode = data as int;
-
-    final playerState = PlayerState.values.firstWhere(
-      (state) => state.code == stateCode,
-      orElse: () => PlayerState.unknown,
-    );
+    final playerState = PlayerState.fromCode(data as int);
 
     if (playerState == PlayerState.playing) {
       controller.update(playerState: playerState, error: YoutubeError.none);
 
       final cachedId = controller.value.metaData.videoId;
-      final durationFuture = controller.duration;
-      final videoDataFuture = controller.videoData;
-      final duration = await durationFuture;
-      final videoData = await videoDataFuture;
+      final (duration, videoData) = await (
+        controller.duration,
+        controller.videoData,
+      ).wait;
 
       if (videoData.videoId == cachedId && cachedId.isNotEmpty) return;
 
@@ -130,7 +129,7 @@ class YoutubePlayerEventHandler {
 
   /// This event is fired to indicate that the fullscreen button was clicked.
   void onFullscreenButtonPressed(Object data) {
-    if (!isMobile) return;
+    if (!isMobile && !kIsWeb) return;
     controller.toggleFullScreen();
   }
 
@@ -139,12 +138,7 @@ class YoutubePlayerEventHandler {
   /// That [data] property will specify an integer that identifies the type of error that occurred.
   void onError(Object data) {
     final errorCode = data is int ? data : int.tryParse(data.toString()) ?? -1;
-    final error = YoutubeError.values.firstWhere(
-      (error) => error.code == errorCode,
-      orElse: () => YoutubeError.unknown,
-    );
-
-    controller.update(error: error);
+    controller.update(error: YoutubeError.fromCode(errorCode));
   }
 
   /// This event fires when the player receives information about video states.

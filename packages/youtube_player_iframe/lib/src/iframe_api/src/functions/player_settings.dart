@@ -1,3 +1,7 @@
+// Copyright 2021 Sarbagya Dhaubanjar. All rights reserved.
+// Use of this source code is governed by a BSD-3-Clause license that can be
+// found in the LICENSE file.
+
 /// The skeleton for player settings methods.
 abstract class PlayerSettings {
   /// Sets the size in pixels of the <iframe> that contains the player.

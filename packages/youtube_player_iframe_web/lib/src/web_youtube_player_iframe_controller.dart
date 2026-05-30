@@ -1,5 +1,5 @@
 // Copyright 2022 Sarbagya Dhaubanjar. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
+// Use of this source code is governed by a BSD-3-Clause license that can be
 // found in the LICENSE file.
 
 import 'dart:async';
@@ -24,6 +24,7 @@ class WebYoutubePlayerIframeControllerCreationParams
   /// Creates a new [WebYoutubePlayerIframeControllerCreationParams] instance.
   WebYoutubePlayerIframeControllerCreationParams({
     this.httpRequestFactory = const HttpRequestFactory(),
+    this.credentialless = false,
   }) : super();
 
   /// Creates a [WebYoutubePlayerIframeControllerCreationParams] instance based on [PlatformWebViewControllerCreationParams].
@@ -32,17 +33,33 @@ class WebYoutubePlayerIframeControllerCreationParams
     // ignore: avoid_unused_constructor_parameters
     PlatformWebViewControllerCreationParams params, {
     HttpRequestFactory httpRequestFactory = const HttpRequestFactory(),
-  }) : this(httpRequestFactory: httpRequestFactory);
+    bool credentialless = false,
+  }) : this(
+         httpRequestFactory: httpRequestFactory,
+         credentialless: credentialless,
+       );
 
   /// Handles creating and sending URL requests.
   final HttpRequestFactory httpRequestFactory;
+
+  /// Whether to use a credentialless iframe.
+  ///
+  /// When `true`, the iframe is loaded without cookies, storage, or access to
+  /// the parent frame, which allows videos to play on pages with
+  /// `Cross-Origin-Embedder-Policy` set.
+  ///
+  /// See also:
+  /// - [MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/Security/IFrame_credentialless)
+  /// - [Chrome Developers](https://developer.chrome.com/blog/anonymous-iframe-origin-trial)
+  final bool credentialless;
 
   static int _nextIFrameId = 0;
 
   /// The underlying element used as the WebView.
   @visibleForTesting
-  final YoutubeIframeElement ytiFrame =
-      YoutubeIframeElement(id: _nextIFrameId++)..credentialless = true;
+  late final YoutubeIframeElement ytiFrame = YoutubeIframeElement(
+    id: _nextIFrameId++,
+  )..credentialless = credentialless;
 }
 
 /// An implementation of [PlatformWebViewController] using Flutter for Web API.
@@ -51,17 +68,19 @@ class WebYoutubePlayerIframeController extends PlatformWebViewController {
   WebYoutubePlayerIframeController(
     PlatformWebViewControllerCreationParams params,
   ) : super.implementation(
-          params is WebYoutubePlayerIframeControllerCreationParams
-              ? params
-              : WebYoutubePlayerIframeControllerCreationParams
-                  .fromPlatformWebViewControllerCreationParams(params),
-        );
+        params is WebYoutubePlayerIframeControllerCreationParams
+            ? params
+            : WebYoutubePlayerIframeControllerCreationParams.fromPlatformWebViewControllerCreationParams(
+                params,
+              ),
+      );
 
   WebYoutubePlayerIframeControllerCreationParams get _params {
     return params as WebYoutubePlayerIframeControllerCreationParams;
   }
 
   JavaScriptChannelParams? _javaScriptChannelParams;
+  StreamSubscription<MessageEvent>? _messageSubscription;
 
   @override
   Future<void> loadHtmlString(String html, {String? baseUrl}) {
@@ -81,15 +100,13 @@ class WebYoutubePlayerIframeController extends PlatformWebViewController {
     final function = javaScript.replaceAll('"', '<<quote>>');
 
     final completer = Completer<String>();
-    final subscription = window.onMessage.listen(
-      (event) {
-        final data = jsonDecode(event.data.dartify() as String);
+    final subscription = window.onMessage.listen((event) {
+      final data = jsonDecode(event.data.dartify() as String);
 
-        if (data is Map && data.containsKey(key)) {
-          completer.complete(data[key].toString());
-        }
-      },
-    );
+      if (data is Map && data.containsKey(key)) {
+        completer.complete(data[key].toString());
+      }
+    });
 
     _params.ytiFrame.runFunction(function, key: key);
 
@@ -143,7 +160,8 @@ class WebYoutubePlayerIframeController extends PlatformWebViewController {
   Future<void> loadRequest(LoadRequestParams params) async {
     if (!params.uri.hasScheme) {
       throw ArgumentError(
-          'LoadRequestParams#uri is required to have a scheme.');
+        'LoadRequestParams#uri is required to have a scheme.',
+      );
     }
 
     if (params.headers.isEmpty &&
@@ -182,8 +200,8 @@ class WebYoutubePlayerIframeController extends PlatformWebViewController {
 class YoutubePlayerIframeWeb extends PlatformWebViewWidget {
   /// Constructs a [YoutubePlayerIframeWeb].
   YoutubePlayerIframeWeb(super.params)
-      : _controller = params.controller as WebYoutubePlayerIframeController,
-        super.implementation() {
+    : _controller = params.controller as WebYoutubePlayerIframeController,
+      super.implementation() {
     platformViewRegistry.registerViewFactory(
       _controller._params.ytiFrame.id,
       (int viewId) => _controller._params.ytiFrame,
@@ -204,13 +222,12 @@ class YoutubePlayerIframeWeb extends PlatformWebViewWidget {
         final channelParams = _controller._javaScriptChannelParams;
 
         if (channelParams != null) {
-          window.onMessage.listen(
-            (event) {
-              channelParams.onMessageReceived(
-                JavaScriptMessage(message: event.data.dartify() as String),
-              );
-            },
-          );
+          _controller._messageSubscription?.cancel();
+          _controller._messageSubscription = window.onMessage.listen((event) {
+            channelParams.onMessageReceived(
+              JavaScriptMessage(message: event.data.dartify() as String),
+            );
+          });
         }
       },
     );
@@ -220,12 +237,12 @@ class YoutubePlayerIframeWeb extends PlatformWebViewWidget {
 extension type YoutubeIframeElement._(HTMLIFrameElement element) {
   /// A class that represents a YouTube iframe element.
   YoutubeIframeElement({required int id})
-      : element = HTMLIFrameElement()
-          ..id = 'youtube-$id'
-          ..style.width = '100%'
-          ..style.height = '100%'
-          ..style.border = 'none'
-          ..allow = 'autoplay;fullscreen';
+    : element = HTMLIFrameElement()
+        ..id = 'youtube-$id'
+        ..style.width = '100%'
+        ..style.height = '100%'
+        ..style.border = 'none'
+        ..allow = 'autoplay;fullscreen';
 
   /// The underlying [HTMLIFrameElement] used by the [YoutubeIframeElement].
   String get id => element.id;

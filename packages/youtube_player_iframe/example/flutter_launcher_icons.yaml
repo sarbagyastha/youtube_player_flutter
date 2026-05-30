@@ -1,0 +1,13 @@
+# dart run flutter_launcher_icons
+flutter_launcher_icons:
+  image_path: ../misc/ypi-icon.webp
+
+  android: ypi_icon
+  ios: true
+  remove_alpha_ios: true
+  web:
+    generate: true
+    background_color: "#ff0000"
+    theme_color: "#ff0000"
+  macos:
+    generate: true

@@ -1,5 +1,5 @@
 // Copyright 2020 Sarbagya Dhaubanjar. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
+// Use of this source code is governed by a BSD-3-Clause license that can be
 // found in the LICENSE file.
 
 import 'dart:convert';
@@ -116,12 +116,19 @@ class YoutubePlayerParams {
   /// unless they play the video. Default is true.
   final bool privacyEnhancedMode;
 
+  /// Interval in milliseconds at which the player polls for current time and
+  /// loaded fraction while the video is playing.
+  ///
+  /// Smaller values give smoother position updates at the cost of more
+  /// JS↔Dart bridge traffic. Defaults to 100 (10 Hz).
+  final int videoStateUpdateInterval;
+
   /// Defines player parameters for the youtube player.
   const YoutubePlayerParams({
     this.mute = false,
     this.captionLanguage = 'en',
     this.enableCaption = true,
-    this.pointerEvents = PointerEvents.initial,
+    this.pointerEvents = .initial,
     this.color = 'white',
     this.showControls = true,
     this.enableKeyboard = kIsWeb,
@@ -135,6 +142,7 @@ class YoutubePlayerParams {
     this.strictRelatedVideos = false,
     this.userAgent,
     this.privacyEnhancedMode = true,
+    this.videoStateUpdateInterval = 100,
   });
 
   /// Creates [Map] representation of [YoutubePlayerParams].
@@ -152,7 +160,6 @@ class YoutubePlayerParams {
       'hl': interfaceLanguage,
       'iv_load_policy': showVideoAnnotations ? 1 : 3,
       'loop': _boolean(loop),
-      'modestbranding': '1',
       if (kIsWeb) ...{
         'origin': Uri.base.origin,
         'widget_referrer': Uri.base.origin,
@@ -198,6 +205,7 @@ class YoutubePlayerParams {
     bool? strictRelatedVideos,
     Object? userAgent = _sentinel,
     bool? privacyEnhancedMode,
+    int? videoStateUpdateInterval,
   }) {
     return YoutubePlayerParams(
       mute: mute ?? this.mute,
@@ -217,6 +225,8 @@ class YoutubePlayerParams {
       strictRelatedVideos: strictRelatedVideos ?? this.strictRelatedVideos,
       userAgent: userAgent == _sentinel ? this.userAgent : userAgent as String?,
       privacyEnhancedMode: privacyEnhancedMode ?? this.privacyEnhancedMode,
+      videoStateUpdateInterval:
+          videoStateUpdateInterval ?? this.videoStateUpdateInterval,
     );
   }
 
@@ -226,19 +236,13 @@ class YoutubePlayerParams {
 /// The pointer events.
 enum PointerEvents {
   /// The player reacts to pointer events, like hover and click.
-  auto('auto'),
+  auto,
 
   /// The initial configuration for pointer event.
   ///
   /// In most cases, this resolves to [PointerEvents.auto].
-  initial('initial'),
+  initial,
 
   /// The player does not react to any pointer events.
-  none('none');
-
-  /// Creates a [PointerEvents] for the [name].
-  const PointerEvents(this.name);
-
-  /// The name of the [PointerEvents].
-  final String name;
+  none,
 }

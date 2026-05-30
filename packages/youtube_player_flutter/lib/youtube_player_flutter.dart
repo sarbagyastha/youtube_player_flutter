@@ -1,10 +1,14 @@
-library youtube_player_flutter;
+// Copyright 2021 Sarbagya Dhaubanjar. All rights reserved.
+// Use of this source code is governed by a BSD-3-Clause license that can be
+// found in the LICENSE file.
 
-export 'src/enums/playback_rate.dart';
-export 'src/enums/player_state.dart';
-export 'src/enums/thumbnail_quality.dart';
-export 'src/player/youtube_player.dart';
-export 'src/utils/youtube_meta_data.dart';
-export 'src/utils/youtube_player_controller.dart';
-export 'src/utils/youtube_player_flags.dart';
-export 'src/widgets/widgets.dart';
+// Re-export the full youtube_player_iframe public API.
+// YoutubePlayer is hidden here; this package's widget uses the same name.
+export 'package:youtube_player_iframe/youtube_player_iframe.dart'
+    hide YoutubePlayer;
+
+// This package's additions.
+export 'src/theme/youtube_player_theme.dart';
+export 'src/widgets/controls/fullscreen_button.dart';
+export 'src/widgets/typedefs.dart';
+export 'src/widgets/youtube_player.dart';

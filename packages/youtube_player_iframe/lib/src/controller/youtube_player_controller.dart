@@ -1,3 +1,7 @@
+// Copyright 2021 Sarbagya Dhaubanjar. All rights reserved.
+// Use of this source code is governed by a BSD-3-Clause license that can be
+// found in the LICENSE file.
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
@@ -38,10 +42,11 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     this.params = const YoutubePlayerParams(),
     ValueChanged<YoutubeWebResourceError>? onWebResourceError,
     this.key,
+    this.credentialless = false,
   }) {
     _eventHandler = YoutubePlayerEventHandler(this);
 
-    final webViewParams = buildWebViewParams();
+    final webViewParams = buildWebViewParams(credentialless: credentialless);
 
     final navigationDelegate = NavigationDelegate(
       onWebResourceError: (error) {
@@ -80,8 +85,13 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     bool autoPlay = false,
     double? startSeconds,
     double? endSeconds,
+    bool credentialless = false,
   }) {
-    final controller = YoutubePlayerController(params: params, key: videoId);
+    final controller = YoutubePlayerController(
+      params: params,
+      key: videoId,
+      credentialless: credentialless,
+    );
 
     if (autoPlay) {
       controller.loadVideoById(
@@ -106,8 +116,14 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   /// Defines player parameters for the youtube player.
   final YoutubePlayerParams params;
 
+  /// Whether to use a credentialless iframe on web.
+  ///
+  /// When `true`, the iframe loads without cookies or storage access, which
+  /// allows playback on pages with `Cross-Origin-Embedder-Policy` set.
+  /// Has no effect on non-web platforms.
+  final bool credentialless;
+
   /// The [WebViewController] that drives the player
-  @internal
   late final WebViewController webViewController;
 
   late final YoutubePlayerEventHandler _eventHandler;
@@ -226,21 +242,18 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
 
   /// Loads the video with the given [url].
   ///
-  /// The [url] must be a valid youtube video watch url.
-  /// i.e. https://www.youtube.com/watch?v=VIDEO_ID
+  /// Accepts any YouTube URL format: watch, youtu.be, /shorts/, /embed/,
+  /// and music.youtube.com.
   Future<void> loadVideo(String url) {
-    assert(
-      RegExp(r'^https://(?:www\.|m\.)?youtube\.com/watch.*').hasMatch(url),
-      'Only YouTube watch URLs are supported.',
-    );
-
-    final queryParams = Uri.parse(url).queryParameters;
-    final videoId = queryParams['v'];
+    final videoId = convertUrlToId(url);
 
     assert(
       videoId != null && videoId.isNotEmpty,
-      'Video ID is missing from the provided url.',
+      'Could not extract a video ID from the provided URL. '
+      'Supported formats: watch, youtu.be, /shorts/, /embed/, music.youtube.com.',
     );
+
+    final queryParams = Uri.tryParse(url)?.queryParameters ?? const {};
 
     return loadVideoById(
       videoId: videoId!,
@@ -254,6 +267,23 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     await load(
       params: params,
       baseUrl: kIsWeb ? Uri.base.origin : (params.origin ?? params.host),
+      id: playerId,
+    );
+
+    _bridge.completeInit();
+  }
+
+  /// Like [init] but accepts overridden [params] — for wrappers that need to
+  /// force-disable native controls without changing the user-supplied params.
+  Future<void> initWithParams({
+    required YoutubePlayerParams params,
+    String? baseUrl,
+  }) async {
+    await load(
+      params: params,
+      baseUrl:
+          baseUrl ??
+          (kIsWeb ? Uri.base.origin : (params.origin ?? params.host)),
       id: playerId,
     );
 
@@ -275,6 +305,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
       'playerVars': params.toJson(),
       'platform': platform,
       'host': params.host,
+      'videoStateUpdateInterval': params.videoStateUpdateInterval.toString(),
     };
 
     await webViewController.loadHtmlString(
@@ -304,16 +335,14 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     YoutubeMetaData? metaData,
   }) {
     if (_valueController.isClosed) return;
-
-    _value = YoutubePlayerValue(
-      fullScreenOption: fullScreenOption ?? _value.fullScreenOption,
-      playerState: playerState ?? _value.playerState,
-      playbackRate: playbackRate ?? _value.playbackRate,
-      playbackQuality: playbackQuality ?? _value.playbackQuality,
-      error: error ?? _value.error,
-      metaData: metaData ?? _value.metaData,
+    _value = _value.copyWith(
+      fullScreenOption: fullScreenOption,
+      playerState: playerState,
+      playbackRate: playbackRate,
+      playbackQuality: playbackQuality,
+      error: error,
+      metaData: metaData,
     );
-
     _valueController.add(_value);
   }
 
@@ -349,15 +378,17 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     const musicUrlPattern = r'^https:\/\/(?:music\.)?youtube\.com\/watch\?';
     const idPattern = r'([_\-a-zA-Z0-9]{11}).*$';
 
-    for (var regex in [
+    for (final regex in [
       '${contentUrlPattern}v=$idPattern',
       '$embedUrlPattern$idPattern',
       '$altUrlPattern$idPattern',
       '$shortsUrlPattern$idPattern',
       '$musicUrlPattern?v=$idPattern',
     ]) {
-      Match? match = RegExp(regex).firstMatch(url);
-      if (match != null && match.groupCount >= 1) return match.group(1);
+      if (RegExp(regex).firstMatch(url) case final match?
+          when match.groupCount >= 1) {
+        return match.group(1);
+      }
     }
 
     return null;
@@ -366,8 +397,8 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   /// Grabs YouTube video's thumbnail for provided video id.
   static String getThumbnail({
     required String videoId,
-    ThumbnailQuality quality = ThumbnailQuality.standard,
-    ThumbnailFormat format = ThumbnailFormat.webp,
+    ThumbnailQuality quality = .standard,
+    ThumbnailFormat format = .webp,
   }) {
     return format.buildUrl(videoId, quality.value);
   }
@@ -381,7 +412,14 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   @override
   Future<List<String>> get playlist async {
     final playlist = await _bridge.evalWithResult('getPlaylist()');
-    return List.from(jsonDecode(playlist));
+    if (playlist.isEmpty) return [];
+    try {
+      final decoded = jsonDecode(playlist);
+      if (decoded == null) return [];
+      return List<String>.from(decoded);
+    } catch (_) {
+      return [];
+    }
   }
 
   @override
@@ -404,20 +442,26 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   @override
   Future<String> get videoUrl async {
     final videoUrl = await _bridge.runWithResult('getVideoUrl');
-
-    if (videoUrl.startsWith('"')) {
-      return videoUrl.substring(1, videoUrl.length - 1);
+    if (videoUrl.isEmpty) return '';
+    try {
+      final decoded = jsonDecode(videoUrl);
+      return decoded is String ? decoded : videoUrl;
+    } catch (_) {
+      return videoUrl;
     }
-
-    return videoUrl;
   }
 
   @override
   Future<List<double>> get availablePlaybackRates async {
     final rates = await _bridge.evalWithResult('getAvailablePlaybackRates()');
-    return List<num>.from(
-      jsonDecode(rates),
-    ).map((r) => r.toDouble()).toList(growable: false);
+    if (rates.isEmpty) return [];
+    try {
+      return List<num>.from(
+        jsonDecode(rates),
+      ).map((r) => r.toDouble()).toList(growable: false);
+    } catch (_) {
+      return [];
+    }
   }
 
   @override
@@ -517,11 +561,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   @override
   Future<PlayerState> get playerState async {
     final stateCode = await _bridge.runWithResult('getPlayerState');
-
-    return PlayerState.values.firstWhere(
-      (state) => state.code.toString() == stateCode,
-      orElse: () => PlayerState.unknown,
-    );
+    return PlayerState.fromCode(int.tryParse(stateCode) ?? -2);
   }
 
   @override
@@ -603,18 +643,11 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     }
 
     switch (featureName) {
-      case 'emb_rel_pause':
-      case 'emb_rel_end':
-      case 'emb_info':
+      case 'emb_rel_pause' || 'emb_rel_end' || 'emb_info':
         final videoId = queryParams['v'];
         if (videoId != null) loadVideoById(videoId: videoId);
-        break;
-      case 'emb_title':
-      case 'emb_logo':
-      case 'social':
-      case 'wl_button':
+      case 'emb_title' || 'emb_logo' || 'social' || 'wl_button':
         uri_launcher.launchUrl(uri);
-        break;
     }
 
     return NavigationDecision.prevent;

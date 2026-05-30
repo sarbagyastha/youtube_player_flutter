@@ -1,3 +1,7 @@
+// Copyright 2021 Sarbagya Dhaubanjar. All rights reserved.
+// Use of this source code is governed by a BSD-3-Clause license that can be
+// found in the LICENSE file.
+
 /// Queueing functions allow you to load and play a video, a playlist, or another list of videos.
 /// If you are using the object syntax described below to call these functions,
 /// then you can also queue or load a list of a user's uploaded videos.

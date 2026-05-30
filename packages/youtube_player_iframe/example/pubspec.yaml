@@ -3,6 +3,8 @@ description: Demonstrates how to use the youtube_player_iframe plugin.
 publish_to: none
 version: 6.0.0
 
+resolution: workspace
+
 environment:
   sdk: '>=3.10.0 <4.0.0'
 
@@ -11,7 +13,7 @@ dependencies:
     sdk: flutter
   flutter_web_plugins:
       sdk: flutter
-  youtube_player_iframe: ^6.0.0
+  youtube_player_iframe:
   go_router: ^17.2.3
 
 dev_dependencies:
