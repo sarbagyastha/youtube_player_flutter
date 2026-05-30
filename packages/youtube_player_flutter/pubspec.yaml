@@ -1,6 +1,6 @@
 name: youtube_player_flutter
 description: Flutter plugin for playing or streaming inline YouTube videos using the official iFrame player API. Powered by youtube_player_iframe.
-version: 10.0.0
+version: 10.0.1
 repository: https://github.com/sarbagyastha/youtube_player_flutter
 homepage: https://github.com/sarbagyastha/youtube_player_flutter/tree/main/packages/youtube_player_flutter
 
@@ -20,7 +20,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  youtube_player_iframe: ^6.0.1
+  youtube_player_iframe: ^6.0.2
 
 dev_dependencies:
   flutter_test:

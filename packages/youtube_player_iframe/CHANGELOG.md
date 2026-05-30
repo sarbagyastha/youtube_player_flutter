@@ -1,4 +1,9 @@
 # Changelog
+## 6.0.2
+**May 31, 2026**
+
+- Patch release to trigger pub.dev documentation refresh.
+
 ## 6.0.1
 **May 31, 2026**
 
