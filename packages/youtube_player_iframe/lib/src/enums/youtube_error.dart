@@ -40,4 +40,17 @@ enum YoutubeError {
 
   /// The raw code returned by the YouTube IFrame API.
   final int code;
+
+  /// Returns the [YoutubeError] matching [code], or [YoutubeError.unknown] if unrecognised.
+  static YoutubeError fromCode(int code) => switch (code) {
+    0 => YoutubeError.none,
+    2 => YoutubeError.invalidParam,
+    5 => YoutubeError.html5Error,
+    100 => YoutubeError.videoNotFound,
+    101 => YoutubeError.notEmbeddable,
+    105 => YoutubeError.cannotFindVideo,
+    150 => YoutubeError.sameAsNotEmbeddable,
+    152 => YoutubeError.sameAsNotEmbeddable2,
+    _ => YoutubeError.unknown,
+  };
 }

@@ -236,19 +236,13 @@ class YoutubePlayerParams {
 /// The pointer events.
 enum PointerEvents {
   /// The player reacts to pointer events, like hover and click.
-  auto('auto'),
+  auto,
 
   /// The initial configuration for pointer event.
   ///
   /// In most cases, this resolves to [PointerEvents.auto].
-  initial('initial'),
+  initial,
 
   /// The player does not react to any pointer events.
-  none('none');
-
-  /// Creates a [PointerEvents] for the [name].
-  const PointerEvents(this.name);
-
-  /// The name of the [PointerEvents].
-  final String name;
+  none;
 }

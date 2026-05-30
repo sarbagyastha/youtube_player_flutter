@@ -335,16 +335,14 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     YoutubeMetaData? metaData,
   }) {
     if (_valueController.isClosed) return;
-
-    _value = YoutubePlayerValue(
-      fullScreenOption: fullScreenOption ?? _value.fullScreenOption,
-      playerState: playerState ?? _value.playerState,
-      playbackRate: playbackRate ?? _value.playbackRate,
-      playbackQuality: playbackQuality ?? _value.playbackQuality,
-      error: error ?? _value.error,
-      metaData: metaData ?? _value.metaData,
+    _value = _value.copyWith(
+      fullScreenOption: fullScreenOption,
+      playerState: playerState,
+      playbackRate: playbackRate,
+      playbackQuality: playbackQuality,
+      error: error,
+      metaData: metaData,
     );
-
     _valueController.add(_value);
   }
 
@@ -380,15 +378,16 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     const musicUrlPattern = r'^https:\/\/(?:music\.)?youtube\.com\/watch\?';
     const idPattern = r'([_\-a-zA-Z0-9]{11}).*$';
 
-    for (var regex in [
+    for (final regex in [
       '${contentUrlPattern}v=$idPattern',
       '$embedUrlPattern$idPattern',
       '$altUrlPattern$idPattern',
       '$shortsUrlPattern$idPattern',
       '$musicUrlPattern?v=$idPattern',
     ]) {
-      Match? match = RegExp(regex).firstMatch(url);
-      if (match != null && match.groupCount >= 1) return match.group(1);
+      if (RegExp(regex).firstMatch(url) case final match? when match.groupCount >= 1) {
+        return match.group(1);
+      }
     }
 
     return null;
@@ -561,11 +560,7 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   @override
   Future<PlayerState> get playerState async {
     final stateCode = await _bridge.runWithResult('getPlayerState');
-
-    return PlayerState.values.firstWhere(
-      (state) => state.code.toString() == stateCode,
-      orElse: () => PlayerState.unknown,
-    );
+    return PlayerState.fromCode(int.tryParse(stateCode) ?? -2);
   }
 
   @override
@@ -647,18 +642,11 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
     }
 
     switch (featureName) {
-      case 'emb_rel_pause':
-      case 'emb_rel_end':
-      case 'emb_info':
+      case 'emb_rel_pause' || 'emb_rel_end' || 'emb_info':
         final videoId = queryParams['v'];
         if (videoId != null) loadVideoById(videoId: videoId);
-        break;
-      case 'emb_title':
-      case 'emb_logo':
-      case 'social':
-      case 'wl_button':
+      case 'emb_title' || 'emb_logo' || 'social' || 'wl_button':
         uri_launcher.launchUrl(uri);
-        break;
     }
 
     return NavigationDecision.prevent;

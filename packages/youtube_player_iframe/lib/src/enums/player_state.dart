@@ -31,4 +31,15 @@ enum PlayerState {
 
   /// The raw code returned by the YouTube IFrame API.
   final int code;
+
+  /// Returns the [PlayerState] matching [code], or [PlayerState.unknown] if unrecognised.
+  static PlayerState fromCode(int code) => switch (code) {
+    -1 => PlayerState.unStarted,
+    0 => PlayerState.ended,
+    1 => PlayerState.playing,
+    2 => PlayerState.paused,
+    3 => PlayerState.buffering,
+    5 => PlayerState.cued,
+    _ => PlayerState.unknown,
+  };
 }

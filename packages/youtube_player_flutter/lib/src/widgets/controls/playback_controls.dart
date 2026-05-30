@@ -46,14 +46,14 @@ class _PlaybackControlsState extends State<PlaybackControls> {
 
   Future<void> _refreshPlaylistInfo() async {
     try {
-      final results = await Future.wait([
+      final (playlist, index) = await (
         widget.controller.playlist,
         widget.controller.playlistIndex,
-      ]);
+      ).wait;
       if (!mounted) return;
       setState(() {
-        _playlistSize = (results[0] as List).length;
-        _playlistIndex = results[1] as int;
+        _playlistSize = playlist.length;
+        _playlistIndex = index;
       });
     } catch (_) {
       if (!mounted) return;
