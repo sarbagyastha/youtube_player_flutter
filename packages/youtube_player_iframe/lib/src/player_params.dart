@@ -116,6 +116,13 @@ class YoutubePlayerParams {
   /// unless they play the video. Default is true.
   final bool privacyEnhancedMode;
 
+  /// Interval in milliseconds at which the player polls for current time and
+  /// loaded fraction while the video is playing.
+  ///
+  /// Smaller values give smoother position updates at the cost of more
+  /// JS↔Dart bridge traffic. Defaults to 100 (10 Hz).
+  final int videoStateUpdateInterval;
+
   /// Defines player parameters for the youtube player.
   const YoutubePlayerParams({
     this.mute = false,
@@ -135,6 +142,7 @@ class YoutubePlayerParams {
     this.strictRelatedVideos = false,
     this.userAgent,
     this.privacyEnhancedMode = true,
+    this.videoStateUpdateInterval = 100,
   });
 
   /// Creates [Map] representation of [YoutubePlayerParams].
@@ -152,7 +160,6 @@ class YoutubePlayerParams {
       'hl': interfaceLanguage,
       'iv_load_policy': showVideoAnnotations ? 1 : 3,
       'loop': _boolean(loop),
-      'modestbranding': '1',
       if (kIsWeb) ...{
         'origin': Uri.base.origin,
         'widget_referrer': Uri.base.origin,
@@ -198,6 +205,7 @@ class YoutubePlayerParams {
     bool? strictRelatedVideos,
     Object? userAgent = _sentinel,
     bool? privacyEnhancedMode,
+    int? videoStateUpdateInterval,
   }) {
     return YoutubePlayerParams(
       mute: mute ?? this.mute,
@@ -217,6 +225,8 @@ class YoutubePlayerParams {
       strictRelatedVideos: strictRelatedVideos ?? this.strictRelatedVideos,
       userAgent: userAgent == _sentinel ? this.userAgent : userAgent as String?,
       privacyEnhancedMode: privacyEnhancedMode ?? this.privacyEnhancedMode,
+      videoStateUpdateInterval:
+          videoStateUpdateInterval ?? this.videoStateUpdateInterval,
     );
   }
 

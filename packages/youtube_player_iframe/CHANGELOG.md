@@ -1,9 +1,15 @@
 # Changelog
 ## 6.0.1
-**May 30, 2026**
+**May 31, 2026**
 
+- Adds `videoStateUpdateInterval` to `YoutubePlayerParams`. Controls how often (in milliseconds) the player polls for current time and loaded fraction while playing. Defaults to `100` (10 Hz), preserving existing behaviour.
+- Improves fullscreen-on-rotate transitions. The overlay now animates smoothly when the device rotates into and out of landscape.
 - Fixes fullscreen button not appearing on Web.
+- Fixes `videoUrl` getter returning a quote-wrapped string on some platforms.
+- Fixes `playlist` and `availablePlaybackRates` throwing a `FormatException` when called before a playlist or video is loaded.
 - Fixes null crash when `getPlaylist` returns an empty response.
+- Broadens `loadVideo` to accept all YouTube URL formats: watch, `youtu.be`, `/shorts/`, `/embed/`, and `music.youtube.com`.
+- Removes the deprecated `modestbranding` player parameter (dropped by YouTube in 2023).
 - Improves documentation for `PlayerState` and `YoutubeError` enums.
 
 ## 6.0.0

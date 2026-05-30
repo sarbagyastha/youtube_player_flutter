@@ -229,21 +229,18 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
 
   /// Loads the video with the given [url].
   ///
-  /// The [url] must be a valid youtube video watch url.
-  /// i.e. https://www.youtube.com/watch?v=VIDEO_ID
+  /// Accepts any YouTube URL format: watch, youtu.be, /shorts/, /embed/,
+  /// and music.youtube.com.
   Future<void> loadVideo(String url) {
-    assert(
-      RegExp(r'^https://(?:www\.|m\.)?youtube\.com/watch.*').hasMatch(url),
-      'Only YouTube watch URLs are supported.',
-    );
-
-    final queryParams = Uri.parse(url).queryParameters;
-    final videoId = queryParams['v'];
+    final videoId = convertUrlToId(url);
 
     assert(
       videoId != null && videoId.isNotEmpty,
-      'Video ID is missing from the provided url.',
+      'Could not extract a video ID from the provided URL. '
+      'Supported formats: watch, youtu.be, /shorts/, /embed/, music.youtube.com.',
     );
+
+    final queryParams = Uri.tryParse(url)?.queryParameters ?? const {};
 
     return loadVideoById(
       videoId: videoId!,
@@ -295,6 +292,8 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
       'playerVars': params.toJson(),
       'platform': platform,
       'host': params.host,
+      'videoStateUpdateInterval':
+          params.videoStateUpdateInterval.toString(),
     };
 
     await webViewController.loadHtmlString(
@@ -401,9 +400,14 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   @override
   Future<List<String>> get playlist async {
     final playlist = await _bridge.evalWithResult('getPlaylist()');
-    final decoded = jsonDecode(playlist);
-    if (decoded == null) return [];
-    return List.from(decoded);
+    if (playlist.isEmpty) return [];
+    try {
+      final decoded = jsonDecode(playlist);
+      if (decoded == null) return [];
+      return List<String>.from(decoded);
+    } catch (_) {
+      return [];
+    }
   }
 
   @override
@@ -426,20 +430,26 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   @override
   Future<String> get videoUrl async {
     final videoUrl = await _bridge.runWithResult('getVideoUrl');
-
-    if (videoUrl.startsWith('"')) {
-      return videoUrl.substring(1, videoUrl.length - 1);
+    if (videoUrl.isEmpty) return '';
+    try {
+      final decoded = jsonDecode(videoUrl);
+      return decoded is String ? decoded : videoUrl;
+    } catch (_) {
+      return videoUrl;
     }
-
-    return videoUrl;
   }
 
   @override
   Future<List<double>> get availablePlaybackRates async {
     final rates = await _bridge.evalWithResult('getAvailablePlaybackRates()');
-    return List<num>.from(
-      jsonDecode(rates),
-    ).map((r) => r.toDouble()).toList(growable: false);
+    if (rates.isEmpty) return [];
+    try {
+      return List<num>.from(jsonDecode(rates))
+          .map((r) => r.toDouble())
+          .toList(growable: false);
+    } catch (_) {
+      return [];
+    }
   }
 
   @override

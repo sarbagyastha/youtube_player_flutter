@@ -70,7 +70,7 @@
                   };
 
                   sendMessage('VideoState', JSON.stringify(state));
-                }, 100);
+                }, <<videoStateUpdateInterval>>);
               }
             },
             onPlaybackQualityChange: function (event) {
