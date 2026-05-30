@@ -2,7 +2,7 @@
     <application
         android:label="ypf_example"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ypf_icon">
         <activity
             android:name=".MainActivity"
             android:exported="true"

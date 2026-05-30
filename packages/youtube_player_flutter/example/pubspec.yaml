@@ -14,9 +14,10 @@ dependencies:
   youtube_player_flutter: 
 
 dev_dependencies:
+  flutter_launcher_icons: ^0.14.1
+  flutter_lints: ^6.0.0
   flutter_test:
     sdk: flutter
-  flutter_lints: ^6.0.0
 
 flutter:
   uses-material-design: true
