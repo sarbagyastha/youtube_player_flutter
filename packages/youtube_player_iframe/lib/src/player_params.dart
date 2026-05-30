@@ -9,6 +9,9 @@ import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 /// Defines player parameters for [YoutubePlayer].
 class YoutubePlayerParams {
+  // Specify whether the initial video will automatically start to play when the player loads.
+  final bool autoPlay;
+
   /// Mutes the player.
   ///
   /// Default is false.
@@ -125,6 +128,7 @@ class YoutubePlayerParams {
 
   /// Defines player parameters for the youtube player.
   const YoutubePlayerParams({
+    this.autoPlay = true,
     this.mute = false,
     this.captionLanguage = 'en',
     this.enableCaption = true,
@@ -148,7 +152,7 @@ class YoutubePlayerParams {
   /// Creates [Map] representation of [YoutubePlayerParams].
   Map<String, dynamic> toMap() {
     return {
-      'autoplay': 1,
+      'autoplay': _boolean(autoPlay),
       'mute': _boolean(mute),
       'cc_lang_pref': captionLanguage,
       'cc_load_policy': _boolean(enableCaption),
