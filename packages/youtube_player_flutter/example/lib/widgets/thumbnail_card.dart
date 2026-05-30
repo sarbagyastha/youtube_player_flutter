@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 class ThumbnailCard extends StatelessWidget {
-  const ThumbnailCard({super.key, required this.videoId, required this.selected});
+  const ThumbnailCard({
+    super.key,
+    required this.videoId,
+    required this.selected,
+  });
 
   final String videoId;
   final bool selected;
@@ -21,9 +25,10 @@ class ThumbnailCard extends StatelessWidget {
           Image.network(
             YoutubePlayerController.getThumbnail(
               videoId: videoId,
-              quality: ThumbnailQuality.high,
+              quality: .high,
             ),
             fit: BoxFit.fitWidth,
+            webHtmlElementStrategy: .fallback,
             errorBuilder: (_, _, _) => const ColoredBox(
               color: Colors.black12,
               child: Icon(Icons.ondemand_video, color: Colors.white54),
