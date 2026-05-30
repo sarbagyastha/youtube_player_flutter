@@ -23,9 +23,18 @@ melos:
     examples:
       - packages/youtube_player_flutter/example
       - packages/youtube_player_iframe/example
+    publishable:
+      - packages/youtube_player_flutter
+      - packages/youtube_player_iframe
+      - packages/youtube_player_iframe_web
   scripts:
     icon:
       exec: dart run flutter_launcher_icons
       description: Generate icons for all platforms
       packageFilters:
         category: examples
+    pana:
+      exec: dart pub global run pana .
+      description: Check publish readiness using pana for all publishable packages
+      packageFilters:
+        category: publishable
