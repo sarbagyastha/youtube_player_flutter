@@ -5,7 +5,7 @@
 <h2 align="center">Youtube Player Flutter</h2>
 
 <p align="center">
-A batteries-included YouTube player for Flutter. Drop it in and get a fully working player (controls, gestures, live stream support, and more) with just a few lines of code.
+A batteries-included YouTube player for Flutter. Drop it in and get a fully working player (controls, gestures, fullscreen, and more) with just a few lines of code.
 </p>
 
 <p align="center">
@@ -19,15 +19,20 @@ A batteries-included YouTube player for Flutter. Drop it in and get a fully work
 
 ## Features
 
-- Built-in playback controls (play/pause, seek bar, duration, fullscreen)
-- Drag left/right to fast-forward or rewind
-- Pinch gesture to enter fullscreen
-- Live stream UI with a red indicator
-- Customisable top and bottom action bars
+- Built-in Material-style controls (play/pause, seek bar, speed, fullscreen)
+- Drag left/right to seek (Android, iOS, macOS)
+- Swipe up/down or rotate to landscape for fullscreen (Android, iOS)
+- Customisable look via `YoutubePlayerTheme`
+- Replace the default overlay with your own UI via `builder`
+- Playlist previous/next when a playlist is loaded
+- Lazy thumbnails for lists via `YoutubePlayerThumbnail`
+- Live streams play without a special flag (no dedicated live UI)
 - No YouTube API key required
 - Supports Android, iOS, macOS, and Web
 
-> Built on top of [youtube_player_iframe](https://pub.dev/packages/youtube_player_iframe). If you need direct access to the iFrame API or want to build a fully custom UI, use that package instead.
+> Built on top of [youtube_player_iframe](https://pub.dev/packages/youtube_player_iframe). If you need direct access to the iFrame API or want to build a fully custom UI from scratch, use that package instead.
+
+Requires Flutter `>=3.38.0` and Dart `^3.10.0`.
 
 ---
 
@@ -37,6 +42,8 @@ A batteries-included YouTube player for Flutter. Drop it in and get a fully work
 flutter pub add youtube_player_flutter
 ```
 
+Check [webview_flutter's setup guide](https://pub.dev/packages/webview_flutter) for any platform-specific configuration.
+
 ---
 
 ## Quick Start
@@ -44,19 +51,21 @@ flutter pub add youtube_player_flutter
 ### 1. Create a controller
 
 ```dart
-final controller = YoutubePlayerController(
-  initialVideoId: '<video-id>',
-  flags: const YoutubePlayerFlags(
-    autoPlay: true,
+final controller = YoutubePlayerController.fromVideoId(
+  videoId: '<video-id>',
+  autoPlay: true,
+  startSeconds: 0,
+  params: const YoutubePlayerParams(
     mute: false,
+    strictRelatedVideos: true,
   ),
 );
 ```
 
-Have a YouTube URL instead of a video ID? Use the helper:
+`fromVideoId` also accepts optional `endSeconds`. Have a YouTube URL instead of a video ID? Use the helper:
 
 ```dart
-final videoId = YoutubePlayer.convertUrlToId(
+final videoId = YoutubePlayerController.convertUrlToId(
   'https://www.youtube.com/watch?v=BBAyRBTfsOU',
 ); // → 'BBAyRBTfsOU'
 ```
@@ -64,106 +73,196 @@ final videoId = YoutubePlayer.convertUrlToId(
 ### 2. Add the player widget
 
 ```dart
-YoutubePlayer(
-  controller: controller,
-  showVideoProgressIndicator: true,
-  progressIndicatorColor: Colors.red,
-)
+YoutubePlayer(controller: controller)
 ```
 
-### 3. Add fullscreen support
+Optional parameters include `aspectRatio` (default `16/9`), `autoHideDuration`, `keepAlive`, `backgroundColor`, and `gestureRecognizers`.
 
-Wrap with `YoutubePlayerBuilder` to enable fullscreen:
+On Android, iOS, and macOS the package draws a custom controls overlay and hides YouTube's native controls. On Web, Flutter overlays do not receive gestures through the iframe, so the player keeps YouTube's native controls and fullscreen button.
 
-```dart
-YoutubePlayerBuilder(
-  player: YoutubePlayer(controller: controller),
-  builder: (context, player) {
-    return Scaffold(
-      body: Column(
-        children: [
-          player,
-          // rest of your screen
-        ],
-      ),
-    );
-  },
-)
-```
-
-### 4. Dispose when done
+### 3. Dispose when done
 
 ```dart
 @override
 void dispose() {
-  controller.dispose();
+  controller.close();
   super.dispose();
 }
 ```
 
 ---
 
-## Live Stream Videos
+## Fullscreen
 
-Set `isLive: true` to switch the player to a live stream UI (red indicator, no seek bar):
+On **Android and iOS**, fullscreen works automatically — no scaffold wrapper is required. The player handles the transition internally via an overlay.
+
+| Action | Result |
+|---|---|
+| Tap the fullscreen button | Animates to fullscreen |
+| Rotate device to landscape | Auto-enters fullscreen (`autoFullScreen: true`) |
+| Swipe up on the player | Enters fullscreen (`enableFullScreenOnVerticalDrag: true`) |
+| Swipe down in fullscreen | Exits fullscreen |
+| Back button / system gesture | Exits fullscreen |
+
+Disable either behaviour on the widget if needed:
 
 ```dart
-final controller = YoutubePlayerController(
-  initialVideoId: '<live-stream-id>',
-  flags: const YoutubePlayerFlags(isLive: true),
-);
-
 YoutubePlayer(
   controller: controller,
-  liveUIColor: Colors.red,
+  autoFullScreen: false,
+  enableFullScreenOnVerticalDrag: false,
 )
 ```
+
+On **macOS**, the custom controls overlay (including the fullscreen button) is drawn, but overlay fullscreen is mobile-only — tapping the fullscreen button does not expand the player (use the host window / OS fullscreen instead). Swipe-to-fullscreen and rotation auto-fullscreen are also mobile-only. On **Web**, use YouTube's native fullscreen button.
+
+---
+
+## Theming
+
+Apply `YoutubePlayerTheme` via `ThemeData.extensions` to override the default control colours and text styles:
+
+```dart
+MaterialApp(
+  theme: ThemeData(
+    extensions: const [
+      YoutubePlayerTheme(
+        progressBarActiveColor: Colors.red,
+        controlsColor: Colors.white,
+      ),
+    ],
+  ),
+  home: MyHomePage(),
+)
+```
+
+Available properties for the default overlay: `progressBarActiveColor`, `progressBarBufferedColor`, `progressBarBackgroundColor`, `controlsColor`, `controlsBackgroundGradient`, `timerStyle`. Unset values fall back to the app's `ColorScheme` / `TextTheme`. You can also set `titleStyle` on `YoutubePlayerTheme` for custom UIs (the default overlay does not show a title).
 
 ---
 
 ## Custom Controls
 
-Use `topActions` and `bottomActions` to swap in your own controls. Several pre-built widgets are included:
-
-| Widget | What it shows |
-|---|---|
-| `PlayPauseButton` | Play / pause toggle |
-| `CurrentPosition` | Current timestamp |
-| `RemainingDuration` | Time left |
-| `ProgressBar` | Seek bar |
-| `FullScreenButton` | Fullscreen toggle |
-| `PlaybackSpeedButton` | Speed picker |
+Pass a `builder` to replace the default overlay. You receive a `player` widget and the controller:
 
 ```dart
 YoutubePlayer(
   controller: controller,
-  bottomActions: [
-    CurrentPosition(),
-    ProgressBar(isExpanded: true),
-    RemainingDuration(),
-    FullScreenButton(),
-  ],
+  builder: (context, player, ctrl) => Stack(
+    children: [
+      player,
+      Positioned(
+        bottom: 0,
+        left: 0,
+        right: 0,
+        child: MyControls(controller: ctrl),
+      ),
+    ],
+  ),
+)
+```
+
+On Android and iOS, `player` is a full-size placeholder — the video WebView is already behind the overlay. Layer your controls in the `Stack` as usual. On macOS, `player` is the real video surface. On Web, the default Material overlay is skipped (native YouTube controls are kept), but `builder` is still applied — put controls beside or below the player, since Flutter widgets drawn on top of the iframe will not receive pointer events.
+
+See [example/lib/widgets/custom_builder_demo.dart](example/lib/widgets/custom_builder_demo.dart) for a complete custom-controls example.
+
+Use `YoutubeValueBuilder` for reactive UI that rebuilds when player state changes, and `FullscreenButton` for a ready-made fullscreen toggle:
+
+```dart
+YoutubeValueBuilder(
+  controller: controller,
+  builder: (context, value) {
+    return Row(
+      children: [
+        IconButton(
+          icon: Icon(
+            value.playerState == PlayerState.playing
+                ? Icons.pause
+                : Icons.play_arrow,
+          ),
+          onPressed: () {
+            value.playerState == PlayerState.playing
+                ? controller.pauseVideo()
+                : controller.playVideo();
+          },
+        ),
+        FullscreenButton(controller: controller),
+      ],
+    );
+  },
 )
 ```
 
 ---
 
-## Platform Requirements
+## Lazy Thumbnails
 
-| Platform | Minimum |
+Don't spin up a WebView for every item in a list. `YoutubePlayerThumbnail` shows a static thumbnail and only creates the player when the user taps it.
+
+```dart
+YoutubePlayerThumbnail(
+  controller: YoutubePlayerController.fromVideoId(videoId: '<video-id>'),
+  aspectRatio: 16 / 9,
+  thumbnailQuality: ThumbnailQuality.high,
+  thumbnailFormat: ThumbnailFormat.webp,
+)
+```
+
+Note: the player created on tap uses the iframe package's bare player (not this package's Material overlay). Prefer `YoutubePlayer` when you want the built-in controls.
+
+Just want the thumbnail URL?
+
+```dart
+final url = YoutubePlayerController.getThumbnail(
+  videoId: '<video-id>',
+  quality: ThumbnailQuality.high,
+  format: ThumbnailFormat.webp,
+);
+```
+
+---
+
+## Switching Videos & Playlists
+
+Load another video on the same controller:
+
+```dart
+controller.loadVideoById(videoId: '<next-video-id>');
+```
+
+Playlist APIs from `youtube_player_iframe` are re-exported — for example `loadPlaylist`, `cuePlaylist`, `nextVideo`, and `previousVideo`. When a playlist with more than one item is active, the default overlay shows previous/next buttons.
+
+---
+
+## Migrating from 9.x
+
+| 9.x | 10.x |
 |---|---|
-| Android | API level 20 (`minSdkVersion 20`) |
-| iOS | iOS 11, Swift, Xcode ≥ 11 |
-| macOS | macOS 10.14 |
-| Web | Any modern browser |
+| `YoutubePlayerFlags` | `YoutubePlayerParams` |
+| `YoutubePlayerController(initialVideoId: …)` | `YoutubePlayerController.fromVideoId` / `loadVideoById` |
+| `controller.dispose()` | `controller.close()` |
+| `play()` / `pause()` | `playVideo()` / `pauseVideo()` |
+| Scaffold `YoutubePlayerBuilder` widget | Removed — fullscreen is built-in. `builder` on `YoutubePlayer` is only for custom controls |
+| Modular widgets (`ProgressBar`, `PlayPauseButton`, …) | Not exported — use the default overlay or a custom `builder`. `FullscreenButton` is exported for custom UIs |
+| `isLive` / live UI | Removed — live streams still play via the IFrame API |
 
-For Android and iOS setup details, see the [webview_flutter docs](https://pub.dev/packages/webview_flutter).
+---
+
+## Platforms
+
+| Platform | Support |
+|---|---|
+| Android | Yes |
+| iOS | Yes |
+| macOS | Yes |
+| Web | Yes (native YouTube controls) |
+
+Follow the [webview_flutter](https://pub.dev/packages/webview_flutter) setup guide for platform-specific requirements.
 
 ---
 
 ## Example
 
-Try the [live web demo](https://yt.sarbagyastha.com.np) or see the [example app](example/lib/main.dart) for a complete working demo.
+Try the [live web demo](https://yt.sarbagyastha.com.np) or see the [example app](example/lib/main.dart) for a complete working demo (playlist carousel, theming, and custom controls).
 
 ---
 
