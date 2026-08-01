@@ -7,6 +7,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -129,6 +130,7 @@ class _YoutubePlayerState extends State<YoutubePlayer>
   final _placeholderKey = GlobalKey();
   final _layerLink = LayerLink();
   Rect _playerRect = Rect.zero;
+  Rect? _viewportRect;
 
   StreamSubscription<YoutubePlayerValue>? _valueSub;
   PlayerState _lastPlayerState = .unknown;
@@ -289,6 +291,22 @@ class _YoutubePlayerState extends State<YoutubePlayer>
     if (box == null || !box.hasSize) return;
     final newRect = box.localToGlobal(Offset.zero) & box.size;
     if (newRect != _playerRect) setState(() => _playerRect = newRect);
+
+    // The WebView is rendered in an OverlayPortal so it can track scrolling.
+    // Unlike the placeholder, an overlay is not clipped by a surrounding
+    // ScrollView. Preserve the viewport bounds so the native view cannot draw
+    // over siblings such as Scaffold.bottomNavigationBar.
+    final viewport = RenderAbstractViewport.maybeOf(box);
+    final viewportBox = switch (viewport) {
+      RenderBox viewport => viewport,
+      _ => null,
+    };
+    if (viewportBox == null || !viewportBox.hasSize) return;
+    final newViewportRect =
+        viewportBox.localToGlobal(Offset.zero) & viewportBox.size;
+    if (newViewportRect != _viewportRect) {
+      setState(() => _viewportRect = newViewportRect);
+    }
   }
 
   @override
@@ -338,6 +356,7 @@ class _YoutubePlayerState extends State<YoutubePlayer>
             overlayChildBuilder: (context) => _PlayerOverlayContent(
               controller: _controller,
               playerRect: _playerRect,
+              viewportRect: _viewportRect,
               layerLink: _layerLink,
               aspectRatio: widget.aspectRatio,
               backgroundColor: widget.backgroundColor,
@@ -396,6 +415,7 @@ class _PlayerOverlayContent extends StatelessWidget {
   const _PlayerOverlayContent({
     required this.controller,
     required this.playerRect,
+    required this.viewportRect,
     required this.layerLink,
     required this.backgroundColor,
     required this.gestureRecognizers,
@@ -409,6 +429,7 @@ class _PlayerOverlayContent extends StatelessWidget {
 
   final YoutubePlayerController controller;
   final Rect playerRect;
+  final Rect? viewportRect;
   final LayerLink layerLink;
   final Color? backgroundColor;
   final Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers;
@@ -531,7 +552,7 @@ class _PlayerOverlayContent extends StatelessWidget {
                 ? IgnorePointer(child: Opacity(opacity: 0, child: w))
                 : w;
 
-            return Stack(
+            final playerOverlay = Stack(
               fit: StackFit.expand,
               children: [
                 _FullscreenBackground(isFullscreen: isFullscreen),
@@ -565,11 +586,31 @@ class _PlayerOverlayContent extends StatelessWidget {
                 ),
               ],
             );
+
+            if (isFullscreen || viewportRect == null) return playerOverlay;
+
+            return ClipRect(
+              clipper: _ViewportClipper(viewportRect!),
+              child: playerOverlay,
+            );
           },
         );
       },
     );
   }
+}
+
+class _ViewportClipper extends CustomClipper<Rect> {
+  const _ViewportClipper(this.viewportRect);
+
+  final Rect viewportRect;
+
+  @override
+  Rect getClip(Size size) => viewportRect.intersect(Offset.zero & size);
+
+  @override
+  bool shouldReclip(_ViewportClipper oldClipper) =>
+      oldClipper.viewportRect != viewportRect;
 }
 
 class _FullscreenBackground extends StatelessWidget {

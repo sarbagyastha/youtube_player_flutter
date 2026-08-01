@@ -15,7 +15,7 @@ let package = Package(
         .library(name: "FlutterGeneratedPluginSwiftPackage", type: .static, targets: ["FlutterGeneratedPluginSwiftPackage"])
     ],
     dependencies: [
-        .package(name: "webview_flutter_wkwebview", path: "../.packages/webview_flutter_wkwebview-3.25.1"),
+        .package(name: "webview_flutter_wkwebview", path: "../.packages/webview_flutter_wkwebview-3.26.0"),
         .package(name: "url_launcher_ios", path: "../.packages/url_launcher_ios-6.4.1"),
         .package(name: "FlutterFramework", path: "../.packages/FlutterFramework")
     ],
