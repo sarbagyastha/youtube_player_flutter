@@ -18,6 +18,7 @@ import '../helpers/platform.dart';
 import '../helpers/youtube_value_builder.dart';
 import '../player_params.dart';
 import '../player_value.dart';
+import 'player_loading_overlay.dart';
 
 /// A widget to play or stream Youtube Videos.
 class YoutubePlayer extends StatefulWidget {
@@ -607,11 +608,11 @@ class _PlayerLoadingOverlay extends StatelessWidget {
   Widget build(BuildContext context) {
     return YoutubeValueBuilder(
       controller: controller,
-      buildWhen: (o, n) => o.playerState != n.playerState,
+      buildWhen: (o, n) =>
+          shouldShowPlayerLoadingOverlay(o) !=
+          shouldShowPlayerLoadingOverlay(n),
       builder: (context, value) {
-        final isInitializing =
-            value.playerState == PlayerState.unknown ||
-            value.playerState == PlayerState.unStarted;
+        final isInitializing = shouldShowPlayerLoadingOverlay(value);
         final fallbackColor =
             backgroundColor ?? Theme.of(context).colorScheme.surface;
         final videoId = controller.key;
