@@ -127,6 +127,11 @@ class _YoutubePlayerState extends State<YoutubePlayer>
 
   final _overlayController = OverlayPortalController();
   final _placeholderKey = GlobalKey();
+
+  // Keeps the WebView's identity when fullscreen moves it to a different
+  // parent in the overlay. Without it Flutter creates a new platform view on
+  // every toggle, which on iOS reloads the player and restarts the video.
+  final _webViewKey = GlobalKey();
   final _layerLink = LayerLink();
   Rect _playerRect = Rect.zero;
 
@@ -345,6 +350,7 @@ class _YoutubePlayerState extends State<YoutubePlayer>
               enableFullScreenOnVerticalDrag:
                   widget.enableFullScreenOnVerticalDrag,
               controlsBuilder: widget.controlsBuilder,
+              webViewKey: _webViewKey,
               fullscreenCount: _fullscreenCount,
               thumbnailQuality: widget.thumbnailQuality,
               thumbnailFormat: widget.thumbnailFormat,
@@ -403,11 +409,13 @@ class _PlayerOverlayContent extends StatelessWidget {
     required this.fullscreenCount,
     this.aspectRatio = 16 / 9,
     this.controlsBuilder,
+    this.webViewKey,
     this.thumbnailQuality = .high,
     this.thumbnailFormat = .webp,
   });
 
   final YoutubePlayerController controller;
+  final GlobalKey? webViewKey;
   final Rect playerRect;
   final LayerLink layerLink;
   final Color? backgroundColor;
@@ -538,6 +546,7 @@ class _PlayerOverlayContent extends StatelessWidget {
                 positionedLayer(
                   maybeHide(
                     _YoutubeWebView(
+                      key: webViewKey,
                       controller: controller,
                       gestureRecognizers: gestureRecognizers,
                       enableFullScreenOnVerticalDrag:
@@ -656,6 +665,7 @@ class _PlayerLoadingOverlay extends StatelessWidget {
 
 class _YoutubeWebView extends StatelessWidget {
   const _YoutubeWebView({
+    super.key,
     required this.controller,
     required this.gestureRecognizers,
     required this.enableFullScreenOnVerticalDrag,

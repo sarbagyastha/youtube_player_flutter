@@ -1,4 +1,8 @@
 # Changelog
+## Unreleased
+
+- Fixes the video restarting from the beginning when entering or exiting fullscreen on iOS. The WebView now keeps its identity across the toggle instead of being recreated.
+
 ## 6.0.2
 **May 31, 2026**
 
