@@ -1,4 +1,8 @@
 # Changelog
+## Unreleased
+
+- Adds `sidewaysFullscreen` to `YoutubePlayer`. Fullscreen in a portrait window is drawn turned a quarter at full height instead of letterboxed, for iOS where app-requested rotation is rejected.
+
 ## 6.0.2
 **May 31, 2026**
 

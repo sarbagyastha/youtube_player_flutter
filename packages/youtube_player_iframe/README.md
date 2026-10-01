@@ -105,6 +105,17 @@ Fullscreen works automatically on all platforms. The player handles the transiti
 | Swipe down in fullscreen | Exits fullscreen |
 | Back button / system gesture | Exits fullscreen |
 
+### Sideways fullscreen (iOS)
+
+On iOS 16+ an app-requested rotation is often rejected, so fullscreen stays letterboxed in portrait. Set `sidewaysFullscreen` to draw fullscreen turned a quarter at full height instead; the user turns the phone, not the app. Your `controlsBuilder` is turned with the video and receives turned safe-area padding.
+
+```dart
+YoutubePlayer(
+  controller: controller,
+  sidewaysFullscreen: Platform.isIOS,
+)
+```
+
 ---
 
 ## Lazy Thumbnails (Perfect for Lists)
