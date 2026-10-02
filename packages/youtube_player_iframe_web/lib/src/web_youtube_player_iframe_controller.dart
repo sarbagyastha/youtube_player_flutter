@@ -101,7 +101,9 @@ class WebYoutubePlayerIframeController extends PlatformWebViewController {
 
     final completer = Completer<String>();
     final subscription = window.onMessage.listen((event) {
-      final data = jsonDecode(event.data.dartify() as String);
+      final message = _params.ytiFrame.messageFrom(event);
+      if (message == null) return;
+      final data = jsonDecode(message);
 
       if (data is Map && data.containsKey(key)) {
         completer.complete(data[key].toString());
@@ -224,9 +226,12 @@ class YoutubePlayerIframeWeb extends PlatformWebViewWidget {
         if (channelParams != null) {
           _controller._messageSubscription?.cancel();
           _controller._messageSubscription = window.onMessage.listen((event) {
-            channelParams.onMessageReceived(
-              JavaScriptMessage(message: event.data.dartify() as String),
-            );
+            final message = _controller._params.ytiFrame.messageFrom(event);
+            if (message != null) {
+              channelParams.onMessageReceived(
+                JavaScriptMessage(message: message),
+              );
+            }
           });
         }
       },
@@ -270,6 +275,22 @@ extension type YoutubeIframeElement._(HTMLIFrameElement element) {
   /// - [Chrome Developers](https://developer.chrome.com/blog/anonymous-iframe-origin-trial)
   set credentialless(bool value) {
     element['credentialless'] = value.toJS;
+  }
+
+  /// The data of [event] if the player page in this iframe posted it, or null.
+  ///
+  /// The listeners are on the window, so they receive every other script's
+  /// messages too -- a payment form's iframe, a browser extension, the browser
+  /// itself -- and those can carry data of any type, not just strings. Taking
+  /// one as a player message threw on the String cast, or handed the player
+  /// a message it never sent.
+  String? messageFrom(MessageEvent event) {
+    final player = element.contentWindow;
+    if (player == null || !event.source.strictEquals(player).toDart) {
+      return null;
+    }
+    final data = event.data;
+    return data.isA<JSString>() ? (data as JSString).toDart : null;
   }
 
   /// Runs a function in the [HTMLIFrameElement] using postMessage.
