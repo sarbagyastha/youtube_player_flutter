@@ -21,7 +21,6 @@ class MyApp extends StatelessWidget {
       title: 'Youtube Player Iframe Web Demo',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
       ),
       home: Scaffold(
         appBar: AppBar(title: const Text('Youtube Player Iframe Web Demo')),

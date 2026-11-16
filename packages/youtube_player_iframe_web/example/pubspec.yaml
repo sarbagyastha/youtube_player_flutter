@@ -6,13 +6,14 @@ version: 1.0.1+2
 resolution: workspace
 
 environment:
-  sdk: ^3.11.0
-  flutter: '>=3.38.0'
+  sdk: ^3.14.0
+  flutter: '>=3.50.0'
 
 dependencies:
   flutter:
     sdk: flutter
   go_router: ^18.1.4
+  material_ui: ^1.11.0
   webview_flutter: ^4.14.1
   youtube_player_iframe:
 
