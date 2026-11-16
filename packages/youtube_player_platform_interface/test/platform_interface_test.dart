@@ -157,6 +157,26 @@ void main() {
       expect(host.nativeDisposed, isTrue);
       expect(await host.query(PlayerMethod.getPlaylist), isNull);
     });
+
+    test('delivers page messages on a later event-loop turn', () async {
+      final host = FakeBridgeHost();
+      final events = <PlayerEvent>[];
+      host.events.listen(events.add);
+      host.page({'e': 'ready'});
+      host.page({'e': 'state', 'd': {'s': 2}});
+      // Not synchronously, and not from microtasks alone: Native Interop
+      // callbacks run outside the isolate's message loop.
+      await Future<void>.microtask(() {});
+      expect(events, isEmpty);
+      await Future<void>.delayed(Duration.zero);
+      expect(events, [isA<ReadyEvent>(), isA<StateChangeEvent>()]);
+
+      host
+        ..page({'e': 'ready'})
+        ..dispose();
+      await Future<void>.delayed(Duration.zero);
+      expect(events, hasLength(2));
+    });
   });
 
   group('element control', () {

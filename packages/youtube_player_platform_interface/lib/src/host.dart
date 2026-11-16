@@ -138,10 +138,26 @@ abstract base class BridgeHost({
     }
   }
 
-  /// Handles one message posted by the page.
+  /// Runs [deliver] on a later event-loop turn, unless disposed by then.
+  ///
+  /// Native Interop calls into Dart synchronously from a main-thread task
+  /// the engine doesn't run, so microtasks scheduled there (every async
+  /// stream hop up to the widgets) would not run until something else woke
+  /// the isolate, e.g. the next frame. A paused player has none, so its
+  /// state changes would be stuck. A timer goes through the isolate's
+  /// message loop, which drains microtasks after it, and keeps FIFO order.
+  void _defer(void Function() deliver) => Timer.run(() {
+    if (!_disposed) deliver();
+  });
+
+  /// Handles one message posted by the page. Delivered on a later
+  /// event-loop turn; see [_defer].
   @protected
   void receiveFromPage(String json) {
-    if (_disposed) return;
+    if (!_disposed) _defer(() => _receive(json));
+  }
+
+  void _receive(String json) {
     final Object? decoded;
     try {
       decoded = jsonDecode(json);
@@ -169,20 +185,20 @@ abstract base class BridgeHost({
   void emitNavigation(String url) {
     if (_disposed) return;
     if (Uri.tryParse(url) case final uri?) {
-      _navigations.add(NavigationRequest(uri: uri));
+      _defer(() => _navigations.add(NavigationRequest(uri: uri)));
     }
   }
 
   /// Reports a fullscreen transition.
   @protected
   void emitFullscreen(bool isFullscreen) {
-    if (!_disposed) _fullscreen.add(isFullscreen);
+    if (!_disposed) _defer(() => _fullscreen.add(isFullscreen));
   }
 
   /// Reports a page load failure.
   @protected
   void emitLoadError(YoutubeLoadError error) {
-    if (!_disposed) _events.add(LoadErrorEvent(error));
+    if (!_disposed) _defer(() => _events.add(LoadErrorEvent(error)));
   }
 
   @override
