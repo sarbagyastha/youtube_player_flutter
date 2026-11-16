@@ -42,13 +42,15 @@ final class const YoutubePlayerParams({
   /// Show captions by default (`cc_load_policy`).
   final bool enableCaption = true,
 
-  /// Pointer handling of the iframe.
+  /// Pointer handling of the iframe. Forced to [PointerEvents.none] when
+  /// `YoutubePlayer.controlsBuilder` is set.
   final PointerEvents pointerEvents = .initial,
 
   /// Progress bar color (`color`).
   final ProgressBarColor color = .white,
 
-  /// Show the player controls (`controls`).
+  /// Show the player controls (`controls`). Forced off when
+  /// `YoutubePlayer.controlsBuilder` is set.
   final bool showControls = true,
 
   /// Enable keyboard shortcuts (`disablekb` inverted).
@@ -117,15 +119,18 @@ final class const YoutubePlayerParams({
       : 'https://www.youtube.com';
 
   /// The documented `playerVars` for these params.
-  Map<String, Object> toPlayerVars() => {
+  ///
+  /// With [customControls], the native controls, keyboard shortcuts and
+  /// fullscreen button are turned off so a Flutter overlay can replace them.
+  Map<String, Object> toPlayerVars({bool customControls = false}) => {
     'autoplay': 0,
     'mute': _flag(mute),
     'cc_lang_pref': captionLanguage,
     'cc_load_policy': _flag(enableCaption),
     'color': color.name,
-    'controls': _flag(showControls),
-    'disablekb': _flag(!enableKeyboard),
-    'fs': _flag(showFullscreenButton),
+    'controls': _flag(showControls && !customControls),
+    'disablekb': _flag(!enableKeyboard || customControls),
+    'fs': _flag(showFullscreenButton && !customControls),
     'hl': interfaceLanguage,
     'iv_load_policy': showVideoAnnotations ? 1 : 3,
     'loop': _flag(loop),
@@ -136,20 +141,28 @@ final class const YoutubePlayerParams({
   };
 
   /// Host creation parameters for the platform implementation.
-  YoutubeHostParams toHostParams({String? videoId, Color? backgroundColor}) =>
-      YoutubeHostParams(
-        playerVars: toPlayerVars(),
-        videoId: videoId,
-        host: host,
-        appId: appId,
-        userAgent: userAgent,
-        backgroundColor: backgroundColor,
-        debuggable: debuggable,
-        webCredentialless: webCredentialless,
-        fullscreenOrientation: fullscreenOrientation,
-        pointerEvents: pointerEvents.name,
-        tickInterval: Duration(milliseconds: videoStateUpdateInterval),
-      );
+  ///
+  /// With [customControls], the iframe also ignores pointer events; see
+  /// [toPlayerVars].
+  YoutubeHostParams toHostParams({
+    String? videoId,
+    Color? backgroundColor,
+    bool customControls = false,
+  }) => YoutubeHostParams(
+    playerVars: toPlayerVars(customControls: customControls),
+    videoId: videoId,
+    host: host,
+    appId: appId,
+    userAgent: userAgent,
+    backgroundColor: backgroundColor,
+    debuggable: debuggable,
+    webCredentialless: webCredentialless,
+    fullscreenOrientation: fullscreenOrientation,
+    pointerEvents: customControls
+        ? PointerEvents.none.name
+        : pointerEvents.name,
+    tickInterval: Duration(milliseconds: videoStateUpdateInterval),
+  );
 
   static int _flag(bool value) => value ? 1 : 0;
 }

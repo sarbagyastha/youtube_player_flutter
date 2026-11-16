@@ -3,6 +3,10 @@
 Play YouTube videos inline with the official
 [IFrame Player API](https://developers.google.com/youtube/iframe_api_reference).
 
+This package is the plain player: it draws no Flutter UI of its own, and it
+gives you one hook for your own controls. It is the planned successor to
+`youtube_player_iframe`.
+
 - **Small native hosts.** On Android, iOS and macOS the player runs in a plain
   system WebView driven over [Pigeon](https://pub.dev/packages/pigeon). There
   is no `webview_flutter` dependency.
@@ -47,8 +51,29 @@ await controller.close();
 Read state with `YoutubeValueBuilder`, or provide the controller to a subtree
 with `YoutubePlayerControllerProvider` and read it via `context.ytController`.
 
-`YoutubePlayerThumbnail` shows a tap-to-play thumbnail. It loads nothing from
-YouTube until it is tapped, which suits long lists.
+### Custom UI
+
+Pass `controlsBuilder` to replace YouTube's controls with Flutter widgets:
+
+```dart
+YoutubePlayer(
+  controller: controller,
+  controlsBuilder: (context, value) => MyControls(value),
+);
+```
+
+You don't need to set any params. With a `controlsBuilder`, the player is
+created with its native controls, keyboard shortcuts and fullscreen button
+turned off, and the iframe ignores pointer events, so every tap reaches your
+overlay. The overlay covers exactly the player's `aspectRatio` box. It
+rebuilds on every value change, and `context.ytController` works inside it.
+
+- The controls are fixed when the player is created, so decide on
+  `controlsBuilder` before the player is first shown.
+- The overlay is not shown in native fullscreen. A custom fullscreen button
+  can call `enterFullScreen()` on Android, macOS and the web; iPhone only
+  allows the player's own button.
+- For thumbnails, use `YoutubePlayerController.getThumbnail(videoId: ...)`.
 
 ### Autoplay
 
@@ -101,6 +126,9 @@ Most code only needs the import changed to `package:youtube_player/youtube_playe
 | `getCurrentPositionStream()` | `videoStateStream` |
 | `YoutubeError.sameAsNotEmbeddable*` | Merged into `notEmbeddable`; new `missingClientIdentity` (153). |
 | `showFullscreenButton` defaulted to `false` | Defaults to `true`. |
+| `YoutubePlayerThumbnail` / player thumbnail placeholder | Removed; build one with `getThumbnail`. |
+| `showControls: false` + `pointerEvents: none` for custom controls | Pass `YoutubePlayer(controlsBuilder:)`; it sets both. |
+| Player created on the first controller call | Created when a `YoutubePlayer` first shows it; earlier calls are queued. |
 
 New in this package: `setCaptionsFontSize`, `reloadCaptions`, `getOptions`,
 `sphericalProperties` / `setSphericalProperties`, `apiChangeStream`,

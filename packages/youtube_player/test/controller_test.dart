@@ -87,6 +87,9 @@ void main() {
     unawaited(controller.seekTo(seconds: 10, allowSeekAhead: true));
     unawaited(controller.setVolume(40));
     await pump();
+    expect(platform.hosts, isEmpty, reason: 'calls do not create the host');
+    unawaited(controller.host);
+    await pump();
     final host = platform.hosts.single;
     expect(host.calls, isEmpty);
 
@@ -252,6 +255,7 @@ void main() {
   test('close disposes the host and silences later calls', () async {
     final controller = YoutubePlayerController();
     final pending = controller.playVideo();
+    unawaited(controller.host);
     await pump();
     final host = platform.hosts.single;
     await controller.close();
@@ -259,6 +263,72 @@ void main() {
     await controller.pauseVideo();
     expect(host.disposed, isTrue);
     expect(host.calls, isEmpty);
+  });
+
+  test('fromVideoId with a start time waits for a view', () async {
+    final controller = YoutubePlayerController.fromVideoId(
+      videoId: 'dQw4w9WgXcQ',
+      startSeconds: 30,
+    );
+    await pump();
+    expect(platform.params, isEmpty);
+    controller.customControls = true;
+    unawaited(controller.host);
+    await pump();
+    final host = platform.hosts.single..emit(const ReadyEvent());
+    await pump();
+    expect(host.calls.single.$1, PlayerMethod.cueVideoById);
+    expect(platform.params.single.playerVars['controls'], 0);
+  });
+
+  test('custom controls turn off native controls and pointer events', () {
+    final params = const YoutubePlayerParams(
+      enableKeyboard: true,
+    ).toHostParams(customControls: true);
+    expect(params.playerVars['controls'], 0);
+    expect(params.playerVars['disablekb'], 1);
+    expect(params.playerVars['fs'], 0);
+    expect(params.pointerEvents, 'none');
+
+    final defaults = const YoutubePlayerParams().toHostParams();
+    expect(defaults.playerVars['controls'], 1);
+    expect(defaults.playerVars['fs'], 1);
+    expect(defaults.pointerEvents, 'initial');
+  });
+
+  testWidgets('controlsBuilder overlays exactly the player box', (
+    tester,
+  ) async {
+    final controller = YoutubePlayerController();
+    Size? overlaySize;
+    await tester.pumpWidget(
+      Directionality(
+        textDirection: .ltr,
+        child: Center(
+          child: SizedBox(
+            width: 320,
+            child: YoutubePlayer(
+              controller: controller,
+              autoPlayWhenVisible: false,
+              controlsBuilder: (context, value) {
+                expect(context.ytController, same(controller));
+                return LayoutBuilder(
+                  builder: (_, constraints) {
+                    overlaySize = constraints.biggest;
+                    return const SizedBox.expand();
+                  },
+                );
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    expect(controller.customControls, isTrue);
+    expect(platform.params.single.pointerEvents, 'none');
+    expect(overlaySize, const Size(320, 180));
+    expect(tester.getSize(find.byType(YoutubePlayer)), const Size(320, 180));
   });
 
   test('convertUrlToId', () {

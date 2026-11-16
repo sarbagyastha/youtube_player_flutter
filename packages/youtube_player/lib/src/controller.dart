@@ -20,9 +20,9 @@ typedef LinkTapHandler = FutureOr<bool> Function(Uri uri);
 /// Controls one YouTube player.
 ///
 /// Create it once (e.g. in `initState`), pass it to a `YoutubePlayer` widget,
-/// and [close] it when done. The native player is created lazily, on the
-/// first call or when a widget shows it, so idle controllers cost nothing.
-/// Calls made before the player is ready are queued and run in order.
+/// and [close] it when done. The native player is created when a
+/// `YoutubePlayer` first shows it, so idle controllers cost nothing. Calls
+/// made before the player is ready are queued and run in order.
 class YoutubePlayerController({
   /// Player configuration.
   final YoutubePlayerParams params = const YoutubePlayerParams(),
@@ -41,7 +41,7 @@ class YoutubePlayerController({
   /// With `YoutubePlayer.autoPlayWhenVisible` (the default) autoplay waits
   /// until the player is at least half visible, per YouTube's Required
   /// Minimum Functionality.
-  factory YoutubePlayerController.fromVideoId({
+  factory fromVideoId({
     required String videoId,
     YoutubePlayerParams params = const YoutubePlayerParams(),
     bool autoPlay = false,
@@ -105,7 +105,10 @@ class YoutubePlayerController({
   Future<void> _init() async {
     try {
       final host = await YoutubePlayerPlatform.instance.createHost(
-        params.toHostParams(videoId: initialVideoId),
+        params.toHostParams(
+          videoId: initialVideoId,
+          customControls: customControls,
+        ),
       );
       if (_closed) {
         await host.dispose();
@@ -156,7 +159,13 @@ class YoutubePlayerController({
   /// Metadata of the current video.
   YoutubeMetaData get metadata => _value.metaData;
 
-  /// The platform host, once created.
+  /// Whether the native controls, keyboard, fullscreen button and pointer
+  /// events are turned off for a Flutter overlay. Set by `YoutubePlayer`
+  /// before it reads [host]; it only applies when the player is created.
+  @internal
+  var customControls = false;
+
+  /// The platform host, created on first access.
   @internal
   Future<YoutubePlayerHost> get host {
     _ensureInit();
@@ -256,7 +265,6 @@ class YoutubePlayerController({
     List<Object?> args = const [],
   ]) async {
     if (_closed) return;
-    _ensureInit();
     try {
       final host = await _ready.future;
       await host.call(method, args);
@@ -270,7 +278,6 @@ class YoutubePlayerController({
     List<Object?> args = const [],
   ]) async {
     if (_closed) return null;
-    _ensureInit();
     try {
       final host = await _ready.future;
       return await host.query(method, args);

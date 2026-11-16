@@ -18,6 +18,5 @@ export 'src/controller.dart' show LinkTapHandler, YoutubePlayerController;
 export 'src/iframe_api.dart';
 export 'src/params.dart';
 export 'src/value.dart';
-export 'src/widgets/thumbnail.dart';
 export 'src/widgets/value_builder.dart';
 export 'src/widgets/youtube_player.dart';

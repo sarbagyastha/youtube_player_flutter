@@ -53,6 +53,15 @@ class _PlayerPageState extends State<PlayerPage> {
         title: const Text('youtube_player'),
         actions: [
           IconButton(
+            tooltip: 'Custom controls',
+            icon: const Icon(Icons.tune),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => const CustomControlsPage(),
+              ),
+            ),
+          ),
+          IconButton(
             tooltip: 'List of players',
             icon: const Icon(Icons.view_list),
             onPressed: () => Navigator.of(
@@ -229,15 +238,91 @@ class _ListPageState extends State<ListPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Tap to play')),
+    appBar: AppBar(title: const Text('Players in a list')),
     body: ListView.separated(
       padding: const .all(16),
       itemCount: _controllers.length,
       separatorBuilder: (_, _) => const SizedBox(height: 16),
       itemBuilder: (_, i) => ClipRRect(
         borderRadius: .circular(12),
-        child: YoutubePlayerThumbnail(controller: _controllers[i]),
+        child: YoutubePlayer(controller: _controllers[i], keepAlive: true),
       ),
     ),
   );
+}
+
+class const CustomControlsPage({super.key}) extends StatefulWidget {
+  @override
+  State<CustomControlsPage> createState() => _CustomControlsPageState();
+}
+
+class _CustomControlsPageState extends State<CustomControlsPage> {
+  final _controller = YoutubePlayerController.fromVideoId(videoId: _videos[2]);
+
+  @override
+  void dispose() {
+    unawaited(_controller.close());
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(title: const Text('Custom controls')),
+    body: ListView(
+      children: [
+        // No params needed: controlsBuilder turns YouTube's controls off.
+        YoutubePlayer(
+          controller: _controller,
+          controlsBuilder: (context, value) => _Overlay(value),
+        ),
+      ],
+    ),
+  );
+}
+
+class const _Overlay(final YoutubePlayerValue value) extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final controller = context.ytController;
+    final playing = value.playerState == .playing;
+    return GestureDetector(
+      behavior: .opaque,
+      onTap: playing ? controller.pauseVideo : controller.playVideo,
+      child: Stack(
+        children: [
+          Center(
+            child: AnimatedOpacity(
+              opacity: playing ? 0 : 1,
+              duration: const Duration(milliseconds: 200),
+              child: const DecoratedBox(
+                decoration: BoxDecoration(
+                  color: Color(0x99000000),
+                  shape: .circle,
+                ),
+                child: Padding(
+                  padding: .all(12),
+                  child: Icon(Icons.play_arrow, size: 48, color: Colors.white),
+                ),
+              ),
+            ),
+          ),
+          Align(
+            alignment: .bottomCenter,
+            child: StreamBuilder<YoutubeVideoState>(
+              stream: controller.videoStateStream,
+              initialData: const YoutubeVideoState(),
+              builder: (context, snapshot) {
+                final duration = value.metaData.duration.inMilliseconds;
+                final position = snapshot.requireData.position.inMilliseconds;
+                return LinearProgressIndicator(
+                  value: duration == 0 ? 0 : (position / duration).clamp(0, 1),
+                  minHeight: 4,
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

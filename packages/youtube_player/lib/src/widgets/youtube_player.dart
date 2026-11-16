@@ -14,9 +14,11 @@ import 'value_builder.dart';
 
 /// Displays the player of a [YoutubePlayerController].
 ///
+/// Renders only the YouTube IFrame player, with YouTube's own controls. To
+/// replace them with Flutter widgets, pass [controlsBuilder].
+///
 /// Fullscreen is presented by the platform itself (the player's fullscreen
-/// button, or [YoutubePlayerController.enterFullScreen]); this widget only
-/// renders the inline player.
+/// button, or [YoutubePlayerController.enterFullScreen]).
 class const YoutubePlayer({
   super.key,
 
@@ -41,14 +43,20 @@ class const YoutubePlayer({
   /// YouTube's Required Minimum Functionality.
   final bool autoPlayWhenVisible = true,
 
-  /// Thumbnail shown until the player is ready.
-  final ThumbnailQuality thumbnailQuality = .high,
-
-  /// Thumbnail image format.
-  final ThumbnailFormat thumbnailFormat = .webp,
-
-  /// Builds custom controls on top of the inline player. Combine with
-  /// `YoutubePlayerParams(showControls: false, pointerEvents: .none)`.
+  /// Builds Flutter controls that replace YouTube's own.
+  ///
+  /// When set, the player is created with its native controls, keyboard
+  /// shortcuts and fullscreen button turned off, and the iframe ignores
+  /// pointer events, so all input reaches this overlay. The overlay is laid
+  /// out over exactly the player's [aspectRatio] box and rebuilds on every
+  /// player value change. `context.ytController` works inside it.
+  ///
+  /// Decide on this before the player is first shown: the native controls
+  /// are fixed when the player is created.
+  ///
+  /// The overlay is not shown in native fullscreen. A custom fullscreen
+  /// button can call [YoutubePlayerController.enterFullScreen] on Android,
+  /// macOS and the web; iPhone only allows the player's own button.
   final Widget Function(BuildContext context, YoutubePlayerValue value)?
   controlsBuilder,
 }) extends StatefulWidget {
@@ -74,6 +82,14 @@ class _YoutubePlayerState extends State<YoutubePlayer>
   @override
   void didUpdateWidget(YoutubePlayer oldWidget) {
     super.didUpdateWidget(oldWidget);
+    assert(
+      (oldWidget.controlsBuilder == null) == (widget.controlsBuilder == null) ||
+          _host == null ||
+          oldWidget.controller != widget.controller,
+      'YoutubePlayer.controlsBuilder was added or removed after the player '
+      'was created. Native controls are fixed at creation, so decide on '
+      'controlsBuilder before the player is first shown.',
+    );
     if (oldWidget.controller != widget.controller) {
       _host = null;
       _attach(widget.controller);
@@ -85,6 +101,7 @@ class _YoutubePlayerState extends State<YoutubePlayer>
 
   Future<void> _attach(YoutubePlayerController controller) async {
     if (!widget.autoPlayWhenVisible) controller.startPendingAutoPlay();
+    controller.customControls = widget.controlsBuilder != null;
     final host = await controller.host;
     if (!mounted || controller != widget.controller) return;
     await host.setBackgroundColor(widget.backgroundColor);
@@ -197,63 +214,30 @@ class _YoutubePlayerState extends State<YoutubePlayer>
           }());
           return ColoredBox(
             color: widget.backgroundColor,
-            child: Stack(
-              fit: .expand,
-              children: [
-                if (host != null)
-                  RepaintBoundary(
-                    child: host.buildView(
-                      gestureRecognizers: widget.gestureRecognizers,
-                    ),
-                  ),
-                YoutubeValueBuilder(
-                  controller: widget.controller,
-                  buildWhen: (a, b) => a.isReady != b.isReady,
-                  builder: (context, value) => IgnorePointer(
-                    ignoring: value.isReady,
-                    child: AnimatedOpacity(
-                      opacity: value.isReady ? 0 : 1,
-                      duration: const Duration(milliseconds: 300),
-                      child: _Placeholder(
-                        videoId: widget.controller.initialVideoId,
-                        quality: widget.thumbnailQuality,
-                        format: widget.thumbnailFormat,
-                        color: widget.backgroundColor,
+            child: ClipRect(
+              child: Stack(
+                fit: .expand,
+                children: [
+                  if (host != null)
+                    RepaintBoundary(
+                      child: host.buildView(
+                        gestureRecognizers: widget.gestureRecognizers,
                       ),
                     ),
-                  ),
-                ),
-                if (widget.controlsBuilder case final builder?)
-                  YoutubeValueBuilder(
-                    controller: widget.controller,
-                    builder: builder,
-                  ),
-              ],
+                  if (widget.controlsBuilder case final builder?)
+                    YoutubePlayerControllerProvider(
+                      controller: widget.controller,
+                      child: YoutubeValueBuilder(
+                        controller: widget.controller,
+                        builder: builder,
+                      ),
+                    ),
+                ],
+              ),
             ),
           );
         },
       ),
-    );
-  }
-}
-
-class const _Placeholder({
-  required final String? videoId,
-  required final ThumbnailQuality quality,
-  required final ThumbnailFormat format,
-  required final Color color,
-}) extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final background = ColoredBox(color: color);
-    final id = videoId;
-    if (id == null) return background;
-    return Image.network(
-      format.buildUrl(id, quality),
-      fit: .cover,
-      gaplessPlayback: true,
-      errorBuilder: (_, _, _) => background,
-      frameBuilder: (_, child, frame, _) => frame == null ? background : child,
     );
   }
 }
