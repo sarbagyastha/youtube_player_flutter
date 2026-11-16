@@ -2,7 +2,23 @@
 // Use of this source code is governed by a BSD-3-Clause license that can be
 // found in the LICENSE file.
 
-/// iOS and macOS implementation of youtube_player.
+/// The iOS and macOS implementation of `youtube_player`.
+///
+/// **You don't depend on this package directly.** Add `youtube_player` to your
+/// app; it includes this package and uses it automatically on iOS and macOS.
+///
+/// Each player runs in a `WKWebView` that shows the YouTube IFrame player, and
+/// fullscreen is WebKit's own. Hiding player elements and intercepting clicks
+/// are supported. On iPhone, fullscreen can only be started from the player's
+/// own button, and the volume can only be changed with the hardware buttons.
+///
+/// Requirements:
+///
+/// * The app must use Swift Package Manager (Flutter's default); CocoaPods is
+///   not supported.
+/// * On macOS, enable the `com.apple.security.network.client` entitlement.
+///
+/// See the `youtube_player` package for the player API.
 library;
 
 import 'package:flutter/foundation.dart';

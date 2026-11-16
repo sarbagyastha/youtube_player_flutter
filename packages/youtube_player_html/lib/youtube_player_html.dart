@@ -2,7 +2,21 @@
 // Use of this source code is governed by a BSD-3-Clause license that can be
 // found in the LICENSE file.
 
-/// Web implementation of youtube_player.
+/// The web implementation of `youtube_player`.
+///
+/// **You don't depend on this package directly.** Add `youtube_player` to your
+/// app; it includes this package and uses it automatically on the web.
+///
+/// The player is a regular YouTube IFrame embed placed in your page. Works
+/// with both the JavaScript and the `--wasm` builds.
+///
+/// Because the player iframe is cross-origin, the page cannot reach into it:
+/// hiding player elements and intercepting clicks are not available, and links
+/// open in a new tab. If your page is cross-origin isolated (COOP/COEP
+/// headers, e.g. for multithreaded Wasm), set
+/// `YoutubePlayerParams(webCredentialless: true)`.
+///
+/// See the `youtube_player` package for the player API.
 library;
 
 import 'dart:async';

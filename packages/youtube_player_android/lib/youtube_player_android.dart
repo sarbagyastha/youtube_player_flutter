@@ -2,7 +2,30 @@
 // Use of this source code is governed by a BSD-3-Clause license that can be
 // found in the LICENSE file.
 
-/// Android implementation of youtube_player.
+/// The Android implementation of `youtube_player`.
+///
+/// **You don't depend on this package directly.** Add `youtube_player` to your
+/// app; it includes this package and uses it automatically on Android.
+///
+/// Each player runs in an Android `WebView` that shows the YouTube IFrame
+/// player, and fullscreen uses a native fullscreen view
+/// ([YoutubeHostParams.fullscreenOrientation] controls rotation). Hiding player
+/// elements and intercepting clicks are supported.
+///
+/// The plugin declares the `INTERNET` permission, so no manifest changes are
+/// required. For the best rendering on API 34+ devices with Vulkan, you can opt
+/// in to
+/// [Hybrid Composition++](https://docs.flutter.dev/platform-integration/android/platform-views#hcpp)
+/// by adding this inside `<application>` in `AndroidManifest.xml`; devices
+/// without support fall back automatically:
+///
+/// ```xml
+/// <meta-data
+///     android:name="io.flutter.embedding.android.EnableHcpp"
+///     android:value="true" />
+/// ```
+///
+/// See the `youtube_player` package for the player API.
 library;
 
 import 'package:flutter/foundation.dart';
