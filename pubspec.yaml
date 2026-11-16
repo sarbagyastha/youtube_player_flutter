@@ -13,7 +13,7 @@ environment:
   flutter: '>=3.38.0'
 
 dev_dependencies:
-  melos: ^7.8.0
+  melos: ^8.10.1
   flutter_lints: ^6.0.0
 
 melos:
@@ -29,10 +29,10 @@ melos:
       - packages/youtube_player_iframe_web
   scripts:
     icon:
-      exec: dart run flutter_launcher_icons
+      exec: dart run icons_launcher:create
       description: Generate icons for all platforms
       packageFilters:
-        category: examples
+        dependsOn: icons_launcher
     pana:
       exec: dart pub global run pana .
       description: Check publish readiness using pana for all publishable packages

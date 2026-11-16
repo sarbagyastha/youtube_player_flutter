@@ -25,15 +25,3 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-
-icons_launcher:
-  image_path: ../screenshots/logo.png
-  platforms:
-    android:
-      enable: true
-    ios:
-      enable: true
-    web:
-      enable: true
-    macos:
-      enable: true
