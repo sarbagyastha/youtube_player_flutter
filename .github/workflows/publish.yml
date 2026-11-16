@@ -1,0 +1,49 @@
+name: Publish to pub.dev
+
+# Triggered by tags like `youtube_player_iframe-v6.0.4`.
+# Requires automated publishing to be enabled on pub.dev for each package
+# (Admin > Automated publishing > GitHub Actions, tag pattern `<package>-v{{version}}`).
+on:
+  push:
+    tags:
+      - '*-v[0-9]+.[0-9]+.[0-9]+*'
+
+jobs:
+  publish:
+    name: Publish
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # Required for pub.dev OIDC authentication
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v6
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Resolve package from tag
+        id: tag
+        run: |
+          pkg="${GITHUB_REF_NAME%-v*}"
+          ver="${GITHUB_REF_NAME##*-v}"
+          file="packages/$pkg/pubspec.yaml"
+          if [ ! -f "$file" ]; then
+            echo "::error::No package '$pkg' found for tag $GITHUB_REF_NAME"; exit 1
+          fi
+          actual="$(grep -m1 '^version:' "$file" | awk '{print $2}')"
+          if [ "$actual" != "$ver" ]; then
+            echo "::error::Tag version $ver does not match pubspec version $actual"; exit 1
+          fi
+          echo "pkg=$pkg" >> "$GITHUB_OUTPUT"
+
+      - run: flutter pub get
+
+      - name: Dry run
+        working-directory: packages/${{ steps.tag.outputs.pkg }}
+        run: flutter pub publish --dry-run
+
+      - name: Publish
+        working-directory: packages/${{ steps.tag.outputs.pkg }}
+        run: flutter pub publish --force

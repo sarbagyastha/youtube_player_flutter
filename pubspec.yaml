@@ -34,7 +34,7 @@ melos:
       packageFilters:
         dependsOn: icons_launcher
     pana:
-      exec: dart pub global run pana .
+      exec: dart pub global run pana --exit-code-threshold 0 .
       description: Check publish readiness using pana for all publishable packages
       packageFilters:
         category: publishable
