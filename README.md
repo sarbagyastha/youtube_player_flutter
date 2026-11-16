@@ -22,6 +22,11 @@ A Flutter monorepo for seamless YouTube video playback, powered by the official 
 
 | Package | Version | Demo | Description | Platforms |
 |---|---|---|---|---|
+| [youtube_player](packages/youtube_player) | [![pub](https://img.shields.io/pub/v/youtube_player.svg)](https://pub.dev/packages/youtube_player) | | New plain IFrame player on native WebViews (Pigeon Native Interop, no `webview_flutter`). Custom UI via `controlsBuilder`. | Android, iOS, macOS, Web |
+| [youtube_player_platform_interface](packages/youtube_player_platform_interface) | [![pub](https://img.shields.io/pub/v/youtube_player_platform_interface.svg)](https://pub.dev/packages/youtube_player_platform_interface) | | Platform interface for `youtube_player` (added automatically) | All |
+| [youtube_player_android](packages/youtube_player_android) | [![pub](https://img.shields.io/pub/v/youtube_player_android.svg)](https://pub.dev/packages/youtube_player_android) | | Android implementation for `youtube_player` (added automatically) | Android |
+| [youtube_player_darwin](packages/youtube_player_darwin) | [![pub](https://img.shields.io/pub/v/youtube_player_darwin.svg)](https://pub.dev/packages/youtube_player_darwin) | | iOS and macOS implementation for `youtube_player` (added automatically) | iOS, macOS |
+| [youtube_player_html](packages/youtube_player_html) | [![pub](https://img.shields.io/pub/v/youtube_player_html.svg)](https://pub.dev/packages/youtube_player_html) | | Web implementation for `youtube_player` (added automatically) | Web |
 | [youtube_player_flutter](packages/youtube_player_flutter) | [![pub](https://img.shields.io/pub/v/youtube_player_flutter.svg)](https://pub.dev/packages/youtube_player_flutter) | [![demo](https://img.shields.io/badge/Web-Demo-deeppink.svg)](https://yt.sarbagyastha.com.np) | Batteries-included YouTube player with built-in controls, gestures, and live stream UI | Android, iOS, macOS, Web |
 | [youtube_player_iframe](packages/youtube_player_iframe) | [![pub](https://img.shields.io/pub/v/youtube_player_iframe.svg)](https://pub.dev/packages/youtube_player_iframe) | [![demo](https://img.shields.io/badge/Web-Demo-deeppink.svg)](https://youtube.sarbagyastha.com.np) | Full-control Flutter port of the YouTube iFrame API. Build your own UI. | Android, iOS, macOS, Web |
 | [youtube_player_iframe_web](packages/youtube_player_iframe_web) | [![pub](https://img.shields.io/pub/v/youtube_player_iframe_web.svg)](https://pub.dev/packages/youtube_player_iframe_web) | | Web platform implementation for `youtube_player_iframe` (added automatically) | Web |
@@ -29,6 +34,18 @@ A Flutter monorepo for seamless YouTube video playback, powered by the official 
 ---
 
 ## Which package should I use?
+
+### `youtube_player`: the new federated player
+
+A from-scratch IFrame player built on a minimal native WebView per platform, driven through Pigeon Native Interop (JNI on Android, FFI on iOS/macOS) with no platform channels and no `webview_flutter`. It draws no Flutter UI of its own; add custom controls through `YoutubePlayer.controlsBuilder`. It will eventually replace `youtube_player_iframe`, and `youtube_player_flutter` will be rebuilt on top of it.
+
+```
+flutter pub add youtube_player
+```
+
+**Best for:** new projects that want a lean, modern player. Requires Dart 3.14+ and Flutter 3.50+.
+
+---
 
 ### `youtube_player_flutter`: just want a player that works
 
@@ -54,9 +71,9 @@ flutter pub add youtube_player_iframe
 
 ---
 
-### `youtube_player_iframe_web`: you probably don't need to add this
+### Platform packages: you probably don't need to add these
 
-This is the web platform implementation consumed automatically by `youtube_player_iframe`. You only need to add it directly if you're building a platform plugin or working inside this monorepo.
+`youtube_player_iframe_web`, `youtube_player_platform_interface`, `youtube_player_android`, `youtube_player_darwin` and `youtube_player_html` are consumed automatically by `youtube_player_iframe` and `youtube_player`. You only need to add it directly if you're building a platform plugin or working inside this monorepo.
 
 ---
 

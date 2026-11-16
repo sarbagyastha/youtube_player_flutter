@@ -2,6 +2,7 @@ name: Publish to pub.dev
 
 # Triggered by tags like `yp_iframe-v6.0.4` (prefixes: yp_flutter, yp_iframe, yp_iframe_web,
 # yp, yp_pi, yp_android, yp_darwin, yp_html, yp_windows, yp_linux).
+# Release order: yp_iframe_web -> yp_iframe -> yp_flutter; yp_pi -> yp_android/yp_darwin/yp_html -> yp.
 # Requires automated publishing to be enabled on pub.dev for each package
 # (Admin > Automated publishing > GitHub Actions, tag pattern `<prefix>-v{{version}}`).
 # Publishing uses dart-lang's reusable workflow, which sets up the pub.dev OIDC credentials.

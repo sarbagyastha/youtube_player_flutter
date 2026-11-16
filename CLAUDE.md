@@ -21,4 +21,4 @@
 - New-family code uses primary constructors and the latest Dart syntax everywhere (SDK ^3.14.0, Flutter >=3.50.0).
 - Pigeon is pinned to an exact version in the impl packages (Native Interop is Preview); upgrading means regenerating both and rebuilding the example on all three platforms. `youtube_player_darwin` is SwiftPM-only (no podspec; Flutter is dropping CocoaPods). Darwin compiles in Swift 5 mode with complete concurrency checking because the generated FFI bridge fails Swift 6 mode.
 - New-family release order: platform_interface → android/darwin/html → youtube_player.
-- When a package's version bumps, update dependents' constraints (`youtube_player_iframe: ^x` in flutter, `youtube_player_iframe_web: ^x` in iframe) and release them after it.
+- When a package's version bumps, update dependents' constraints (`youtube_player_iframe: ^x` in flutter, `youtube_player_iframe_web: ^x` in iframe) and release them after it. New family: `youtube_player_platform_interface: ^x` in android/darwin/html/youtube_player, and `youtube_player_android|darwin|html: ^x` in youtube_player. The release skill has the full table.
