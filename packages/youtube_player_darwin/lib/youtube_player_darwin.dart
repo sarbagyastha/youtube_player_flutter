@@ -12,8 +12,10 @@
 /// are supported. On iPhone, fullscreen can only be started from the player's
 /// own button, and the volume can only be changed with the hardware buttons.
 ///
-/// Requirements:
+/// ## Requirements
 ///
+/// * Dart 3.14 or newer
+/// * Flutter 3.50 or newer
 /// * The app must use Swift Package Manager (Flutter's default); CocoaPods is
 ///   not supported.
 /// * On macOS, enable the `com.apple.security.network.client` entitlement.

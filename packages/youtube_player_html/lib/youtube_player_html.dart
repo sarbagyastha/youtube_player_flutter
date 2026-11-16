@@ -16,6 +16,11 @@
 /// headers, e.g. for multithreaded Wasm), set
 /// `YoutubePlayerParams(webCredentialless: true)`.
 ///
+/// ## Requirements
+///
+/// * Dart 3.14 or newer
+/// * Flutter 3.50 or newer
+///
 /// See the `youtube_player` package for the player API.
 library;
 

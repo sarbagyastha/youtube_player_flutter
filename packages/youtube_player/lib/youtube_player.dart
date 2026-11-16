@@ -46,6 +46,11 @@
 ///   [YoutubePlayerController.onNavigationRequest]: hide parts of YouTube's UI
 ///   and decide where link and button clicks go. Android, iOS and macOS only.
 ///
+/// ## Requirements
+///
+/// * Dart 3.14 or newer
+/// * Flutter 3.50 or newer
+///
 /// ## Good to know
 ///
 /// * Autoplay waits until at least half of the player is visible, and only one

@@ -60,6 +60,8 @@
 flutter pub add youtube_player
 ```
 
+**Requirements:** Dart 3.14+ and Flutter 3.50+.
+
 Then a few platform notes:
 
 - 🤖 **Android:** nothing to do. The plugin declares `INTERNET`.

@@ -8,6 +8,11 @@
 /// instead. This package is for those who add `youtube_player` support to a
 /// new platform, or want to replace an existing implementation.
 ///
+/// ## Requirements
+///
+/// * Dart 3.14 or newer
+/// * Flutter 3.50 or newer
+///
 /// ## Implementing a platform
 ///
 /// 1. Extend [YoutubePlayerPlatform] and override
