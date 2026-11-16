@@ -37,7 +37,21 @@ class YoutubePlayer extends StatefulWidget {
     this.thumbnailFormat = .webp,
     this.initParams,
     this.controlsBuilder,
+    this.sidewaysFullscreen = false,
   });
+
+  /// Whether fullscreen in a portrait window is drawn turned a quarter
+  /// clockwise at full height, instead of letterboxed upright.
+  ///
+  /// iOS 16+ rejects app-requested rotation (`SystemChrome.setPreferredOrientations`
+  /// fails with "None of the requested orientations are supported by the view
+  /// controller") in many setups, which leaves fullscreen stuck letterboxed in
+  /// portrait. With this set, the player and [controlsBuilder] are laid out in
+  /// a landscape frame and rotated, so the user turns the phone instead of
+  /// the app. In a landscape window fullscreen behaves as before.
+  ///
+  /// Typically `sidewaysFullscreen: Platform.isIOS`. Default is false.
+  final bool sidewaysFullscreen;
 
   /// The controller for this player.
   final YoutubePlayerController controller;
@@ -345,6 +359,7 @@ class _YoutubePlayerState extends State<YoutubePlayer>
               enableFullScreenOnVerticalDrag:
                   widget.enableFullScreenOnVerticalDrag,
               controlsBuilder: widget.controlsBuilder,
+              sidewaysFullscreen: widget.sidewaysFullscreen,
               fullscreenCount: _fullscreenCount,
               thumbnailQuality: widget.thumbnailQuality,
               thumbnailFormat: widget.thumbnailFormat,
@@ -403,10 +418,12 @@ class _PlayerOverlayContent extends StatelessWidget {
     required this.fullscreenCount,
     this.aspectRatio = 16 / 9,
     this.controlsBuilder,
+    this.sidewaysFullscreen = false,
     this.thumbnailQuality = .high,
     this.thumbnailFormat = .webp,
   });
 
+  final bool sidewaysFullscreen;
   final YoutubePlayerController controller;
   final Rect playerRect;
   final LayerLink layerLink;
@@ -481,7 +498,32 @@ class _PlayerOverlayContent extends StatelessWidget {
         // When not fullscreen: CompositedTransformFollower tracks the
         // placeholder at the render layer so the overlay follows the player
         // accurately during scroll without per-frame Dart callbacks.
+        final sideways =
+            sidewaysFullscreen &&
+            isFullscreen &&
+            screenSize.width < screenSize.height;
+
         Widget positionedLayer(Widget child) {
+          if (sideways) {
+            // Laid out in a landscape frame (the screen with width and height
+            // swapped), turned, and centred. Fades in so the frame the
+            // platform view spends being moved does not read as a blink.
+            return Positioned.fill(
+              child: Center(
+                child: RotatedBox(
+                  quarterTurns: 1,
+                  child: TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 0, end: 1),
+                    duration: const Duration(milliseconds: 220),
+                    curve: Curves.easeOut,
+                    builder: (_, opacity, c) =>
+                        Opacity(opacity: opacity, child: c),
+                    child: AspectRatio(aspectRatio: aspectRatio, child: child),
+                  ),
+                ),
+              ),
+            );
+          }
           if (isFullscreen) {
             return AnimatedPositioned(
               duration: const Duration(milliseconds: 300),
@@ -514,6 +556,27 @@ class _PlayerOverlayContent extends StatelessWidget {
         // always match the Stack (which already fills the screen via
         // StackFit.expand), avoiding any MediaQuery size mismatch.
         Widget positionedControls(Widget child) {
+          if (sideways) {
+            // Turned with the video. The padding is turned too, so controls
+            // that respect MediaQuery.padding stay clear of the notch (now on
+            // the left) and the home indicator (now on the right).
+            final media = MediaQuery.of(context);
+            final p = media.padding;
+            final turned = EdgeInsets.only(left: p.top, right: p.bottom);
+            return Positioned.fill(
+              child: RotatedBox(
+                quarterTurns: 1,
+                child: MediaQuery(
+                  data: media.copyWith(
+                    size: media.size.flipped,
+                    padding: turned,
+                    viewPadding: turned,
+                  ),
+                  child: child,
+                ),
+              ),
+            );
+          }
           if (isFullscreen) {
             return Positioned.fill(child: child);
           }
@@ -534,7 +597,12 @@ class _PlayerOverlayContent extends StatelessWidget {
             return Stack(
               fit: StackFit.expand,
               children: [
-                _FullscreenBackground(isFullscreen: isFullscreen),
+                _FullscreenBackground(
+                  isFullscreen: isFullscreen,
+                  // The turned video appears at once; a backdrop fading in
+                  // behind it reads as a flicker.
+                  instant: sideways,
+                ),
                 positionedLayer(
                   maybeHide(
                     _YoutubeWebView(
@@ -573,16 +641,20 @@ class _PlayerOverlayContent extends StatelessWidget {
 }
 
 class _FullscreenBackground extends StatelessWidget {
-  const _FullscreenBackground({required this.isFullscreen});
+  const _FullscreenBackground({
+    required this.isFullscreen,
+    this.instant = false,
+  });
 
   final bool isFullscreen;
+  final bool instant;
 
   @override
   Widget build(BuildContext context) {
     return IgnorePointer(
       ignoring: !isFullscreen,
       child: AnimatedOpacity(
-        duration: const Duration(milliseconds: 200),
+        duration: instant ? Duration.zero : const Duration(milliseconds: 200),
         opacity: isFullscreen ? 1.0 : 0.0,
         child: const ColoredBox(color: Colors.black),
       ),
