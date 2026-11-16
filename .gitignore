@@ -98,6 +98,21 @@ unlinked_spec.ds
 **/macos/Flutter/ephemeral/
 **/macos/Pods/
 
+# Windows / Linux
+**/windows/flutter/ephemeral/
+**/windows/flutter/generated_plugin_registrant.*
+**/windows/flutter/generated_plugins.cmake
+**/linux/flutter/ephemeral/
+**/linux/flutter/generated_plugin_registrant.*
+**/linux/flutter/generated_plugins.cmake
+
+# iOS ephemeral (Swift Package Manager integration)
+**/ios/Flutter/ephemeral/
+
+# Swift Package Manager
+.build/
+.swiftpm/
+
 # Coverage
 coverage/
 

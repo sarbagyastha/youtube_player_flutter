@@ -1,0 +1,27 @@
+name: youtube_player_platform_interface
+description: A common platform interface for the youtube_player plugin. Defines the player host contract, the IFrame API protocol and the shared player page.
+version: 0.1.0-dev.1
+repository: https://github.com/sarbagyastha/youtube_player_flutter
+homepage: https://github.com/sarbagyastha/youtube_player_flutter/tree/main/packages/youtube_player_platform_interface
+
+topics:
+  - youtube
+  - video
+  - player
+
+resolution: workspace
+
+environment:
+  sdk: ^3.14.0
+  flutter: '>=3.50.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  meta: ^1.19.0
+  plugin_platform_interface: ^2.1.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0

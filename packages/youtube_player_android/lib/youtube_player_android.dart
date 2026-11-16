@@ -1,0 +1,121 @@
+// Copyright 2026 Sarbagya Dhaubanjar. All rights reserved.
+// Use of this source code is governed by a BSD-3-Clause license that can be
+// found in the LICENSE file.
+
+/// Android implementation of youtube_player.
+library;
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
+import 'package:youtube_player_platform_interface/youtube_player_platform_interface.dart';
+
+import 'src/messages.g.dart';
+
+const _viewType = 'np.com.sarbagyastha.youtube_player/webview';
+
+/// Hosts players in Android WebViews.
+final class AndroidYoutubePlayer({
+  /// Host API override for tests.
+  @visibleForTesting YoutubeHostApi? api,
+}) extends YoutubePlayerPlatform {
+  /// Registers this implementation. Called by the plugin registrant.
+  static void registerWith() {
+    YoutubePlayerPlatform.instance = AndroidYoutubePlayer();
+  }
+
+  final YoutubeHostApi _api = api ?? YoutubeHostApi();
+  late final _receiver = _Receiver(this);
+  final _hosts = <int, _AndroidHost>{};
+
+  @override
+  Future<YoutubePlayerHost> createHost(YoutubeHostParams params) async {
+    _receiver.listen();
+    final info = await _api.create(
+      NativeHostConfig(
+        appId: params.appId,
+        userAgent: params.userAgent,
+        debuggable: params.debuggable,
+        backgroundColor: params.backgroundColor?.toARGB32(),
+        fullscreenOrientation: .values.byName(
+          params.fullscreenOrientation.name,
+        ),
+      ),
+    );
+    final host = _hosts[info.handle] = _AndroidHost(this, info.handle);
+    await _api.load(info.handle, buildPlayerPage(params, origin: info.origin));
+    return host;
+  }
+}
+
+final class _Receiver(final AndroidYoutubePlayer _platform)
+    implements YoutubeFlutterApi {
+  var _listening = false;
+
+  void listen() {
+    if (_listening) return;
+    _listening = true;
+    YoutubeFlutterApi.setUp(this);
+  }
+
+  _AndroidHost? _host(int handle) => _platform._hosts[handle];
+
+  @override
+  void onMessage(int handle, String json) => _host(handle)?.message(json);
+
+  @override
+  void onNavigation(int handle, String url) => _host(handle)?.navigation(url);
+
+  @override
+  void onLoadError(int handle, NativeLoadError error) => _host(handle)
+      ?.loadError(
+        YoutubeLoadError(
+          code: error.code,
+          description: error.message,
+          url: error.url,
+        ),
+      );
+
+  @override
+  void onFullscreenChanged(int handle, bool isFullscreen) =>
+      _host(handle)?.fullscreen(isFullscreen);
+}
+
+final class _AndroidHost(
+  final AndroidYoutubePlayer _platform,
+  final int _handle,
+) extends BridgeHost {
+  YoutubeHostApi get _api => _platform._api;
+
+  void message(String json) => receiveFromPage(json);
+  void navigation(String url) => emitNavigation(url);
+  void loadError(YoutubeLoadError error) => emitLoadError(error);
+  void fullscreen(bool value) => emitFullscreen(value);
+
+  @override
+  Future<void> sendToPage(String json) => _api.send(_handle, json);
+
+  @override
+  Future<void> disposeNative() async {
+    _platform._hosts.remove(_handle);
+    await _api.dispose(_handle);
+  }
+
+  @override
+  Future<void> setBackgroundColor(Color color) =>
+      _api.setBackgroundColor(_handle, color.toARGB32());
+
+  @override
+  Future<void> exitFullscreen() => _api.exitFullscreen(_handle);
+
+  @override
+  Widget buildView({
+    Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers = const {},
+  }) => AndroidView(
+    viewType: _viewType,
+    creationParams: {'handle': _handle},
+    creationParamsCodec: const StandardMessageCodec(),
+    gestureRecognizers: gestureRecognizers,
+  );
+}
