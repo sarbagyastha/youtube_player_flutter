@@ -226,7 +226,7 @@ void main() {
     expect(await controller.enterFullScreen(), isTrue);
   });
 
-  test('playlist and video arguments use object syntax', () async {
+  test('video-id playlists use argument syntax, others object syntax', () async {
     final controller = YoutubePlayerController();
     unawaited(controller.host);
     await pump();
@@ -234,13 +234,18 @@ void main() {
     await controller.cuePlaylist(list: ['a', 'b'], index: 1);
     await controller.loadPlaylist(list: ['PL123'], listType: .playlist);
     await controller.cueVideoById(videoId: 'x', startSeconds: 5);
-    expect(host.calls.map((c) => c.$2.single), [
-      {
-        'list': ['a', 'b'],
-        'index': 1,
-      },
-      {'listType': 'playlist', 'list': 'PL123'},
-      {'videoId': 'x', 'startSeconds': 5.0},
+    expect(host.calls.map((c) => c.$2), [
+      [
+        ['a', 'b'],
+        1,
+        0,
+      ],
+      [
+        {'listType': 'playlist', 'list': 'PL123'},
+      ],
+      [
+        {'videoId': 'x', 'startSeconds': 5.0},
+      ],
     ]);
   });
 

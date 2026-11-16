@@ -318,21 +318,24 @@ class YoutubePlayerController({
     double? end,
   ) => {key: value, 'startSeconds': ?start, 'endSeconds': ?end};
 
-  Map<String, Object> _list(
+  /// Video-id arrays only work with the argument syntax
+  /// `cuePlaylist(ids, index, startSeconds)`; the object syntax silently
+  /// ignores them. Playlist / channel ids use the object syntax.
+  List<Object> _list(
     List<String> list,
     ListType? type,
     int? index,
     double? start,
-  ) => {
-    if (type == null)
-      'list': list
-    else ...{
-      'listType': type.value,
-      'list': list.first,
-    },
-    'index': ?index,
-    'startSeconds': ?start,
-  };
+  ) => type == null
+      ? [list, index ?? 0, start ?? 0]
+      : [
+          {
+            'listType': type.value,
+            'list': list.first,
+            'index': ?index,
+            'startSeconds': ?start,
+          },
+        ];
 
   @override
   Future<void> cueVideoById({
@@ -376,7 +379,7 @@ class YoutubePlayerController({
     ListType? listType,
     int? index,
     double? startSeconds,
-  }) => _run(.cuePlaylist, [_list(list, listType, index, startSeconds)]);
+  }) => _run(.cuePlaylist, _list(list, listType, index, startSeconds));
 
   @override
   Future<void> loadPlaylist({
@@ -384,7 +387,7 @@ class YoutubePlayerController({
     ListType? listType,
     int? index,
     double? startSeconds,
-  }) => _run(.loadPlaylist, [_list(list, listType, index, startSeconds)]);
+  }) => _run(.loadPlaylist, _list(list, listType, index, startSeconds));
 
   /// Loads the video in any common YouTube [url] form (watch, youtu.be,
   /// embed, shorts, live).

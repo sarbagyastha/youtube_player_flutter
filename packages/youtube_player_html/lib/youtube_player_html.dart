@@ -51,7 +51,7 @@ final class WebYoutubePlayer extends YoutubePlayerPlatform {
     final host = _hosts[id] = _WebHost(id, params);
     try {
       await loadIframeApi();
-      host._attachPlayer();
+      host._start();
     } on Object catch (error) {
       host._fail('$error');
     }
@@ -63,7 +63,7 @@ final class _WebHost(final int _id, final YoutubeHostParams _params)
     implements YoutubePlayerHost {
   this {
     final origin = web.window.location.origin;
-    final vars = {
+    _vars = {
       for (final MapEntry(:key, :value) in _params.playerVars.entries)
         key: '$value',
       'enablejsapi': '1',
@@ -71,9 +71,6 @@ final class _WebHost(final int _id, final YoutubeHostParams _params)
       'widget_referrer': '${_params.playerVars['widget_referrer'] ?? origin}',
     };
     _iframe = web.HTMLIFrameElement()
-      ..src =
-          '${_params.host}/embed/${_params.videoId ?? ''}'
-          '?${Uri(queryParameters: vars).query}'
       ..allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen'
       ..allowFullscreen = true
       ..referrerPolicy = 'strict-origin-when-cross-origin'
@@ -98,6 +95,7 @@ final class _WebHost(final int _id, final YoutubeHostParams _params)
     web.document.addEventListener('fullscreenchange', _fullscreenListener);
   }
 
+  late final Map<String, String> _vars;
   late final web.HTMLIFrameElement _iframe;
   late final web.HTMLDivElement _container;
   late final JSFunction _fullscreenListener;
@@ -105,6 +103,9 @@ final class _WebHost(final int _id, final YoutubeHostParams _params)
   Timer? _ticker;
   var _ready = false;
   var _disposed = false;
+
+  /// Calls received before the player is ready, replayed in order.
+  final _pending = <(PlayerMethod, List<Object?>, Completer<Object?>?)>[];
 
   final _events = StreamController<PlayerEvent>.broadcast();
   final _fullscreen = StreamController<bool>.broadcast();
@@ -126,7 +127,54 @@ final class _WebHost(final int _id, final YoutubeHostParams _params)
   void _fail(String description) =>
       _emit(LoadErrorEvent(YoutubeLoadError(description: description)));
 
-  void _attachPlayer() {
+  /// Starts the player once the API is loaded.
+  ///
+  /// Without an initial video the IFrame API never fires `onReady`, so the
+  /// host reports ready right away and creates the player from the first
+  /// queueing call instead (see [_createFor]).
+  void _start() {
+    if (_params.videoId case final videoId?) {
+      _attachPlayer(videoId: videoId);
+    } else {
+      _emit(const ReadyEvent());
+    }
+  }
+
+  static const _queueing = {
+    PlayerMethod.cueVideoById,
+    PlayerMethod.loadVideoById,
+    PlayerMethod.cueVideoByUrl,
+    PlayerMethod.loadVideoByUrl,
+    PlayerMethod.cuePlaylist,
+    PlayerMethod.loadPlaylist,
+  };
+
+  void _createFor(PlayerMethod method, List<Object?> args) {
+    final extra = <String, String>{};
+    final videoId = switch (args) {
+      [final List<Object?> ids, ...] when ids.isNotEmpty =>
+        ids[args.length > 1 ? (args[1] as num? ?? 0).toInt() : 0] as String?,
+      [{'videoId': final String id}, ...] => id,
+      [{'mediaContentUrl': final String url}, ...] => RegExp(
+        r'/(?:v|embed)/([\w-]{11})',
+      ).firstMatch(url)?.group(1),
+      [{'list': final String list}, ...] => () {
+        extra['listType'] = '${(args.first! as Map)['listType'] ?? 'playlist'}';
+        extra['list'] = list;
+        return null;
+      }(),
+      _ => null,
+    };
+    _attachPlayer(videoId: videoId, extraVars: extra);
+  }
+
+  void _attachPlayer({
+    String? videoId,
+    Map<String, String> extraVars = const {},
+  }) {
+    _iframe.src =
+        '${_params.host}/embed/${videoId ?? ''}'
+        '?${Uri(queryParameters: {..._vars, ...extraVars}).query}';
     // Callbacks are converted once and reused for the player's lifetime.
     _player = YTPlayer(
       _iframe,
@@ -134,7 +182,8 @@ final class _WebHost(final int _id, final YoutubeHostParams _params)
         events: YTEvents(
           onReady: (YTEvent _) {
             _ready = true;
-            _emit(const ReadyEvent());
+            if (_params.videoId != null) _emit(const ReadyEvent());
+            _flush();
           }.toJS,
           onStateChange: _onStateChange.toJS,
           onPlaybackRateChange: (YTEvent e) {
@@ -215,12 +264,40 @@ final class _WebHost(final int _id, final YoutubeHostParams _params)
         for (final a in args) a.jsify(),
       ]);
 
+  void _flush() {
+    for (final (method, args, completer) in _pending.toList()) {
+      if (completer == null) {
+        call(method, args);
+      } else {
+        completer.complete(query(method, args));
+      }
+    }
+    _pending.clear();
+  }
+
+  /// Buffers a call made before the player is ready; returns whether it was.
+  bool _buffer(
+    PlayerMethod method,
+    List<Object?> args, [
+    Completer<Object?>? c,
+  ]) {
+    if (_ready) return false;
+    _pending.add((method, args, c));
+    if (_player == null && _queueing.contains(method)) _createFor(method, args);
+    return true;
+  }
+
   @override
   Future<void> call(
     PlayerMethod method, [
     List<Object?> args = const [],
   ]) async {
-    if (_disposed || !_ready) return;
+    if (_disposed) return;
+    if (method != .exitFullscreen &&
+        method != .requestFullscreen &&
+        _buffer(method, args)) {
+      return;
+    }
     switch (method) {
       case .exitFullscreen:
         await exitFullscreen();
@@ -240,7 +317,12 @@ final class _WebHost(final int _id, final YoutubeHostParams _params)
     PlayerMethod method, [
     List<Object?> args = const [],
   ]) async {
-    if (_disposed || !_ready) return null;
+    if (_disposed) return null;
+    if (method != .requestFullscreen && !_ready) {
+      final completer = Completer<Object?>();
+      _buffer(method, args, completer);
+      return completer.future;
+    }
     if (method == .requestFullscreen) {
       try {
         await _container.requestFullscreen().toDart;
@@ -275,6 +357,10 @@ final class _WebHost(final int _id, final YoutubeHostParams _params)
     _disposed = true;
     WebYoutubePlayer._hosts.remove(_id);
     _ticker?.cancel();
+    for (final (_, _, completer) in _pending) {
+      completer?.complete(null);
+    }
+    _pending.clear();
     web.document.removeEventListener('fullscreenchange', _fullscreenListener);
     _player?.destroy();
     _container.remove();

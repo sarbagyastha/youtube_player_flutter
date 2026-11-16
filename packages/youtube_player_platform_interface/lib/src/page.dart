@@ -114,36 +114,55 @@ body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webki
   };
   const retick = {seekTo: 1, setVolume: 1, mute: 1, unMute: 1};
 
-  w.__yp = {
-    recv(json) {
-      const {i, m, a} = JSON.parse(json);
-      let r;
-      try {
-        r = page[m] ? page[m]() : p[m].apply(p, a || []);
-      } catch (x) {
-        if (i != null) post({r: i, x: String(x)});
-        return;
-      }
-      if (retick[m] && !running) setTimeout(tick, 50);
-      if (i == null) return;
-      Promise.resolve(r).then(
-        (v) => post({r: i, v: v === undefined ? null : v}),
-        (x) => post({r: i, x: String(x)}));
-    },
+  // Without an initial video the IFrame API never fires onReady, so the
+  // player is created from the first queueing call instead. Until the player
+  // is ready, calls are buffered and replayed in order.
+  const queueing = {cueVideoById: 1, loadVideoById: 1, cueVideoByUrl: 1,
+    loadVideoByUrl: 1, cuePlaylist: 1, loadPlaylist: 1};
+  const pending = [];
+
+  const run = ({i, m, a}) => {
+    let r;
+    try {
+      r = page[m] ? page[m]() : p[m].apply(p, a || []);
+    } catch (x) {
+      if (i != null) post({r: i, x: String(x)});
+      return;
+    }
+    if (retick[m] && !running) setTimeout(tick, 50);
+    if (i == null) return;
+    Promise.resolve(r).then(
+      (v) => post({r: i, v: v === undefined ? null : v}),
+      (x) => post({r: i, x: String(x)}));
   };
 
-  w.onYouTubeIframeAPIReady = () => {
+  const create = (first) => {
+    const vars = Object.assign({}, C.vars);
+    let videoId = C.videoId;
+    if (!videoId && first) {
+      const [x, index] = first.a || [];
+      if (Array.isArray(x)) videoId = x[index || 0];
+      else if (x && x.videoId) videoId = x.videoId;
+      else if (x && x.mediaContentUrl) {
+        const id = /\/(?:v|embed)\/([\w-]{11})/.exec(x.mediaContentUrl);
+        if (id) videoId = id[1];
+      } else if (x && x.list) {
+        vars.listType = x.listType || 'playlist';
+        vars.list = x.list;
+      }
+    }
     p = new YT.Player('p', {
       width: '100%',
       height: '100%',
       host: C.host,
-      videoId: C.videoId,
-      playerVars: C.vars,
+      videoId,
+      playerVars: vars,
       events: {
         onReady() {
           ready = true;
           p.getIframe().style.pointerEvents = C.pe;
-          post({e: 'ready'});
+          if (C.videoId) post({e: 'ready'});
+          pending.splice(0).forEach(run);
         },
         onStateChange: (e) => state(e.data),
         onPlaybackRateChange: (e) => post({e: 'rate', d: e.data}),
@@ -153,6 +172,20 @@ body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webki
         onAutoplayBlocked: () => post({e: 'autoplayBlocked'}),
       },
     });
+  };
+
+  w.__yp = {
+    recv(json) {
+      const call = JSON.parse(json);
+      if (ready || page[call.m]) return run(call);
+      pending.push(call);
+      if (!p && queueing[call.m]) create(call);
+    },
+  };
+
+  w.onYouTubeIframeAPIReady = () => {
+    if (C.videoId) create(null);
+    else post({e: 'ready'});
   };
 
   const api = d.createElement('script');
