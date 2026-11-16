@@ -1,15 +1,15 @@
-name: Pana
+name: CI
 
 on:
   pull_request:
     paths:
       - 'packages/**'
       - 'pubspec.yaml'
-      - '.github/workflows/pana.yml'
+      - '.github/workflows/ci.yml'
 
 jobs:
-  pana:
-    name: Check publish readiness
+  analyze:
+    name: Analyze
     runs-on: ubuntu-latest
 
     steps:
@@ -19,8 +19,7 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
-      - run: dart pub global activate pana
-      - run: dart run melos run pana
+      - run: dart run melos run analyze
 
   wasm:
     name: Wasm build

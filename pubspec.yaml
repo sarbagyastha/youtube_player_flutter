@@ -33,6 +33,11 @@ melos:
       description: Generate icons for all platforms
       packageFilters:
         dependsOn: icons_launcher
+    analyze:
+      exec: flutter analyze
+      description: Run flutter analyze in every package
+      packageFilters:
+        flutter: true
     pana:
       exec: dart pub global run pana --exit-code-threshold 0 .
       description: Check publish readiness using pana for all publishable packages
