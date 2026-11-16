@@ -605,6 +605,14 @@ class YoutubePlayerController({
   @override
   int get volume => _value.volume;
 
+  /// Whether [setVolume] can change the volume on this platform.
+  ///
+  /// False on iOS (including browsers on iOS), where only the hardware
+  /// buttons change media volume; [mute] and [unMute] still work there.
+  /// iPads that request desktop sites report macOS in the browser, so this
+  /// is true there on the web even though volume can't be set.
+  bool get supportsVolume => defaultTargetPlatform != .iOS;
+
   // MARK: Size, rate, playlist behaviour
 
   @override

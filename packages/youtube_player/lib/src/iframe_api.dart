@@ -105,9 +105,14 @@ abstract interface class YoutubePlayerIFrameAPI {
   bool get isMuted;
 
   /// Sets the volume, `0..100`.
+  ///
+  /// Has no effect on iOS (including browsers on iOS): the system only lets
+  /// the user change media volume with the hardware buttons. [mute] and
+  /// [unMute] still work there.
   void setVolume(int volume);
 
-  /// Volume `0..100`, even while muted.
+  /// Volume `0..100`, even while muted. On iOS this is not the system volume
+  /// and [setVolume] does not change it.
   int get volume;
 
   // Size, rate and playlist behaviour

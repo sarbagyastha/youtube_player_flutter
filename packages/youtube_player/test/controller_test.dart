@@ -218,6 +218,16 @@ void main() {
     expect(controller.value.playbackRate, 1, reason: 'fallback without r');
   });
 
+  test('supportsVolume is false only on iOS', () {
+    final controller = YoutubePlayerController();
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
+    for (final platform in TargetPlatform.values) {
+      debugDefaultTargetPlatformOverride = platform;
+      expect(controller.supportsVolume, platform != .iOS, reason: '$platform');
+    }
+    controller.close();
+  });
+
   test('errors and autoplay blocking reset when playing', () async {
     final controller = YoutubePlayerController();
     unawaited(controller.host);
