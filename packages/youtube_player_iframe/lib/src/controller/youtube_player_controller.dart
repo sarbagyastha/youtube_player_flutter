@@ -431,7 +431,8 @@ class YoutubePlayerController implements YoutubePlayerIFrameAPI {
   @override
   Future<VideoData> get videoData async {
     final videoData = await _bridge.evalWithResult('getVideoData()');
-    return VideoData.fromMap(jsonDecode(videoData));
+    final decoded = jsonDecode(videoData) as Map<String, dynamic>?;
+    return VideoData.fromMap(decoded ?? const <String, dynamic>{});
   }
 
   @override

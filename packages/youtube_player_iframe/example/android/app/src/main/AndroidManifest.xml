@@ -2,7 +2,7 @@
     <application
         android:label="YP iFrame"
         android:name="${applicationName}"
-        android:icon="@mipmap/ypi_icon">
+        android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
             android:exported="true"

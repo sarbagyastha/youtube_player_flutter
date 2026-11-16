@@ -1,3 +1,7 @@
+## 3.1.4
+- Fixes `TypeError` and spurious handling caused by unrelated `window` messages; only messages posted by the player's iframe are now processed. Thanks to [@mtallenca](https://github.com/mtallenca) for the fix ([#1185](https://github.com/sarbagyastha/youtube_player_flutter/pull/1185)).
+- Bumps dependencies.
+
 ## 3.1.3
 - Makes `credentialless` iframe configurable via `WebYoutubePlayerIframeControllerCreationParams`. Defaults to `false`.
 

@@ -1,0 +1,12 @@
+# dart run icons_launcher:create
+icons_launcher:
+  image_path: ../misc/ypf-icon.png
+  platforms:
+    android:
+      enable: true
+    ios:
+      enable: true
+    web:
+      enable: true
+    macos:
+      enable: true

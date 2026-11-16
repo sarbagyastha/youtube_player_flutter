@@ -6,7 +6,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -127,6 +127,11 @@ class _YoutubePlayerState extends State<YoutubePlayer>
 
   final _overlayController = OverlayPortalController();
   final _placeholderKey = GlobalKey();
+
+  // Keeps the WebView alive when it is re-parented (fullscreen toggle, another
+  // player going fullscreen). Otherwise it is recreated and reloads, which
+  // restarts the video on iOS.
+  final _webViewKey = GlobalKey();
   final _layerLink = LayerLink();
   Rect _playerRect = Rect.zero;
 
@@ -345,6 +350,7 @@ class _YoutubePlayerState extends State<YoutubePlayer>
               enableFullScreenOnVerticalDrag:
                   widget.enableFullScreenOnVerticalDrag,
               controlsBuilder: widget.controlsBuilder,
+              webViewKey: _webViewKey,
               fullscreenCount: _fullscreenCount,
               thumbnailQuality: widget.thumbnailQuality,
               thumbnailFormat: widget.thumbnailFormat,
@@ -403,11 +409,13 @@ class _PlayerOverlayContent extends StatelessWidget {
     required this.fullscreenCount,
     this.aspectRatio = 16 / 9,
     this.controlsBuilder,
+    this.webViewKey,
     this.thumbnailQuality = .high,
     this.thumbnailFormat = .webp,
   });
 
   final YoutubePlayerController controller;
+  final GlobalKey? webViewKey;
   final Rect playerRect;
   final LayerLink layerLink;
   final Color? backgroundColor;
@@ -538,6 +546,7 @@ class _PlayerOverlayContent extends StatelessWidget {
                 positionedLayer(
                   maybeHide(
                     _YoutubeWebView(
+                      key: webViewKey,
                       controller: controller,
                       gestureRecognizers: gestureRecognizers,
                       enableFullScreenOnVerticalDrag:
@@ -631,7 +640,8 @@ class _PlayerLoadingOverlay extends StatelessWidget {
                           quality: thumbnailQuality,
                           format: thumbnailFormat,
                         ),
-                        fit: BoxFit.cover,
+                        fit: .cover,
+                        webHtmlElementStrategy: .prefer,
                         frameBuilder:
                             (_, child, frame, wasSynchronouslyLoaded) {
                               if (wasSynchronouslyLoaded) return child;
@@ -656,6 +666,7 @@ class _PlayerLoadingOverlay extends StatelessWidget {
 
 class _YoutubeWebView extends StatelessWidget {
   const _YoutubeWebView({
+    super.key,
     required this.controller,
     required this.gestureRecognizers,
     required this.enableFullScreenOnVerticalDrag,
