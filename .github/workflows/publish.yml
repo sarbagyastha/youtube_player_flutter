@@ -17,6 +17,8 @@ jobs:
       contents: read
     outputs:
       dir: ${{ steps.tag.outputs.dir }}
+      pkg: ${{ steps.tag.outputs.pkg }}
+      version: ${{ steps.tag.outputs.version }}
     steps:
       - uses: actions/checkout@v7
 
@@ -37,6 +39,8 @@ jobs:
             echo "::error::Tag version $ver does not match pubspec version $actual"; exit 1
           fi
           echo "dir=packages/$pkg" >> "$GITHUB_OUTPUT"
+          echo "pkg=$pkg" >> "$GITHUB_OUTPUT"
+          echo "version=$ver" >> "$GITHUB_OUTPUT"
 
   publish:
     name: Publish
@@ -46,3 +50,40 @@ jobs:
     uses: dart-lang/setup-dart/.github/workflows/publish.yml@v1
     with:
       working-directory: ${{ needs.resolve.outputs.dir }}
+
+  release:
+    name: Create GitHub release
+    needs: [resolve, publish]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Required to create the release
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Extract release notes from CHANGELOG
+        env:
+          DIR: ${{ needs.resolve.outputs.dir }}
+          VERSION: ${{ needs.resolve.outputs.version }}
+        run: |
+          awk -v ver="$VERSION" '
+            /^## / { if (found) exit; found = ($2 == ver); next }
+            found && /^\*\*.*\*\*$/ && !body { next }
+            found && (body || NF) { body = 1; print }
+          ' "$DIR/CHANGELOG.md" > "$RUNNER_TEMP/notes.md"
+          if [ ! -s "$RUNNER_TEMP/notes.md" ]; then
+            echo "::error::No CHANGELOG entry found for $VERSION in $DIR/CHANGELOG.md"; exit 1
+          fi
+
+      - name: Create or update release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PKG: ${{ needs.resolve.outputs.pkg }}
+          VERSION: ${{ needs.resolve.outputs.version }}
+        run: |
+          flags=()
+          case "$VERSION" in *-*) flags+=(--prerelease) ;; esac
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release edit "$GITHUB_REF_NAME" --title "$PKG $VERSION" --notes-file "$RUNNER_TEMP/notes.md" "${flags[@]}"
+          else
+            gh release create "$GITHUB_REF_NAME" --verify-tag --title "$PKG $VERSION" --notes-file "$RUNNER_TEMP/notes.md" "${flags[@]}"
+          fi
