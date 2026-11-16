@@ -6,6 +6,7 @@
 - Updates minimum Dart SDK to `^3.11.0`.
 - Bumps dependencies (`webview_flutter`, `webview_flutter_android`, `webview_flutter_wkwebview`, `url_launcher`).
 - Bumps `youtube_player_iframe_web` dependency to `^3.1.4`.
+- Fixes the video restarting from the beginning when entering or exiting fullscreen on iOS. The WebView now keeps its identity across the toggle instead of being recreated. Thanks to [@KOZUKI07](https://github.com/KOZUKI07) ([#1183](https://github.com/sarbagyastha/youtube_player_flutter/pull/1183)).
 
 ## 6.0.2
 **May 31, 2026**
