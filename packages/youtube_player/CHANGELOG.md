@@ -1,3 +1,10 @@
+## 4.0.1
+
+**November 16, 2026**
+
+- Shorten the package description.
+- Require the latest platform packages (`^0.1.1`).
+
 ## 4.0.0
 
 **November 16, 2026**
