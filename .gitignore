@@ -101,6 +101,9 @@ unlinked_spec.ds
 # Coverage
 coverage/
 
+# Claude Code personal config
+CLAUDE.local.md
+
 # Exceptions to above rules.
 !**/ios/**/default.mode1v3
 !**/ios/**/default.mode2v3

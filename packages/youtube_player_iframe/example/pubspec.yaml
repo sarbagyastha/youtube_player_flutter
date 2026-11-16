@@ -6,15 +6,17 @@ version: 6.0.0
 resolution: workspace
 
 environment:
-  sdk: '>=3.10.0 <4.0.0'
+  sdk: ^3.14.0
+  flutter: '>=3.50.0'
 
 dependencies:
   flutter:
     sdk: flutter
   flutter_web_plugins:
       sdk: flutter
+  go_router: ^18.1.4
+  material_ui: ^1.11.0
   youtube_player_iframe:
-  go_router: ^17.2.3
 
 dev_dependencies:
   flutter_test:
@@ -24,15 +26,3 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-
-icons_launcher:
-  image_path: ../screenshots/logo.png
-  platforms:
-    android:
-      enable: true
-    ios:
-      enable: true
-    web:
-      enable: true
-    macos:
-      enable: true

@@ -5,7 +5,7 @@
 import 'dart:async';
 import 'dart:developer';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../controller/youtube_player_controller.dart';
 import '../player_value.dart';

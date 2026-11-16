@@ -4,7 +4,7 @@
 
 import 'dart:developer';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 import 'package:youtube_player_iframe_example/router.dart';
 import 'package:youtube_player_iframe_example/widgets/controls/controls_panel.dart';
