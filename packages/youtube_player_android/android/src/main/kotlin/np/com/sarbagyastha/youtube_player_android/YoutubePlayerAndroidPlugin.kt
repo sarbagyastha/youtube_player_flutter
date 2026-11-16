@@ -7,28 +7,30 @@ package np.com.sarbagyastha.youtube_player_android
 import android.app.Activity
 import android.content.Context
 import android.content.MutableContextWrapper
+import android.os.Handler
+import android.os.Looper
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.launch
 import np.com.sarbagyastha.youtube_player_android.pigeon.FlutterError
 import np.com.sarbagyastha.youtube_player_android.pigeon.NativeHostConfig
 import np.com.sarbagyastha.youtube_player_android.pigeon.NativeHostInfo
 import np.com.sarbagyastha.youtube_player_android.pigeon.NativeLoadError
 import np.com.sarbagyastha.youtube_player_android.pigeon.YoutubeFlutterApi
+import np.com.sarbagyastha.youtube_player_android.pigeon.YoutubeFlutterApiRegistrar
 import np.com.sarbagyastha.youtube_player_android.pigeon.YoutubeHostApi
+import np.com.sarbagyastha.youtube_player_android.pigeon.YoutubeHostApiRegistrar
 
 internal const val VIEW_TYPE = "np.com.sarbagyastha.youtube_player/webview"
 
-/** Hosts YouTube IFrame API players in plain [android.webkit.WebView]s. */
+/** Hosts YouTube IFrame API players in plain [android.webkit.WebView]s.
+ *
+ *  Dart talks to this class through Pigeon Native Interop (JNI): host calls
+ *  are direct, synchronous calls on the main thread, and events go back
+ *  through the Dart-implemented [YoutubeFlutterApi]. */
 class YoutubePlayerAndroidPlugin : FlutterPlugin, ActivityAware, YoutubeHostApi {
-    private var appContext: Context? = null
-    private var flutterApi: YoutubeFlutterApi? = null
-    private var scope: CoroutineScope? = null
+    private var binding: FlutterPlugin.FlutterPluginBinding? = null
+    private val mainHandler = Handler(Looper.getMainLooper())
     private val hosts = mutableMapOf<Long, PlayerHost>()
     private var nextHandle = 0L
 
@@ -42,22 +44,17 @@ class YoutubePlayerAndroidPlugin : FlutterPlugin, ActivityAware, YoutubeHostApi 
     // region FlutterPlugin
 
     override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-        appContext = binding.applicationContext
+        this.binding = binding
         webViewContext = MutableContextWrapper(binding.applicationContext)
-        flutterApi = YoutubeFlutterApi(binding.binaryMessenger)
-        scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-        YoutubeHostApi.setUp(binding.binaryMessenger, this)
+        YoutubeHostApiRegistrar().register(this, binding)
         binding.platformViewRegistry.registerViewFactory(VIEW_TYPE, PlayerViewFactory(hosts))
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-        YoutubeHostApi.setUp(binding.binaryMessenger, null)
-        hosts.values.forEach(PlayerHost::destroy)
-        hosts.clear()
-        scope?.cancel()
-        scope = null
-        flutterApi = null
-        appContext = null
+        YoutubeHostApiRegistrar().unregister(this, binding)
+        reset()
+        mainHandler.removeCallbacksAndMessages(null)
+        this.binding = null
         webViewContext = null
     }
 
@@ -80,22 +77,21 @@ class YoutubePlayerAndroidPlugin : FlutterPlugin, ActivityAware, YoutubeHostApi 
     private fun detachActivity() {
         hosts.values.forEach { it.exitFullscreen() }
         activity = null
-        appContext?.let { webViewContext?.baseContext = it }
+        binding?.applicationContext?.let { webViewContext?.baseContext = it }
     }
 
     // endregion
 
-    // region YoutubeHostApi
+    // region YoutubeHostApi (main thread, synchronous)
 
-    override fun create(config: NativeHostConfig): NativeHostInfo {
+    override fun create(config: NativeHostConfig, html: String): NativeHostInfo {
         val context = webViewContext ?: throw FlutterError("detached", "Plugin is not attached")
         val appId = (config.appId ?: context.packageName).lowercase()
+        val origin = "https://$appId"
         val handle = nextHandle++
-        hosts[handle] = PlayerHost(handle, context, config, "https://$appId", this)
-        return NativeHostInfo(handle, "https://$appId")
+        hosts[handle] = PlayerHost(handle, context, config, origin, this).also { it.load(html) }
+        return NativeHostInfo(handle, origin)
     }
-
-    override fun load(handle: Long, html: String) = host(handle).load(html)
 
     override fun send(handle: Long, json: String) = host(handle).send(json)
 
@@ -110,20 +106,29 @@ class YoutubePlayerAndroidPlugin : FlutterPlugin, ActivityAware, YoutubeHostApi 
         hosts.remove(handle)?.destroy()
     }
 
+    override fun reset() {
+        val all = hosts.values.toList()
+        hosts.clear()
+        all.forEach(PlayerHost::destroy)
+    }
+
     private fun host(handle: Long) =
         hosts[handle] ?: throw FlutterError("no-host", "No player with handle $handle")
 
     // endregion
 
-    // region Host -> Dart (always on the main thread, in order)
+    // region Host -> Dart
 
-    private fun toDart(block: suspend YoutubeFlutterApi.() -> Unit) {
-        val api = flutterApi ?: return
-        scope?.launch {
+    /** Always delivered on a later main-loop turn: never re-enters Dart in the
+     *  middle of a synchronous host call, and hops off the JavaBridge thread. */
+    private fun toDart(block: YoutubeFlutterApi.() -> Unit) {
+        mainHandler.post {
+            val binding = binding ?: return@post
+            val api = YoutubeFlutterApiRegistrar().getInstance(binding) ?: return@post
             try {
                 api.block()
             } catch (_: FlutterError) {
-                // Dart side not listening (e.g. during hot restart); drop.
+                // Dart side gone (e.g. during hot restart); drop.
             }
         }
     }

@@ -8,11 +8,9 @@
 package np.com.sarbagyastha.youtube_player_android.pigeon
 
 import android.util.Log
-import io.flutter.plugin.common.BasicMessageChannel
-import io.flutter.plugin.common.BinaryMessenger
-import io.flutter.plugin.common.EventChannel
-import io.flutter.plugin.common.MessageCodec
-import io.flutter.plugin.common.StandardMethodCodec
+import androidx.annotation.Keep
+import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.StandardMessageCodec
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
@@ -198,18 +196,92 @@ private object MessagesPigeonUtils {
  * @property message The error message.
  * @property details The error details. Must be a datatype supported by the api codec.
  */
+@Keep
 class FlutterError (
   val code: String,
   override val message: String? = null,
   val details: Any? = null
 ) : RuntimeException()
+private const val defaultInstanceName = "PigeonDefaultClassName32uh4ui3lh445uh4h3l2l455g4y34u"
+
+/** Computes keys that identify the Flutter engine a registration belongs to. */
+private object MessagesPigeonEngineKeys {
+  /** Sentinel meaning that no engine key is known. */
+  const val NO_KEY: Long = Long.MIN_VALUE
+
+  /** `FlutterPluginBinding.getEngineId`, which is missing on older Flutter versions. */
+  private val getEngineIdMethod: java.lang.reflect.Method? by lazy {
+    try {
+      FlutterPlugin.FlutterPluginBinding::class.java.getMethod("getEngineId")
+    } catch (e: Exception) {
+      null
+    }
+  }
+
+  /** Keys for engine messengers, used when an exact engine id is unavailable. */
+  private val messengerKeys = java.util.WeakHashMap<Any, Long>()
+
+  /**
+   * Keys already computed for each binding, so `register` and `unregister` with
+   * the same binding always agree even if [keyOf] for its engine later records
+   * an exact key for the messenger.
+   */
+  private val bindingKeys = java.util.WeakHashMap<FlutterPlugin.FlutterPluginBinding, Long>()
+
+  private var nextSyntheticKey: Long = -1L
+
+  /** Returns the key for the engine that [binding] belongs to. */
+  @Synchronized
+  fun keyOf(binding: FlutterPlugin.FlutterPluginBinding): Long {
+    return bindingKeys.getOrPut(binding) { computeKey(binding) }
+  }
+
+  private fun computeKey(binding: FlutterPlugin.FlutterPluginBinding): Long {
+    val method = getEngineIdMethod
+    if (method != null) {
+      try {
+        // Real engine ids are never 0, but an engine without one, or a test
+        // double, reports 0, which must not be shared between engines.
+        val engineId = method.invoke(binding) as Long
+        if (engineId != 0L) {
+          return engineId
+        }
+      } catch (e: Exception) {
+        // Fall back to a messenger-based key.
+      }
+    }
+    return keyOfMessenger(binding.binaryMessenger)
+  }
+
+  /** Returns the key for [engine]. */
+  @Synchronized
+  fun keyOf(engine: FlutterEngine): Long {
+    val key = engine.engineId
+    if (key == 0L) {
+      // Real engine ids are never 0, but an engine without one, or a test
+      // double, reports 0, which must not be shared between engines.
+      return keyOfMessenger(engine.dartExecutor)
+    }
+    // Record the exact key so later lookups through a binding for this engine
+    // agree with it even when the binding cannot report the engine id.
+    messengerKeys[engine.dartExecutor] = key
+    return key
+  }
+
+  @Synchronized
+  private fun keyOfMessenger(messenger: Any): Long {
+    return messengerKeys.getOrPut(messenger) { nextSyntheticKey-- }
+  }
+}
 
 /** Orientation while the WebView presents fullscreen. */
+@Keep
 enum class NativeFullscreenOrientation(val raw: Int) {
   LANDSCAPE(0),
   AUTO(1),
   UNCHANGED(2);
 
+  @Keep
   companion object {
     private val pigeonValues = values()
 
@@ -224,6 +296,7 @@ enum class NativeFullscreenOrientation(val raw: Int) {
  *
  * Generated class from Pigeon that represents data sent in messages.
  */
+@Keep
 data class NativeHostConfig (
   /** Client identity; defaults to the application id. */
   val appId: String? = null,
@@ -283,6 +356,7 @@ data class NativeHostConfig (
  *
  * Generated class from Pigeon that represents data sent in messages.
  */
+@Keep
 data class NativeHostInfo (
   val handle: Long,
   /** `https://<appId>`; the page is loaded under this origin. */
@@ -329,6 +403,7 @@ data class NativeHostInfo (
  *
  * Generated class from Pigeon that represents data sent in messages.
  */
+@Keep
 data class NativeLoadError (
   val code: Long,
   val message: String,
@@ -422,229 +497,376 @@ private open class MessagesPigeonCodec : StandardMessageCodec() {
 }
 
 /**
- * Dart -> Android.
- *
- * Generated interface from Pigeon that represents a handler of messages from Flutter.
+ * Encodes and decodes the buffers that native interop calls pass to and from
+ * Dart, in the same format as the message codec.
  */
+private object MessagesPigeonInteropCodec : MessagesPigeonCodec() {
+  fun encode(value: Any?): ByteArray {
+    val stream = ByteArrayOutputStream()
+    writeValue(stream, value)
+    return stream.toByteArray()
+  }
+
+  fun encodeOrNull(value: Any?): ByteArray? {
+    return if (value == null) null else encode(value)
+  }
+
+  fun decode(bytes: ByteArray): Any? {
+    return decodeMessage(ByteBuffer.wrap(bytes))
+  }
+
+  fun decodeArguments(bytes: ByteArray): List<Any?> {
+    return decode(bytes) as List<Any?>
+  }
+}
+
+
+val YoutubeHostApiInstances: MutableMap<String, MutableList<YoutubeHostApiRegistrar>> = mutableMapOf()
+@Keep
 interface YoutubeHostApi {
-  /** Creates a WebView and returns its handle and origin. */
-  fun create(config: NativeHostConfig): NativeHostInfo
-  /** Loads the player page under the host's origin. */
-  fun load(handle: Long, html: String)
+  /**
+   * Creates a WebView, loads [html] under the host's origin and returns its
+   * handle and origin.
+   */
+  fun create(config: NativeHostConfig, html: String): NativeHostInfo
   /** Delivers [json] to `window.__yp.recv`. */
   fun send(handle: Long, json: String)
   fun setBackgroundColor(handle: Long, argb: Long)
   fun exitFullscreen(handle: Long)
   fun dispose(handle: Long)
+  /** Destroys every player, e.g. those orphaned by a hot restart. */
+  fun reset()
+}
+@Keep
+class YoutubeHostApiRegistrar private constructor(private val engineKey: Long) {
+  @Volatile private var api: YoutubeHostApi? = null
+
+  constructor() : this(MessagesPigeonEngineKeys.NO_KEY)
+
+  /**
+   * Registers [api] under [name] (or the default instance when [name] is
+   * omitted) for the engine of the plugin binding [binding].
+   *
+   * The registration is tied to that engine: unregistering it for this engine
+   * leaves other engines' registrations in place, and Dart code running on an
+   * engine uses the instance registered for that engine when it is known.
+   */
+  @Keep
+  fun register(api: YoutubeHostApi, binding: FlutterPlugin.FlutterPluginBinding, name: String = defaultInstanceName) {
+    registerWithKey(api, MessagesPigeonEngineKeys.keyOf(binding), name)
+  }
+
+  /**
+   * Registers [api] under [name] (or the default instance when [name] is
+   * omitted) for the engine of [engine].
+   *
+   * The registration is tied to that engine: unregistering it for this engine
+   * leaves other engines' registrations in place, and Dart code running on an
+   * engine uses the instance registered for that engine when it is known.
+   */
+  @Keep
+  fun register(api: YoutubeHostApi, engine: FlutterEngine, name: String = defaultInstanceName) {
+    registerWithKey(api, MessagesPigeonEngineKeys.keyOf(engine), name)
+  }
+
+  /**
+   * Removes [api] from the registrations under [name] (or the default instance
+   * when [name] is omitted) for the engine of the plugin binding [binding], leaving other
+   * registrations in place.
+   *
+   * Instances are matched by identity. If [api] is not registered for that
+   * engine but is registered for exactly one other engine, that registration is
+   * removed. Does nothing if [api] is not registered, or is only registered for
+   * several other engines.
+   */
+  @Keep
+  fun unregister(api: YoutubeHostApi, binding: FlutterPlugin.FlutterPluginBinding, name: String = defaultInstanceName) {
+    unregisterWithKey(api, MessagesPigeonEngineKeys.keyOf(binding), name)
+  }
+
+  /**
+   * Removes [api] from the registrations under [name] (or the default instance
+   * when [name] is omitted) for the engine of [engine], leaving other
+   * registrations in place.
+   *
+   * Instances are matched by identity. If [api] is not registered for that
+   * engine but is registered for exactly one other engine, that registration is
+   * removed. Does nothing if [api] is not registered, or is only registered for
+   * several other engines.
+   */
+  @Keep
+  fun unregister(api: YoutubeHostApi, engine: FlutterEngine, name: String = defaultInstanceName) {
+    unregisterWithKey(api, MessagesPigeonEngineKeys.keyOf(engine), name)
+  }
+
+  private fun registerWithKey(api: YoutubeHostApi, engineKey: Long, name: String) {
+    kotlin.synchronized(YoutubeHostApiInstances) {
+      val list = YoutubeHostApiInstances.getOrPut(name) { mutableListOf() }
+      val index = list.indexOfFirst { it.api === api && it.engineKey == engineKey }
+      if (index >= 0) {
+        list.add(list.removeAt(index))
+      } else {
+        val wrapper = YoutubeHostApiRegistrar(engineKey)
+        wrapper.api = api
+        list.add(wrapper)
+      }
+    }
+  }
+
+  private fun unregisterWithKey(api: YoutubeHostApi, engineKey: Long, name: String) {
+    kotlin.synchronized(YoutubeHostApiInstances) {
+      val list = YoutubeHostApiInstances[name] ?: return
+      val removeKey =
+        if (list.any { it.api === api && it.engineKey == engineKey }) {
+          engineKey
+        } else {
+          list.filter { it.api === api }.map { it.engineKey }.distinct().singleOrNull() ?: return
+        }
+      val iterator = list.iterator()
+      while (iterator.hasNext()) {
+        val entry = iterator.next()
+        if (entry.api === api && entry.engineKey == removeKey) {
+          entry.api = null
+          iterator.remove()
+        }
+      }
+      if (list.isEmpty()) {
+        YoutubeHostApiInstances.remove(name)
+      }
+    }
+  }
 
   companion object {
-    /** The codec used by YoutubeHostApi. */
-    val codec: MessageCodec<Any?> by lazy {
-      MessagesPigeonCodec()
+    /**
+     * Returns the instance registered under [name] for the engine identified by
+     * [engineId].
+     *
+     * Falls back to the most recent instance registered for [affinityKey], then to
+     * the most recent instance overall. Either key may be `Long.MIN_VALUE` when it
+     * is unknown.
+     *
+     * This is called by the generated Dart code and is not intended for direct use.
+     */
+    @JvmStatic
+    @Keep
+    fun pigeonResolveInstance(engineId: Long, affinityKey: Long, name: String = defaultInstanceName): YoutubeHostApiRegistrar? {
+      return kotlin.synchronized(YoutubeHostApiInstances) {
+        val list = YoutubeHostApiInstances[name] ?: return null
+        val exact = if (engineId != MessagesPigeonEngineKeys.NO_KEY) list.lastOrNull { it.engineKey == engineId } else null
+        val affine = if (affinityKey != MessagesPigeonEngineKeys.NO_KEY) list.lastOrNull { it.engineKey == affinityKey } else null
+        exact ?: affine ?: list.lastOrNull()
+      }
     }
-    /** Sets up an instance of `YoutubeHostApi` to handle messages through the `binaryMessenger`. */
-    @JvmOverloads
-    fun setUp(binaryMessenger: BinaryMessenger, api: YoutubeHostApi?, messageChannelSuffix: String = "") {
-      val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
-      run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.youtube_player_android.YoutubeHostApi.create$separatedMessageChannelSuffix", codec)
-        if (api != null) {
-          channel.setMessageHandler { message, reply ->
-            val args = message as List<Any?>
-            val configArg = args[0] as NativeHostConfig
-            val wrapped: List<Any?> = try {
-              listOf(api.create(configArg))
-            } catch (exception: Throwable) {
-              MessagesPigeonUtils.wrapError(exception)
-            }
-            reply.reply(wrapped)
-          }
-        } else {
-          channel.setMessageHandler(null)
-        }
+
+    /**
+     * Returns the engine key that [instance] was registered with, or
+     * `Long.MIN_VALUE` if it is unknown.
+     *
+     * This is called by the generated Dart code and is not intended for direct use.
+     */
+    @JvmStatic
+    @Keep
+    fun pigeonEngineKeyOf(instance: YoutubeHostApiRegistrar): Long {
+      return instance.engineKey
+    }
+  }
+
+  fun create(html: String, pigeonVar_args: ByteArray): ByteArray? {
+    val pigeonVar_api = this.api ?: throw FlutterError("unregistered-instance", "YoutubeHostApi has not been registered.")
+    try {
+      val pigeonVar_decodedArgs = MessagesPigeonInteropCodec.decodeArguments(pigeonVar_args)
+      val pigeonVar_arg_config = pigeonVar_decodedArgs[0] as NativeHostConfig
+      return MessagesPigeonInteropCodec.encodeOrNull(pigeonVar_api.create(pigeonVar_arg_config, html))
+    } catch (e: FlutterError) {
+      throw FlutterError(e.code, e.message, MessagesPigeonInteropCodec.encodeOrNull(e.details)).apply {
+        stackTrace = e.stackTrace
       }
-      run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.youtube_player_android.YoutubeHostApi.load$separatedMessageChannelSuffix", codec)
-        if (api != null) {
-          channel.setMessageHandler { message, reply ->
-            val args = message as List<Any?>
-            val handleArg = args[0] as Long
-            val htmlArg = args[1] as String
-            val wrapped: List<Any?> = try {
-              api.load(handleArg, htmlArg)
-              listOf(null)
-            } catch (exception: Throwable) {
-              MessagesPigeonUtils.wrapError(exception)
-            }
-            reply.reply(wrapped)
-          }
-        } else {
-          channel.setMessageHandler(null)
-        }
+    }
+  }
+  fun send(handle: Long, json: String) {
+    val pigeonVar_api = this.api ?: throw FlutterError("unregistered-instance", "YoutubeHostApi has not been registered.")
+    try {
+      pigeonVar_api.send(handle, json)
+    } catch (e: FlutterError) {
+      throw FlutterError(e.code, e.message, MessagesPigeonInteropCodec.encodeOrNull(e.details)).apply {
+        stackTrace = e.stackTrace
       }
-      run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.youtube_player_android.YoutubeHostApi.send$separatedMessageChannelSuffix", codec)
-        if (api != null) {
-          channel.setMessageHandler { message, reply ->
-            val args = message as List<Any?>
-            val handleArg = args[0] as Long
-            val jsonArg = args[1] as String
-            val wrapped: List<Any?> = try {
-              api.send(handleArg, jsonArg)
-              listOf(null)
-            } catch (exception: Throwable) {
-              MessagesPigeonUtils.wrapError(exception)
-            }
-            reply.reply(wrapped)
-          }
-        } else {
-          channel.setMessageHandler(null)
-        }
+    }
+  }
+  fun setBackgroundColor(handle: Long, argb: Long) {
+    val pigeonVar_api = this.api ?: throw FlutterError("unregistered-instance", "YoutubeHostApi has not been registered.")
+    try {
+      pigeonVar_api.setBackgroundColor(handle, argb)
+    } catch (e: FlutterError) {
+      throw FlutterError(e.code, e.message, MessagesPigeonInteropCodec.encodeOrNull(e.details)).apply {
+        stackTrace = e.stackTrace
       }
-      run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.youtube_player_android.YoutubeHostApi.setBackgroundColor$separatedMessageChannelSuffix", codec)
-        if (api != null) {
-          channel.setMessageHandler { message, reply ->
-            val args = message as List<Any?>
-            val handleArg = args[0] as Long
-            val argbArg = args[1] as Long
-            val wrapped: List<Any?> = try {
-              api.setBackgroundColor(handleArg, argbArg)
-              listOf(null)
-            } catch (exception: Throwable) {
-              MessagesPigeonUtils.wrapError(exception)
-            }
-            reply.reply(wrapped)
-          }
-        } else {
-          channel.setMessageHandler(null)
-        }
+    }
+  }
+  fun exitFullscreen(handle: Long) {
+    val pigeonVar_api = this.api ?: throw FlutterError("unregistered-instance", "YoutubeHostApi has not been registered.")
+    try {
+      pigeonVar_api.exitFullscreen(handle)
+    } catch (e: FlutterError) {
+      throw FlutterError(e.code, e.message, MessagesPigeonInteropCodec.encodeOrNull(e.details)).apply {
+        stackTrace = e.stackTrace
       }
-      run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.youtube_player_android.YoutubeHostApi.exitFullscreen$separatedMessageChannelSuffix", codec)
-        if (api != null) {
-          channel.setMessageHandler { message, reply ->
-            val args = message as List<Any?>
-            val handleArg = args[0] as Long
-            val wrapped: List<Any?> = try {
-              api.exitFullscreen(handleArg)
-              listOf(null)
-            } catch (exception: Throwable) {
-              MessagesPigeonUtils.wrapError(exception)
-            }
-            reply.reply(wrapped)
-          }
-        } else {
-          channel.setMessageHandler(null)
-        }
+    }
+  }
+  fun dispose(handle: Long) {
+    val pigeonVar_api = this.api ?: throw FlutterError("unregistered-instance", "YoutubeHostApi has not been registered.")
+    try {
+      pigeonVar_api.dispose(handle)
+    } catch (e: FlutterError) {
+      throw FlutterError(e.code, e.message, MessagesPigeonInteropCodec.encodeOrNull(e.details)).apply {
+        stackTrace = e.stackTrace
       }
-      run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.youtube_player_android.YoutubeHostApi.dispose$separatedMessageChannelSuffix", codec)
-        if (api != null) {
-          channel.setMessageHandler { message, reply ->
-            val args = message as List<Any?>
-            val handleArg = args[0] as Long
-            val wrapped: List<Any?> = try {
-              api.dispose(handleArg)
-              listOf(null)
-            } catch (exception: Throwable) {
-              MessagesPigeonUtils.wrapError(exception)
-            }
-            reply.reply(wrapped)
-          }
-        } else {
-          channel.setMessageHandler(null)
-        }
+    }
+  }
+  fun reset() {
+    val pigeonVar_api = this.api ?: throw FlutterError("unregistered-instance", "YoutubeHostApi has not been registered.")
+    try {
+      pigeonVar_api.reset()
+    } catch (e: FlutterError) {
+      throw FlutterError(e.code, e.message, MessagesPigeonInteropCodec.encodeOrNull(e.details)).apply {
+        stackTrace = e.stackTrace
       }
     }
   }
 }
 /**
- * Android -> Dart.
+ * Android -> Dart. Always invoked on the main thread, on a fresh loop turn.
  *
  * Generated class from Pigeon that represents Flutter messages that can be called from Kotlin.
  */
-class YoutubeFlutterApi(private val binaryMessenger: BinaryMessenger, private val messageChannelSuffix: String = "") {
-  companion object {
-    /** The codec used by YoutubeFlutterApi. */
-    val codec: MessageCodec<Any?> by lazy {
-      MessagesPigeonCodec()
-    }
-  }
-  suspend fun onMessage(handleArg: Long, jsonArg: String)
-{
-    val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
-    return suspendCancellableCoroutine { continuation ->
-      val channelName = "dev.flutter.pigeon.youtube_player_android.YoutubeFlutterApi.onMessage$separatedMessageChannelSuffix"
-      val channel = BasicMessageChannel<Any?>(binaryMessenger, channelName, codec)
-      channel.send(listOf(handleArg, jsonArg)) {
-        if (it is List<*>) {
-          if (it.size > 1) {
-            continuation.resumeWithException(FlutterError(it[0] as String, it[1] as String, it[2] as String?))
-          } else {
-            continuation.resume(Unit)
-          }
-        } else {
-          continuation.resumeWithException(MessagesPigeonUtils.createConnectionError(channelName))
-        } 
+/** A registered [YoutubeFlutterApi] and the keys of the engine it belongs to. */
+class YoutubeFlutterApiRegistration(val api: YoutubeFlutterApi, val engineId: Long, val affinityKey: Long)
+
+/// Map that stores instances
+val registeredYoutubeFlutterApi: MutableMap<String, MutableList<YoutubeFlutterApiRegistration>> = mutableMapOf()
+
+/// Class that stores instances
+@Keep
+class YoutubeFlutterApiRegistrar() {
+  /**
+   * Registers [api] under [name] (or the default instance when [name] is omitted)
+   * for the engine identified by [engineId] and [affinityKey].
+   *
+   * Either key may be `Long.MIN_VALUE` when it is unknown. Registering an
+   * instance that is already registered under [name] updates its keys and keeps
+   * its position.
+   *
+   * This is called by the generated Dart code and is not intended for direct use.
+   */
+  @Keep
+  fun registerInstance(api: YoutubeFlutterApiBridge, engineId: Long, affinityKey: Long, name: String = defaultInstanceName) {
+    kotlin.synchronized(registeredYoutubeFlutterApi) {
+      val list = registeredYoutubeFlutterApi.getOrPut(name) { mutableListOf() }
+      val registration = YoutubeFlutterApiRegistration(YoutubeFlutterApiBridgeAdapter(api), engineId, affinityKey)
+      val index = list.indexOfFirst { (it.api as? YoutubeFlutterApiBridgeAdapter)?.bridge === api }
+      if (index >= 0) {
+        list[index] = registration
+      } else {
+        list.add(registration)
       }
     }
   }
-  suspend fun onNavigation(handleArg: Long, urlArg: String)
-{
-    val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
-    return suspendCancellableCoroutine { continuation ->
-      val channelName = "dev.flutter.pigeon.youtube_player_android.YoutubeFlutterApi.onNavigation$separatedMessageChannelSuffix"
-      val channel = BasicMessageChannel<Any?>(binaryMessenger, channelName, codec)
-      channel.send(listOf(handleArg, urlArg)) {
-        if (it is List<*>) {
-          if (it.size > 1) {
-            continuation.resumeWithException(FlutterError(it[0] as String, it[1] as String, it[2] as String?))
-          } else {
-            continuation.resume(Unit)
-          }
-        } else {
-          continuation.resumeWithException(MessagesPigeonUtils.createConnectionError(channelName))
-        } 
+
+  /**
+   * Removes [api] from the registrations under [name] (or the default instance
+   * when [name] is omitted), leaving other registrations in place.
+   *
+   * Instances are matched by identity. Does nothing if [api] is not registered.
+   *
+   * This is called by the generated Dart code and is not intended for direct use.
+   */
+  @Keep
+  fun unregisterInstance(api: YoutubeFlutterApiBridge, name: String = defaultInstanceName) {
+    kotlin.synchronized(registeredYoutubeFlutterApi) {
+      val list = registeredYoutubeFlutterApi[name] ?: return
+      list.removeAll { (it.api as? YoutubeFlutterApiBridgeAdapter)?.bridge === api }
+      if (list.isEmpty()) {
+        registeredYoutubeFlutterApi.remove(name)
       }
     }
   }
-  suspend fun onLoadError(handleArg: Long, errorArg: NativeLoadError)
-{
-    val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
-    return suspendCancellableCoroutine { continuation ->
-      val channelName = "dev.flutter.pigeon.youtube_player_android.YoutubeFlutterApi.onLoadError$separatedMessageChannelSuffix"
-      val channel = BasicMessageChannel<Any?>(binaryMessenger, channelName, codec)
-      channel.send(listOf(handleArg, errorArg)) {
-        if (it is List<*>) {
-          if (it.size > 1) {
-            continuation.resumeWithException(FlutterError(it[0] as String, it[1] as String, it[2] as String?))
-          } else {
-            continuation.resume(Unit)
-          }
-        } else {
-          continuation.resumeWithException(MessagesPigeonUtils.createConnectionError(channelName))
-        } 
+
+  /**
+   * Returns the instance registered under [name] (or the default instance when
+   * [name] is omitted) by the Dart code running on the engine of the plugin binding [binding].
+   *
+   * When no instance is known to belong to that engine, falls back to the most
+   * recent registration for [name]. Returns null if none is registered.
+   */
+  @Keep
+  fun getInstance(binding: FlutterPlugin.FlutterPluginBinding, name: String = defaultInstanceName): YoutubeFlutterApi? {
+    return getInstanceWithKey(MessagesPigeonEngineKeys.keyOf(binding), name)
+  }
+
+  /**
+   * Returns the instance registered under [name] (or the default instance when
+   * [name] is omitted) by the Dart code running on the engine of [engine].
+   *
+   * When no instance is known to belong to that engine, falls back to the most
+   * recent registration for [name]. Returns null if none is registered.
+   */
+  @Keep
+  fun getInstance(engine: FlutterEngine, name: String = defaultInstanceName): YoutubeFlutterApi? {
+    return getInstanceWithKey(MessagesPigeonEngineKeys.keyOf(engine), name)
+  }
+
+  private fun getInstanceWithKey(engineKey: Long, name: String): YoutubeFlutterApi? {
+    kotlin.synchronized(registeredYoutubeFlutterApi) {
+      val list = registeredYoutubeFlutterApi[name] ?: return null
+      if (engineKey != MessagesPigeonEngineKeys.NO_KEY) {
+        // Prefer the isolate running on the engine over isolates that only
+        // learned an affinity for it.
+        val match = list.lastOrNull { it.engineId == engineKey } ?: list.lastOrNull { it.affinityKey == engineKey }
+        if (match != null) {
+          return match.api
+        }
       }
+      return list.lastOrNull()?.api
     }
   }
-  suspend fun onFullscreenChanged(handleArg: Long, isFullscreenArg: Boolean)
-{
-    val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
-    return suspendCancellableCoroutine { continuation ->
-      val channelName = "dev.flutter.pigeon.youtube_player_android.YoutubeFlutterApi.onFullscreenChanged$separatedMessageChannelSuffix"
-      val channel = BasicMessageChannel<Any?>(binaryMessenger, channelName, codec)
-      channel.send(listOf(handleArg, isFullscreenArg)) {
-        if (it is List<*>) {
-          if (it.size > 1) {
-            continuation.resumeWithException(FlutterError(it[0] as String, it[1] as String, it[2] as String?))
-          } else {
-            continuation.resume(Unit)
-          }
-        } else {
-          continuation.resumeWithException(MessagesPigeonUtils.createConnectionError(channelName))
-        } 
-      }
-    }
+}
+interface YoutubeFlutterApi {
+  fun onMessage(handle: Long, json: String)
+  fun onNavigation(handle: Long, url: String)
+  fun onLoadError(handle: Long, error: NativeLoadError)
+  fun onFullscreenChanged(handle: Long, isFullscreen: Boolean)
+}
+
+/**
+ * The interface that Dart implements for [YoutubeFlutterApi].
+ *
+ * Values that the native interop transport passes directly are their own
+ * arguments and return values. All other arguments are encoded into one
+ * buffer, and other return values are returned in one.
+ */
+@Keep
+interface YoutubeFlutterApiBridge {
+  fun onMessage(handle: Long, json: String)
+  fun onNavigation(handle: Long, url: String)
+  fun onLoadError(handle: Long, pigeonVar_args: ByteArray)
+  fun onFullscreenChanged(handle: Long, isFullscreen: Boolean)
+}
+
+private class YoutubeFlutterApiBridgeAdapter(val bridge: YoutubeFlutterApiBridge) : YoutubeFlutterApi {
+  override fun onMessage(handle: Long, json: String)
+ {
+    this.bridge.onMessage(handle, json)
+  }
+  override fun onNavigation(handle: Long, url: String)
+ {
+    this.bridge.onNavigation(handle, url)
+  }
+  override fun onLoadError(handle: Long, error: NativeLoadError)
+ {
+    this.bridge.onLoadError(handle, MessagesPigeonInteropCodec.encode(listOf<Any?>(error)))
+  }
+  override fun onFullscreenChanged(handle: Long, isFullscreen: Boolean)
+ {
+    this.bridge.onFullscreenChanged(handle, isFullscreen)
   }
 }

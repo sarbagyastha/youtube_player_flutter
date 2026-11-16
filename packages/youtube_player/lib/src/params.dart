@@ -143,13 +143,19 @@ final class const YoutubePlayerParams({
   /// Host creation parameters for the platform implementation.
   ///
   /// With [customControls], the iframe also ignores pointer events; see
-  /// [toPlayerVars].
+  /// [toPlayerVars]. [start] / [end] (whole seconds) bound the initial video.
   YoutubeHostParams toHostParams({
     String? videoId,
     Color? backgroundColor,
     bool customControls = false,
+    int? start,
+    int? end,
   }) => YoutubeHostParams(
-    playerVars: toPlayerVars(customControls: customControls),
+    playerVars: {
+      ...toPlayerVars(customControls: customControls),
+      'start': ?start,
+      'end': ?end,
+    },
     videoId: videoId,
     host: host,
     appId: appId,

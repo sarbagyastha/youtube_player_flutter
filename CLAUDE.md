@@ -8,7 +8,7 @@
 
 ## Layout
 - Publishable: `packages/youtube_player_iframe_web` → `youtube_player_iframe` → `youtube_player_flutter` (arrow = depended on by).
-- New federated family (built from scratch, Pigeon-driven native WebViews, no webview_flutter): `youtube_player_platform_interface` → `youtube_player_android` / `youtube_player_darwin` (iOS+macOS, shared Swift) / `youtube_player_html` (web, js_interop, Wasm) → `youtube_player` (app-facing, endorses the impls). Regenerate Pigeon with `dart run pigeon --input pigeons/messages.dart` inside an impl package.
+- New federated family (built from scratch, native WebViews driven by Pigeon Native Interop — JNI on Android, FFI on Darwin, no platform channels — no webview_flutter): `youtube_player_platform_interface` → `youtube_player_android` / `youtube_player_darwin` (iOS+macOS, shared Swift) / `youtube_player_html` (web, js_interop, Wasm) → `youtube_player` (app-facing, endorses the impls). Regenerate Pigeon with `dart run pigeon --input pigeons/messages.dart` inside an impl package (macOS only). Android needs `ANDROID_HOME` set and the Kotlin compiled first (`cd packages/youtube_player/example/android && ./gradlew :youtube_player_android:compileReleaseKotlin`), because JNIgen reads class files.
 - Roadmap: `youtube_player` is a plain IFrame player (no Flutter-drawn UI; custom UI only via `YoutubePlayer.controlsBuilder`). It will replace `youtube_player_iframe` (to be deprecated), and `youtube_player_flutter` will be rebuilt on top of it.
 - `*/example` dirs are workspace members, never published.
 
@@ -19,5 +19,6 @@
 
 ## Gotchas
 - New-family code uses primary constructors and the latest Dart syntax everywhere (SDK ^3.14.0, Flutter >=3.50.0).
+- Pigeon is pinned to an exact version in the impl packages (Native Interop is Preview); upgrading means regenerating both and rebuilding the example on all three platforms. `youtube_player_darwin` is SwiftPM-only (no podspec; Flutter is dropping CocoaPods). Darwin compiles in Swift 5 mode with complete concurrency checking because the generated FFI bridge fails Swift 6 mode.
 - New-family release order: platform_interface → android/darwin/html → youtube_player.
 - When a package's version bumps, update dependents' constraints (`youtube_player_iframe: ^x` in flutter, `youtube_player_iframe_web: ^x` in iframe) and release them after it.

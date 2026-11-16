@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-3-Clause license that can be
 // found in the LICENSE file.
 
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/scheduler.dart';
@@ -69,6 +71,7 @@ class _YoutubePlayerState extends State<YoutubePlayer>
   YoutubePlayerHost? _host;
   final _scrollPositions = <ScrollPosition>[];
   var _visibilityCheckScheduled = false;
+  Timer? _visibilityPoll;
 
   @override
   bool get wantKeepAlive => widget.keepAlive;
@@ -93,6 +96,11 @@ class _YoutubePlayerState extends State<YoutubePlayer>
     if (oldWidget.controller != widget.controller) {
       _host = null;
       _attach(widget.controller);
+    }
+    if (oldWidget.controller != widget.controller ||
+        oldWidget.autoPlayWhenVisible != widget.autoPlayWhenVisible) {
+      _listenToScrollables();
+      _scheduleVisibilityCheck();
     } else if (oldWidget.backgroundColor != widget.backgroundColor) {
       _host?.setBackgroundColor(widget.backgroundColor);
     }
@@ -101,10 +109,11 @@ class _YoutubePlayerState extends State<YoutubePlayer>
 
   Future<void> _attach(YoutubePlayerController controller) async {
     if (!widget.autoPlayWhenVisible) controller.startPendingAutoPlay();
-    controller.customControls = widget.controlsBuilder != null;
+    controller
+      ..customControls = widget.controlsBuilder != null
+      ..backgroundColor = widget.backgroundColor;
     final host = await controller.host;
     if (!mounted || controller != widget.controller) return;
-    await host.setBackgroundColor(widget.backgroundColor);
     setState(() => _host = host);
   }
 
@@ -117,12 +126,20 @@ class _YoutubePlayerState extends State<YoutubePlayer>
     _scheduleVisibilityCheck();
   }
 
-  void _listenToScrollables() {
+  void _stopListeningToScrollables() {
     for (final position in _scrollPositions) {
       position.removeListener(_scheduleVisibilityCheck);
     }
     _scrollPositions.clear();
-    if (!widget.autoPlayWhenVisible) return;
+    _visibilityPoll?.cancel();
+    _visibilityPoll = null;
+  }
+
+  void _listenToScrollables() {
+    _stopListeningToScrollables();
+    if (!widget.autoPlayWhenVisible || !widget.controller.hasPendingAutoPlay) {
+      return;
+    }
     var scrollable = Scrollable.maybeOf(context);
     while (scrollable != null) {
       _scrollPositions.add(
@@ -133,7 +150,8 @@ class _YoutubePlayerState extends State<YoutubePlayer>
   }
 
   void _scheduleVisibilityCheck() {
-    if (_visibilityCheckScheduled ||
+    if (!mounted ||
+        _visibilityCheckScheduled ||
         !widget.autoPlayWhenVisible ||
         !widget.controller.hasPendingAutoPlay) {
       return;
@@ -141,12 +159,17 @@ class _YoutubePlayerState extends State<YoutubePlayer>
     _visibilityCheckScheduled = true;
     SchedulerBinding.instance.addPostFrameCallback((_) {
       _visibilityCheckScheduled = false;
-      if (!mounted || !widget.controller.hasPendingAutoPlay) return;
-      if (_visibleFraction() >= 0.5) {
+      if (!mounted) return;
+      if (!widget.controller.hasPendingAutoPlay) {
+        _stopListeningToScrollables();
+      } else if (_visibleFraction() >= 0.5) {
         widget.controller.startPendingAutoPlay();
+        // Nothing left to wait for; stop reacting to scrolls.
+        _stopListeningToScrollables();
       } else if (_scrollPositions.isEmpty) {
         // Nothing will notify us; poll lightly until visible.
-        Future<void>.delayed(
+        _visibilityPoll?.cancel();
+        _visibilityPoll = Timer(
           const Duration(milliseconds: 250),
           _scheduleVisibilityCheck,
         );
@@ -187,9 +210,7 @@ class _YoutubePlayerState extends State<YoutubePlayer>
 
   @override
   void dispose() {
-    for (final position in _scrollPositions) {
-      position.removeListener(_scheduleVisibilityCheck);
-    }
+    _stopListeningToScrollables();
     super.dispose();
   }
 
@@ -199,45 +220,46 @@ class _YoutubePlayerState extends State<YoutubePlayer>
   Widget build(BuildContext context) {
     super.build(context);
     final host = _host;
-    return AspectRatio(
-      aspectRatio: widget.aspectRatio,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          assert(() {
-            if (constraints.maxWidth < 200 || constraints.maxHeight < 200) {
-              debugPrint(
-                'YoutubePlayer is ${constraints.biggest}; YouTube requires the '
-                'player viewport to be at least 200x200.',
-              );
-            }
-            return true;
-          }());
-          return ColoredBox(
-            color: widget.backgroundColor,
-            child: ClipRect(
-              child: Stack(
-                fit: .expand,
-                children: [
-                  if (host != null)
-                    RepaintBoundary(
-                      child: host.buildView(
-                        gestureRecognizers: widget.gestureRecognizers,
-                      ),
-                    ),
-                  if (widget.controlsBuilder case final builder?)
-                    YoutubePlayerControllerProvider(
-                      controller: widget.controller,
-                      child: YoutubeValueBuilder(
-                        controller: widget.controller,
-                        builder: builder,
-                      ),
-                    ),
-                ],
+    // No clip around the platform view: it fills the box exactly, and on
+    // iOS any clip over a UiKitView costs per-frame mutator masking.
+    Widget player = ColoredBox(
+      color: widget.backgroundColor,
+      child: Stack(
+        fit: .expand,
+        children: [
+          if (host != null)
+            RepaintBoundary(
+              child: host.buildView(
+                gestureRecognizers: widget.gestureRecognizers,
               ),
             ),
-          );
-        },
+          if (widget.controlsBuilder case final builder?)
+            ClipRect(
+              child: YoutubePlayerControllerProvider(
+                controller: widget.controller,
+                child: YoutubeValueBuilder(
+                  controller: widget.controller,
+                  builder: builder,
+                ),
+              ),
+            ),
+        ],
       ),
     );
+    if (kDebugMode) {
+      final child = player;
+      player = LayoutBuilder(
+        builder: (context, constraints) {
+          if (constraints.maxWidth < 200 || constraints.maxHeight < 200) {
+            debugPrint(
+              'YoutubePlayer is ${constraints.biggest}; YouTube requires the '
+              'player viewport to be at least 200x200.',
+            );
+          }
+          return child;
+        },
+      );
+    }
+    return AspectRatio(aspectRatio: widget.aspectRatio, child: player);
   }
 }

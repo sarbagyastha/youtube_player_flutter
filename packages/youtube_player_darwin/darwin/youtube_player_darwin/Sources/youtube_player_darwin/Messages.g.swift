@@ -6,21 +6,21 @@
 
 import Foundation
 
-#if os(iOS)
+#if canImport(Flutter)
   import Flutter
-#elseif os(macOS)
+#elseif canImport(FlutterMacOS)
   import FlutterMacOS
-#else
-  #error("Unsupported platform.")
 #endif
 
 /// Error class for passing custom error details to Dart side.
-final class PigeonError: Error {
-  let code: String
-  let message: String?
-  let details: Sendable?
+@objc final class PigeonError: NSObject, Error {
+  @objc var code: String?
+  @objc var message: String?
+  @objc var details: String?
 
-  init(code: String, message: String?, details: Sendable?) {
+  @objc override init() {}
+
+  @objc init(code: String?, message: String?, details: String?) {
     self.code = code
     self.message = message
     self.details = details
@@ -28,41 +28,164 @@ final class PigeonError: Error {
 
   var localizedDescription: String {
     return
-      "PigeonError(code: \(code), message: \(message ?? "<nil>"), details: \(details ?? "<nil>"))"
+      "PigeonError(code: \(code ?? "<nil>"), message: \(message ?? "<nil>"), details: \(details ?? "<nil>"))"
   }
-}
-
-private func wrapResult(_ result: Any?) -> [Any?] {
-  return [result]
-}
-
-private func wrapError(_ error: Any) -> [Any?] {
-  if let pigeonError = error as? PigeonError {
-    return [
-      pigeonError.code,
-      pigeonError.message,
-      pigeonError.details,
-    ]
-  }
-  if let flutterError = error as? FlutterError {
-    return [
-      flutterError.code,
-      flutterError.message,
-      flutterError.details,
-    ]
-  }
-  return [
-    "\(error)",
-    "\(Swift.type(of: error))",
-    "Stacktrace: \(Thread.callStackSymbols)",
-  ]
 }
 
 private func createConnectionError(withChannelName channelName: String) -> PigeonError {
   return PigeonError(code: "channel-error", message: "Unable to establish connection on channel: '\(channelName)'.", details: "")
 }
 
+// A wrapper around NSNumber that preserves the original primitive/enum type across FFI.
+@objc class MessagesNumberWrapper: NSObject, NSCopying {
+  @objc required init(
+    number: NSNumber,
+    type: Int,
+  )  {
+    self.number = number
+    self.type = type
+  }
+  func copy(with zone: NSZone? = nil) -> Any {
+    return Self(number: number, type: type)
+  }
+  @objc var number: NSNumber
+  @objc var type: Int
+  static func == (lhs: MessagesNumberWrapper, rhs: MessagesNumberWrapper) -> Bool {
+    return lhs.number == rhs.number && lhs.type == rhs.type
+  }
+    
+  override func isEqual(_ object: Any?) -> Bool {
+    guard let other = object as? MessagesNumberWrapper else {
+      return false
+    }
+    return self == other
+  }
+
+  override var hash: Int {
+    return number.hashValue ^ type.hashValue
+  }
+      
+}
+
+private func wrapNumber(number: Any) -> MessagesNumberWrapper {
+  if let nsNumber = number as? NSNumber {
+    if CFGetTypeID(nsNumber as CFTypeRef) == CFBooleanGetTypeID() {
+      return MessagesNumberWrapper(number: nsNumber, type: 3)
+    }
+    if CFNumberIsFloatType(nsNumber) {
+      return MessagesNumberWrapper(number: nsNumber, type: 2)
+    }
+    return MessagesNumberWrapper(number: nsNumber, type: 1)
+  }
+
+  return MessagesNumberWrapper(number: NSNumber(value: 0), type: 0)
+}
+
+private func unwrapNumber(wrappedNumber: MessagesNumberWrapper) -> Any {
+  switch wrappedNumber.type {
+    case 1:
+      return wrappedNumber.number.int64Value
+    case 2:
+      return wrappedNumber.number.doubleValue
+    case 3:
+      return wrappedNumber.number.boolValue
+    default:
+      return wrappedNumber.number.int64Value
+  }
+}
+// Enum to represent the Dart TypedData types
+enum MessagesPigeonInternalNumberType: Int {
+  case uint8 = 0
+  case int32 = 1
+  case int64 = 2
+  case float32 = 3
+  case float64 = 4
+}
+
+@objc public class MessagesPigeonTypedData: NSObject {
+  @objc public let data: NSData
+  @objc public let type: Int
+
+  @objc public init(data: NSData, type: Int) {
+    self.data = data
+    self.type = type
+  }
+
+  public init(_ data: [UInt8]) {
+    self.data = NSData(bytes: data, length: data.count)
+    self.type = MessagesPigeonInternalNumberType.uint8.rawValue
+  }
+
+  public init(_ data: [Int32]) {
+    self.data = NSData(bytes: data, length: data.count * MemoryLayout<Int32>.size)
+    self.type = MessagesPigeonInternalNumberType.int32.rawValue
+  }
+
+  public init(_ data: [Int64]) {
+    self.data = NSData(bytes: data, length: data.count * MemoryLayout<Int64>.size)
+    self.type = MessagesPigeonInternalNumberType.int64.rawValue
+  }
+
+  public init(_ data: [Float32]) {
+    self.data = NSData(bytes: data, length: data.count * MemoryLayout<Float32>.size)
+    self.type = MessagesPigeonInternalNumberType.float32.rawValue
+  }
+
+  public init(_ data: [Float64]) {
+    self.data = NSData(bytes: data, length: data.count * MemoryLayout<Float64>.size)
+    self.type = MessagesPigeonInternalNumberType.float64.rawValue
+  }
+
+  /// Returns the data as a [UInt8] array, if the type is .uint8
+  public func toUint8Array() -> [UInt8]? {
+    guard type == MessagesPigeonInternalNumberType.uint8.rawValue else { return nil }
+    return [UInt8](data as Data)
+  }
+
+  /// Returns the data as a [Int32] array, if the type is .int32
+  public func toInt32Array() -> [Int32]? {
+    guard type == MessagesPigeonInternalNumberType.int32.rawValue else { return nil }
+    guard data.length % MemoryLayout<Int32>.size == 0 else { return nil }
+    let count = data.length / MemoryLayout<Int32>.size
+    var array = [Int32](repeating: 0, count: count)
+    data.getBytes(&array, length: data.length)
+    return array
+  }
+
+  /// Returns the data as a [Int64] array, if the type is .int64
+  public func toInt64Array() -> [Int64]? {
+    guard type == MessagesPigeonInternalNumberType.int64.rawValue else { return nil }
+    guard data.length % MemoryLayout<Int64>.size == 0 else { return nil }
+    let count = data.length / MemoryLayout<Int64>.size
+    var array = [Int64](repeating: 0, count: count)
+    data.getBytes(&array, length: data.length)
+    return array
+  }
+
+  /// Returns the data as a [Float32] array, if the type is .float32
+  public func toFloat32Array() -> [Float32]? {
+    guard type == MessagesPigeonInternalNumberType.float32.rawValue else { return nil }
+    guard data.length % MemoryLayout<Float32>.size == 0 else { return nil }
+    let count = data.length / MemoryLayout<Float32>.size
+    var array = [Float32](repeating: 0, count: count)
+    data.getBytes(&array, length: data.length)
+    return array
+  }
+
+  /// Returns the data as a [Float64] array (Array<Double>), if the type is .float64
+  public func toFloat64Array() -> [Double]? {
+    guard type == MessagesPigeonInternalNumberType.float64.rawValue else { return nil }
+    guard data.length % MemoryLayout<Double>.size == 0 else { return nil }
+    let count = data.length / MemoryLayout<Double>.size
+    var array = [Double](repeating: 0, count: count)
+    data.getBytes(&array, length: data.length)
+    return array
+  }
+}
+  
+
 enum MessagesPigeonInternal {
+  static let defaultInstanceName = "PigeonDefaultClassName32uh4ui3lh445uh4h3l2l455g4y34u"
   static func isNullish(_ value: Any?) -> Bool {
     guard let innerValue = value else {
       return true
@@ -72,7 +195,7 @@ enum MessagesPigeonInternal {
       return true
     }
 
-    return innerValue is NSNull
+    return innerValue is NSNull || innerValue is MessagesPigeonInternalNull
   }
   static func doubleEquals(_ lhs: Double, _ rhs: Double) -> Bool {
     return (lhs.isNaN && rhs.isNaN) || lhs == rhs
@@ -191,6 +314,66 @@ private func nilOrValue<T>(_ value: Any?) -> T? {
 }
 
 
+/// Computes the keys that associate Native Interop registrations with a Flutter engine.
+///
+/// `Int64.min` means "no key". Exact keys match Dart's `PlatformDispatcher.instance.engineId`.
+/// When an exact key is unavailable, each engine messenger is assigned a negative synthetic key.
+fileprivate enum PigeonEngineKeys {
+  /// The sentinel for an unknown engine.
+  static let noKey: Int64 = Int64.min
+  /// Guards the key caches. Recursive because `key(for:)` calls `key(messenger:)`.
+  private static let lock = NSRecursiveLock()
+  private static let syntheticKeys = NSMapTable<AnyObject, NSNumber>.weakToStrongObjects()
+  private static var nextSyntheticKey: Int64 = -1
+
+  /// Returns the key previously assigned to `messenger`, or assigns and returns a new synthetic
+  /// key for `messenger`.
+  static func key(messenger: AnyObject) -> Int64 {
+    lock.lock()
+    defer { lock.unlock() }
+    if let existing = syntheticKeys.object(forKey: messenger) {
+      return existing.int64Value
+    }
+    let key = nextSyntheticKey
+    nextSyntheticKey -= 1
+    syntheticKeys.setObject(NSNumber(value: key), forKey: messenger)
+    return key
+  }
+
+  #if canImport(Flutter) || canImport(FlutterMacOS)
+    /// Keys already computed for each registrar, so `unregister` during engine teardown reuses the
+    /// key from registration even after the registrar's engine and messenger are gone.
+    private static let registrarKeys = NSMapTable<AnyObject, NSNumber>.weakToStrongObjects()
+
+    /// Returns the key for the engine that owns `registrar`, or `noKey` if it can't be determined.
+    static func key(for registrar: FlutterPluginRegistrar) -> Int64 {
+      let registrarObject = registrar as AnyObject
+      lock.lock()
+      defer { lock.unlock() }
+      if let cached = registrarKeys.object(forKey: registrarObject) {
+        return cached.int64Value
+      }
+      var resolved = noKey
+      if registrarObject.responds(to: NSSelectorFromString("engineIdentifier")),
+        let identifier = registrarObject.value(forKey: "engineIdentifier") as? NSNumber,
+        identifier.int64Value != 0
+      {
+        // Real engine identifiers are never 0. 0 comes from a registrar whose engine is already
+        // deallocating, or from a test double, and must not be shared between engines.
+        resolved = identifier.int64Value
+      } else if let messenger = registrarObject.value(forKey: "messenger") as AnyObject? {
+        // Read through KVC because the messenger can be nil while the engine is deallocating,
+        // even though it is declared non-null.
+        resolved = key(messenger: messenger)
+      }
+      if resolved != noKey {
+        registrarKeys.setObject(NSNumber(value: resolved), forKey: registrarObject)
+      }
+      return resolved
+    }
+  #endif
+}
+
 /// Configuration for a new player WebView.
 ///
 /// Generated class from Pigeon that represents data sent in messages.
@@ -245,6 +428,50 @@ struct NativeHostConfig: Hashable, CustomStringConvertible {
   }
 }
 
+/// Configuration for a new player WebView.
+///
+/// Generated bridge class from Pigeon that moves data from Swift to Objective-C.
+@objc class NativeHostConfigBridge: NSObject {
+  @objc init(
+    appId: NSString? = nil,
+    userAgent: NSString? = nil,
+    debuggable: Bool,
+    backgroundColor: NSNumber? = nil
+  ) {
+    self.appId = appId
+    self.userAgent = userAgent
+    self.debuggable = debuggable
+    self.backgroundColor = backgroundColor
+  }
+  /// Client identity; defaults to the bundle identifier.
+  @objc var appId: NSString? = nil
+  @objc var userAgent: NSString? = nil
+  @objc var debuggable: Bool
+  /// ARGB background color.
+  @objc var backgroundColor: NSNumber? = nil
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromSwift(_ pigeonVar_Class: NativeHostConfig?) -> NativeHostConfigBridge? {
+    if (MessagesPigeonInternal.isNullish(pigeonVar_Class)) {
+      return nil
+    }
+    return NativeHostConfigBridge(
+      appId: pigeonVar_Class!.appId as NSString?,
+      userAgent: pigeonVar_Class!.userAgent as NSString?,
+      debuggable: pigeonVar_Class!.debuggable,
+      backgroundColor: MessagesPigeonInternal.isNullish(pigeonVar_Class!.backgroundColor) ? nil : NSNumber(value: pigeonVar_Class!.backgroundColor!),
+    )
+  }
+  func toSwift() -> NativeHostConfig {
+    return NativeHostConfig (
+      appId: appId as String?,
+      userAgent: userAgent as String?,
+      debuggable: debuggable,
+      backgroundColor: MessagesPigeonInternal.isNullish(backgroundColor) ? nil : backgroundColor!.int64Value,
+    )
+  }
+}
+
 /// Result of [YoutubeHostApi.create].
 ///
 /// Generated class from Pigeon that represents data sent in messages.
@@ -285,6 +512,39 @@ struct NativeHostInfo: Hashable, CustomStringConvertible {
 
   public var description: String {
     return "NativeHostInfo(handle: \(String(describing: handle)), origin: \(String(describing: origin)))"
+  }
+}
+
+/// Result of [YoutubeHostApi.create].
+///
+/// Generated bridge class from Pigeon that moves data from Swift to Objective-C.
+@objc class NativeHostInfoBridge: NSObject {
+  @objc init(
+    handle: Int64,
+    origin: NSString
+  ) {
+    self.handle = handle
+    self.origin = origin
+  }
+  @objc var handle: Int64
+  /// `https://<appId>`; the page is loaded under this origin.
+  @objc var origin: NSString
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromSwift(_ pigeonVar_Class: NativeHostInfo?) -> NativeHostInfoBridge? {
+    if (MessagesPigeonInternal.isNullish(pigeonVar_Class)) {
+      return nil
+    }
+    return NativeHostInfoBridge(
+      handle: pigeonVar_Class!.handle,
+      origin: pigeonVar_Class!.origin as NSString,
+    )
+  }
+  func toSwift() -> NativeHostInfo {
+    return NativeHostInfo (
+      handle: handle,
+      origin: origin as String,
+    )
   }
 }
 
@@ -335,269 +595,1253 @@ struct NativeLoadError: Hashable, CustomStringConvertible {
   }
 }
 
-private class MessagesPigeonCodecReader: FlutterStandardReader {
-  override func readValue(ofType type: UInt8) -> Any? {
+/// Main-frame load failure.
+///
+/// Generated bridge class from Pigeon that moves data from Swift to Objective-C.
+@objc class NativeLoadErrorBridge: NSObject {
+  @objc init(
+    code: Int64,
+    message: NSString,
+    url: NSString? = nil
+  ) {
+    self.code = code
+    self.message = message
+    self.url = url
+  }
+  @objc var code: Int64
+  @objc var message: NSString
+  @objc var url: NSString? = nil
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromSwift(_ pigeonVar_Class: NativeLoadError?) -> NativeLoadErrorBridge? {
+    if (MessagesPigeonInternal.isNullish(pigeonVar_Class)) {
+      return nil
+    }
+    return NativeLoadErrorBridge(
+      code: pigeonVar_Class!.code,
+      message: pigeonVar_Class!.message as NSString,
+      url: pigeonVar_Class!.url as NSString?,
+    )
+  }
+  func toSwift() -> NativeLoadError {
+    return NativeLoadError (
+      code: code,
+      message: message as String,
+      url: url as String?,
+    )
+  }
+}
+
+@objc class MessagesPigeonInternalNull: NSObject {}
+
+private class _PigeonFfiCodec {
+  static func readValue(value: NSObject?, type: String? = nil, type2: String? = nil) -> Any? {
+    if (MessagesPigeonInternal.isNullish(value)) {
+      return nil
+    }
+    if let typedData = value as? MessagesPigeonTypedData {
+      switch typedData.type {
+      case MessagesPigeonInternalNumberType.uint8.rawValue:
+        return typedData.toUint8Array()
+      case MessagesPigeonInternalNumberType.int32.rawValue:
+        return typedData.toInt32Array()
+      case MessagesPigeonInternalNumberType.int64.rawValue:
+        return typedData.toInt64Array()
+      case MessagesPigeonInternalNumberType.float32.rawValue:
+        return typedData.toFloat32Array()
+      case MessagesPigeonInternalNumberType.float64.rawValue:
+        return typedData.toFloat64Array()
+      default:
+        return typedData
+      }
+    }
+    if value is NSNumber {
+      let number = value as! NSNumber
+      if type == "int" || type == "int64" {
+        return number.int64Value
+      } else if type == "double" {
+        return number.doubleValue
+      } else if type == "bool" {
+        return number.boolValue
+      }
+      
+      
+      return number.int64Value
+    }
+    if (value is NSMutableArray || value is NSArray) {
+      var res: Array<Any?> = []
+      for item in (value as! NSArray) {
+          res.append(readValue(value: item as? NSObject, type: type))
+      }
+      return res
+    }
+    if (value is NSDictionary) {
+      var res: Dictionary<AnyHashable?, Any?> = Dictionary()
+      for (key, value) in (value as! NSDictionary) {
+          res[readValue(value: key as? NSObject, type: type) as? AnyHashable] = readValue(value: value as? NSObject, type: type2)
+      }
+      return res
+    } 
+    if (value is MessagesNumberWrapper) {
+      return unwrapNumber(wrappedNumber: value as! MessagesNumberWrapper)
+    }
+    if (value is NSString) {
+      return value as! NSString
+          } else if (value is NativeHostConfigBridge) {
+        return (value! as! NativeHostConfigBridge).toSwift();
+              } else if (value is NativeHostInfoBridge) {
+        return (value! as! NativeHostInfoBridge).toSwift();
+              } else if (value is NativeLoadErrorBridge) {
+        return (value! as! NativeLoadErrorBridge).toSwift();
+        
+    }
+    return value
+  }
+
+  static func writeValue(value: Any?, isObject: Bool = false) -> Any? {
+    if (MessagesPigeonInternal.isNullish(value)) {
+      return MessagesPigeonInternalNull()
+    }
+    if let uint8Array = value as? [UInt8] {
+      return isObject ? MessagesPigeonTypedData(uint8Array) : uint8Array as NSArray
+    }
+    if let int32Array = value as? [Int32] {
+      return isObject ? MessagesPigeonTypedData(int32Array) : int32Array as NSArray
+    }
+    if let int64Array = value as? [Int64] {
+      return isObject ? MessagesPigeonTypedData(int64Array) : int64Array as NSArray
+    }
+    if let float32Array = value as? [Float32] {
+      return isObject ? MessagesPigeonTypedData(float32Array) : float32Array as NSArray
+    }
+    if let float64Array = value as? [Double] {
+      return isObject ? MessagesPigeonTypedData(float64Array) : float64Array as NSArray
+    }
+    if (value is Bool || value is Double || value is Int || value is Int64) {
+      if (isObject) {
+        return wrapNumber(number: value!)
+      }
+      if (value is Bool) {
+        return value
+      } else if (value is Double) {
+        return value
+      } else if (value is Int || value is Int64) {
+        return value
+      }
+      
+    }
+    if (value is [Any]) {
+      let list = value as! [Any]
+      let res: NSMutableArray = NSMutableArray(capacity: list.count)
+      for item in list {
+        res.add(MessagesPigeonInternal.isNullish(item) ? MessagesPigeonInternalNull() : writeValue(value: item, isObject: true) as! NSObject)
+      }
+      return res
+    }
+    if (value is [AnyHashable: Any]) {
+      let dict = value as! [AnyHashable: Any]
+      let res: NSMutableDictionary = NSMutableDictionary(capacity: dict.count)
+      for (key, value) in dict {
+         res.setObject(MessagesPigeonInternal.isNullish(value) ? MessagesPigeonInternalNull() : writeValue(value: value, isObject: true) as! NSObject, forKey: writeValue(value: key, isObject: true) as! NSCopying)
+      }
+      return res
+    }
+    if (value is String) {
+      return value as! NSString
+          } else if (value is NativeHostConfig) {
+        return NativeHostConfigBridge.fromSwift(value as? NativeHostConfig);
+              } else if (value is NativeHostInfo) {
+        return NativeHostInfoBridge.fromSwift(value as? NativeHostInfo);
+              } else if (value is NativeLoadError) {
+        return NativeLoadErrorBridge.fromSwift(value as? NativeLoadError);
+        
+    }
+    return value
+  }
+}
+    
+
+/// Writes values in the format of Flutter's standard message codec.
+///
+/// Implemented against Foundation rather than `FlutterStandardWriter` so that
+/// swiftgen can compile this file without importing Flutter.
+private struct MessagesPigeonInteropWriter {
+  private(set) var bytes: [UInt8] = []
+
+  mutating func writeByte(_ byte: UInt8) {
+    bytes.append(byte)
+  }
+
+  mutating func writeRaw<T: FixedWidthInteger>(_ value: T) {
+    withUnsafeBytes(of: value.littleEndian) { bytes.append(contentsOf: $0) }
+  }
+
+  mutating func writeSize(_ size: Int) {
+    if size < Int(MessagesPigeonInteropCodec.sizeUInt16) {
+      writeByte(UInt8(size))
+    } else if size <= Int(UInt16.max) {
+      writeByte(MessagesPigeonInteropCodec.sizeUInt16)
+      writeRaw(UInt16(size))
+    } else {
+      writeByte(MessagesPigeonInteropCodec.sizeUInt32)
+      writeRaw(UInt32(size))
+    }
+  }
+
+  mutating func writeAlignment(_ alignment: Int) {
+    let mod = bytes.count % alignment
+    if mod != 0 {
+      bytes.append(contentsOf: repeatElement(0, count: alignment - mod))
+    }
+  }
+
+  mutating func writeTypedData<T>(_ type: UInt8, _ array: [T], alignment: Int) {
+    writeByte(type)
+    writeSize(array.count)
+    writeAlignment(alignment)
+    array.withUnsafeBytes { bytes.append(contentsOf: $0) }
+  }
+
+  mutating func writeTypedData<T>(_ type: UInt8, _ array: [T]?, alignment: Int) {
+    guard let array = array else {
+      writeByte(MessagesPigeonInteropCodec.typeNull)
+      return
+    }
+    writeTypedData(type, array, alignment: alignment)
+  }
+
+  mutating func writeString(_ string: String) {
+    writeByte(MessagesPigeonInteropCodec.typeString)
+    var string = string
+    string.withUTF8 { utf8 in
+      writeSize(utf8.count)
+      bytes.append(contentsOf: utf8)
+    }
+  }
+
+  mutating func writeData(_ data: Foundation.Data) {
+    writeByte(MessagesPigeonInteropCodec.typeUint8List)
+    writeSize(data.count)
+    bytes.append(contentsOf: data)
+  }
+
+  mutating func writeValue(_ value: Any?) {
+    guard let value = value else {
+      writeByte(MessagesPigeonInteropCodec.typeNull)
+      return
+    }
+    // The most common types are matched by exact type first, because
+    // comparing metatypes is much cheaper than dynamic casts.
+    let valueType = Swift.type(of: value)
+    if valueType == String.self {
+      writeString(value as! String)
+      return
+    }
+    if valueType == Int64.self {
+      writeByte(MessagesPigeonInteropCodec.typeInt64)
+      writeRaw(value as! Int64)
+      return
+    }
+    if valueType == Bool.self {
+      writeByte((value as! Bool) ? MessagesPigeonInteropCodec.typeTrue : MessagesPigeonInteropCodec.typeFalse)
+      return
+    }
+    if valueType == Double.self {
+      writeByte(MessagesPigeonInteropCodec.typeFloat64)
+      writeAlignment(8)
+      writeRaw((value as! Double).bitPattern)
+      return
+    }
+    if valueType == [Any?].self {
+      writeList(value as! [Any?])
+      return
+    }
+    if writeCustomValue(value, type: valueType) {
+      return
+    }
+    // Typed data is matched by exact type, because casting an empty array of
+    // any element type to an array of numbers succeeds.
+    if valueType == [UInt8].self {
+      writeTypedData(MessagesPigeonInteropCodec.typeUint8List, value as! [UInt8], alignment: 1)
+      return
+    }
+    if valueType == [Int32].self {
+      writeTypedData(MessagesPigeonInteropCodec.typeInt32List, value as! [Int32], alignment: 4)
+      return
+    }
+    if valueType == [Int64].self {
+      writeTypedData(MessagesPigeonInteropCodec.typeInt64List, value as! [Int64], alignment: 8)
+      return
+    }
+    if valueType == [Float64].self {
+      writeTypedData(MessagesPigeonInteropCodec.typeFloat64List, value as! [Float64], alignment: 8)
+      return
+    }
+    if valueType == [Float32].self {
+      writeTypedData(MessagesPigeonInteropCodec.typeFloat32List, value as! [Float32], alignment: 4)
+      return
+    }
+    if valueType == AnyHashable.self {
+      writeValue((value as! AnyHashable).base)
+      return
+    }
+    if valueType == Foundation.Data.self {
+      writeData(value as! Foundation.Data)
+      return
+    }
+    // Collections are matched by protocol before any cast to a class, such as
+    // `NSNumber`, because those casts can bridge a whole Swift collection to
+    // Objective-C just to fail.
+    if let list = value as? MessagesPigeonInteropList {
+      list.pigeonWrite(to: &self)
+      return
+    }
+    if let map = value as? MessagesPigeonInteropMap {
+      map.pigeonWrite(to: &self)
+      return
+    }
+    if let optional = value as? MessagesPigeonInteropOptional {
+      writeValue(optional.pigeonWrapped)
+      return
+    }
+    if MessagesPigeonInternal.isNullish(value) {
+      writeByte(MessagesPigeonInteropCodec.typeNull)
+      return
+    }
+    if let number = value as? NSNumber {
+      if CFGetTypeID(number) == CFBooleanGetTypeID() {
+        writeByte(number.boolValue ? MessagesPigeonInteropCodec.typeTrue : MessagesPigeonInteropCodec.typeFalse)
+      } else if CFNumberIsFloatType(number) {
+        writeByte(MessagesPigeonInteropCodec.typeFloat64)
+        writeAlignment(8)
+        writeRaw(number.doubleValue.bitPattern)
+      } else {
+        writeByte(MessagesPigeonInteropCodec.typeInt64)
+        writeRaw(number.int64Value)
+      }
+      return
+    }
+    if let string = value as? String {
+      writeString(string)
+      return
+    }
+    if let data = value as? Foundation.Data {
+      writeData(data)
+      return
+    }
+    if let array = value as? NSArray {
+      writeByte(MessagesPigeonInteropCodec.typeList)
+      writeSize(array.count)
+      for item in array {
+        writeValue(item)
+      }
+      return
+    }
+    if let dictionary = value as? NSDictionary {
+      writeByte(MessagesPigeonInteropCodec.typeMap)
+      writeSize(dictionary.count)
+      for (key, item) in dictionary {
+        writeValue(key)
+        writeValue(item)
+      }
+      return
+    }
+    if writeCustomValueFallback(value) {
+      return
+    }
+    preconditionFailure("Unsupported value: \(value) of type \(valueType)")
+  }
+
+  mutating func writeList(_ list: [Any?]) {
+    writeByte(MessagesPigeonInteropCodec.typeList)
+    writeSize(list.count)
+    for item in list {
+      writeValue(item)
+    }
+  }
+
+  mutating func writeList<T>(_ list: [T]?) {
+    guard let list = list else {
+      writeByte(MessagesPigeonInteropCodec.typeNull)
+      return
+    }
+    writeByte(MessagesPigeonInteropCodec.typeList)
+    writeSize(list.count)
+    for item in list {
+      writeValue(item)
+    }
+  }
+
+  mutating func writeList<T>(_ list: [T?]?) {
+    guard let list = list else {
+      writeByte(MessagesPigeonInteropCodec.typeNull)
+      return
+    }
+    writeByte(MessagesPigeonInteropCodec.typeList)
+    writeSize(list.count)
+    for item in list {
+      writeOptional(item)
+    }
+  }
+
+  mutating func writeList<T>(_ list: [T]?, _ writeElement: (inout Self, T) -> Void) {
+    guard let list = list else {
+      writeByte(MessagesPigeonInteropCodec.typeNull)
+      return
+    }
+    writeByte(MessagesPigeonInteropCodec.typeList)
+    writeSize(list.count)
+    for item in list {
+      writeElement(&self, item)
+    }
+  }
+
+  mutating func writeOptional<T>(_ value: T?) {
+    if let value = value {
+      writeValue(value)
+    } else {
+      writeByte(MessagesPigeonInteropCodec.typeNull)
+    }
+  }
+
+  mutating func writeMap<K, V>(_ map: [K: V]?) {
+    guard let map = map else {
+      writeByte(MessagesPigeonInteropCodec.typeNull)
+      return
+    }
+    writeByte(MessagesPigeonInteropCodec.typeMap)
+    writeSize(map.count)
+    for (key, item) in map {
+      writeValue(key)
+      writeValue(item)
+    }
+  }
+
+  mutating func writeMap<K, V>(_ map: [K?: V]?) {
+    guard let map = map else {
+      writeByte(MessagesPigeonInteropCodec.typeNull)
+      return
+    }
+    writeByte(MessagesPigeonInteropCodec.typeMap)
+    writeSize(map.count)
+    for (key, item) in map {
+      writeOptional(key)
+      writeValue(item)
+    }
+  }
+
+  mutating func writeMap<K, V>(_ map: [K: V?]?) {
+    guard let map = map else {
+      writeByte(MessagesPigeonInteropCodec.typeNull)
+      return
+    }
+    writeByte(MessagesPigeonInteropCodec.typeMap)
+    writeSize(map.count)
+    for (key, item) in map {
+      writeValue(key)
+      writeOptional(item)
+    }
+  }
+
+  mutating func writeMap<K, V>(_ map: [K?: V?]?) {
+    guard let map = map else {
+      writeByte(MessagesPigeonInteropCodec.typeNull)
+      return
+    }
+    writeByte(MessagesPigeonInteropCodec.typeMap)
+    writeSize(map.count)
+    for (key, item) in map {
+      writeOptional(key)
+      writeOptional(item)
+    }
+  }
+
+  mutating func writeMap<K, V>(_ map: [K: V]?, _ writeEntry: (inout Self, K, V) -> Void) {
+    guard let map = map else {
+      writeByte(MessagesPigeonInteropCodec.typeNull)
+      return
+    }
+    writeByte(MessagesPigeonInteropCodec.typeMap)
+    writeSize(map.count)
+    for (key, item) in map {
+      writeEntry(&self, key, item)
+    }
+  }
+
+
+  mutating func writeNativeHostConfig(_ value: NativeHostConfig) {
+    writeByte(MessagesPigeonInteropCodec.typeList)
+    writeSize(4)
+    writeValue(value.appId)
+    writeValue(value.userAgent)
+    writeValue(value.debuggable)
+    writeValue(value.backgroundColor)
+  }
+
+  mutating func writeNativeHostInfo(_ value: NativeHostInfo) {
+    writeByte(MessagesPigeonInteropCodec.typeList)
+    writeSize(2)
+    writeValue(value.handle)
+    writeValue(value.origin)
+  }
+
+  mutating func writeNativeLoadError(_ value: NativeLoadError) {
+    writeByte(MessagesPigeonInteropCodec.typeList)
+    writeSize(3)
+    writeValue(value.code)
+    writeValue(value.message)
+    writeValue(value.url)
+  }
+
+  mutating func writeCustomValue(_ value: Any, type valueType: Any.Type) -> Bool {
+    if valueType == NativeHostConfig.self {
+      writeByte(129)
+      writeNativeHostConfig((value as! NativeHostConfig))
+      return true
+    }
+    if valueType == NativeHostInfo.self {
+      writeByte(130)
+      writeNativeHostInfo((value as! NativeHostInfo))
+      return true
+    }
+    if valueType == NativeLoadError.self {
+      writeByte(131)
+      writeNativeLoadError((value as! NativeLoadError))
+      return true
+    }
+    return false
+  }
+
+  mutating func writeCustomValueFallback(_ value: Any) -> Bool {
+    if let value = value as? NativeHostConfig {
+      writeByte(129)
+      writeNativeHostConfig(value)
+      return true
+    }
+    if let value = value as? NativeHostInfo {
+      writeByte(130)
+      writeNativeHostInfo(value)
+      return true
+    }
+    if let value = value as? NativeLoadError {
+      writeByte(131)
+      writeNativeLoadError(value)
+      return true
+    }
+    return false
+  }
+}
+
+/// Unwraps optionals that a generic context boxed into `Any`.
+private protocol MessagesPigeonInteropOptional {
+  var pigeonWrapped: Any? { get }
+}
+
+extension Optional: MessagesPigeonInteropOptional {
+  fileprivate var pigeonWrapped: Any? {
+    switch self {
+    case .some(let wrapped):
+      return wrapped
+    case .none:
+      return nil
+    }
+  }
+}
+
+/// Writes typed lists without converting them to `[Any?]` first.
+private protocol MessagesPigeonInteropList {
+  func pigeonWrite(to writer: inout MessagesPigeonInteropWriter)
+}
+
+extension Array: MessagesPigeonInteropList {
+  fileprivate func pigeonWrite(to writer: inout MessagesPigeonInteropWriter) {
+    writer.writeByte(MessagesPigeonInteropCodec.typeList)
+    writer.writeSize(count)
+    for item in self {
+      writer.writeValue(item)
+    }
+  }
+}
+
+/// Writes typed maps without converting them to `[AnyHashable?: Any?]` first.
+private protocol MessagesPigeonInteropMap {
+  func pigeonWrite(to writer: inout MessagesPigeonInteropWriter)
+}
+
+extension Dictionary: MessagesPigeonInteropMap {
+  fileprivate func pigeonWrite(to writer: inout MessagesPigeonInteropWriter) {
+    writer.writeByte(MessagesPigeonInteropCodec.typeMap)
+    writer.writeSize(count)
+    for (key, item) in self {
+      writer.writeValue(key)
+      writer.writeValue(item)
+    }
+  }
+}
+
+
+/// Reads values in the format of Flutter's standard message codec.
+private struct MessagesPigeonInteropReader {
+  private let data: NSData
+  private let bytes: UnsafeRawBufferPointer
+  private var position = 0
+
+  init(_ data: NSData) {
+    self.data = data
+    self.bytes = UnsafeRawBufferPointer(start: data.bytes, count: data.length)
+  }
+
+  var isAtEnd: Bool { position >= bytes.count }
+
+  mutating func readByte() -> UInt8 {
+    let byte = bytes[position]
+    position += 1
+    return byte
+  }
+
+  mutating func readRaw<T: FixedWidthInteger>(_ type: T.Type) -> T {
+    let value = bytes.loadUnaligned(fromByteOffset: position, as: T.self)
+    position += MemoryLayout<T>.size
+    return T(littleEndian: value)
+  }
+
+  mutating func readSize() -> Int {
+    let byte = readByte()
+    if byte < MessagesPigeonInteropCodec.sizeUInt16 {
+      return Int(byte)
+    } else if byte == MessagesPigeonInteropCodec.sizeUInt16 {
+      return Int(readRaw(UInt16.self))
+    }
+    return Int(readRaw(UInt32.self))
+  }
+
+  mutating func readAlignment(_ alignment: Int) {
+    let mod = position % alignment
+    if mod != 0 {
+      position += alignment - mod
+    }
+  }
+
+  mutating func readTypedData<T>(_ type: T.Type, alignment: Int) -> [T] {
+    let count = readSize()
+    readAlignment(alignment)
+    let byteCount = count * MemoryLayout<T>.stride
+    let result = [T](unsafeUninitializedCapacity: count) { buffer, initializedCount in
+      if byteCount > 0 {
+        UnsafeMutableRawBufferPointer(buffer).copyMemory(
+          from: UnsafeRawBufferPointer(rebasing: bytes[position..<(position + byteCount)]))
+      }
+      initializedCount = count
+    }
+    position += byteCount
+    return result
+  }
+
+  mutating func readValue() -> Any? {
+    return readValue(ofType: readByte())
+  }
+
+  mutating func readValue(ofType type: UInt8) -> Any? {
+    switch type {
+    case MessagesPigeonInteropCodec.typeNull:
+      return nil
+    case MessagesPigeonInteropCodec.typeTrue:
+      return true
+    case MessagesPigeonInteropCodec.typeFalse:
+      return false
+    case MessagesPigeonInteropCodec.typeInt32:
+      return Int64(readRaw(Int32.self))
+    case MessagesPigeonInteropCodec.typeInt64:
+      return readRaw(Int64.self)
+    case MessagesPigeonInteropCodec.typeLargeInt, MessagesPigeonInteropCodec.typeString:
+      let count = readSize()
+      let string = String(
+        decoding: UnsafeRawBufferPointer(rebasing: bytes[position..<(position + count)]),
+        as: UTF8.self)
+      position += count
+      return string
+    case MessagesPigeonInteropCodec.typeFloat64:
+      readAlignment(8)
+      return Double(bitPattern: readRaw(UInt64.self))
+    case MessagesPigeonInteropCodec.typeUint8List:
+      return readTypedData(UInt8.self, alignment: 1)
+    case MessagesPigeonInteropCodec.typeInt32List:
+      return readTypedData(Int32.self, alignment: 4)
+    case MessagesPigeonInteropCodec.typeInt64List:
+      return readTypedData(Int64.self, alignment: 8)
+    case MessagesPigeonInteropCodec.typeFloat64List:
+      return readTypedData(Float64.self, alignment: 8)
+    case MessagesPigeonInteropCodec.typeList:
+      let count = readSize()
+      var list: [Any?] = []
+      list.reserveCapacity(count)
+      for _ in 0..<count {
+        list.append(readValue())
+      }
+      return list
+    case MessagesPigeonInteropCodec.typeMap:
+      let count = readSize()
+      var map: [AnyHashable?: Any?] = [:]
+      map.reserveCapacity(count)
+      for _ in 0..<count {
+        let key = readValue() as? AnyHashable
+        map[key] = readValue()
+      }
+      return map
+    case MessagesPigeonInteropCodec.typeFloat32List:
+      return readTypedData(Float32.self, alignment: 4)
+    default:
+      return readCustomValue(ofType: type)
+    }
+  }
+
+  mutating func readListHeader() {
+    _ = readByte()
+    _ = readSize()
+  }
+
+  mutating func read<T>(_ type: T.Type) -> T {
+    return readValue() as! T
+  }
+
+  mutating func read<E>(_ type: [E].Type) -> [E] {
+    let tag = readByte()
+    guard tag == MessagesPigeonInteropCodec.typeList else {
+      return readValue(ofType: tag) as! [E]
+    }
+    let count = readSize()
+    var list: [E] = []
+    list.reserveCapacity(count)
+    for _ in 0..<count {
+      list.append(readValue() as! E)
+    }
+    return list
+  }
+
+  mutating func read<E>(_ type: [E]?.Type) -> [E]? {
+    if bytes[position] == MessagesPigeonInteropCodec.typeNull {
+      position += 1
+      return nil
+    }
+    return read([E].self)
+  }
+
+  mutating func read<K: Hashable, V>(_ type: [K: V].Type) -> [K: V] {
+    let tag = readByte()
+    guard tag == MessagesPigeonInteropCodec.typeMap else {
+      return readValue(ofType: tag) as! [K: V]
+    }
+    let count = readSize()
+    var map: [K: V] = [:]
+    map.reserveCapacity(count)
+    for _ in 0..<count {
+      let key = readValue() as! K
+      map[key] = (readValue() as! V)
+    }
+    return map
+  }
+
+  mutating func read<K: Hashable, V>(_ type: [K: V]?.Type) -> [K: V]? {
+    if bytes[position] == MessagesPigeonInteropCodec.typeNull {
+      position += 1
+      return nil
+    }
+    return read([K: V].self)
+  }
+
+
+  mutating func readNativeHostConfig() -> NativeHostConfig {
+    readListHeader()
+    return NativeHostConfig(
+      appId: read(String?.self),
+      userAgent: read(String?.self),
+      debuggable: read(Bool.self),
+      backgroundColor: read(Int64?.self)
+    )
+  }
+
+  mutating func readNativeHostInfo() -> NativeHostInfo {
+    readListHeader()
+    return NativeHostInfo(
+      handle: read(Int64.self),
+      origin: read(String.self)
+    )
+  }
+
+  mutating func readNativeLoadError() -> NativeLoadError {
+    readListHeader()
+    return NativeLoadError(
+      code: read(Int64.self),
+      message: read(String.self),
+      url: read(String?.self)
+    )
+  }
+
+  mutating func readCustomValue(ofType type: UInt8) -> Any? {
     switch type {
     case 129:
-      return NativeHostConfig.fromList(self.readValue() as! [Any?])
+      return readNativeHostConfig()
     case 130:
-      return NativeHostInfo.fromList(self.readValue() as! [Any?])
+      return readNativeHostInfo()
     case 131:
-      return NativeLoadError.fromList(self.readValue() as! [Any?])
+      return readNativeLoadError()
     default:
-      return super.readValue(ofType: type)
+      preconditionFailure("Unsupported type: \(type)")
     }
   }
 }
 
-private class MessagesPigeonCodecWriter: FlutterStandardWriter {
-  override func writeValue(_ value: Any) {
-    if let value = value as? NativeHostConfig {
-      super.writeByte(129)
-      super.writeValue(value.toList())
-    } else if let value = value as? NativeHostInfo {
-      super.writeByte(130)
-      super.writeValue(value.toList())
-    } else if let value = value as? NativeLoadError {
-      super.writeByte(131)
-      super.writeValue(value.toList())
-    } else {
-      super.writeValue(value)
+/// Encodes and decodes the buffers that native interop calls pass to and from
+/// Dart, in the same format as the message codec.
+private enum MessagesPigeonInteropCodec {
+  static let typeNull: UInt8 = 0
+  static let typeTrue: UInt8 = 1
+  static let typeFalse: UInt8 = 2
+  static let typeInt32: UInt8 = 3
+  static let typeInt64: UInt8 = 4
+  static let typeLargeInt: UInt8 = 5
+  static let typeFloat64: UInt8 = 6
+  static let typeString: UInt8 = 7
+  static let typeUint8List: UInt8 = 8
+  static let typeInt32List: UInt8 = 9
+  static let typeInt64List: UInt8 = 10
+  static let typeFloat64List: UInt8 = 11
+  static let typeList: UInt8 = 12
+  static let typeMap: UInt8 = 13
+  static let typeFloat32List: UInt8 = 14
+  static let sizeUInt16: UInt8 = 254
+  static let sizeUInt32: UInt8 = 255
+
+  static func encode(_ value: Any?) -> NSData {
+    var writer = MessagesPigeonInteropWriter()
+    writer.writeValue(value)
+    return writer.bytes.withUnsafeBytes { NSData(bytes: $0.baseAddress, length: $0.count) }
+  }
+
+  static func encodeOrNil(_ value: Any?) -> NSData? {
+    return MessagesPigeonInternal.isNullish(value) ? nil : encode(value)
+  }
+
+  static func encode(_ write: (inout MessagesPigeonInteropWriter) -> Void) -> NSData {
+    var writer = MessagesPigeonInteropWriter()
+    write(&writer)
+    return writer.bytes.withUnsafeBytes { NSData(bytes: $0.baseAddress, length: $0.count) }
+  }
+
+  static func decode(_ data: NSData?) -> Any? {
+    guard let data = data else {
+      return nil
+    }
+    var reader = MessagesPigeonInteropReader(data)
+    return reader.readValue()
+  }
+
+  static func decodeArguments(_ data: NSData) -> [Any?] {
+    return decode(data) as! [Any?]
+  }
+
+  static func typedData<T>(_ data: NSData, as type: T.Type) -> [T] {
+    let count = data.length / MemoryLayout<T>.stride
+    return [T](unsafeUninitializedCapacity: count) { buffer, initializedCount in
+      if data.length > 0 {
+        UnsafeMutableRawBufferPointer(buffer).copyMemory(
+          from: UnsafeRawBufferPointer(start: data.bytes, count: count * MemoryLayout<T>.stride))
+      }
+      initializedCount = count
     }
   }
-}
 
-private class MessagesPigeonCodecReaderWriter: FlutterStandardReaderWriter {
-  override func reader(with data: Data) -> FlutterStandardReader {
-    return MessagesPigeonCodecReader(data: data)
-  }
-
-  override func writer(with data: NSMutableData) -> FlutterStandardWriter {
-    return MessagesPigeonCodecWriter(data: data)
+  static func data<T>(_ array: [T]) -> NSData {
+    return array.withUnsafeBytes { NSData(bytes: $0.baseAddress, length: $0.count) }
   }
 }
 
-class MessagesPigeonCodec: FlutterStandardMessageCodec, @unchecked Sendable {
-  static let shared = MessagesPigeonCodec(readerWriter: MessagesPigeonCodecReaderWriter())
+class YoutubeHostApiInstanceTracker {
+  static var instancesOfYoutubeHostApi = [String: [YoutubeHostApiSetup]]()
+  /// Guards the registrations, which Native Interop calls can read from any thread.
+  static let lock = NSLock()
 }
-
-/// Dart -> iOS / macOS.
+/// Dart -> iOS / macOS. All calls are synchronous and run on the main thread.
 ///
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
-protocol YoutubeHostApi {
-  /// Creates a WebView and returns its handle and origin.
-  func create(config: NativeHostConfig) throws -> NativeHostInfo
-  /// Loads the player page under the host's origin.
-  func load(handle: Int64, html: String) throws
+protocol YoutubeHostApi: AnyObject {
+  /// Creates a WebView, loads [html] under the host's origin and returns its
+  /// handle and origin.
+  func create(config: NativeHostConfig, html: String) throws -> NativeHostInfo
   /// Delivers [json] to `window.__yp.recv`.
   func send(handle: Int64, json: String) throws
   func setBackgroundColor(handle: Int64, argb: Int64) throws
   func exitFullscreen(handle: Int64) throws
   func dispose(handle: Int64) throws
+  /// Destroys every player, e.g. those orphaned by a hot restart.
+  func reset() throws
 }
 
-/// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
-class YoutubeHostApiSetup {
-  static var codec: FlutterStandardMessageCodec { MessagesPigeonCodec.shared }
-  /// Sets up an instance of `YoutubeHostApi` to handle messages through the `binaryMessenger`.
-  static func setUp(binaryMessenger: FlutterBinaryMessenger, api: YoutubeHostApi?, messageChannelSuffix: String = "") {
-    let channelSuffix = messageChannelSuffix.count > 0 ? ".\(messageChannelSuffix)" : ""
-    /// Creates a WebView and returns its handle and origin.
-    let createChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.youtube_player_darwin.YoutubeHostApi.create\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
-    if let api = api {
-      createChannel.setMessageHandler { message, reply in
-        let args = message as! [Any?]
-        let configArg = args[0] as! NativeHostConfig
-        do {
-          let result = try api.create(config: configArg)
-          reply(wrapResult(result))
-        } catch {
-          reply(wrapError(error))
-        }
-      }
-    } else {
-      createChannel.setMessageHandler(nil)
+/// Generated setup class from Pigeon to register implemented YoutubeHostApi classes.
+@objc class YoutubeHostApiSetup: NSObject {
+  private var api: YoutubeHostApi?
+  override init() {}
+  private func resolveApi() throws -> YoutubeHostApi {
+    YoutubeHostApiInstanceTracker.lock.lock()
+    let registeredApi = api
+    YoutubeHostApiInstanceTracker.lock.unlock()
+    guard let currentApi = registeredApi else {
+      throw PigeonError(
+        code: "unregistered-instance",
+        message: "YoutubeHostApi has not been registered.",
+        details: nil
+      )
     }
-    /// Loads the player page under the host's origin.
-    let loadChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.youtube_player_darwin.YoutubeHostApi.load\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
-    if let api = api {
-      loadChannel.setMessageHandler { message, reply in
-        let args = message as! [Any?]
-        let handleArg = args[0] as! Int64
-        let htmlArg = args[1] as! String
-        do {
-          try api.load(handle: handleArg, html: htmlArg)
-          reply(wrapResult(nil))
-        } catch {
-          reply(wrapError(error))
-        }
-      }
-    } else {
-      loadChannel.setMessageHandler(nil)
+    return currentApi
+  }
+  /// The engine key this wrapper was registered with. Set before the wrapper is published.
+  private var engineKey: Int64 = Int64.min
+
+  #if canImport(Flutter) || canImport(FlutterMacOS)
+    /// Registers `api` under `name` (or the default instance when `name` is omitted).
+    ///
+    /// The registration is tied to its engine: unregistering it for one engine leaves
+    /// other engines' registrations in place, and Dart code running on an engine uses
+    /// the instance registered for that engine when it is known.
+    ///
+    /// The registration is associated with the engine that owns `registrar`. The same
+    /// `api` registered from different engines is tracked as separate registrations.
+    static func register(api: YoutubeHostApi, registrar: FlutterPluginRegistrar, name: String = MessagesPigeonInternal.defaultInstanceName) {
+      register(api: api, engineKey: PigeonEngineKeys.key(for: registrar), name: name)
     }
-    /// Delivers [json] to `window.__yp.recv`.
-    let sendChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.youtube_player_darwin.YoutubeHostApi.send\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
-    if let api = api {
-      sendChannel.setMessageHandler { message, reply in
-        let args = message as! [Any?]
-        let handleArg = args[0] as! Int64
-        let jsonArg = args[1] as! String
-        do {
-          try api.send(handle: handleArg, json: jsonArg)
-          reply(wrapResult(nil))
-        } catch {
-          reply(wrapError(error))
-        }
-      }
-    } else {
-      sendChannel.setMessageHandler(nil)
+
+    /// Removes `api` from the registrations under `name` (or the default instance
+    /// when `name` is omitted), leaving other registrations in place.
+    ///
+    /// Instances are matched by identity. Does nothing if `api` is not registered.
+    ///
+    /// Prefers the registration made from the engine that owns `registrar`, and
+    /// otherwise removes the registration of `api` under `name` if exactly one engine
+    /// holds it.
+    static func unregister(api: YoutubeHostApi, registrar: FlutterPluginRegistrar, name: String = MessagesPigeonInternal.defaultInstanceName) {
+      unregister(api: api, engineKey: PigeonEngineKeys.key(for: registrar), name: name)
     }
-    let setBackgroundColorChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.youtube_player_darwin.YoutubeHostApi.setBackgroundColor\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
-    if let api = api {
-      setBackgroundColorChannel.setMessageHandler { message, reply in
-        let args = message as! [Any?]
-        let handleArg = args[0] as! Int64
-        let argbArg = args[1] as! Int64
-        do {
-          try api.setBackgroundColor(handle: handleArg, argb: argbArg)
-          reply(wrapResult(nil))
-        } catch {
-          reply(wrapError(error))
-        }
-      }
+  #endif
+
+  fileprivate static func register(api: YoutubeHostApi, engineKey: Int64, name: String) {
+    YoutubeHostApiInstanceTracker.lock.lock()
+    defer { YoutubeHostApiInstanceTracker.lock.unlock() }
+    var list = YoutubeHostApiInstanceTracker.instancesOfYoutubeHostApi[name] ?? []
+    if let index = list.firstIndex(where: { $0.api === api && $0.engineKey == engineKey }) {
+      list.append(list.remove(at: index))
     } else {
-      setBackgroundColorChannel.setMessageHandler(nil)
+      let wrapper = YoutubeHostApiSetup()
+      wrapper.engineKey = engineKey
+      wrapper.api = api
+      list.append(wrapper)
     }
-    let exitFullscreenChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.youtube_player_darwin.YoutubeHostApi.exitFullscreen\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
-    if let api = api {
-      exitFullscreenChannel.setMessageHandler { message, reply in
-        let args = message as! [Any?]
-        let handleArg = args[0] as! Int64
-        do {
-          try api.exitFullscreen(handle: handleArg)
-          reply(wrapResult(nil))
-        } catch {
-          reply(wrapError(error))
-        }
+    YoutubeHostApiInstanceTracker.instancesOfYoutubeHostApi[name] = list
+  }
+
+  fileprivate static func unregister(api: YoutubeHostApi, engineKey: Int64, name: String) {
+    // Removed entries are kept alive until after unlocking so their deinit cannot run while the
+    // non-recursive lock is held.
+    var displaced: [Any] = []
+    do {
+      YoutubeHostApiInstanceTracker.lock.lock()
+      defer { YoutubeHostApiInstanceTracker.lock.unlock() }
+      guard var list = YoutubeHostApiInstanceTracker.instancesOfYoutubeHostApi[name] else {
+        return
       }
-    } else {
-      exitFullscreenChannel.setMessageHandler(nil)
-    }
-    let disposeChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.youtube_player_darwin.YoutubeHostApi.dispose\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
-    if let api = api {
-      disposeChannel.setMessageHandler { message, reply in
-        let args = message as! [Any?]
-        let handleArg = args[0] as! Int64
-        do {
-          try api.dispose(handle: handleArg)
-          reply(wrapResult(nil))
-        } catch {
-          reply(wrapError(error))
+      let removeKey: Int64
+      if list.contains(where: { $0.api === api && $0.engineKey == engineKey }) {
+        removeKey = engineKey
+      } else {
+        let keys = Set(list.filter { $0.api === api }.map { $0.engineKey })
+        guard keys.count == 1, let onlyKey = keys.first else {
+          return
         }
+        removeKey = onlyKey
       }
-    } else {
-      disposeChannel.setMessageHandler(nil)
+      list.removeAll { entry in
+        guard let existing = entry.api else {
+          return false
+        }
+        if existing === api && entry.engineKey == removeKey {
+          displaced.append(existing)
+          displaced.append(entry)
+          entry.api = nil
+          return true
+        }
+        return false
+      }
+      if list.isEmpty {
+        YoutubeHostApiInstanceTracker.instancesOfYoutubeHostApi.removeValue(forKey: name)
+      } else {
+        YoutubeHostApiInstanceTracker.instancesOfYoutubeHostApi[name] = list
+      }
     }
+    withExtendedLifetime(displaced) {}
+  }
+
+  /// Returns the instance generated Dart code should use for `name` (or the default
+  /// instance).
+  ///
+  /// Prefers the most recent registration whose engine key is `engineId`, then
+  /// `affinityKey`, then the most recent registration. `Int64.min` means unknown.
+  @objc static func pigeonResolveInstance(engineId: Int64, affinityKey: Int64, name: String = MessagesPigeonInternal.defaultInstanceName) -> YoutubeHostApiSetup? {
+    YoutubeHostApiInstanceTracker.lock.lock()
+    defer { YoutubeHostApiInstanceTracker.lock.unlock() }
+    guard let list = YoutubeHostApiInstanceTracker.instancesOfYoutubeHostApi[name] else {
+      return nil
+    }
+    if engineId != Int64.min, let match = list.last(where: { $0.engineKey == engineId }) {
+      return match
+    }
+    if affinityKey != Int64.min, let match = list.last(where: { $0.engineKey == affinityKey }) {
+      return match
+    }
+    return list.last
+  }
+
+  /// Returns the engine key `instance` was registered with, or `Int64.min` if unknown.
+  @objc static func pigeonEngineKey(of instance: YoutubeHostApiSetup) -> Int64 {
+    return instance.engineKey
+  }
+  /// Creates a WebView, loads [html] under the host's origin and returns its
+  /// handle and origin.
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  @objc func create(html htmlArg: NSString, pigeonVar_args: NSData, wrappedError: PigeonError) -> NSData? {
+    do {
+      let activeApi = try resolveApi()
+      var reader = MessagesPigeonInteropReader(pigeonVar_args)
+      reader.readListHeader()
+      let configArg = reader.read(NativeHostConfig.self)
+      let res: NativeHostInfo = try activeApi.create(config: configArg, html: htmlArg as String)
+      return MessagesPigeonInteropCodec.encodeOrNil(res)
+    } catch let error as PigeonError {
+      wrappedError.code = error.code
+      wrappedError.message = error.message
+      wrappedError.details = error.details
+    } catch let error {
+      wrappedError.code = "\(error)"
+      wrappedError.message = "\(Swift.type(of: error))"
+      wrappedError.details = "Stacktrace: \(Thread.callStackSymbols)"
+    }
+    return nil
+  }
+  /// Delivers [json] to `window.__yp.recv`.
+  @objc func send(handle handleArg: Int64, json jsonArg: NSString, wrappedError: PigeonError) {
+    do {
+      let activeApi = try resolveApi()
+      try activeApi.send(handle: handleArg, json: jsonArg as String)
+      return
+    } catch let error as PigeonError {
+      wrappedError.code = error.code
+      wrappedError.message = error.message
+      wrappedError.details = error.details
+    } catch let error {
+      wrappedError.code = "\(error)"
+      wrappedError.message = "\(Swift.type(of: error))"
+      wrappedError.details = "Stacktrace: \(Thread.callStackSymbols)"
+    }
+    return
+  }
+  @objc func setBackgroundColor(handle handleArg: Int64, argb argbArg: Int64, wrappedError: PigeonError) {
+    do {
+      let activeApi = try resolveApi()
+      try activeApi.setBackgroundColor(handle: handleArg, argb: argbArg)
+      return
+    } catch let error as PigeonError {
+      wrappedError.code = error.code
+      wrappedError.message = error.message
+      wrappedError.details = error.details
+    } catch let error {
+      wrappedError.code = "\(error)"
+      wrappedError.message = "\(Swift.type(of: error))"
+      wrappedError.details = "Stacktrace: \(Thread.callStackSymbols)"
+    }
+    return
+  }
+  @objc func exitFullscreen(handle handleArg: Int64, wrappedError: PigeonError) {
+    do {
+      let activeApi = try resolveApi()
+      try activeApi.exitFullscreen(handle: handleArg)
+      return
+    } catch let error as PigeonError {
+      wrappedError.code = error.code
+      wrappedError.message = error.message
+      wrappedError.details = error.details
+    } catch let error {
+      wrappedError.code = "\(error)"
+      wrappedError.message = "\(Swift.type(of: error))"
+      wrappedError.details = "Stacktrace: \(Thread.callStackSymbols)"
+    }
+    return
+  }
+  @objc func dispose(handle handleArg: Int64, wrappedError: PigeonError) {
+    do {
+      let activeApi = try resolveApi()
+      try activeApi.dispose(handle: handleArg)
+      return
+    } catch let error as PigeonError {
+      wrappedError.code = error.code
+      wrappedError.message = error.message
+      wrappedError.details = error.details
+    } catch let error {
+      wrappedError.code = "\(error)"
+      wrappedError.message = "\(Swift.type(of: error))"
+      wrappedError.details = "Stacktrace: \(Thread.callStackSymbols)"
+    }
+    return
+  }
+  /// Destroys every player, e.g. those orphaned by a hot restart.
+  @objc func reset(wrappedError: PigeonError) {
+    do {
+      let activeApi = try resolveApi()
+      try activeApi.reset()
+      return
+    } catch let error as PigeonError {
+      wrappedError.code = error.code
+      wrappedError.message = error.message
+      wrappedError.details = error.details
+    } catch let error {
+      wrappedError.code = "\(error)"
+      wrappedError.message = "\(Swift.type(of: error))"
+      wrappedError.details = "Stacktrace: \(Thread.callStackSymbols)"
+    }
+    return
   }
 }
 
-/// iOS / macOS -> Dart.
+/// iOS / macOS -> Dart. Always invoked on the main thread, on a fresh loop
+/// turn.
 ///
 /// Generated protocol from Pigeon that represents Flutter messages that can be called from Swift.
-protocol YoutubeFlutterApiProtocol {
-  @MainActor func onMessage(handle handleArg: Int64, json jsonArg: String) async throws
-  @MainActor func onNavigation(handle handleArg: Int64, url urlArg: String) async throws
-  @MainActor func onLoadError(handle handleArg: Int64, error errorArg: NativeLoadError) async throws
-  @MainActor func onFullscreenChanged(handle handleArg: Int64, isFullscreen isFullscreenArg: Bool) async throws
+@objc protocol YoutubeFlutterApiBridge {
+  @objc func onMessage(handle handleArg: Int64, json jsonArg: NSString, error: PigeonError)
+  @objc func onNavigation(handle handleArg: Int64, url urlArg: NSString, error: PigeonError)
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  @objc func onLoadError(handle handleArg: Int64, pigeonVar_args: NSData, error: PigeonError)
+  @objc func onFullscreenChanged(handle handleArg: Int64, isFullscreen isFullscreenArg: Bool, error: PigeonError)
 }
-class YoutubeFlutterApi: YoutubeFlutterApiProtocol {
-  private let binaryMessenger: FlutterBinaryMessenger
-  private let messageChannelSuffix: String
-  init(binaryMessenger: FlutterBinaryMessenger, messageChannelSuffix: String = "") {
-    self.binaryMessenger = binaryMessenger
-    self.messageChannelSuffix = messageChannelSuffix.count > 0 ? ".\(messageChannelSuffix)" : ""
+
+@objc class YoutubeFlutterApiRegistrar: NSObject {
+  static var registeredYoutubeFlutterApi = [String: [YoutubeFlutterApi]]()
+  /// Guards the registrations, which Native Interop calls can read from any thread.
+  static let lock = NSLock()
+
+  /// Registers the Dart implementation `api` under `name` (or the default instance
+  /// when `name` is omitted).
+  ///
+  /// Called by generated Dart code. `engineId` and `affinityKey` identify the engine
+  /// that registered `api`, or are `Int64.min` when unknown.
+  /// Registering an instance that is already registered under `name` updates its
+  /// keys and keeps its position.
+  @objc static func registerInstance(api: YoutubeFlutterApiBridge, engineId: Int64, affinityKey: Int64, name: String = MessagesPigeonInternal.defaultInstanceName) {
+    let apiObject = api as AnyObject
+    YoutubeFlutterApiRegistrar.lock.lock()
+    defer { YoutubeFlutterApiRegistrar.lock.unlock() }
+    var list = YoutubeFlutterApiRegistrar.registeredYoutubeFlutterApi[name] ?? []
+    let registration = YoutubeFlutterApi(api: api, engineId: engineId, affinityKey: affinityKey)
+    if let index = list.firstIndex(where: { ($0.api as AnyObject) === apiObject }) {
+      list[index] = registration
+    } else {
+      list.append(registration)
+    }
+    YoutubeFlutterApiRegistrar.registeredYoutubeFlutterApi[name] = list
   }
-  var codec: MessagesPigeonCodec {
-    return MessagesPigeonCodec.shared
-  }
-  @MainActor func onMessage(handle handleArg: Int64, json jsonArg: String) async throws {
-    return try await withCheckedThrowingContinuation { continuation in
-      let channelName: String = "dev.flutter.pigeon.youtube_player_darwin.YoutubeFlutterApi.onMessage\(messageChannelSuffix)"
-      let channel = FlutterBasicMessageChannel(name: channelName, binaryMessenger: binaryMessenger, codec: codec)
-      channel.sendMessage([handleArg, jsonArg] as [Any?]) { response in
-        guard let listResponse = response as? [Any?] else {
-          continuation.resume(throwing: createConnectionError(withChannelName: channelName))
-          return
+
+  /// Removes `api` from the registrations under `name` (or the default instance
+  /// when `name` is omitted), leaving other registrations in place.
+  ///
+  /// Instances are matched by identity. Does nothing if `api` is not registered.
+  @objc static func unregisterInstance(api: YoutubeFlutterApiBridge, name: String = MessagesPigeonInternal.defaultInstanceName) {
+    let apiObject = api as AnyObject
+    // Removed entries are kept alive until after unlocking so their deinit cannot run while the
+    // non-recursive lock is held.
+    var displaced: [YoutubeFlutterApi] = []
+    do {
+      YoutubeFlutterApiRegistrar.lock.lock()
+      defer { YoutubeFlutterApiRegistrar.lock.unlock() }
+      guard var list = YoutubeFlutterApiRegistrar.registeredYoutubeFlutterApi[name] else {
+        return
+      }
+      list.removeAll { entry in
+        if (entry.api as AnyObject) === apiObject {
+          displaced.append(entry)
+          return true
         }
-        if listResponse.count > 1 {
-          let code: String = listResponse[0] as! String
-          let message: String? = nilOrValue(listResponse[1])
-          let details: String? = nilOrValue(listResponse[2])
-          continuation.resume(throwing: PigeonError(code: code, message: message, details: details))
-        } else {
-          continuation.resume()
-        }
+        return false
+      }
+      if list.isEmpty {
+        YoutubeFlutterApiRegistrar.registeredYoutubeFlutterApi.removeValue(forKey: name)
+      } else {
+        YoutubeFlutterApiRegistrar.registeredYoutubeFlutterApi[name] = list
       }
     }
+    withExtendedLifetime(displaced) {}
   }
-  @MainActor func onNavigation(handle handleArg: Int64, url urlArg: String) async throws {
-    return try await withCheckedThrowingContinuation { continuation in
-      let channelName: String = "dev.flutter.pigeon.youtube_player_darwin.YoutubeFlutterApi.onNavigation\(messageChannelSuffix)"
-      let channel = FlutterBasicMessageChannel(name: channelName, binaryMessenger: binaryMessenger, codec: codec)
-      channel.sendMessage([handleArg, urlArg] as [Any?]) { response in
-        guard let listResponse = response as? [Any?] else {
-          continuation.resume(throwing: createConnectionError(withChannelName: channelName))
-          return
-        }
-        if listResponse.count > 1 {
-          let code: String = listResponse[0] as! String
-          let message: String? = nilOrValue(listResponse[1])
-          let details: String? = nilOrValue(listResponse[2])
-          continuation.resume(throwing: PigeonError(code: code, message: message, details: details))
-        } else {
-          continuation.resume()
-        }
-      }
+
+  #if canImport(Flutter) || canImport(FlutterMacOS)
+    /// Returns the instance for `name` (or the default instance when `name` is omitted)
+    /// that was registered from the engine that owns `registrar`.
+    ///
+    /// When no instance is known to belong to that engine, falls back to the most
+    /// recent registration for `name`. Returns nil if none is registered.
+    static func getInstance(registrar: FlutterPluginRegistrar, name: String = MessagesPigeonInternal.defaultInstanceName) -> YoutubeFlutterApi? {
+      return getInstance(engineKey: PigeonEngineKeys.key(for: registrar), name: name)
+    }
+  #endif
+
+  fileprivate static func getInstance(engineKey: Int64, name: String) -> YoutubeFlutterApi? {
+    YoutubeFlutterApiRegistrar.lock.lock()
+    defer { YoutubeFlutterApiRegistrar.lock.unlock() }
+    guard let list = YoutubeFlutterApiRegistrar.registeredYoutubeFlutterApi[name] else {
+      return nil
+    }
+    if engineKey != Int64.min, let match = list.last(where: { $0.engineId == engineKey }) ?? list.last(where: { $0.affinityKey == engineKey }) {
+      return match
+    }
+    return list.last
+  }
+}
+
+class YoutubeFlutterApi {
+  fileprivate let api: YoutubeFlutterApiBridge
+  fileprivate let engineId: Int64
+  fileprivate let affinityKey: Int64
+
+  fileprivate init(api: YoutubeFlutterApiBridge, engineId: Int64, affinityKey: Int64) {
+    self.api = api
+    self.engineId = engineId
+    self.affinityKey = affinityKey
+  }
+
+  func onMessage(handle handleArg: Int64, json jsonArg: String) throws {
+    let error = PigeonError()
+    api.onMessage(handle: handleArg, json: jsonArg as NSString, error: error)
+    if (error.code != nil) {
+      throw error
     }
   }
-  @MainActor func onLoadError(handle handleArg: Int64, error errorArg: NativeLoadError) async throws {
-    return try await withCheckedThrowingContinuation { continuation in
-      let channelName: String = "dev.flutter.pigeon.youtube_player_darwin.YoutubeFlutterApi.onLoadError\(messageChannelSuffix)"
-      let channel = FlutterBasicMessageChannel(name: channelName, binaryMessenger: binaryMessenger, codec: codec)
-      channel.sendMessage([handleArg, errorArg] as [Any?]) { response in
-        guard let listResponse = response as? [Any?] else {
-          continuation.resume(throwing: createConnectionError(withChannelName: channelName))
-          return
-        }
-        if listResponse.count > 1 {
-          let code: String = listResponse[0] as! String
-          let message: String? = nilOrValue(listResponse[1])
-          let details: String? = nilOrValue(listResponse[2])
-          continuation.resume(throwing: PigeonError(code: code, message: message, details: details))
-        } else {
-          continuation.resume()
-        }
-      }
+
+  func onNavigation(handle handleArg: Int64, url urlArg: String) throws {
+    let error = PigeonError()
+    api.onNavigation(handle: handleArg, url: urlArg as NSString, error: error)
+    if (error.code != nil) {
+      throw error
     }
   }
-  @MainActor func onFullscreenChanged(handle handleArg: Int64, isFullscreen isFullscreenArg: Bool) async throws {
-    return try await withCheckedThrowingContinuation { continuation in
-      let channelName: String = "dev.flutter.pigeon.youtube_player_darwin.YoutubeFlutterApi.onFullscreenChanged\(messageChannelSuffix)"
-      let channel = FlutterBasicMessageChannel(name: channelName, binaryMessenger: binaryMessenger, codec: codec)
-      channel.sendMessage([handleArg, isFullscreenArg] as [Any?]) { response in
-        guard let listResponse = response as? [Any?] else {
-          continuation.resume(throwing: createConnectionError(withChannelName: channelName))
-          return
-        }
-        if listResponse.count > 1 {
-          let code: String = listResponse[0] as! String
-          let message: String? = nilOrValue(listResponse[1])
-          let details: String? = nilOrValue(listResponse[2])
-          continuation.resume(throwing: PigeonError(code: code, message: message, details: details))
-        } else {
-          continuation.resume()
-        }
-      }
+
+  func onLoadError(handle handleArg: Int64, error errorArg: NativeLoadError) throws {
+    let error = PigeonError()
+    api.onLoadError(handle: handleArg, pigeonVar_args: MessagesPigeonInteropCodec.encode { $0.writeByte(MessagesPigeonInteropCodec.typeList); $0.writeSize(1); $0.writeValue(errorArg) }, error: error)
+    if (error.code != nil) {
+      throw error
+    }
+  }
+
+  func onFullscreenChanged(handle handleArg: Int64, isFullscreen isFullscreenArg: Bool) throws {
+    let error = PigeonError()
+    api.onFullscreenChanged(handle: handleArg, isFullscreen: isFullscreenArg, error: error)
+    if (error.code != nil) {
+      throw error
     }
   }
 }

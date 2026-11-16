@@ -229,28 +229,31 @@ void main() {
     expect(await controller.enterFullScreen(), isTrue);
   });
 
-  test('video-id playlists use argument syntax, others object syntax', () async {
-    final controller = YoutubePlayerController();
-    unawaited(controller.host);
-    await pump();
-    final host = platform.hosts.single..emit(const ReadyEvent());
-    await controller.cuePlaylist(list: ['a', 'b'], index: 1);
-    await controller.loadPlaylist(list: ['PL123'], listType: .playlist);
-    await controller.cueVideoById(videoId: 'x', startSeconds: 5);
-    expect(host.calls.map((c) => c.$2), [
-      [
-        ['a', 'b'],
-        1,
-        0,
-      ],
-      [
-        {'listType': 'playlist', 'list': 'PL123'},
-      ],
-      [
-        {'videoId': 'x', 'startSeconds': 5.0},
-      ],
-    ]);
-  });
+  test(
+    'video-id playlists use argument syntax, others object syntax',
+    () async {
+      final controller = YoutubePlayerController();
+      unawaited(controller.host);
+      await pump();
+      final host = platform.hosts.single..emit(const ReadyEvent());
+      await controller.cuePlaylist(list: ['a', 'b'], index: 1);
+      await controller.loadPlaylist(list: ['PL123'], listType: .playlist);
+      await controller.cueVideoById(videoId: 'x', startSeconds: 5);
+      expect(host.calls.map((c) => c.$2), [
+        [
+          ['a', 'b'],
+          1,
+          0,
+        ],
+        [
+          {'listType': 'playlist', 'list': 'PL123'},
+        ],
+        [
+          {'videoId': 'x', 'startSeconds': 5.0},
+        ],
+      ]);
+    },
+  );
 
   test('close disposes the host and silences later calls', () async {
     final controller = YoutubePlayerController();
@@ -277,14 +280,37 @@ void main() {
     await pump();
     final host = platform.hosts.single..emit(const ReadyEvent());
     await pump();
+    expect(host.calls, isEmpty, reason: 'whole seconds avoid a second load');
+    final vars = platform.params.single.playerVars;
+    expect(vars['start'], 30);
+    expect(vars.containsKey('end'), isFalse);
+    expect(vars['controls'], 0);
+  });
+
+  test('fromVideoId with a fractional start time cues after ready', () async {
+    final controller = YoutubePlayerController.fromVideoId(
+      videoId: 'dQw4w9WgXcQ',
+      startSeconds: 12.5,
+    );
+    unawaited(controller.host);
+    await pump();
+    final host = platform.hosts.single..emit(const ReadyEvent());
+    await pump();
     expect(host.calls.single.$1, PlayerMethod.cueVideoById);
-    expect(platform.params.single.playerVars['controls'], 0);
+    expect(platform.params.single.playerVars.containsKey('start'), isFalse);
+  });
+
+  test('background color is part of host creation', () async {
+    final controller = YoutubePlayerController()
+      ..backgroundColor = const Color(0xFF112233);
+    unawaited(controller.host);
+    await pump();
+    expect(platform.params.single.backgroundColor, const Color(0xFF112233));
   });
 
   test('custom controls turn off native controls and pointer events', () {
-    final params = const YoutubePlayerParams(
-      enableKeyboard: true,
-    ).toHostParams(customControls: true);
+    final params = const YoutubePlayerParams(enableKeyboard: true)
+        .toHostParams(customControls: true);
     expect(params.playerVars['controls'], 0);
     expect(params.playerVars['disablekb'], 1);
     expect(params.playerVars['fs'], 0);

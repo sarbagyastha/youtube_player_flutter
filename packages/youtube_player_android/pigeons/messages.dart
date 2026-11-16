@@ -3,16 +3,23 @@
 // found in the LICENSE file.
 
 // Regenerate with: dart run pigeon --input pigeons/messages.dart
+//
+// Uses Pigeon Native Interop (JNI): calls are direct, no platform channels.
+// JNIgen reads compiled classes, so build the example once first:
+//   cd ../youtube_player/example/android && ./gradlew compileReleaseKotlin
+// and make sure ANDROID_HOME points at the Android SDK.
 
 import 'package:pigeon/pigeon.dart';
 
 @ConfigurePigeon(
   PigeonOptions(
     dartPackageName: 'youtube_player_android',
+    appDirectory: '../youtube_player/example',
     dartOut: 'lib/src/messages.g.dart',
     kotlinOut: 'android/src/main/kotlin/np/com/sarbagyastha/youtube_player_android/pigeon/Messages.g.kt',
     kotlinOptions: KotlinOptions(
       package: 'np.com.sarbagyastha.youtube_player_android.pigeon',
+      useJni: true,
     ),
     copyrightHeader: 'pigeons/copyright.txt',
   ),
@@ -59,14 +66,12 @@ class NativeLoadError {
   String? url;
 }
 
-/// Dart -> Android.
+/// Dart -> Android. All calls are synchronous and run on the main thread.
 @HostApi()
 abstract class YoutubeHostApi {
-  /// Creates a WebView and returns its handle and origin.
-  NativeHostInfo create(NativeHostConfig config);
-
-  /// Loads the player page under the host's origin.
-  void load(int handle, String html);
+  /// Creates a WebView, loads [html] under the host's origin and returns its
+  /// handle and origin.
+  NativeHostInfo create(NativeHostConfig config, String html);
 
   /// Delivers [json] to `window.__yp.recv`.
   void send(int handle, String json);
@@ -76,9 +81,12 @@ abstract class YoutubeHostApi {
   void exitFullscreen(int handle);
 
   void dispose(int handle);
+
+  /// Destroys every player, e.g. those orphaned by a hot restart.
+  void reset();
 }
 
-/// Android -> Dart.
+/// Android -> Dart. Always invoked on the main thread, on a fresh loop turn.
 @FlutterApi()
 abstract class YoutubeFlutterApi {
   void onMessage(int handle, String json);

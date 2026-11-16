@@ -16,33 +16,41 @@ import 'src/messages.g.dart';
 const _viewType = 'np.com.sarbagyastha.youtube_player/webview';
 
 /// Hosts players in WKWebViews.
+///
+/// Talks to the native side through Pigeon Native Interop (FFI): host calls
+/// are direct synchronous calls, with no platform channel in between.
 final class DarwinYoutubePlayer({
   /// Host API override for tests.
-  @visibleForTesting YoutubeHostApi? api,
+  @visibleForTesting YoutubeHostApiForNativeInterop? api,
 }) extends YoutubePlayerPlatform {
   /// Registers this implementation. Called by the plugin registrant.
   static void registerWith() {
     YoutubePlayerPlatform.instance = DarwinYoutubePlayer();
   }
 
-  final YoutubeHostApi _api = api ?? YoutubeHostApi();
+  final YoutubeHostApiForNativeInterop? _apiOverride = api;
+
+  // Resolved lazily, after the native plugin has registered.
+  late final YoutubeHostApiForNativeInterop _api =
+      _apiOverride ??
+      YoutubeHostApiForNativeInterop.getInstance() ??
+      (throw StateError('youtube_player_darwin is not registered natively'));
   late final _receiver = _Receiver(this);
   final _hosts = <int, _DarwinHost>{};
 
   @override
   Future<YoutubePlayerHost> createHost(YoutubeHostParams params) async {
     _receiver.listen();
-    final info = await _api.create(
+    final info = _api.create(
       NativeHostConfig(
         appId: params.appId,
         userAgent: params.userAgent,
         debuggable: params.debuggable,
         backgroundColor: params.backgroundColor?.toARGB32(),
       ),
+      buildPlayerPage(params),
     );
-    final host = _hosts[info.handle] = _DarwinHost(this, info.handle);
-    await _api.load(info.handle, buildPlayerPage(params, origin: info.origin));
-    return host;
+    return _hosts[info.handle] = _DarwinHost(this, info.handle);
   }
 }
 
@@ -53,7 +61,10 @@ final class _Receiver(final DarwinYoutubePlayer _platform)
   void listen() {
     if (_listening) return;
     _listening = true;
-    YoutubeFlutterApi.setUp(this);
+    // Players left behind by a previous isolate (hot restart) would keep
+    // playing with nobody listening.
+    _platform._api.reset();
+    YoutubeFlutterApiRegistrar().register(this);
   }
 
   _DarwinHost? _host(int handle) => _platform._hosts[handle];
@@ -81,7 +92,7 @@ final class _Receiver(final DarwinYoutubePlayer _platform)
 
 final class _DarwinHost(final DarwinYoutubePlayer _platform, final int _handle)
     extends BridgeHost {
-  YoutubeHostApi get _api => _platform._api;
+  YoutubeHostApiForNativeInterop get _api => _platform._api;
 
   void message(String json) => receiveFromPage(json);
   void navigation(String url) => emitNavigation(url);
@@ -89,20 +100,20 @@ final class _DarwinHost(final DarwinYoutubePlayer _platform, final int _handle)
   void fullscreen(bool value) => emitFullscreen(value);
 
   @override
-  Future<void> sendToPage(String json) => _api.send(_handle, json);
+  Future<void> sendToPage(String json) async => _api.send(_handle, json);
 
   @override
   Future<void> disposeNative() async {
     _platform._hosts.remove(_handle);
-    await _api.dispose(_handle);
+    _api.dispose(_handle);
   }
 
   @override
-  Future<void> setBackgroundColor(Color color) =>
+  Future<void> setBackgroundColor(Color color) async =>
       _api.setBackgroundColor(_handle, color.toARGB32());
 
   @override
-  Future<void> exitFullscreen() => _api.exitFullscreen(_handle);
+  Future<void> exitFullscreen() async => _api.exitFullscreen(_handle);
 
   @override
   Widget buildView({

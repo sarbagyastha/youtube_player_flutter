@@ -11,7 +11,9 @@ import 'types.dart';
 ///
 /// [origin] is the client identity the page is loaded under (scheme + host
 /// of the base URL). It becomes the `origin` and `widget_referrer` player
-/// vars unless the caller already set them.
+/// vars unless the caller already set them. When omitted, the page uses its
+/// own `location.origin`, which is the same identity because hosts load the
+/// page under `https://<appId>/`.
 ///
 /// The page talks to the host through one string bridge, discovered at
 /// runtime:
@@ -20,21 +22,29 @@ import 'types.dart';
 /// * Android WebView: `ypBridge.postMessage` (a `@JavascriptInterface`)
 ///
 /// The host calls into the page with `window.__yp.recv(json)`.
-String buildPlayerPage(YoutubeHostParams params, {required String origin}) {
+String buildPlayerPage(YoutubeHostParams params, {String? origin}) {
+  final vars = {...params.playerVars, 'enablejsapi': 1};
+  if (origin != null) {
+    vars['origin'] = params.playerVars['origin'] ?? origin;
+    vars['widget_referrer'] = params.playerVars['widget_referrer'] ?? origin;
+  }
   final config = {
     'host': params.host,
     'videoId': ?params.videoId,
-    'vars': {
-      ...params.playerVars,
-      'enablejsapi': 1,
-      'origin': params.playerVars['origin'] ?? origin,
-      'widget_referrer': params.playerVars['widget_referrer'] ?? origin,
-    },
+    'vars': vars,
     'tick': params.tickInterval.inMilliseconds,
     'pe': params.pointerEvents,
   };
-  return _template.replaceFirst('__CONFIG__', _scriptSafeJson(config));
+  return _template
+      .replaceFirst('__HOST__', _attr(params.host))
+      .replaceFirst('__CONFIG__', _scriptSafeJson(config));
 }
+
+/// Escapes [value] for a double-quoted HTML attribute.
+String _attr(String value) => value
+    .replaceAll('&', '&amp;')
+    .replaceAll('"', '&quot;')
+    .replaceAll('<', '&lt;');
 
 /// JSON that is safe to inline in a `<script>` element.
 String _scriptSafeJson(Object value) =>
@@ -50,6 +60,9 @@ const _template = r'''
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="referrer" content="strict-origin-when-cross-origin">
+<link rel="preconnect" href="https://www.youtube.com">
+<link rel="preconnect" href="__HOST__">
+<link rel="preconnect" href="https://i.ytimg.com">
 <style>
 html,body,#c{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:transparent}
 body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
@@ -71,27 +84,33 @@ body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webki
     : (s) => w.ypBridge.postMessage(s);
   const post = (m) => out(JSON.stringify(m));
   const box = d.getElementById('c');
-  let p = null, ready = false, raf = 0, last = 0, running = false;
+  let p = null, ready = false, timer = 0, running = false, lastTick = '', lastVideo = '';
+  C.vars.origin = C.vars.origin || location.origin;
+  C.vars.widget_referrer = C.vars.widget_referrer || location.origin;
 
   const tick = () => {
     if (!ready) return;
-    post({e: 'tick', d: [p.getCurrentTime(), p.getVideoLoadedFraction(), p.getDuration(), p.getVolume(), p.isMuted() ? 1 : 0]});
-  };
-  const loop = (t) => {
-    raf = requestAnimationFrame(loop);
-    if (t - last >= C.tick) { last = t; tick(); }
+    const d = [p.getCurrentTime(), p.getVideoLoadedFraction(), p.getDuration(), p.getVolume(), p.isMuted() ? 1 : 0];
+    const key = d.join();
+    if (key === lastTick) return;
+    lastTick = key;
+    post({e: 'tick', d});
   };
   const clock = (on) => {
     if (on === running) return;
     running = on;
-    if (on) { last = 0; raf = requestAnimationFrame(loop); }
-    else { cancelAnimationFrame(raf); tick(); }
+    if (on) timer = setInterval(tick, C.tick);
+    else { clearInterval(timer); tick(); }
   };
   const state = (s) => {
     const m = {s};
     if (s === -1 || s === 1 || s === 5) {
       const v = typeof p.getVideoData === 'function' ? p.getVideoData() : null;
-      if (v) m.v = {id: v.video_id || '', t: v.title || '', a: v.author || ''};
+      if (v) {
+        const id = v.video_id || '', t = v.title || '', a = v.author || '';
+        const key = id + '\n' + t + '\n' + a;
+        if (key !== lastVideo) { lastVideo = key; m.v = {id, t, a}; }
+      }
       m.du = p.getDuration();
     }
     post({e: 'state', d: m});

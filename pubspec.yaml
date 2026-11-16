@@ -18,6 +18,12 @@ environment:
   sdk: ^3.11.0
   flutter: '>=3.38.0'
 
+dependency_overrides:
+  # ffigen 22 (Pigeon native interop codegen in youtube_player_darwin) pins
+  # cli_util ^0.4.2 but only uses `Ansi`, unchanged since; melos 8 needs
+  # >=0.5. Dev tooling only; the workspace root is never published.
+  cli_util: ^0.5.2
+
 dev_dependencies:
   melos: ^8.10.1
   flutter_lints: ^6.0.0

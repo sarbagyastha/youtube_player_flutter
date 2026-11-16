@@ -3,14 +3,23 @@
 // found in the LICENSE file.
 
 // Regenerate with: dart run pigeon --input pigeons/messages.dart
+//
+// Uses Pigeon Native Interop (FFI): calls are direct, no platform channels.
+// Requires macOS with Xcode command line tools.
 
 import 'package:pigeon/pigeon.dart';
 
 @ConfigurePigeon(
   PigeonOptions(
     dartPackageName: 'youtube_player_darwin',
+    // FFIgen compiles the Swift bridge directly; paths resolve from here.
+    appDirectory: './',
     dartOut: 'lib/src/messages.g.dart',
     swiftOut: 'darwin/youtube_player_darwin/Sources/youtube_player_darwin/Messages.g.swift',
+    swiftOptions: SwiftOptions(
+      useFfi: true,
+      ffiModuleName: 'youtube_player_darwin',
+    ),
     copyrightHeader: 'pigeons/copyright.txt',
   ),
 )
@@ -51,14 +60,12 @@ class NativeLoadError {
   String? url;
 }
 
-/// Dart -> iOS / macOS.
+/// Dart -> iOS / macOS. All calls are synchronous and run on the main thread.
 @HostApi()
 abstract class YoutubeHostApi {
-  /// Creates a WebView and returns its handle and origin.
-  NativeHostInfo create(NativeHostConfig config);
-
-  /// Loads the player page under the host's origin.
-  void load(int handle, String html);
+  /// Creates a WebView, loads [html] under the host's origin and returns its
+  /// handle and origin.
+  NativeHostInfo create(NativeHostConfig config, String html);
 
   /// Delivers [json] to `window.__yp.recv`.
   void send(int handle, String json);
@@ -68,9 +75,13 @@ abstract class YoutubeHostApi {
   void exitFullscreen(int handle);
 
   void dispose(int handle);
+
+  /// Destroys every player, e.g. those orphaned by a hot restart.
+  void reset();
 }
 
-/// iOS / macOS -> Dart.
+/// iOS / macOS -> Dart. Always invoked on the main thread, on a fresh loop
+/// turn.
 @FlutterApi()
 abstract class YoutubeFlutterApi {
   void onMessage(int handle, String json);

@@ -79,8 +79,23 @@ Future<void>? _apiLoading;
 /// Loads `https://www.youtube.com/iframe_api` once per page.
 Future<void> loadIframeApi() => _apiLoading ??= _loadIframeApi();
 
+/// Origins the player talks to first; warmed up once per page.
+const _preconnect = [
+  'https://www.youtube.com',
+  'https://www.youtube-nocookie.com',
+  'https://i.ytimg.com',
+];
+
 Future<void> _loadIframeApi() {
   if (yt?.player != null) return Future.value();
+  final head = web.document.head!;
+  for (final origin in _preconnect) {
+    head.append(
+      web.HTMLLinkElement()
+        ..rel = 'preconnect'
+        ..href = origin,
+    );
+  }
   final completer = Completer<void>();
   final previous = globalContext['onYouTubeIframeAPIReady'];
   globalContext['onYouTubeIframeAPIReady'] = () {

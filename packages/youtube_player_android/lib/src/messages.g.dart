@@ -9,13 +9,17 @@
 import 'dart:async';
 import 'dart:typed_data' show Float64List, Int32List, Int64List;
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart';
-import 'package:meta/meta.dart' show immutable, protected, visibleForTesting;
+import 'package:meta/meta.dart' show immutable, internal, protected, visibleForTesting;
+import './messages.g.dart'
+    if (dart.library.ffi) './messages.native_interop.g.dart'
+    as pigeon_native;
 
 Object? _extractReplyValueOrThrow(
-  List<Object?>? replyList,
-  String channelName, {
-  required bool isNullValid,
+    List<Object?>? replyList,
+    String channelName, {
+    required bool isNullValid,
 }) {
   if (replyList == null) {
     throw PlatformException(
@@ -37,11 +41,8 @@ Object? _extractReplyValueOrThrow(
   return replyList.firstOrNull;
 }
 
-List<Object?> wrapResponse({
-  Object? result,
-  PlatformException? error,
-  bool empty = false,
-}) {
+
+List<Object?> wrapResponse({Object? result, PlatformException? error, bool empty = false}) {
   if (empty) {
     return <Object?>[];
   }
@@ -50,7 +51,6 @@ List<Object?> wrapResponse({
   }
   return <Object?>[error.code, error.message, error.details];
 }
-
 bool _deepEquals(Object? a, Object? b) {
   if (identical(a, b)) {
     return true;
@@ -63,9 +63,8 @@ bool _deepEquals(Object? a, Object? b) {
   }
   if (a is List && b is List) {
     return a.length == b.length &&
-        a.indexed.every(
-          ((int, dynamic) item) => _deepEquals(item.$2, b[item.$1]),
-        );
+        a.indexed
+            .every(((int, dynamic) item) => _deepEquals(item.$2, b[item.$1]));
   }
   if (a is Map && b is Map) {
     if (a.length != b.length) {
@@ -114,8 +113,13 @@ int _deepHash(Object? value) {
   return value.hashCode;
 }
 
+
 /// Orientation while the WebView presents fullscreen.
-enum NativeFullscreenOrientation { landscape, auto, unchanged }
+enum NativeFullscreenOrientation {
+  landscape,
+  auto,
+  unchanged;
+}
 
 /// Configuration for a new player WebView.
 class NativeHostConfig {
@@ -150,8 +154,7 @@ class NativeHostConfig {
   }
 
   Object encode() {
-    return _toList();
-  }
+    return _toList();  }
 
   static NativeHostConfig decode(Object result) {
     result as List<Object?>;
@@ -173,11 +176,7 @@ class NativeHostConfig {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(appId, other.appId) &&
-        _deepEquals(userAgent, other.userAgent) &&
-        _deepEquals(debuggable, other.debuggable) &&
-        _deepEquals(backgroundColor, other.backgroundColor) &&
-        _deepEquals(fullscreenOrientation, other.fullscreenOrientation);
+    return _deepEquals(appId, other.appId) && _deepEquals(userAgent, other.userAgent) && _deepEquals(debuggable, other.debuggable) && _deepEquals(backgroundColor, other.backgroundColor) && _deepEquals(fullscreenOrientation, other.fullscreenOrientation);
   }
 
   @override
@@ -192,7 +191,10 @@ class NativeHostConfig {
 
 /// Result of [YoutubeHostApi.create].
 class NativeHostInfo {
-  NativeHostInfo({required this.handle, required this.origin});
+  NativeHostInfo({
+    required this.handle,
+    required this.origin,
+  });
 
   int handle;
 
@@ -200,12 +202,14 @@ class NativeHostInfo {
   String origin;
 
   List<Object?> _toList() {
-    return <Object?>[handle, origin];
+    return <Object?>[
+      handle,
+      origin,
+    ];
   }
 
   Object encode() {
-    return _toList();
-  }
+    return _toList();  }
 
   static NativeHostInfo decode(Object result) {
     result as List<Object?>;
@@ -224,8 +228,7 @@ class NativeHostInfo {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(handle, other.handle) &&
-        _deepEquals(origin, other.origin);
+    return _deepEquals(handle, other.handle) && _deepEquals(origin, other.origin);
   }
 
   @override
@@ -240,7 +243,11 @@ class NativeHostInfo {
 
 /// Main-frame load failure.
 class NativeLoadError {
-  NativeLoadError({required this.code, required this.message, this.url});
+  NativeLoadError({
+    required this.code,
+    required this.message,
+    this.url,
+  });
 
   int code;
 
@@ -249,12 +256,15 @@ class NativeLoadError {
   String? url;
 
   List<Object?> _toList() {
-    return <Object?>[code, message, url];
+    return <Object?>[
+      code,
+      message,
+      url,
+    ];
   }
 
   Object encode() {
-    return _toList();
-  }
+    return _toList();  }
 
   static NativeLoadError decode(Object result) {
     result as List<Object?>;
@@ -274,9 +284,7 @@ class NativeLoadError {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(code, other.code) &&
-        _deepEquals(message, other.message) &&
-        _deepEquals(url, other.url);
+    return _deepEquals(code, other.code) && _deepEquals(message, other.message) && _deepEquals(url, other.url);
   }
 
   @override
@@ -289,6 +297,7 @@ class NativeLoadError {
   }
 }
 
+
 class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
   @override
@@ -296,16 +305,16 @@ class _PigeonCodec extends StandardMessageCodec {
     if (value is int) {
       buffer.putUint8(4);
       buffer.putInt64(value);
-    } else if (value is NativeFullscreenOrientation) {
+    }    else if (value is NativeFullscreenOrientation) {
       buffer.putUint8(129);
       writeValue(buffer, value.index);
-    } else if (value is NativeHostConfig) {
+    }    else if (value is NativeHostConfig) {
       buffer.putUint8(130);
       writeValue(buffer, value.encode());
-    } else if (value is NativeHostInfo) {
+    }    else if (value is NativeHostInfo) {
       buffer.putUint8(131);
       writeValue(buffer, value.encode());
-    } else if (value is NativeLoadError) {
+    }    else if (value is NativeLoadError) {
       buffer.putUint8(132);
       writeValue(buffer, value.encode());
     } else {
@@ -331,144 +340,277 @@ class _PigeonCodec extends StandardMessageCodec {
   }
 }
 
-/// Dart -> Android.
+@internal
+const StandardMessageCodec pigeon_MessagesmessageCodec = _PigeonCodec();
+const String defaultInstanceName = 'PigeonDefaultClassName32uh4ui3lh445uh4h3l2l455g4y34u';
+
+@internal
+YoutubeHostApiForNativeInterop? pigeon_getInstance_YoutubeHostApi({
+  String channelName = defaultInstanceName,
+}) {
+  throw UnsupportedError(
+    'Native Interop is not supported on this platform. Use YoutubeHostApi instead.',
+  );
+}
+
+
+abstract class YoutubeHostApiForNativeInterop {
+  /// Returns instance of YoutubeHostApiForNativeInterop with specified [channelName] if one has been registered.
+  static YoutubeHostApiForNativeInterop? getInstance({String channelName = defaultInstanceName}) =>
+      pigeon_native.pigeon_getInstance_YoutubeHostApi(channelName: channelName);
+
+  NativeHostInfo create(NativeHostConfig config, String html);
+
+  void send(int handle, String json);
+
+  void setBackgroundColor(int handle, int argb);
+
+  void exitFullscreen(int handle);
+
+  void dispose(int handle);
+
+  void reset();
+}
+
+/// Dart -> Android. All calls are synchronous and run on the main thread.
 class YoutubeHostApi {
   /// Constructor for [YoutubeHostApi]. The [binaryMessenger] named argument is
   /// available for dependency injection. If it is left null, the default
   /// BinaryMessenger will be used which routes to the host platform.
   YoutubeHostApi({
+      BinaryMessenger? binaryMessenger, 
+      String messageChannelSuffix = '', 
+      YoutubeHostApiForNativeInterop? nativeInteropApi,
+  })
+      : pigeonVar_binaryMessenger = binaryMessenger,
+        pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '',
+  _nativeInteropApi = nativeInteropApi;
+
+
+  /// Creates an instance of [YoutubeHostApi] that requests an instance of
+  /// [YoutubeHostApiForNativeInterop] from the host platform with a matching instance name
+  /// to [messageChannelSuffix] or the default instance.
+  ///
+  /// Throws [ArgumentError] if no matching instance can be found.
+  factory YoutubeHostApi.createWithNativeInteropApi({
     BinaryMessenger? binaryMessenger,
     String messageChannelSuffix = '',
-  }) : pigeonVar_binaryMessenger = binaryMessenger,
-       pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty
-           ? '.$messageChannelSuffix'
-           : '';
+  }) {
+    if (kIsWeb) {
+      throw UnsupportedError(
+        'Native Interop is not supported on this platform. Use the default constructor of YoutubeHostApi instead.',
+      );
+    }
+    final YoutubeHostApiForNativeInterop? nativeInteropApi =
+        YoutubeHostApiForNativeInterop.getInstance(
+      channelName: messageChannelSuffix.isEmpty ? defaultInstanceName : messageChannelSuffix,
+    );
+    if (nativeInteropApi == null) {
+      throw ArgumentError(
+        'No YoutubeHostApi instance with ${messageChannelSuffix.isEmpty ? 'no ' : ''}instance name ${messageChannelSuffix.isNotEmpty ? '"$messageChannelSuffix" ' : ''}found.',
+      );
+    }
+    return YoutubeHostApi(
+      binaryMessenger: binaryMessenger,
+      messageChannelSuffix: messageChannelSuffix,
+      nativeInteropApi: nativeInteropApi,
+    );
+  }
 
   final BinaryMessenger? pigeonVar_binaryMessenger;
   static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
 
   final String pigeonVar_messageChannelSuffix;
 
-  /// Creates a WebView and returns its handle and origin.
-  Future<NativeHostInfo> create(NativeHostConfig config) async {
-    final pigeonVar_channelName =
-        'dev.flutter.pigeon.youtube_player_android.YoutubeHostApi.create$pigeonVar_messageChannelSuffix';
+  final YoutubeHostApiForNativeInterop? _nativeInteropApi;
+
+  /// Creates a WebView, loads [html] under the host's origin and returns its
+  /// handle and origin.
+  Future<NativeHostInfo> create(NativeHostConfig config, String html) async {
+    if (_nativeInteropApi != null) {
+      return _nativeInteropApi.create(config, html);
+    }
+    final pigeonVar_channelName = 'dev.flutter.pigeon.youtube_player_android.YoutubeHostApi.create$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
-      <Object?>[config],
-    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[config, html]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-      pigeonVar_replyList,
-      pigeonVar_channelName,
-      isNullValid: false,
-    );
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: false,
+    )
+    ;
     return pigeonVar_replyValue! as NativeHostInfo;
-  }
-
-  /// Loads the player page under the host's origin.
-  Future<void> load(int handle, String html) async {
-    final pigeonVar_channelName =
-        'dev.flutter.pigeon.youtube_player_android.YoutubeHostApi.load$pigeonVar_messageChannelSuffix';
-    final pigeonVar_channel = BasicMessageChannel<Object?>(
-      pigeonVar_channelName,
-      pigeonChannelCodec,
-      binaryMessenger: pigeonVar_binaryMessenger,
-    );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
-      <Object?>[handle, html],
-    );
-    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
-    _extractReplyValueOrThrow(
-      pigeonVar_replyList,
-      pigeonVar_channelName,
-      isNullValid: true,
-    );
   }
 
   /// Delivers [json] to `window.__yp.recv`.
   Future<void> send(int handle, String json) async {
-    final pigeonVar_channelName =
-        'dev.flutter.pigeon.youtube_player_android.YoutubeHostApi.send$pigeonVar_messageChannelSuffix';
+    if (_nativeInteropApi != null) {
+      return _nativeInteropApi.send(handle, json);
+    }
+    final pigeonVar_channelName = 'dev.flutter.pigeon.youtube_player_android.YoutubeHostApi.send$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
-      <Object?>[handle, json],
-    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[handle, json]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     _extractReplyValueOrThrow(
-      pigeonVar_replyList,
-      pigeonVar_channelName,
-      isNullValid: true,
-    );
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: true,
+    )
+    ;
   }
 
   Future<void> setBackgroundColor(int handle, int argb) async {
-    final pigeonVar_channelName =
-        'dev.flutter.pigeon.youtube_player_android.YoutubeHostApi.setBackgroundColor$pigeonVar_messageChannelSuffix';
+    if (_nativeInteropApi != null) {
+      return _nativeInteropApi.setBackgroundColor(handle, argb);
+    }
+    final pigeonVar_channelName = 'dev.flutter.pigeon.youtube_player_android.YoutubeHostApi.setBackgroundColor$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
-      <Object?>[handle, argb],
-    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[handle, argb]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     _extractReplyValueOrThrow(
-      pigeonVar_replyList,
-      pigeonVar_channelName,
-      isNullValid: true,
-    );
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: true,
+    )
+    ;
   }
 
   Future<void> exitFullscreen(int handle) async {
-    final pigeonVar_channelName =
-        'dev.flutter.pigeon.youtube_player_android.YoutubeHostApi.exitFullscreen$pigeonVar_messageChannelSuffix';
+    if (_nativeInteropApi != null) {
+      return _nativeInteropApi.exitFullscreen(handle);
+    }
+    final pigeonVar_channelName = 'dev.flutter.pigeon.youtube_player_android.YoutubeHostApi.exitFullscreen$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
-      <Object?>[handle],
-    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[handle]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     _extractReplyValueOrThrow(
-      pigeonVar_replyList,
-      pigeonVar_channelName,
-      isNullValid: true,
-    );
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: true,
+    )
+    ;
   }
 
   Future<void> dispose(int handle) async {
-    final pigeonVar_channelName =
-        'dev.flutter.pigeon.youtube_player_android.YoutubeHostApi.dispose$pigeonVar_messageChannelSuffix';
+    if (_nativeInteropApi != null) {
+      return _nativeInteropApi.dispose(handle);
+    }
+    final pigeonVar_channelName = 'dev.flutter.pigeon.youtube_player_android.YoutubeHostApi.dispose$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
-      <Object?>[handle],
-    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[handle]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     _extractReplyValueOrThrow(
-      pigeonVar_replyList,
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: true,
+    )
+    ;
+  }
+
+  /// Destroys every player, e.g. those orphaned by a hot restart.
+  Future<void> reset() async {
+    if (_nativeInteropApi != null) {
+      return _nativeInteropApi.reset();
+    }
+    final pigeonVar_channelName = 'dev.flutter.pigeon.youtube_player_android.YoutubeHostApi.reset$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
-      isNullValid: true,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
     );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    _extractReplyValueOrThrow(
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: true,
+    )
+    ;
   }
 }
 
-/// Android -> Dart.
+@internal
+YoutubeFlutterApi pigeon_register_YoutubeFlutterApi(
+  YoutubeFlutterApi api, {
+  String name = defaultInstanceName,
+}) {
+  throw UnsupportedError(
+    'Native Interop is not supported on this platform. Use YoutubeFlutterApi.setUp instead.',
+  );
+}
+
+@internal
+void pigeon_unregister_YoutubeFlutterApi(
+  YoutubeFlutterApi api, {
+  String name = defaultInstanceName,
+}) {
+  throw UnsupportedError(
+    'Native Interop is not supported on this platform. Use YoutubeFlutterApi.setUp instead.',
+  );
+}
+
+@internal
+void pigeon_set_up_YoutubeFlutterApi(
+  YoutubeFlutterApi? api, {
+  String name = defaultInstanceName,
+}) {
+  throw UnsupportedError(
+    'Native Interop is not supported on this platform. Use YoutubeFlutterApi.setUp instead.',
+  );
+}
+
+/// Registers [YoutubeFlutterApi] implementations for Native Interop callers.
+final class YoutubeFlutterApiRegistrar {
+  /// Registers [api] under [name] (or the default instance when [name] is
+  /// omitted) and returns [api].
+  ///
+  /// The registration is tied to this isolate's engine, so native code looking
+  /// up the instance for that engine receives [api]. Unlike [YoutubeFlutterApi.setUp],
+  /// this does not replace earlier registrations from this isolate.
+  YoutubeFlutterApi register(
+    YoutubeFlutterApi api, {
+    String name = defaultInstanceName,
+  }) => pigeon_native.pigeon_register_YoutubeFlutterApi(
+    api,
+    name: name,
+  );
+
+  /// Removes [api], registered from this isolate under [name] (or the default
+  /// instance when [name] is omitted), leaving other registrations in place.
+  ///
+  /// Instances are matched by identity. Does nothing if [api] is not registered.
+  void unregister(
+    YoutubeFlutterApi api, {
+    String name = defaultInstanceName,
+  }) => pigeon_native.pigeon_unregister_YoutubeFlutterApi(
+    api,
+    name: name,
+  );
+}
+
+
+/// Android -> Dart. Always invoked on the main thread, on a fresh loop turn.
 abstract class YoutubeFlutterApi {
   static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
 
@@ -480,20 +622,22 @@ abstract class YoutubeFlutterApi {
 
   void onFullscreenChanged(int handle, bool isFullscreen);
 
-  static void setUp(
-    YoutubeFlutterApi? api, {
+  static void setUp(YoutubeFlutterApi? api, {
     BinaryMessenger? binaryMessenger,
     String messageChannelSuffix = '',
-  }) {
-    messageChannelSuffix = messageChannelSuffix.isNotEmpty
-        ? '.$messageChannelSuffix'
-        : '';
+  }) 
+{
+    if (!kIsWeb) {
+      pigeon_native.pigeon_set_up_YoutubeFlutterApi(
+        api,
+        name: messageChannelSuffix.isEmpty ? defaultInstanceName : messageChannelSuffix,
+      );
+    }
+    messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
     {
       final pigeonVar_channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.youtube_player_android.YoutubeFlutterApi.onMessage$messageChannelSuffix',
-        pigeonChannelCodec,
-        binaryMessenger: binaryMessenger,
-      );
+          'dev.flutter.pigeon.youtube_player_android.YoutubeFlutterApi.onMessage$messageChannelSuffix', pigeonChannelCodec,
+          binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
       } else {
@@ -506,20 +650,16 @@ abstract class YoutubeFlutterApi {
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          } catch (e) {
-            return wrapResponse(
-              error: PlatformException(code: 'error', message: e.toString()),
-            );
+          }          catch (e) {
+            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
     }
     {
       final pigeonVar_channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.youtube_player_android.YoutubeFlutterApi.onNavigation$messageChannelSuffix',
-        pigeonChannelCodec,
-        binaryMessenger: binaryMessenger,
-      );
+          'dev.flutter.pigeon.youtube_player_android.YoutubeFlutterApi.onNavigation$messageChannelSuffix', pigeonChannelCodec,
+          binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
       } else {
@@ -532,20 +672,16 @@ abstract class YoutubeFlutterApi {
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          } catch (e) {
-            return wrapResponse(
-              error: PlatformException(code: 'error', message: e.toString()),
-            );
+          }          catch (e) {
+            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
     }
     {
       final pigeonVar_channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.youtube_player_android.YoutubeFlutterApi.onLoadError$messageChannelSuffix',
-        pigeonChannelCodec,
-        binaryMessenger: binaryMessenger,
-      );
+          'dev.flutter.pigeon.youtube_player_android.YoutubeFlutterApi.onLoadError$messageChannelSuffix', pigeonChannelCodec,
+          binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
       } else {
@@ -558,20 +694,16 @@ abstract class YoutubeFlutterApi {
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          } catch (e) {
-            return wrapResponse(
-              error: PlatformException(code: 'error', message: e.toString()),
-            );
+          }          catch (e) {
+            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
     }
     {
       final pigeonVar_channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.youtube_player_android.YoutubeFlutterApi.onFullscreenChanged$messageChannelSuffix',
-        pigeonChannelCodec,
-        binaryMessenger: binaryMessenger,
-      );
+          'dev.flutter.pigeon.youtube_player_android.YoutubeFlutterApi.onFullscreenChanged$messageChannelSuffix', pigeonChannelCodec,
+          binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
       } else {
@@ -584,13 +716,22 @@ abstract class YoutubeFlutterApi {
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          } catch (e) {
-            return wrapResponse(
-              error: PlatformException(code: 'error', message: e.toString()),
-            );
+          }          catch (e) {
+            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
     }
+  }
+
+  /// Registers [api] for Native Interop callers under [name], or the default
+  /// instance when [name] is omitted or empty, and returns [api].
+  static YoutubeFlutterApi implement(YoutubeFlutterApi api, {
+    String name = defaultInstanceName,
+  }) {
+    return YoutubeFlutterApiRegistrar().register(
+      api,
+      name: name.isEmpty ? defaultInstanceName : name,
+    );
   }
 }

@@ -101,6 +101,8 @@ final class _WebHost(final int _id, final YoutubeHostParams _params)
   late final JSFunction _fullscreenListener;
   YTPlayer? _player;
   Timer? _ticker;
+  TickEvent? _lastTick;
+  bool? _isFullscreen;
   var _ready = false;
   var _disposed = false;
 
@@ -152,8 +154,11 @@ final class _WebHost(final int _id, final YoutubeHostParams _params)
   void _createFor(PlayerMethod method, List<Object?> args) {
     final extra = <String, String>{};
     final videoId = switch (args) {
-      [final List<Object?> ids, ...] when ids.isNotEmpty =>
-        ids[args.length > 1 ? (args[1] as num? ?? 0).toInt() : 0] as String?,
+      [final List<Object?> ids, ...] when ids.isNotEmpty => switch (args
+          .elementAtOrNull(1)) {
+        final num i when i >= 0 && i < ids.length => ids[i.toInt()],
+        _ => ids.first,
+      } as String?,
       [{'videoId': final String id}, ...] => id,
       [{'mediaContentUrl': final String url}, ...] => RegExp(
         r'/(?:v|embed)/([\w-]{11})',
@@ -243,20 +248,33 @@ final class _WebHost(final int _id, final YoutubeHostParams _params)
   void _tick() {
     final player = _player;
     if (player == null || !_ready) return;
-    _emit(
-      TickEvent(
-        currentTime: player.getCurrentTime(),
-        loadedFraction: player.getVideoLoadedFraction(),
-        duration: player.getDuration(),
-        volume: player.getVolume(),
-        muted: player.isMuted(),
-      ),
+    final tick = TickEvent(
+      currentTime: player.getCurrentTime(),
+      loadedFraction: player.getVideoLoadedFraction(),
+      duration: player.getDuration(),
+      volume: player.getVolume(),
+      muted: player.isMuted(),
     );
+    if (_lastTick case final last?
+        when last.currentTime == tick.currentTime &&
+            last.loadedFraction == tick.loadedFraction &&
+            last.duration == tick.duration &&
+            last.volume == tick.volume &&
+            last.muted == tick.muted) {
+      return;
+    }
+    _lastTick = tick;
+    _emit(tick);
   }
 
   void _onFullscreenChange(web.Event _) {
+    if (_disposed) return;
     final element = web.document.fullscreenElement;
-    _fullscreen.add(element == _iframe || element == _container);
+    final isFullscreen = element == _iframe || element == _container;
+    // Every player hears every change; report only our own transitions.
+    if (isFullscreen == (_isFullscreen ?? false)) return;
+    _isFullscreen = isFullscreen;
+    _fullscreen.add(isFullscreen);
   }
 
   JSAny? _invoke(PlayerMethod method, List<Object?> args) =>

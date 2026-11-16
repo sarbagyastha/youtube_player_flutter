@@ -1,5 +1,5 @@
 name: youtube_player_android
-description: Android implementation of the youtube_player plugin, hosting the YouTube IFrame Player API in a minimal, Pigeon-driven android.webkit.WebView.
+description: Android implementation of the youtube_player plugin, hosting the YouTube IFrame Player API in a minimal android.webkit.WebView driven through Pigeon Native Interop (JNI).
 version: 0.1.0-dev.1
 repository: https://github.com/sarbagyastha/youtube_player_flutter
 homepage: https://github.com/sarbagyastha/youtube_player_flutter/tree/main/packages/youtube_player_android
@@ -18,13 +18,18 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  jni: ^1.1.2
+  meta: ^1.19.0
   youtube_player_platform_interface: ^0.1.0-dev.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
-  pigeon: ^30.0.2
+  pigeon: 30.0.2
+  jnigen: ^1.0.1
+  logging: ^1.3.0
+  path: ^1.9.1
 
 flutter:
   plugin:

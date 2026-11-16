@@ -16,23 +16,36 @@ import 'src/messages.g.dart';
 const _viewType = 'np.com.sarbagyastha.youtube_player/webview';
 
 /// Hosts players in Android WebViews.
+///
+/// Talks to the native side through Pigeon Native Interop (JNI): host calls
+/// are direct synchronous calls, with no platform channel in between.
 final class AndroidYoutubePlayer({
   /// Host API override for tests.
-  @visibleForTesting YoutubeHostApi? api,
+  @visibleForTesting YoutubeHostApiForNativeInterop? api,
 }) extends YoutubePlayerPlatform {
   /// Registers this implementation. Called by the plugin registrant.
   static void registerWith() {
     YoutubePlayerPlatform.instance = AndroidYoutubePlayer();
   }
 
-  final YoutubeHostApi _api = api ?? YoutubeHostApi();
+  final YoutubeHostApiForNativeInterop? _apiOverride = api;
+
+  // Resolved lazily: `registerWith` runs before JNI is initialized.
+  late final YoutubeHostApiForNativeInterop _api =
+      _apiOverride ??
+      YoutubeHostApiForNativeInterop.getInstance() ??
+      (throw StateError('youtube_player_android is not registered natively'));
   late final _receiver = _Receiver(this);
   final _hosts = <int, _AndroidHost>{};
+
+  /// Whether Hybrid Composition++ is available (API 34+, Vulkan, app opt-in).
+  bool? _hcpp;
 
   @override
   Future<YoutubePlayerHost> createHost(YoutubeHostParams params) async {
     _receiver.listen();
-    final info = await _api.create(
+    _hcpp ??= await _checkHcpp();
+    final info = _api.create(
       NativeHostConfig(
         appId: params.appId,
         userAgent: params.userAgent,
@@ -42,10 +55,17 @@ final class AndroidYoutubePlayer({
           params.fullscreenOrientation.name,
         ),
       ),
+      buildPlayerPage(params),
     );
-    final host = _hosts[info.handle] = _AndroidHost(this, info.handle);
-    await _api.load(info.handle, buildPlayerPage(params, origin: info.origin));
-    return host;
+    return _hosts[info.handle] = _AndroidHost(this, info.handle);
+  }
+
+  static Future<bool> _checkHcpp() async {
+    try {
+      return await HybridAndroidViewController.checkIfSupported();
+    } on Object {
+      return false;
+    }
   }
 }
 
@@ -56,7 +76,10 @@ final class _Receiver(final AndroidYoutubePlayer _platform)
   void listen() {
     if (_listening) return;
     _listening = true;
-    YoutubeFlutterApi.setUp(this);
+    // Players left behind by a previous isolate (hot restart) would keep
+    // playing with nobody listening.
+    _platform._api.reset();
+    YoutubeFlutterApiRegistrar().register(this);
   }
 
   _AndroidHost? _host(int handle) => _platform._hosts[handle];
@@ -86,7 +109,7 @@ final class _AndroidHost(
   final AndroidYoutubePlayer _platform,
   final int _handle,
 ) extends BridgeHost {
-  YoutubeHostApi get _api => _platform._api;
+  YoutubeHostApiForNativeInterop get _api => _platform._api;
 
   void message(String json) => receiveFromPage(json);
   void navigation(String url) => emitNavigation(url);
@@ -94,28 +117,55 @@ final class _AndroidHost(
   void fullscreen(bool value) => emitFullscreen(value);
 
   @override
-  Future<void> sendToPage(String json) => _api.send(_handle, json);
+  Future<void> sendToPage(String json) async => _api.send(_handle, json);
 
   @override
   Future<void> disposeNative() async {
     _platform._hosts.remove(_handle);
-    await _api.dispose(_handle);
+    _api.dispose(_handle);
   }
 
   @override
-  Future<void> setBackgroundColor(Color color) =>
+  Future<void> setBackgroundColor(Color color) async =>
       _api.setBackgroundColor(_handle, color.toARGB32());
 
   @override
-  Future<void> exitFullscreen() => _api.exitFullscreen(_handle);
+  Future<void> exitFullscreen() async => _api.exitFullscreen(_handle);
 
   @override
   Widget buildView({
     Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers = const {},
-  }) => AndroidView(
-    viewType: _viewType,
-    creationParams: {'handle': _handle},
-    creationParamsCodec: const StandardMessageCodec(),
-    gestureRecognizers: gestureRecognizers,
-  );
+  }) {
+    final creationParams = {'handle': _handle};
+    if (_platform._hcpp != true) {
+      // Texture Layer Hybrid Composition, falling back to Hybrid Composition.
+      return AndroidView(
+        viewType: _viewType,
+        creationParams: creationParams,
+        creationParamsCodec: const StandardMessageCodec(),
+        gestureRecognizers: gestureRecognizers,
+      );
+    }
+    // Hybrid Composition++: the WebView keeps its own surface, composited by
+    // SurfaceFlinger in sync with Flutter's frames.
+    return PlatformViewLink(
+      viewType: _viewType,
+      surfaceFactory: (context, controller) => AndroidViewSurface(
+        controller: controller as AndroidViewController,
+        gestureRecognizers: gestureRecognizers,
+        hitTestBehavior: .opaque,
+      ),
+      onCreatePlatformView: (params) =>
+          PlatformViewsService.initHybridAndroidView(
+              id: params.id,
+              viewType: _viewType,
+              layoutDirection: .ltr,
+              creationParams: creationParams,
+              creationParamsCodec: const StandardMessageCodec(),
+              onFocus: () => params.onFocusChanged(true),
+            )
+            ..addOnPlatformViewCreatedListener(params.onPlatformViewCreated)
+            ..create(),
+    );
+  }
 }

@@ -34,6 +34,8 @@ import org.json.JSONObject
 
 /** One WebView running the player page. Lives until [destroy], independent
  *  of the platform views that display it. */
+private const val SINK_TIMEOUT_MS = 10_000L
+
 internal class PlayerHost(
     private val handle: Long,
     context: Context,
@@ -48,6 +50,9 @@ internal class PlayerHost(
 
     private var fullscreen: Fullscreen? = null
     private var destroyed = false
+
+    /** Throwaway WebViews that catch `target=_blank` URLs. */
+    private val sinks = mutableSetOf<WebView>()
 
     init {
         if (config.debuggable) WebView.setWebContentsDebuggingEnabled(true)
@@ -96,9 +101,10 @@ internal class PlayerHost(
         exitFullscreen()
         owner = null
         (webView.parent as? ViewGroup)?.removeView(webView)
+        sinks.forEach(WebView::destroy)
+        sinks.clear()
         webView.removeJavascriptInterface("ypBridge")
         webView.stopLoading()
-        webView.loadUrl("about:blank")
         webView.destroy()
     }
 
@@ -162,16 +168,22 @@ internal class PlayerHost(
             resultMsg: Message,
         ): Boolean {
             val sink = WebView(view.context)
+            sinks += sink
+            val release = Runnable {
+                if (sinks.remove(sink)) sink.destroy()
+            }
             sink.webViewClient = object : WebViewClient() {
                 override fun shouldOverrideUrlLoading(
                     v: WebView,
                     request: WebResourceRequest,
                 ): Boolean {
                     plugin.onNavigation(handle, request.url.toString())
-                    v.destroy()
+                    v.post(release)
                     return true
                 }
             }
+            // Popups that never navigate (e.g. blocked or script-only).
+            view.postDelayed(release, SINK_TIMEOUT_MS)
             (resultMsg.obj as WebView.WebViewTransport).webView = sink
             resultMsg.sendToTarget()
             return true

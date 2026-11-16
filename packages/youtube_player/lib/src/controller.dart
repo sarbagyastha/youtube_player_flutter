@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:ui' show Color;
 
 import 'package:flutter/foundation.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -56,7 +57,13 @@ class YoutubePlayerController({
       onLinkTap: onLinkTap,
       key: videoId,
     ).._initialVideoId = videoId;
-    if (startSeconds != null || endSeconds != null) {
+    // Whole seconds go into the embed as `start` / `end`, so the video
+    // loads once. Fractions need a cue after ready.
+    if (_isWhole(startSeconds) && _isWhole(endSeconds)) {
+      controller
+        .._start = startSeconds?.toInt()
+        .._end = endSeconds?.toInt();
+    } else {
       controller.cueVideoById(
         videoId: videoId,
         startSeconds: startSeconds,
@@ -70,6 +77,11 @@ class YoutubePlayerController({
   /// The video passed to [YoutubePlayerController.fromVideoId], if any.
   String? get initialVideoId => _initialVideoId;
   String? _initialVideoId;
+  int? _start;
+  int? _end;
+
+  static bool _isWhole(double? seconds) =>
+      seconds == null || seconds == seconds.roundToDouble();
 
   final _valueController = StreamController<YoutubePlayerValue>.broadcast();
   final _videoStateController = StreamController<YoutubeVideoState>.broadcast();
@@ -108,6 +120,9 @@ class YoutubePlayerController({
         params.toHostParams(
           videoId: initialVideoId,
           customControls: customControls,
+          backgroundColor: backgroundColor,
+          start: _start,
+          end: _end,
         ),
       );
       if (_closed) {
@@ -164,6 +179,11 @@ class YoutubePlayerController({
   /// before it reads [host]; it only applies when the player is created.
   @internal
   var customControls = false;
+
+  /// Shown behind the player while it loads. Set by `YoutubePlayer` before
+  /// it reads [host]; later changes go through the host directly.
+  @internal
+  Color? backgroundColor;
 
   /// The platform host, created on first access.
   @internal
@@ -225,12 +245,14 @@ class YoutubePlayerController({
         _loadedFraction = event.loadedFraction;
         _volume = event.volume;
         _muted = event.muted;
-        _videoStateController.add(
-          YoutubeVideoState(
-            position: _toDuration(event.currentTime),
-            loadedFraction: event.loadedFraction,
-          ),
-        );
+        if (_videoStateController.hasListener) {
+          _videoStateController.add(
+            YoutubeVideoState(
+              position: _toDuration(event.currentTime),
+              loadedFraction: event.loadedFraction,
+            ),
+          );
+        }
         if (event.duration > 0 && event.duration != _duration) {
           _duration = event.duration;
           _emit(
@@ -621,9 +643,7 @@ class YoutubePlayerController({
       _hostCompleter.future.ignore();
       _hostCompleter.completeError(const _Closed());
     }
-    for (final subscription in _subscriptions) {
-      await subscription.cancel();
-    }
+    await [for (final s in _subscriptions) s.cancel()].wait;
     await _host?.dispose();
     await (
       _valueController.close(),

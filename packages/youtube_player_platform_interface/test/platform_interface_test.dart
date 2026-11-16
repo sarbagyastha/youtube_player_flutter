@@ -180,6 +180,17 @@ void main() {
       expect(html, contains('"origin":"https://custom"'));
       expect(html, isNot(contains('"videoId"')));
     });
+
+    test('falls back to location.origin without an origin', () {
+      final html = buildPlayerPage(const YoutubeHostParams(playerVars: {}));
+      expect(html, isNot(contains('"origin":')));
+      expect(html, contains('C.vars.origin || location.origin'));
+      expect(
+        html,
+        contains('<link rel="preconnect" href="https://www.youtube.com">'),
+      );
+      expect(html, isNot(contains('__HOST__')));
+    });
   });
 }
 

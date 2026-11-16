@@ -12,14 +12,18 @@ import WebKit
 let viewType = "np.com.sarbagyastha.youtube_player/webview"
 
 /// Hosts YouTube IFrame API players in plain WKWebViews.
+///
+/// Dart talks to this class through Pigeon Native Interop (FFI): host calls
+/// are direct, synchronous calls on the main thread, and events go back
+/// through the Dart-implemented `YoutubeFlutterApi`.
 @MainActor
 public final class YoutubePlayerDarwinPlugin: NSObject, @preconcurrency FlutterPlugin, @preconcurrency YoutubeHostApi {
-  private let flutterApi: YoutubeFlutterApi
+  private let registrar: FlutterPluginRegistrar
   private(set) var hosts: [Int64: PlayerHost] = [:]
   private var nextHandle: Int64 = 0
 
-  init(messenger: FlutterBinaryMessenger) {
-    flutterApi = YoutubeFlutterApi(binaryMessenger: messenger)
+  init(registrar: FlutterPluginRegistrar) {
+    self.registrar = registrar
   }
 
   // Flutter registers plugins on the main thread.
@@ -27,43 +31,33 @@ public final class YoutubePlayerDarwinPlugin: NSObject, @preconcurrency FlutterP
     // The registrar is only ever touched on the main thread.
     nonisolated(unsafe) let registrar = registrar
     MainActor.assumeIsolated {
-      #if os(iOS)
-        let messenger = registrar.messenger()
-      #else
-        let messenger = registrar.messenger
-      #endif
-      let plugin = YoutubePlayerDarwinPlugin(messenger: messenger)
-      YoutubeHostApiSetup.setUp(binaryMessenger: messenger, api: plugin)
+      let plugin = YoutubePlayerDarwinPlugin(registrar: registrar)
+      YoutubeHostApiSetup.register(api: plugin, registrar: registrar)
       registrar.register(PlayerViewFactory(plugin: plugin), withId: viewType)
+      // Required for `detachFromEngine` on iOS. macOS has no detach callback.
       registrar.publish(plugin)
     }
   }
 
   public func detachFromEngine(for registrar: FlutterPluginRegistrar) {
-    #if os(iOS)
-      let messenger = registrar.messenger()
-    #else
-      let messenger = registrar.messenger
-    #endif
-    YoutubeHostApiSetup.setUp(binaryMessenger: messenger, api: nil)
-    hosts.values.forEach { $0.destroy() }
-    hosts.removeAll()
+    YoutubeHostApiSetup.unregister(api: self, registrar: registrar)
+    try? reset()
   }
 
-  // MARK: YoutubeHostApi
+  // MARK: YoutubeHostApi (main thread, synchronous)
 
-  func create(config: NativeHostConfig) throws -> NativeHostInfo {
+  func create(config: NativeHostConfig, html: String) throws -> NativeHostInfo {
     let appId = (config.appId ?? Bundle.main.bundleIdentifier ?? "app").lowercased()
     guard let baseURL = URL(string: "https://\(appId)/") else {
       throw PigeonError(code: "bad-app-id", message: "Invalid app id \(appId)", details: nil)
     }
     let handle = nextHandle
     nextHandle += 1
-    hosts[handle] = PlayerHost(handle: handle, config: config, baseURL: baseURL, plugin: self)
+    let host = PlayerHost(handle: handle, config: config, baseURL: baseURL, plugin: self)
+    hosts[handle] = host
+    host.load(html)
     return NativeHostInfo(handle: handle, origin: "https://\(appId)")
   }
-
-  func load(handle: Int64, html: String) throws { try host(handle).load(html) }
 
   func send(handle: Int64, json: String) throws { try host(handle).send(json) }
 
@@ -75,6 +69,12 @@ public final class YoutubePlayerDarwinPlugin: NSObject, @preconcurrency FlutterP
 
   func dispose(handle: Int64) throws { hosts.removeValue(forKey: handle)?.destroy() }
 
+  func reset() throws {
+    let all = hosts.values
+    hosts.removeAll()
+    all.forEach { $0.destroy() }
+  }
+
   private func host(_ handle: Int64) throws -> PlayerHost {
     guard let host = hosts[handle] else {
       throw PigeonError(code: "no-host", message: "No player with handle \(handle)", details: nil)
@@ -84,24 +84,33 @@ public final class YoutubePlayerDarwinPlugin: NSObject, @preconcurrency FlutterP
 
   // MARK: Host -> Dart
 
-  private func toDart(_ call: @escaping @MainActor (YoutubeFlutterApi) async throws -> Void) {
-    let api = flutterApi
-    Task { @MainActor in try? await call(api) }
+  /// Always delivered on a later main-queue turn, so a callback never
+  /// re-enters Dart in the middle of a synchronous host call.
+  private func toDart(_ call: @escaping @MainActor (YoutubeFlutterApi) throws -> Void) {
+    let registrar = registrar
+    nonisolated(unsafe) let unsafeRegistrar = registrar
+    DispatchQueue.main.async {
+      MainActor.assumeIsolated {
+        guard let api = YoutubeFlutterApiRegistrar.getInstance(registrar: unsafeRegistrar) else { return }
+        // Dart side gone (e.g. during hot restart); drop.
+        try? call(api)
+      }
+    }
   }
 
   func onMessage(_ handle: Int64, _ json: String) {
-    toDart { try await $0.onMessage(handle: handle, json: json) }
+    toDart { try $0.onMessage(handle: handle, json: json) }
   }
 
   func onNavigation(_ handle: Int64, _ url: String) {
-    toDart { try await $0.onNavigation(handle: handle, url: url) }
+    toDart { try $0.onNavigation(handle: handle, url: url) }
   }
 
   func onLoadError(_ handle: Int64, _ error: NativeLoadError) {
-    toDart { try await $0.onLoadError(handle: handle, error: error) }
+    toDart { try $0.onLoadError(handle: handle, error: error) }
   }
 
   func onFullscreenChanged(_ handle: Int64, _ isFullscreen: Bool) {
-    toDart { try await $0.onFullscreenChanged(handle: handle, isFullscreen: isFullscreen) }
+    toDart { try $0.onFullscreenChanged(handle: handle, isFullscreen: isFullscreen) }
   }
 }

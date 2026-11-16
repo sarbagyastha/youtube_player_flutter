@@ -8,8 +8,9 @@ gives you one hook for your own controls. It is the planned successor to
 `youtube_player_iframe`.
 
 - **Small native hosts.** On Android, iOS and macOS the player runs in a plain
-  system WebView driven over [Pigeon](https://pub.dev/packages/pigeon). There
-  is no `webview_flutter` dependency.
+  system WebView driven through [Pigeon](https://pub.dev/packages/pigeon)
+  Native Interop (JNI on Android, FFI on iOS/macOS): direct calls, no
+  platform channels. There is no `webview_flutter` dependency.
 - **Web and Wasm.** On the web, `YT.Player` is driven directly through
   `dart:js_interop`. It works with `--wasm`, and with cross-origin isolated
   pages via `webCredentialless`.
@@ -102,6 +103,23 @@ externally. A related or end-screen video loads in place instead. Pass
 ## Setup
 
 - **Android:** nothing to do. The plugin declares `INTERNET`.
+- **Android, optional:** opt in to
+  [Hybrid Composition++](https://docs.flutter.dev/platform-integration/android/platform-views#hcpp)
+  for the best rendering on API 34+ devices with Vulkan. Add this inside
+  `<application>` in `AndroidManifest.xml` (or use `flutter run --enable-hcpp`
+  while developing):
+
+  ```xml
+  <meta-data
+      android:name="io.flutter.embedding.android.EnableHcpp"
+      android:value="true" />
+  ```
+
+  The player uses HCPP whenever the device supports it and otherwise falls
+  back to Texture Layer Hybrid Composition. The flag applies to every
+  platform view in the app.
+- **iOS / macOS:** requires Swift Package Manager (Flutter's default);
+  CocoaPods is not supported.
 - **macOS:** enable `com.apple.security.network.client` in your entitlements.
 - **Web with `--wasm` multithreading (COOP/COEP headers):** set
   `YoutubePlayerParams(webCredentialless: true)`.
