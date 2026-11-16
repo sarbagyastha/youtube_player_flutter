@@ -1623,7 +1623,7 @@ extension type NativeHostConfig._(jni$_.JObject _$this)
           as NativeHostConfig$Companion;
 
   static final _id_new$ = _class.constructorId(
-    r'(Ljava/lang/String;Ljava/lang/String;ZLjava/lang/Long;Lnp/com/sarbagyastha/youtube_player_android/pigeon/NativeFullscreenOrientation;)V',
+    r'(Ljava/lang/String;Ljava/lang/String;ZLjava/lang/Long;Lnp/com/sarbagyastha/youtube_player_android/pigeon/NativeFullscreenOrientation;Ljava/lang/String;)V',
   );
 
   static final _new$ =
@@ -1639,6 +1639,7 @@ extension type NativeHostConfig._(jni$_.JObject _$this)
                     jni$_.Int32,
                     jni$_.Pointer<jni$_.Void>,
                     jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
                   )
                 >,
               )
@@ -1653,10 +1654,11 @@ extension type NativeHostConfig._(jni$_.JObject _$this)
               core$_.int,
               jni$_.Pointer<jni$_.Void>,
               jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
             )
           >();
 
-  /// from: `public void <init>(java.lang.String string, java.lang.String string1, boolean z, java.lang.Long long, np.com.sarbagyastha.youtube_player_android.pigeon.NativeFullscreenOrientation nativeFullscreenOrientation)`
+  /// from: `public void <init>(java.lang.String string, java.lang.String string1, boolean z, java.lang.Long long, np.com.sarbagyastha.youtube_player_android.pigeon.NativeFullscreenOrientation nativeFullscreenOrientation, java.lang.String string2)`
   /// The returned object must be released after use, by calling the [release] method.
   factory NativeHostConfig(
     jni$_.JString? string,
@@ -1664,12 +1666,14 @@ extension type NativeHostConfig._(jni$_.JObject _$this)
     core$_.bool z,
     jni$_.JLong? long,
     NativeFullscreenOrientation nativeFullscreenOrientation,
+    jni$_.JString? string2,
   ) {
     final _$$classRef = _class.reference;
     final _$string = string?.reference ?? jni$_.jNullReference;
     final _$string1 = string1?.reference ?? jni$_.jNullReference;
     final _$long = long?.reference ?? jni$_.jNullReference;
     final _$nativeFullscreenOrientation = nativeFullscreenOrientation.reference;
+    final _$string2 = string2?.reference ?? jni$_.jNullReference;
     return _new$(
       _$$classRef.pointer,
       _id_new$.pointer,
@@ -1678,11 +1682,12 @@ extension type NativeHostConfig._(jni$_.JObject _$this)
       z ? 1 : 0,
       _$long.pointer,
       _$nativeFullscreenOrientation.pointer,
+      _$string2.pointer,
     ).object<NativeHostConfig>();
   }
 
   static final _id_new$1 = _class.constructorId(
-    r'(Ljava/lang/String;Ljava/lang/String;ZLjava/lang/Long;Lnp/com/sarbagyastha/youtube_player_android/pigeon/NativeFullscreenOrientation;ILkotlin/jvm/internal/DefaultConstructorMarker;)V',
+    r'(Ljava/lang/String;Ljava/lang/String;ZLjava/lang/Long;Lnp/com/sarbagyastha/youtube_player_android/pigeon/NativeFullscreenOrientation;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V',
   );
 
   static final _new$1 =
@@ -1698,6 +1703,7 @@ extension type NativeHostConfig._(jni$_.JObject _$this)
                     jni$_.Int32,
                     jni$_.Pointer<jni$_.Void>,
                     jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
                     jni$_.Int32,
                     jni$_.Pointer<jni$_.Void>,
                   )
@@ -1714,12 +1720,13 @@ extension type NativeHostConfig._(jni$_.JObject _$this)
               core$_.int,
               jni$_.Pointer<jni$_.Void>,
               jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
               core$_.int,
               jni$_.Pointer<jni$_.Void>,
             )
           >();
 
-  /// from: `synthetic public void <init>(java.lang.String string, java.lang.String string1, boolean z, java.lang.Long long, np.com.sarbagyastha.youtube_player_android.pigeon.NativeFullscreenOrientation nativeFullscreenOrientation, int i, kotlin.jvm.internal.DefaultConstructorMarker defaultConstructorMarker)`
+  /// from: `synthetic public void <init>(java.lang.String string, java.lang.String string1, boolean z, java.lang.Long long, np.com.sarbagyastha.youtube_player_android.pigeon.NativeFullscreenOrientation nativeFullscreenOrientation, java.lang.String string2, int i, kotlin.jvm.internal.DefaultConstructorMarker defaultConstructorMarker)`
   /// The returned object must be released after use, by calling the [release] method.
   factory NativeHostConfig.new$1(
     jni$_.JString? string,
@@ -1727,6 +1734,7 @@ extension type NativeHostConfig._(jni$_.JObject _$this)
     core$_.bool z,
     jni$_.JLong? long,
     NativeFullscreenOrientation? nativeFullscreenOrientation,
+    jni$_.JString? string2,
     core$_.int i,
     DefaultConstructorMarker? defaultConstructorMarker,
   ) {
@@ -1736,6 +1744,7 @@ extension type NativeHostConfig._(jni$_.JObject _$this)
     final _$long = long?.reference ?? jni$_.jNullReference;
     final _$nativeFullscreenOrientation =
         nativeFullscreenOrientation?.reference ?? jni$_.jNullReference;
+    final _$string2 = string2?.reference ?? jni$_.jNullReference;
     final _$defaultConstructorMarker =
         defaultConstructorMarker?.reference ?? jni$_.jNullReference;
     return _new$1(
@@ -1746,6 +1755,7 @@ extension type NativeHostConfig._(jni$_.JObject _$this)
       z ? 1 : 0,
       _$long.pointer,
       _$nativeFullscreenOrientation.pointer,
+      _$string2.pointer,
       i,
       _$defaultConstructorMarker.pointer,
     ).object<NativeHostConfig>();
@@ -1904,6 +1914,37 @@ extension NativeHostConfig$$Methods on NativeHostConfig {
       _$$selfRef.pointer,
       _id_get$fullscreenOrientation.pointer,
     ).object<NativeFullscreenOrientation>();
+  }
+
+  static final _id_get$frameScript = NativeHostConfig._class.instanceMethodId(
+    r'getFrameScript',
+    r'()Ljava/lang/String;',
+  );
+
+  static final _get$frameScript =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final java.lang.String getFrameScript()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JString? get frameScript {
+    final _$$selfRef = reference;
+    return _get$frameScript(
+      _$$selfRef.pointer,
+      _id_get$frameScript.pointer,
+    ).object<jni$_.JString?>();
   }
 
   static final _id_toList = NativeHostConfig._class.instanceMethodId(
@@ -2180,9 +2221,40 @@ extension NativeHostConfig$$Methods on NativeHostConfig {
     ).object<NativeFullscreenOrientation>();
   }
 
+  static final _id_component6 = NativeHostConfig._class.instanceMethodId(
+    r'component6',
+    r'()Ljava/lang/String;',
+  );
+
+  static final _component6 =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public operator fun component6(): kotlin.String?`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JString? component6() {
+    final _$$selfRef = reference;
+    return _component6(
+      _$$selfRef.pointer,
+      _id_component6.pointer,
+    ).object<jni$_.JString?>();
+  }
+
   static final _id_copy = NativeHostConfig._class.instanceMethodId(
     r'copy',
-    r'(Ljava/lang/String;Ljava/lang/String;ZLjava/lang/Long;Lnp/com/sarbagyastha/youtube_player_android/pigeon/NativeFullscreenOrientation;)Lnp/com/sarbagyastha/youtube_player_android/pigeon/NativeHostConfig;',
+    r'(Ljava/lang/String;Ljava/lang/String;ZLjava/lang/Long;Lnp/com/sarbagyastha/youtube_player_android/pigeon/NativeFullscreenOrientation;Ljava/lang/String;)Lnp/com/sarbagyastha/youtube_player_android/pigeon/NativeHostConfig;',
   );
 
   static final _copy =
@@ -2196,6 +2268,7 @@ extension NativeHostConfig$$Methods on NativeHostConfig {
                     jni$_.Pointer<jni$_.Void>,
                     jni$_.Pointer<jni$_.Void>,
                     jni$_.Int32,
+                    jni$_.Pointer<jni$_.Void>,
                     jni$_.Pointer<jni$_.Void>,
                     jni$_.Pointer<jni$_.Void>,
                   )
@@ -2212,10 +2285,11 @@ extension NativeHostConfig$$Methods on NativeHostConfig {
               core$_.int,
               jni$_.Pointer<jni$_.Void>,
               jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
             )
           >();
 
-  /// from: `public fun copy(appId: kotlin.String?, userAgent: kotlin.String?, debuggable: kotlin.Boolean, backgroundColor: kotlin.Long?, fullscreenOrientation: np.com.sarbagyastha.youtube_player_android.pigeon.NativeFullscreenOrientation): np.com.sarbagyastha.youtube_player_android.pigeon.NativeHostConfig`
+  /// from: `public fun copy(appId: kotlin.String?, userAgent: kotlin.String?, debuggable: kotlin.Boolean, backgroundColor: kotlin.Long?, fullscreenOrientation: np.com.sarbagyastha.youtube_player_android.pigeon.NativeFullscreenOrientation, frameScript: kotlin.String?): np.com.sarbagyastha.youtube_player_android.pigeon.NativeHostConfig`
   /// The returned object must be released after use, by calling the [release] method.
   NativeHostConfig copy(
     jni$_.JString? string,
@@ -2223,12 +2297,14 @@ extension NativeHostConfig$$Methods on NativeHostConfig {
     core$_.bool z,
     jni$_.JLong? long,
     NativeFullscreenOrientation nativeFullscreenOrientation,
+    jni$_.JString? string2,
   ) {
     final _$$selfRef = reference;
     final _$string = string?.reference ?? jni$_.jNullReference;
     final _$string1 = string1?.reference ?? jni$_.jNullReference;
     final _$long = long?.reference ?? jni$_.jNullReference;
     final _$nativeFullscreenOrientation = nativeFullscreenOrientation.reference;
+    final _$string2 = string2?.reference ?? jni$_.jNullReference;
     return _copy(
       _$$selfRef.pointer,
       _id_copy.pointer,
@@ -2237,6 +2313,7 @@ extension NativeHostConfig$$Methods on NativeHostConfig {
       z ? 1 : 0,
       _$long.pointer,
       _$nativeFullscreenOrientation.pointer,
+      _$string2.pointer,
     ).object<NativeHostConfig>();
   }
 }
@@ -2366,7 +2443,7 @@ extension type NativeHostInfo._(jni$_.JObject _$this) implements jni$_.JObject {
       _id_Companion.get(_class, NativeHostInfo$Companion.type)
           as NativeHostInfo$Companion;
 
-  static final _id_new$ = _class.constructorId(r'(JLjava/lang/String;)V');
+  static final _id_new$ = _class.constructorId(r'(JLjava/lang/String;Z)V');
 
   static final _new$ =
       jni$_.ProtectedJniExtensions.lookup<
@@ -2374,7 +2451,9 @@ extension type NativeHostInfo._(jni$_.JObject _$this) implements jni$_.JObject {
               jni$_.JniResult Function(
                 jni$_.Pointer<jni$_.Void>,
                 jni$_.JMethodIDPtr,
-                jni$_.VarArgs<(jni$_.Int64, jni$_.Pointer<jni$_.Void>)>,
+                jni$_.VarArgs<
+                  (jni$_.Int64, jni$_.Pointer<jni$_.Void>, jni$_.Int32)
+                >,
               )
             >
           >('globalEnv_NewObject')
@@ -2384,12 +2463,13 @@ extension type NativeHostInfo._(jni$_.JObject _$this) implements jni$_.JObject {
               jni$_.JMethodIDPtr,
               core$_.int,
               jni$_.Pointer<jni$_.Void>,
+              core$_.int,
             )
           >();
 
-  /// from: `public void <init>(long j, java.lang.String string)`
+  /// from: `public void <init>(long j, java.lang.String string, boolean z)`
   /// The returned object must be released after use, by calling the [release] method.
-  factory NativeHostInfo(core$_.int j, jni$_.JString string) {
+  factory NativeHostInfo(core$_.int j, jni$_.JString string, core$_.bool z) {
     final _$$classRef = _class.reference;
     final _$string = string.reference;
     return _new$(
@@ -2397,6 +2477,7 @@ extension type NativeHostInfo._(jni$_.JObject _$this) implements jni$_.JObject {
       _id_new$.pointer,
       j,
       _$string.pointer,
+      z ? 1 : 0,
     ).object<NativeHostInfo>();
   }
 }
@@ -2458,6 +2539,36 @@ extension NativeHostInfo$$Methods on NativeHostInfo {
       _$$selfRef.pointer,
       _id_get$origin.pointer,
     ).object<jni$_.JString>();
+  }
+
+  static final _id_get$frameScripting = NativeHostInfo._class.instanceMethodId(
+    r'getFrameScripting',
+    r'()Z',
+  );
+
+  static final _get$frameScripting =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallBooleanMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final boolean getFrameScripting()`
+  core$_.bool get frameScripting {
+    final _$$selfRef = reference;
+    return _get$frameScripting(
+      _$$selfRef.pointer,
+      _id_get$frameScripting.pointer,
+    ).boolean;
   }
 
   static final _id_toList = NativeHostInfo._class.instanceMethodId(
@@ -2641,9 +2752,36 @@ extension NativeHostInfo$$Methods on NativeHostInfo {
     ).object<jni$_.JString>();
   }
 
+  static final _id_component3 = NativeHostInfo._class.instanceMethodId(
+    r'component3',
+    r'()Z',
+  );
+
+  static final _component3 =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallBooleanMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public operator fun component3(): kotlin.Boolean`
+  core$_.bool component3() {
+    final _$$selfRef = reference;
+    return _component3(_$$selfRef.pointer, _id_component3.pointer).boolean;
+  }
+
   static final _id_copy = NativeHostInfo._class.instanceMethodId(
     r'copy',
-    r'(JLjava/lang/String;)Lnp/com/sarbagyastha/youtube_player_android/pigeon/NativeHostInfo;',
+    r'(JLjava/lang/String;Z)Lnp/com/sarbagyastha/youtube_player_android/pigeon/NativeHostInfo;',
   );
 
   static final _copy =
@@ -2652,7 +2790,9 @@ extension NativeHostInfo$$Methods on NativeHostInfo {
               jni$_.JniResult Function(
                 jni$_.Pointer<jni$_.Void>,
                 jni$_.JMethodIDPtr,
-                jni$_.VarArgs<(jni$_.Int64, jni$_.Pointer<jni$_.Void>)>,
+                jni$_.VarArgs<
+                  (jni$_.Int64, jni$_.Pointer<jni$_.Void>, jni$_.Int32)
+                >,
               )
             >
           >('globalEnv_CallObjectMethod')
@@ -2662,12 +2802,13 @@ extension NativeHostInfo$$Methods on NativeHostInfo {
               jni$_.JMethodIDPtr,
               core$_.int,
               jni$_.Pointer<jni$_.Void>,
+              core$_.int,
             )
           >();
 
-  /// from: `public fun copy(handle: kotlin.Long, origin: kotlin.String): np.com.sarbagyastha.youtube_player_android.pigeon.NativeHostInfo`
+  /// from: `public fun copy(handle: kotlin.Long, origin: kotlin.String, frameScripting: kotlin.Boolean): np.com.sarbagyastha.youtube_player_android.pigeon.NativeHostInfo`
   /// The returned object must be released after use, by calling the [release] method.
-  NativeHostInfo copy(core$_.int j, jni$_.JString string) {
+  NativeHostInfo copy(core$_.int j, jni$_.JString string, core$_.bool z) {
     final _$$selfRef = reference;
     final _$string = string.reference;
     return _copy(
@@ -2675,6 +2816,7 @@ extension NativeHostInfo$$Methods on NativeHostInfo {
       _id_copy.pointer,
       j,
       _$string.pointer,
+      z ? 1 : 0,
     ).object<NativeHostInfo>();
   }
 }

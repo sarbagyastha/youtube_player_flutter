@@ -94,11 +94,44 @@ platforms only allow fullscreen from a user gesture, and iPhone only allows it
 from the player's own button. On Android, `YoutubePlayerParams.fullscreenOrientation`
 controls rotation.
 
-### Links
+### Links and player UI elements
 
 When the user taps the title, logo, channel or a share link, the link opens
-externally. A related or end-screen video loads in place instead. Pass
-`onLinkTap` to handle links yourself.
+externally. A related or end-screen video loads in place instead.
+
+On Android, iOS and macOS you can also hide parts of YouTube's own player UI
+and decide what each click does:
+
+```dart
+final controller = YoutubePlayerController.fromVideoId(
+  videoId: 'tcodrIK2P_I',
+  // Asked once per element when the player is created.
+  elementVisibility: (element) => element != PlayerElement.watchLaterButton,
+  // Called for links and, when set, for buttons such as share.
+  onNavigationRequest: (request) => switch (request.element) {
+    PlayerElement.youtubeLogo => NavigationDecision.prevent,
+    _ => NavigationDecision.navigate,
+  },
+);
+
+// Later, at runtime:
+controller.setElementVisible(PlayerElement.title, false);
+```
+
+- `PlayerElement.values` lists the built-in elements: logo, title, channel,
+  share, watch later, more videos, related videos, end screen, cards and more.
+  Use `PlayerElement.custom('<css selector>')` for anything else, and add it to
+  `YoutubePlayerParams.customElements` so clicks on it are recognised.
+- Return `NavigationDecision.navigate` to keep the default behaviour, or
+  `NavigationDecision.prevent` to block the click, e.g. after handling it
+  yourself.
+- The elements are matched by YouTube's undocumented CSS classes, so a
+  built-in element can stop matching when YouTube changes its player.
+- On the web, the player is a cross-origin iframe that the page cannot reach
+  into. Both hooks are ignored there, and links open in a new tab.
+
+> YouTube's [API terms](https://developers.google.com/youtube/terms/required-minimum-functionality)
+> restrict obscuring the player's branding. Hiding elements is at your own risk.
 
 ## Setup
 

@@ -101,7 +101,7 @@ enum FullscreenOrientation {
   unchanged,
 }
 
-/// Every IFrame API function the plugin calls, plus two page-level helpers.
+/// Every IFrame API function the plugin calls, plus page-level helpers.
 ///
 /// [returnsValue] marks calls whose result is sent back to Dart. All other
 /// calls are fire-and-forget to keep the channel quiet.
@@ -213,4 +213,11 @@ enum PlayerMethod({
 
   /// Exits element fullscreen.
   exitFullscreen,
+
+  /// `setHidden(selectors)`: replaces the CSS selectors hidden inside the
+  /// player iframe.
+  setHidden,
+
+  /// `resolveClick(id, allow)`: replays or drops a held click.
+  resolveClick,
 }

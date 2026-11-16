@@ -304,7 +304,9 @@ data class NativeHostConfig (
   val debuggable: Boolean,
   /** ARGB background color. */
   val backgroundColor: Long? = null,
-  val fullscreenOrientation: NativeFullscreenOrientation
+  val fullscreenOrientation: NativeFullscreenOrientation,
+  /** Injected at document start into the YouTube player iframe, when set. */
+  val frameScript: String? = null
 )
  {
   companion object {
@@ -314,7 +316,8 @@ data class NativeHostConfig (
       val debuggable = pigeonVar_list[2] as Boolean
       val backgroundColor = pigeonVar_list[3] as Long?
       val fullscreenOrientation = pigeonVar_list[4] as NativeFullscreenOrientation
-      return NativeHostConfig(appId, userAgent, debuggable, backgroundColor, fullscreenOrientation)
+      val frameScript = pigeonVar_list[5] as String?
+      return NativeHostConfig(appId, userAgent, debuggable, backgroundColor, fullscreenOrientation, frameScript)
     }
   }
   fun toList(): List<Any?> {
@@ -324,6 +327,7 @@ data class NativeHostConfig (
       debuggable,
       backgroundColor,
       fullscreenOrientation,
+      frameScript,
     )
   }
   override fun equals(other: Any?): Boolean {
@@ -334,7 +338,7 @@ data class NativeHostConfig (
       return true
     }
     val other = other as NativeHostConfig
-    return MessagesPigeonUtils.deepEquals(this.appId, other.appId) && MessagesPigeonUtils.deepEquals(this.userAgent, other.userAgent) && MessagesPigeonUtils.deepEquals(this.debuggable, other.debuggable) && MessagesPigeonUtils.deepEquals(this.backgroundColor, other.backgroundColor) && MessagesPigeonUtils.deepEquals(this.fullscreenOrientation, other.fullscreenOrientation)
+    return MessagesPigeonUtils.deepEquals(this.appId, other.appId) && MessagesPigeonUtils.deepEquals(this.userAgent, other.userAgent) && MessagesPigeonUtils.deepEquals(this.debuggable, other.debuggable) && MessagesPigeonUtils.deepEquals(this.backgroundColor, other.backgroundColor) && MessagesPigeonUtils.deepEquals(this.fullscreenOrientation, other.fullscreenOrientation) && MessagesPigeonUtils.deepEquals(this.frameScript, other.frameScript)
   }
 
   override fun hashCode(): Int {
@@ -344,10 +348,11 @@ data class NativeHostConfig (
     result = 31 * result + MessagesPigeonUtils.deepHash(this.debuggable)
     result = 31 * result + MessagesPigeonUtils.deepHash(this.backgroundColor)
     result = 31 * result + MessagesPigeonUtils.deepHash(this.fullscreenOrientation)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.frameScript)
     return result
   }
   override fun toString(): String {
-    return "NativeHostConfig(appId=$appId, userAgent=$userAgent, debuggable=$debuggable, backgroundColor=$backgroundColor, fullscreenOrientation=$fullscreenOrientation)"
+    return "NativeHostConfig(appId=$appId, userAgent=$userAgent, debuggable=$debuggable, backgroundColor=$backgroundColor, fullscreenOrientation=$fullscreenOrientation, frameScript=$frameScript)"
   }
 }
 
@@ -360,20 +365,27 @@ data class NativeHostConfig (
 data class NativeHostInfo (
   val handle: Long,
   /** `https://<appId>`; the page is loaded under this origin. */
-  val origin: String
+  val origin: String,
+  /**
+   * Whether the frame script could be injected (needs a WebView with
+   * document-start script support).
+   */
+  val frameScripting: Boolean
 )
  {
   companion object {
     fun fromList(pigeonVar_list: List<Any?>): NativeHostInfo {
       val handle = pigeonVar_list[0] as Long
       val origin = pigeonVar_list[1] as String
-      return NativeHostInfo(handle, origin)
+      val frameScripting = pigeonVar_list[2] as Boolean
+      return NativeHostInfo(handle, origin, frameScripting)
     }
   }
   fun toList(): List<Any?> {
     return listOf(
       handle,
       origin,
+      frameScripting,
     )
   }
   override fun equals(other: Any?): Boolean {
@@ -384,17 +396,18 @@ data class NativeHostInfo (
       return true
     }
     val other = other as NativeHostInfo
-    return MessagesPigeonUtils.deepEquals(this.handle, other.handle) && MessagesPigeonUtils.deepEquals(this.origin, other.origin)
+    return MessagesPigeonUtils.deepEquals(this.handle, other.handle) && MessagesPigeonUtils.deepEquals(this.origin, other.origin) && MessagesPigeonUtils.deepEquals(this.frameScripting, other.frameScripting)
   }
 
   override fun hashCode(): Int {
     var result = javaClass.hashCode()
     result = 31 * result + MessagesPigeonUtils.deepHash(this.handle)
     result = 31 * result + MessagesPigeonUtils.deepHash(this.origin)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.frameScripting)
     return result
   }
   override fun toString(): String {
-    return "NativeHostInfo(handle=$handle, origin=$origin)"
+    return "NativeHostInfo(handle=$handle, origin=$origin, frameScripting=$frameScripting)"
   }
 }
 

@@ -500,24 +500,36 @@ extension NativeHostConfigBridge$Methods on NativeHostConfigBridge {
     return _objc_msgSend_91o635(_$$ref.pointer, _sel_debuggable);
   }
 
-  /// initWithAppId:userAgent:debuggable:backgroundColor:
+  /// Injected at document start into the YouTube player iframe, when set.
+  objc.NSString? get frameScript {
+    final _$$ref = object$.ref;
+    final $ret = _objc_msgSend_151sglz(_$$ref.pointer, _sel_frameScript);
+    return $ret.address == 0
+        ? null
+        : objc.NSString.fromPointer($ret, retain: true, release: true);
+  }
+
+  /// initWithAppId:userAgent:debuggable:backgroundColor:frameScript:
   NativeHostConfigBridge initWithAppId(
     objc.NSString? appId, {
     objc.NSString? userAgent,
     required bool debuggable,
     objc.NSNumber? backgroundColor,
+    objc.NSString? frameScript,
   }) {
     final _$$ref = object$.ref;
     final _$$ref$1 = appId?.ref;
     final _$$ref$2 = userAgent?.ref;
     final _$$ref$3 = backgroundColor?.ref;
-    final $ret = _objc_msgSend_1pn7by3(
+    final _$$ref$4 = frameScript?.ref;
+    final $ret = _objc_msgSend_rvtsnl(
       _$$ref.retainAndReturnPointer(),
-      _sel_initWithAppId_userAgent_debuggable_backgroundColor_,
+      _sel_initWithAppId_userAgent_debuggable_backgroundColor_frameScript_,
       _$$ref$1?.pointer ?? ffi.nullptr,
       _$$ref$2?.pointer ?? ffi.nullptr,
       debuggable,
       _$$ref$3?.pointer ?? ffi.nullptr,
+      _$$ref$4?.pointer ?? ffi.nullptr,
     );
     return NativeHostConfigBridge.fromPointer(
       $ret,
@@ -552,6 +564,17 @@ extension NativeHostConfigBridge$Methods on NativeHostConfigBridge {
   set debuggable(bool value) {
     final _$$ref = object$.ref;
     _objc_msgSend_1s56lr9(_$$ref.pointer, _sel_setDebuggable_, value);
+  }
+
+  /// Injected at document start into the YouTube player iframe, when set.
+  set frameScript(objc.NSString? value) {
+    final _$$ref = object$.ref;
+    final _$$ref$1 = value?.ref;
+    _objc_msgSend_xtuoz7(
+      _$$ref.pointer,
+      _sel_setFrameScript_,
+      _$$ref$1?.pointer ?? ffi.nullptr,
+    );
   }
 
   /// setUserAgent:
@@ -620,24 +643,32 @@ extension type NativeHostInfoBridge._(objc.ObjCObject object$)
 }
 
 extension NativeHostInfoBridge$Methods on NativeHostInfoBridge {
+  /// Whether the frame script was injected.
+  bool get frameScripting {
+    final _$$ref = object$.ref;
+    return _objc_msgSend_91o635(_$$ref.pointer, _sel_frameScripting);
+  }
+
   /// handle
   int get handle {
     final _$$ref = object$.ref;
     return _objc_msgSend_pysgoz(_$$ref.pointer, _sel_handle);
   }
 
-  /// initWithHandle:origin:
+  /// initWithHandle:origin:frameScripting:
   NativeHostInfoBridge initWithHandle(
     int handle, {
     required objc.NSString origin,
+    required bool frameScripting,
   }) {
     final _$$ref = object$.ref;
     final _$$ref$1 = origin.ref;
-    final $ret = _objc_msgSend_1j962g9(
+    final $ret = _objc_msgSend_qorlcx(
       _$$ref.retainAndReturnPointer(),
-      _sel_initWithHandle_origin_,
+      _sel_initWithHandle_origin_frameScripting_,
       handle,
       _$$ref$1.pointer,
+      frameScripting,
     );
     return NativeHostInfoBridge.fromPointer($ret, retain: false, release: true);
   }
@@ -647,6 +678,12 @@ extension NativeHostInfoBridge$Methods on NativeHostInfoBridge {
     final _$$ref = object$.ref;
     final $ret = _objc_msgSend_151sglz(_$$ref.pointer, _sel_origin);
     return objc.NSString.fromPointer($ret, retain: true, release: true);
+  }
+
+  /// Whether the frame script was injected.
+  set frameScripting(bool value) {
+    final _$$ref = object$.ref;
+    _objc_msgSend_1s56lr9(_$$ref.pointer, _sel_setFrameScripting_, value);
   }
 
   /// setHandle:
@@ -3100,25 +3137,6 @@ final _objc_msgSend_1hz7y9r = objc.msgSendPointer
         ffi.Pointer<objc.ObjCSelector>,
       )
     >();
-final _objc_msgSend_1j962g9 = objc.msgSendPointer
-    .cast<
-      ffi.NativeFunction<
-        ffi.Pointer<objc.ObjCObjectImpl> Function(
-          ffi.Pointer<objc.ObjCObjectImpl>,
-          ffi.Pointer<objc.ObjCSelector>,
-          ffi.Int64,
-          ffi.Pointer<objc.ObjCObjectImpl>,
-        )
-      >
-    >()
-    .asFunction<
-      ffi.Pointer<objc.ObjCObjectImpl> Function(
-        ffi.Pointer<objc.ObjCObjectImpl>,
-        ffi.Pointer<objc.ObjCSelector>,
-        int,
-        ffi.Pointer<objc.ObjCObjectImpl>,
-      )
-    >();
 final _objc_msgSend_1oj5o8z = objc.msgSendPointer
     .cast<
       ffi.NativeFunction<
@@ -3133,29 +3151,6 @@ final _objc_msgSend_1oj5o8z = objc.msgSendPointer
       int Function(
         ffi.Pointer<objc.ObjCObjectImpl>,
         ffi.Pointer<objc.ObjCSelector>,
-        ffi.Pointer<objc.ObjCObjectImpl>,
-      )
-    >();
-final _objc_msgSend_1pn7by3 = objc.msgSendPointer
-    .cast<
-      ffi.NativeFunction<
-        ffi.Pointer<objc.ObjCObjectImpl> Function(
-          ffi.Pointer<objc.ObjCObjectImpl>,
-          ffi.Pointer<objc.ObjCSelector>,
-          ffi.Pointer<objc.ObjCObjectImpl>,
-          ffi.Pointer<objc.ObjCObjectImpl>,
-          ffi.Bool,
-          ffi.Pointer<objc.ObjCObjectImpl>,
-        )
-      >
-    >()
-    .asFunction<
-      ffi.Pointer<objc.ObjCObjectImpl> Function(
-        ffi.Pointer<objc.ObjCObjectImpl>,
-        ffi.Pointer<objc.ObjCSelector>,
-        ffi.Pointer<objc.ObjCObjectImpl>,
-        ffi.Pointer<objc.ObjCObjectImpl>,
-        bool,
         ffi.Pointer<objc.ObjCObjectImpl>,
       )
     >();
@@ -3354,6 +3349,52 @@ final _objc_msgSend_pysgoz = objc.msgSendPointer
         ffi.Pointer<objc.ObjCSelector>,
       )
     >();
+final _objc_msgSend_qorlcx = objc.msgSendPointer
+    .cast<
+      ffi.NativeFunction<
+        ffi.Pointer<objc.ObjCObjectImpl> Function(
+          ffi.Pointer<objc.ObjCObjectImpl>,
+          ffi.Pointer<objc.ObjCSelector>,
+          ffi.Int64,
+          ffi.Pointer<objc.ObjCObjectImpl>,
+          ffi.Bool,
+        )
+      >
+    >()
+    .asFunction<
+      ffi.Pointer<objc.ObjCObjectImpl> Function(
+        ffi.Pointer<objc.ObjCObjectImpl>,
+        ffi.Pointer<objc.ObjCSelector>,
+        int,
+        ffi.Pointer<objc.ObjCObjectImpl>,
+        bool,
+      )
+    >();
+final _objc_msgSend_rvtsnl = objc.msgSendPointer
+    .cast<
+      ffi.NativeFunction<
+        ffi.Pointer<objc.ObjCObjectImpl> Function(
+          ffi.Pointer<objc.ObjCObjectImpl>,
+          ffi.Pointer<objc.ObjCSelector>,
+          ffi.Pointer<objc.ObjCObjectImpl>,
+          ffi.Pointer<objc.ObjCObjectImpl>,
+          ffi.Bool,
+          ffi.Pointer<objc.ObjCObjectImpl>,
+          ffi.Pointer<objc.ObjCObjectImpl>,
+        )
+      >
+    >()
+    .asFunction<
+      ffi.Pointer<objc.ObjCObjectImpl> Function(
+        ffi.Pointer<objc.ObjCObjectImpl>,
+        ffi.Pointer<objc.ObjCSelector>,
+        ffi.Pointer<objc.ObjCObjectImpl>,
+        ffi.Pointer<objc.ObjCObjectImpl>,
+        bool,
+        ffi.Pointer<objc.ObjCObjectImpl>,
+        ffi.Pointer<objc.ObjCObjectImpl>,
+      )
+    >();
 final _objc_msgSend_uf2ljv = objc.msgSendPointer
     .cast<
       ffi.NativeFunction<
@@ -3460,11 +3501,15 @@ late final _sel_disposeWithHandle_wrappedError_ = objc.registerName(
 late final _sel_exitFullscreenWithHandle_wrappedError_ = objc.registerName(
   "exitFullscreenWithHandle:wrappedError:",
 );
+late final _sel_frameScript = objc.registerName("frameScript");
+late final _sel_frameScripting = objc.registerName("frameScripting");
 late final _sel_handle = objc.registerName("handle");
 late final _sel_hash = objc.registerName("hash");
 late final _sel_init = objc.registerName("init");
-late final _sel_initWithAppId_userAgent_debuggable_backgroundColor_ = objc
-    .registerName("initWithAppId:userAgent:debuggable:backgroundColor:");
+late final _sel_initWithAppId_userAgent_debuggable_backgroundColor_frameScript_ =
+    objc.registerName(
+      "initWithAppId:userAgent:debuggable:backgroundColor:frameScript:",
+    );
 late final _sel_initWithCode_message_details_ = objc.registerName(
   "initWithCode:message:details:",
 );
@@ -3472,8 +3517,8 @@ late final _sel_initWithCode_message_url_ = objc.registerName(
   "initWithCode:message:url:",
 );
 late final _sel_initWithData_type_ = objc.registerName("initWithData:type:");
-late final _sel_initWithHandle_origin_ = objc.registerName(
-  "initWithHandle:origin:",
+late final _sel_initWithHandle_origin_frameScripting_ = objc.registerName(
+  "initWithHandle:origin:frameScripting:",
 );
 late final _sel_initWithNumber_type_ = objc.registerName(
   "initWithNumber:type:",
@@ -3513,6 +3558,8 @@ late final _sel_setBackgroundColor_ = objc.registerName("setBackgroundColor:");
 late final _sel_setCode_ = objc.registerName("setCode:");
 late final _sel_setDebuggable_ = objc.registerName("setDebuggable:");
 late final _sel_setDetails_ = objc.registerName("setDetails:");
+late final _sel_setFrameScript_ = objc.registerName("setFrameScript:");
+late final _sel_setFrameScripting_ = objc.registerName("setFrameScripting:");
 late final _sel_setHandle_ = objc.registerName("setHandle:");
 late final _sel_setMessage_ = objc.registerName("setMessage:");
 late final _sel_setNumber_ = objc.registerName("setNumber:");

@@ -402,13 +402,15 @@ SWIFT_CLASS("_TtC21youtube_player_darwin23MessagesPigeonTypedData")
 /// Generated bridge class from Pigeon that moves data from Swift to Objective-C.
 SWIFT_CLASS("_TtC21youtube_player_darwin22NativeHostConfigBridge")
 @interface NativeHostConfigBridge : NSObject
-- (nonnull instancetype)initWithAppId:(NSString * _Nullable)appId userAgent:(NSString * _Nullable)userAgent debuggable:(BOOL)debuggable backgroundColor:(NSNumber * _Nullable)backgroundColor OBJC_DESIGNATED_INITIALIZER;
+- (nonnull instancetype)initWithAppId:(NSString * _Nullable)appId userAgent:(NSString * _Nullable)userAgent debuggable:(BOOL)debuggable backgroundColor:(NSNumber * _Nullable)backgroundColor frameScript:(NSString * _Nullable)frameScript OBJC_DESIGNATED_INITIALIZER;
 /// Client identity; defaults to the bundle identifier.
 @property (nonatomic, strong) NSString * _Nullable appId;
 @property (nonatomic, strong) NSString * _Nullable userAgent;
 @property (nonatomic) BOOL debuggable;
 /// ARGB background color.
 @property (nonatomic, strong) NSNumber * _Nullable backgroundColor;
+/// Injected at document start into the YouTube player iframe, when set.
+@property (nonatomic, strong) NSString * _Nullable frameScript;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
@@ -417,10 +419,12 @@ SWIFT_CLASS("_TtC21youtube_player_darwin22NativeHostConfigBridge")
 /// Generated bridge class from Pigeon that moves data from Swift to Objective-C.
 SWIFT_CLASS("_TtC21youtube_player_darwin20NativeHostInfoBridge")
 @interface NativeHostInfoBridge : NSObject
-- (nonnull instancetype)initWithHandle:(int64_t)handle origin:(NSString * _Nonnull)origin OBJC_DESIGNATED_INITIALIZER;
+- (nonnull instancetype)initWithHandle:(int64_t)handle origin:(NSString * _Nonnull)origin frameScripting:(BOOL)frameScripting OBJC_DESIGNATED_INITIALIZER;
 @property (nonatomic) int64_t handle;
 /// <code>https://<appId></code>; the page is loaded under this origin.
 @property (nonatomic, strong) NSString * _Nonnull origin;
+/// Whether the frame script was injected.
+@property (nonatomic) BOOL frameScripting;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end

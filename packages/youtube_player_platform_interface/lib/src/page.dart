@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-3-Clause license that can be
 // found in the LICENSE file.
 
-import 'dart:convert';
-
+import 'frame_script.dart' show buildFrameScript;
+import 'script_json.dart';
 import 'types.dart';
 
 /// Builds the self-contained HTML page that hosts the IFrame API player on
@@ -22,6 +22,10 @@ import 'types.dart';
 /// * Android WebView: `ypBridge.postMessage` (a `@JavascriptInterface`)
 ///
 /// The host calls into the page with `window.__yp.recv(json)`.
+///
+/// When the host injects [buildFrameScript] into the player iframe, the page
+/// relays its clicks as `click` messages and forwards `setHidden` /
+/// `resolveClick` calls to it with `postMessage`.
 String buildPlayerPage(YoutubeHostParams params, {String? origin}) {
   final vars = {...params.playerVars, 'enablejsapi': 1};
   if (origin != null) {
@@ -34,10 +38,14 @@ String buildPlayerPage(YoutubeHostParams params, {String? origin}) {
     'vars': vars,
     'tick': params.tickInterval.inMilliseconds,
     'pe': params.pointerEvents,
+    'hidden': [
+      for (final e in params.hiddenElements)
+        if (e.selector.isNotEmpty) e.selector,
+    ],
   };
   return _template
       .replaceFirst('__HOST__', _attr(params.host))
-      .replaceFirst('__CONFIG__', _scriptSafeJson(config));
+      .replaceFirst('__CONFIG__', scriptSafeJson(config));
 }
 
 /// Escapes [value] for a double-quoted HTML attribute.
@@ -45,13 +53,6 @@ String _attr(String value) => value
     .replaceAll('&', '&amp;')
     .replaceAll('"', '&quot;')
     .replaceAll('<', '&lt;');
-
-/// JSON that is safe to inline in a `<script>` element.
-String _scriptSafeJson(Object value) =>
-    jsonEncode(value)
-        .replaceAll('<', r'\u003c')
-        .replaceAll('\u2028', r'\u2028')
-        .replaceAll('\u2029', r'\u2029');
 
 const _template = r'''
 <!doctype html>
@@ -84,6 +85,7 @@ body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webki
     : (s) => w.ypBridge.postMessage(s);
   const post = (m) => out(JSON.stringify(m));
   const box = d.getElementById('c');
+  let hidden = C.hidden;
   let p = null, ready = false, timer = 0, running = false, lastTick = '', lastVideo = '';
   C.vars.origin = C.vars.origin || location.origin;
   C.vars.widget_referrer = C.vars.widget_referrer || location.origin;
@@ -133,7 +135,32 @@ body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webki
       const f = d.exitFullscreen || d.webkitExitFullscreen;
       if (f && (d.fullscreenElement || d.webkitFullscreenElement)) f.call(d);
     },
+    setHidden(s) {
+      hidden = Array.isArray(s) ? s : [];
+      toFrame({__yp: 'hidden', s: hidden});
+    },
+    resolveClick(id, allow) {
+      toFrame({__yp: 'resolve', id, allow: !!allow});
+    },
   };
+
+  // The frame script (injected by the host into the player iframe) talks to
+  // this page only through postMessage.
+  const frame = () => {
+    const f = p && typeof p.getIframe === 'function' ? p.getIframe() : null;
+    return f ? f.contentWindow : null;
+  };
+  const toFrame = (m) => {
+    const f = frame();
+    if (f) f.postMessage(m, C.host);
+  };
+  w.addEventListener('message', (e) => {
+    const m = e.data;
+    if (!m || typeof m !== 'object' || typeof m.__yp !== 'string') return;
+    if (e.origin !== C.host || !e.source || e.source !== frame()) return;
+    if (m.__yp === 'click') post({e: 'click', d: {id: m.id, n: m.n, u: m.u}});
+    else if (m.__yp === 'frameReady') toFrame({__yp: 'hidden', s: hidden});
+  });
   const retick = {seekTo: 1, setVolume: 1, mute: 1, unMute: 1};
 
   // Without an initial video the IFrame API never fires onReady, so the
@@ -146,7 +173,7 @@ body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webki
   const run = ({i, m, a}) => {
     let r;
     try {
-      r = page[m] ? page[m]() : p[m].apply(p, a || []);
+      r = page[m] ? page[m].apply(page, a || []) : p[m].apply(p, a || []);
     } catch (x) {
       if (i != null) post({r: i, x: String(x)});
       return;

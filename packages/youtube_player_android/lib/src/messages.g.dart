@@ -129,6 +129,7 @@ class NativeHostConfig {
     required this.debuggable,
     this.backgroundColor,
     required this.fullscreenOrientation,
+    this.frameScript,
   });
 
   /// Client identity; defaults to the application id.
@@ -143,6 +144,9 @@ class NativeHostConfig {
 
   NativeFullscreenOrientation fullscreenOrientation;
 
+  /// Injected at document start into the YouTube player iframe, when set.
+  String? frameScript;
+
   List<Object?> _toList() {
     return <Object?>[
       appId,
@@ -150,6 +154,7 @@ class NativeHostConfig {
       debuggable,
       backgroundColor,
       fullscreenOrientation,
+      frameScript,
     ];
   }
 
@@ -164,6 +169,7 @@ class NativeHostConfig {
       debuggable: result[2]! as bool,
       backgroundColor: result[3] as int?,
       fullscreenOrientation: result[4]! as NativeFullscreenOrientation,
+      frameScript: result[5] as String?,
     );
   }
 
@@ -176,7 +182,7 @@ class NativeHostConfig {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(appId, other.appId) && _deepEquals(userAgent, other.userAgent) && _deepEquals(debuggable, other.debuggable) && _deepEquals(backgroundColor, other.backgroundColor) && _deepEquals(fullscreenOrientation, other.fullscreenOrientation);
+    return _deepEquals(appId, other.appId) && _deepEquals(userAgent, other.userAgent) && _deepEquals(debuggable, other.debuggable) && _deepEquals(backgroundColor, other.backgroundColor) && _deepEquals(fullscreenOrientation, other.fullscreenOrientation) && _deepEquals(frameScript, other.frameScript);
   }
 
   @override
@@ -185,7 +191,7 @@ class NativeHostConfig {
 
   @override
   String toString() {
-    return 'NativeHostConfig(appId: $appId, userAgent: $userAgent, debuggable: $debuggable, backgroundColor: $backgroundColor, fullscreenOrientation: $fullscreenOrientation)';
+    return 'NativeHostConfig(appId: $appId, userAgent: $userAgent, debuggable: $debuggable, backgroundColor: $backgroundColor, fullscreenOrientation: $fullscreenOrientation, frameScript: $frameScript)';
   }
 }
 
@@ -194,6 +200,7 @@ class NativeHostInfo {
   NativeHostInfo({
     required this.handle,
     required this.origin,
+    required this.frameScripting,
   });
 
   int handle;
@@ -201,10 +208,15 @@ class NativeHostInfo {
   /// `https://<appId>`; the page is loaded under this origin.
   String origin;
 
+  /// Whether the frame script could be injected (needs a WebView with
+  /// document-start script support).
+  bool frameScripting;
+
   List<Object?> _toList() {
     return <Object?>[
       handle,
       origin,
+      frameScripting,
     ];
   }
 
@@ -216,6 +228,7 @@ class NativeHostInfo {
     return NativeHostInfo(
       handle: result[0]! as int,
       origin: result[1]! as String,
+      frameScripting: result[2]! as bool,
     );
   }
 
@@ -228,7 +241,7 @@ class NativeHostInfo {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(handle, other.handle) && _deepEquals(origin, other.origin);
+    return _deepEquals(handle, other.handle) && _deepEquals(origin, other.origin) && _deepEquals(frameScripting, other.frameScripting);
   }
 
   @override
@@ -237,7 +250,7 @@ class NativeHostInfo {
 
   @override
   String toString() {
-    return 'NativeHostInfo(handle: $handle, origin: $origin)';
+    return 'NativeHostInfo(handle: $handle, origin: $origin, frameScripting: $frameScripting)';
   }
 }
 

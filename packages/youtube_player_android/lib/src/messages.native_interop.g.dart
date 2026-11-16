@@ -322,6 +322,7 @@ extension PigeonInternalNativeHostConfigNativeInterop on NativeHostConfig {
       debuggable,
       _PigeonJniCodec.writeValue<JLong?>(backgroundColor),
       fullscreenOrientation.toJni(),
+      _PigeonJniCodec.writeValue<JString?>(frameScript),
     );
   }
 
@@ -332,6 +333,7 @@ extension PigeonInternalNativeHostConfigNativeInterop on NativeHostConfig {
       debuggable: jniClass.debuggable,
       backgroundColor: jniClass.backgroundColor?.toDartInt(releaseOriginal: true),
       fullscreenOrientation: PigeonInternalNativeFullscreenOrientationNativeInterop.fromJni(jniClass.fullscreenOrientation)!,
+      frameScript: jniClass.frameScript?.toDartString(releaseOriginal: true),
     );
   }
 }
@@ -341,6 +343,7 @@ extension PigeonInternalNativeHostInfoNativeInterop on NativeHostInfo {
     return jni_bridge.NativeHostInfo (
       handle,
       _PigeonJniCodec.writeValue<JString>(origin),
+      frameScripting,
     );
   }
 
@@ -348,6 +351,7 @@ extension PigeonInternalNativeHostInfoNativeInterop on NativeHostInfo {
     return jniClass == null ? null : NativeHostInfo(
       handle: jniClass.handle,
       origin: jniClass.origin.toDartString(releaseOriginal: true),
+      frameScripting: jniClass.frameScripting,
     );
   }
 }

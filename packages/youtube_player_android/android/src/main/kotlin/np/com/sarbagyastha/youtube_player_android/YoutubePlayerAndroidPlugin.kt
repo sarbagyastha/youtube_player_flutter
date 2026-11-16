@@ -89,8 +89,9 @@ class YoutubePlayerAndroidPlugin : FlutterPlugin, ActivityAware, YoutubeHostApi 
         val appId = (config.appId ?: context.packageName).lowercase()
         val origin = "https://$appId"
         val handle = nextHandle++
-        hosts[handle] = PlayerHost(handle, context, config, origin, this).also { it.load(html) }
-        return NativeHostInfo(handle, origin)
+        val host = PlayerHost(handle, context, config, origin, this).also { it.load(html) }
+        hosts[handle] = host
+        return NativeHostInfo(handle, origin, host.frameScripting)
     }
 
     override fun send(handle: Long, json: String) = host(handle).send(json)

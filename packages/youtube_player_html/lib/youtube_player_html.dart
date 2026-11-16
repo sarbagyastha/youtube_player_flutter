@@ -115,9 +115,19 @@ final class _WebHost(final int _id, final YoutubeHostParams _params)
   @override
   Stream<PlayerEvent> get events => _events.stream;
 
-  // Links inside the iframe open in new tabs natively on the web.
+  // Links inside the iframe open in new tabs natively on the web; the
+  // cross-origin iframe can't be observed or changed.
   @override
-  Stream<Uri> get navigations => const Stream.empty();
+  Stream<NavigationRequest> get navigations => const Stream.empty();
+
+  @override
+  bool get supportsElementControl => false;
+
+  @override
+  void setHiddenElements(Set<PlayerElement> elements) {}
+
+  @override
+  void resolveClick(int clickId, {required bool allow}) {}
 
   @override
   Stream<bool> get fullscreenChanges => _fullscreen.stream;
@@ -321,7 +331,9 @@ final class _WebHost(final int _id, final YoutubeHostParams _params)
 
   @override
   void call(PlayerMethod method, [List<Object?> args = const []]) {
+    // Frame helpers only exist on native hosts.
     if (_disposed) return;
+    if (method case .setHidden || .resolveClick) return;
     if (method != .exitFullscreen &&
         method != .requestFullscreen &&
         _buffer(method, args)) {

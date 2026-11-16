@@ -27,6 +27,9 @@ import android.window.OnBackInvokedDispatcher
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.webkit.ScriptHandler
+import androidx.webkit.WebViewCompat
+import androidx.webkit.WebViewFeature
 import np.com.sarbagyastha.youtube_player_android.pigeon.NativeFullscreenOrientation
 import np.com.sarbagyastha.youtube_player_android.pigeon.NativeHostConfig
 import np.com.sarbagyastha.youtube_player_android.pigeon.NativeLoadError
@@ -35,6 +38,9 @@ import org.json.JSONObject
 /** One WebView running the player page. Lives until [destroy], independent
  *  of the platform views that display it. */
 private const val SINK_TIMEOUT_MS = 10_000L
+
+/** Origins the frame script runs in: the player iframe's hosts. */
+private val FRAME_ORIGINS = setOf("https://www.youtube.com", "https://www.youtube-nocookie.com")
 
 internal class PlayerHost(
     private val handle: Long,
@@ -53,6 +59,14 @@ internal class PlayerHost(
 
     /** Throwaway WebViews that catch `target=_blank` URLs. */
     private val sinks = mutableSetOf<WebView>()
+
+    /** The injected frame script, if [NativeHostConfig.frameScript] was set
+     *  and the WebView supports document-start scripts. */
+    private var frameScript: ScriptHandler? = null
+
+    /** Whether the frame script is installed. */
+    val frameScripting: Boolean
+        get() = frameScript != null
 
     init {
         if (config.debuggable) WebView.setWebContentsDebuggingEnabled(true)
@@ -78,6 +92,10 @@ internal class PlayerHost(
         isHapticFeedbackEnabled = false
         setBackgroundColor(config.backgroundColor?.toInt() ?: Color.TRANSPARENT)
         addJavascriptInterface(Bridge(), "ypBridge")
+        val script = config.frameScript
+        if (script != null && WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
+            frameScript = WebViewCompat.addDocumentStartJavaScript(this, script, FRAME_ORIGINS)
+        }
         webViewClient = Client()
         webChromeClient = Chrome()
     }
@@ -103,6 +121,8 @@ internal class PlayerHost(
         (webView.parent as? ViewGroup)?.removeView(webView)
         sinks.forEach(WebView::destroy)
         sinks.clear()
+        frameScript?.remove()
+        frameScript = null
         webView.removeJavascriptInterface("ypBridge")
         webView.stopLoading()
         webView.destroy()

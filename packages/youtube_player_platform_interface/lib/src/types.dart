@@ -6,6 +6,7 @@ import 'dart:ui' show Color;
 
 import 'package:flutter/foundation.dart';
 
+import 'element.dart';
 import 'enums.dart';
 
 /// Best-effort information about the current video.
@@ -152,4 +153,60 @@ final class const YoutubeHostParams({
 
   /// Minimum interval between progress ticks while the video plays.
   final Duration tickInterval = const Duration(milliseconds: 250),
+
+  /// Player UI elements hidden when the player loads. Native only.
+  final Set<PlayerElement> hiddenElements = const {},
+
+  /// Custom elements, in addition to [PlayerElement.values], that clicks are
+  /// matched against. Native only.
+  final Set<PlayerElement> customElements = const {},
+
+  /// Whether clicks on non-link elements (e.g. the share button) are held
+  /// until `YoutubePlayerHost.resolveClick`. Links are always reported
+  /// through `YoutubePlayerHost.navigations`. Native only.
+  final bool interceptButtons = false,
 });
+
+/// A click on the player UI that would leave the player or open one of
+/// YouTube's own panels.
+@immutable
+final class const NavigationRequest({
+  /// Where the click leads, or `null` for a button that acts inside the
+  /// player (e.g. share).
+  required final Uri? uri,
+
+  /// The element that was clicked, or [PlayerElement.unknown].
+  final PlayerElement element = PlayerElement.unknown,
+
+  /// Identifies a held click; pass it to `YoutubePlayerHost.resolveClick`.
+  /// `null` for links, which the host has already blocked.
+  final int? clickId,
+}) {
+  /// Decodes the `click` wire message `{id, n, u}`.
+  static NavigationRequest? fromWire(Object? wire) {
+    if (wire is! Map) return null;
+    final url = wire['u'];
+    final uri = url is String && url.isNotEmpty ? Uri.tryParse(url) : null;
+    final id = wire['id'];
+    if (uri == null && id is! int) return null;
+    final name = wire['n'];
+    return NavigationRequest(
+      uri: uri,
+      element: name is String ? PlayerElement.byName(name) : .unknown,
+      clickId: uri == null ? id as int : null,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      other is NavigationRequest &&
+      other.uri == uri &&
+      other.element == element &&
+      other.clickId == clickId;
+
+  @override
+  int get hashCode => Object.hash(uri, element, clickId);
+
+  @override
+  String toString() => 'NavigationRequest($uri, ${element.name}, $clickId)';
+}

@@ -9,6 +9,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
 
+import 'element.dart';
 import 'enums.dart';
 import 'events.dart';
 import 'types.dart';
@@ -22,9 +23,23 @@ abstract interface class YoutubePlayerHost {
   /// Events from the player, in order.
   Stream<PlayerEvent> get events;
 
-  /// Links the user tapped that would navigate away from the player (title,
-  /// logo, related videos, share). The host already blocked the navigation.
-  Stream<Uri> get navigations;
+  /// Clicks on the player UI that would navigate away from the player
+  /// (title, logo, related videos) or, with
+  /// [YoutubeHostParams.interceptButtons], held clicks on other elements.
+  ///
+  /// The host already blocked link navigations. Held clicks stay pending
+  /// until [resolveClick] is called with their [NavigationRequest.clickId].
+  Stream<NavigationRequest> get navigations;
+
+  /// Whether this host can hide and intercept [PlayerElement]s. `false` on
+  /// the web, where the player iframe is out of reach.
+  bool get supportsElementControl;
+
+  /// Replaces the set of hidden player UI elements.
+  void setHiddenElements(Set<PlayerElement> elements);
+
+  /// Replays ([allow]) or drops a click held by [navigations].
+  void resolveClick(int clickId, {required bool allow});
 
   /// System WebView / browser fullscreen transitions.
   Stream<bool> get fullscreenChanges;
@@ -61,7 +76,7 @@ abstract base class BridgeHost({
   final Duration replyTimeout = const Duration(seconds: 10),
 }) implements YoutubePlayerHost {
   final _events = StreamController<PlayerEvent>.broadcast();
-  final _navigations = StreamController<Uri>.broadcast();
+  final _navigations = StreamController<NavigationRequest>.broadcast();
   final _fullscreen = StreamController<bool>.broadcast();
   final _pending = <int, Completer<Object?>>{};
   var _nextId = 0;
@@ -75,7 +90,20 @@ abstract base class BridgeHost({
   Stream<PlayerEvent> get events => _events.stream;
 
   @override
-  Stream<Uri> get navigations => _navigations.stream;
+  Stream<NavigationRequest> get navigations => _navigations.stream;
+
+  @override
+  void setHiddenElements(Set<PlayerElement> elements) =>
+      call(PlayerMethod.setHidden, [
+        [
+          for (final e in elements)
+            if (e.selector.isNotEmpty) e.selector,
+        ],
+      ]);
+
+  @override
+  void resolveClick(int clickId, {required bool allow}) =>
+      call(PlayerMethod.resolveClick, [clickId, allow]);
 
   @override
   Stream<bool> get fullscreenChanges => _fullscreen.stream;
@@ -125,6 +153,10 @@ abstract base class BridgeHost({
         _pending[id]?.completeError(StateError(error));
       case {'r': final int id}:
         _pending[id]?.complete(decoded['v']);
+      case {'e': 'click'}:
+        if (NavigationRequest.fromWire(decoded['d']) case final request?) {
+          _navigations.add(request);
+        }
       case {'e': final String name}:
         if (PlayerEvent.fromWire(name, decoded['d']) case final event?) {
           _events.add(event);
@@ -132,11 +164,13 @@ abstract base class BridgeHost({
     }
   }
 
-  /// Reports a blocked navigation.
+  /// Reports a navigation the host blocked without a tracked click.
   @protected
   void emitNavigation(String url) {
     if (_disposed) return;
-    if (Uri.tryParse(url) case final uri?) _navigations.add(uri);
+    if (Uri.tryParse(url) case final uri?) {
+      _navigations.add(NavigationRequest(uri: uri));
+    }
   }
 
   /// Reports a fullscreen transition.

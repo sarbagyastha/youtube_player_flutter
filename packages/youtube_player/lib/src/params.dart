@@ -112,6 +112,12 @@ final class const YoutubePlayerParams({
 
   /// Allow inspecting the player WebView (Safari / chrome://inspect).
   final bool debuggable = kDebugMode,
+
+  /// More player UI elements, beyond [PlayerElement.values], for
+  /// `YoutubePlayerController.elementVisibility` to decide on and for clicks
+  /// to be matched against, e.g. `{PlayerElement.custom('.ytp-chrome-top')}`.
+  /// Android, iOS and macOS only.
+  final Set<PlayerElement> customElements = const {},
 }) {
   /// The embed host for [privacyEnhancedMode].
   String get host => privacyEnhancedMode
@@ -144,7 +150,12 @@ final class const YoutubePlayerParams({
   ///
   /// With [customControls], the iframe also ignores pointer events; see
   /// [toPlayerVars]. [start] / [end] (whole seconds) bound the initial video.
+  ///
+  /// [hiddenElements] start hidden; with [interceptButtons], clicks on
+  /// non-link elements wait for the app's decision.
   YoutubeHostParams toHostParams({
+    Set<PlayerElement> hiddenElements = const {},
+    bool interceptButtons = false,
     String? videoId,
     Color? backgroundColor,
     bool customControls = false,
@@ -168,6 +179,9 @@ final class const YoutubePlayerParams({
         ? PointerEvents.none.name
         : pointerEvents.name,
     tickInterval: Duration(milliseconds: videoStateUpdateInterval),
+    hiddenElements: hiddenElements,
+    customElements: customElements,
+    interceptButtons: interceptButtons,
   );
 
   static int _flag(bool value) => value ? 1 : 0;

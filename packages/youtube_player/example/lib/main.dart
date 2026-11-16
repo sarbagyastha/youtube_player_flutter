@@ -1,4 +1,3 @@
-
 import 'package:material_ui/material_ui.dart';
 import 'package:youtube_player/youtube_player.dart';
 
@@ -70,6 +69,13 @@ class _PlayerPageState extends State<PlayerPage> {
               MaterialPageRoute<void>(
                 builder: (_) => const CustomControlsPage(),
               ),
+            ),
+          ),
+          IconButton(
+            tooltip: 'Player elements',
+            icon: const Icon(Icons.visibility),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => const ElementsPage()),
             ),
           ),
           IconButton(
@@ -335,4 +341,74 @@ class const _Overlay(final YoutubePlayerValue value) extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Hides YouTube's own UI elements and decides what clicks on them do.
+class const ElementsPage({super.key}) extends StatefulWidget {
+  @override
+  State<ElementsPage> createState() => _ElementsPageState();
+}
+
+class _ElementsPageState extends State<ElementsPage> {
+  /// Elements whose clicks are blocked.
+  final _blocked = <PlayerElement>{
+    PlayerElement.youtubeLogo,
+    PlayerElement.channel,
+  };
+
+  late final _controller = YoutubePlayerController.fromVideoId(
+    videoId: _videos[3],
+    elementVisibility: (element) => element != PlayerElement.watchLaterButton,
+    onNavigationRequest: (request) {
+      final blocked = _blocked.contains(request.element);
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(
+              '${blocked ? 'Blocked' : 'Allowed'} ${request.element.name}'
+              '${request.uri == null ? '' : ': ${request.uri}'}',
+            ),
+          ),
+        );
+      return blocked ? .prevent : .navigate;
+    },
+  );
+
+  @override
+  void dispose() {
+    _controller.close();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(title: const Text('Player elements')),
+    body: ListView(
+      children: [
+        YoutubePlayer(controller: _controller),
+        const Padding(
+          padding: EdgeInsets.fromLTRB(16, 16, 16, 0),
+          child: Text(
+            'Switch: shown or hidden. Chip: clicks blocked. '
+            'Android, iOS and macOS only.',
+          ),
+        ),
+        for (final element in PlayerElement.values)
+          SwitchListTile(
+            title: Text(element.name),
+            secondary: FilterChip(
+              label: const Text('Block'),
+              selected: _blocked.contains(element),
+              onSelected: (block) => setState(
+                () => block ? _blocked.add(element) : _blocked.remove(element),
+              ),
+            ),
+            value: _controller.isElementVisible(element),
+            onChanged: (visible) =>
+                setState(() => _controller.setElementVisible(element, visible)),
+          ),
+      ],
+    ),
+  );
 }

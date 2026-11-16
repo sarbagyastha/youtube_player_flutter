@@ -54,10 +54,19 @@ final class AndroidYoutubePlayer({
         fullscreenOrientation: .values.byName(
           params.fullscreenOrientation.name,
         ),
+        frameScript: buildFrameScript(
+          hidden: params.hiddenElements,
+          customElements: params.customElements,
+          interceptButtons: params.interceptButtons,
+        ),
       ),
       buildPlayerPage(params),
     );
-    return _hosts[info.handle] = _AndroidHost(this, info.handle);
+    return _hosts[info.handle] = _AndroidHost(
+      this,
+      info.handle,
+      supportsElementControl: info.frameScripting,
+    );
   }
 
   static Future<bool> _checkHcpp() async {
@@ -107,8 +116,9 @@ final class _Receiver(final AndroidYoutubePlayer _platform)
 
 final class _AndroidHost(
   final AndroidYoutubePlayer _platform,
-  final int _handle,
-) extends BridgeHost {
+  final int _handle, {
+  @override required final bool supportsElementControl,
+}) extends BridgeHost {
   YoutubeHostApiForNativeInterop get _api => _platform._api;
 
   void message(String json) => receiveFromPage(json);

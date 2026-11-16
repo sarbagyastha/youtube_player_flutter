@@ -35,6 +35,7 @@ class NativeHostConfig {
     this.appId,
     this.userAgent,
     this.backgroundColor,
+    this.frameScript,
   });
 
   /// Client identity; defaults to the application id.
@@ -45,16 +46,27 @@ class NativeHostConfig {
   /// ARGB background color.
   int? backgroundColor;
   NativeFullscreenOrientation fullscreenOrientation;
+
+  /// Injected at document start into the YouTube player iframe, when set.
+  String? frameScript;
 }
 
 /// Result of [YoutubeHostApi.create].
 class NativeHostInfo {
-  NativeHostInfo({required this.handle, required this.origin});
+  NativeHostInfo({
+    required this.handle,
+    required this.origin,
+    required this.frameScripting,
+  });
 
   int handle;
 
   /// `https://<appId>`; the page is loaded under this origin.
   String origin;
+
+  /// Whether the frame script could be injected (needs a WebView with
+  /// document-start script support).
+  bool frameScripting;
 }
 
 /// Main-frame load failure.

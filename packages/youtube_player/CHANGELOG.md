@@ -2,6 +2,8 @@
 
 **November 16, 2026**
 
+- `elementVisibility` and `setElementVisible` to show or hide YouTube's own player UI elements (logo, title, share, more videos, ...) on Android, iOS and macOS.
+- `onNavigationRequest` decides what clicks on the player UI do. It gets the clicked `PlayerElement` and can also block buttons such as share.
 - Rebuilt from scratch as a federated plugin: a minimal native WebView per platform driven through Pigeon Native Interop (JNI / FFI, no platform channels), no `webview_flutter`.
 - Faster first frame: the player is created and loaded in one call with its background color, and `fromVideoId(startSeconds:)` no longer loads the video twice.
 - `YoutubePlayerValue.isMuted` / `volume`, so controls can react to mute and volume; `playbackRate` now follows what the player reports instead of resetting on each new video.

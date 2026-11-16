@@ -121,6 +121,7 @@ class NativeHostConfig {
     this.userAgent,
     required this.debuggable,
     this.backgroundColor,
+    this.frameScript,
   });
 
   /// Client identity; defaults to the bundle identifier.
@@ -133,12 +134,16 @@ class NativeHostConfig {
   /// ARGB background color.
   int? backgroundColor;
 
+  /// Injected at document start into the YouTube player iframe, when set.
+  String? frameScript;
+
   List<Object?> _toList() {
     return <Object?>[
       appId,
       userAgent,
       debuggable,
       backgroundColor,
+      frameScript,
     ];
   }
 
@@ -152,6 +157,7 @@ class NativeHostConfig {
       userAgent: result[1] as String?,
       debuggable: result[2]! as bool,
       backgroundColor: result[3] as int?,
+      frameScript: result[4] as String?,
     );
   }
 
@@ -164,7 +170,7 @@ class NativeHostConfig {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(appId, other.appId) && _deepEquals(userAgent, other.userAgent) && _deepEquals(debuggable, other.debuggable) && _deepEquals(backgroundColor, other.backgroundColor);
+    return _deepEquals(appId, other.appId) && _deepEquals(userAgent, other.userAgent) && _deepEquals(debuggable, other.debuggable) && _deepEquals(backgroundColor, other.backgroundColor) && _deepEquals(frameScript, other.frameScript);
   }
 
   @override
@@ -173,7 +179,7 @@ class NativeHostConfig {
 
   @override
   String toString() {
-    return 'NativeHostConfig(appId: $appId, userAgent: $userAgent, debuggable: $debuggable, backgroundColor: $backgroundColor)';
+    return 'NativeHostConfig(appId: $appId, userAgent: $userAgent, debuggable: $debuggable, backgroundColor: $backgroundColor, frameScript: $frameScript)';
   }
 }
 
@@ -182,6 +188,7 @@ class NativeHostInfo {
   NativeHostInfo({
     required this.handle,
     required this.origin,
+    required this.frameScripting,
   });
 
   int handle;
@@ -189,10 +196,14 @@ class NativeHostInfo {
   /// `https://<appId>`; the page is loaded under this origin.
   String origin;
 
+  /// Whether the frame script was injected.
+  bool frameScripting;
+
   List<Object?> _toList() {
     return <Object?>[
       handle,
       origin,
+      frameScripting,
     ];
   }
 
@@ -204,6 +215,7 @@ class NativeHostInfo {
     return NativeHostInfo(
       handle: result[0]! as int,
       origin: result[1]! as String,
+      frameScripting: result[2]! as bool,
     );
   }
 
@@ -216,7 +228,7 @@ class NativeHostInfo {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(handle, other.handle) && _deepEquals(origin, other.origin);
+    return _deepEquals(handle, other.handle) && _deepEquals(origin, other.origin) && _deepEquals(frameScripting, other.frameScripting);
   }
 
   @override
@@ -225,7 +237,7 @@ class NativeHostInfo {
 
   @override
   String toString() {
-    return 'NativeHostInfo(handle: $handle, origin: $origin)';
+    return 'NativeHostInfo(handle: $handle, origin: $origin, frameScripting: $frameScripting)';
   }
 }
 

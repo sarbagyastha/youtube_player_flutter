@@ -21,6 +21,9 @@ final class FakeBridgeHost({super.replyTimeout}) extends BridgeHost {
   void navigate(String url) => emitNavigation(url);
 
   @override
+  bool get supportsElementControl => true;
+
+  @override
   void setBackgroundColor(Color color) {}
 
   @override
@@ -131,7 +134,7 @@ void main() {
     test('events, navigations and disposal', () async {
       final host = FakeBridgeHost();
       final events = <PlayerEvent>[];
-      final urls = <Uri>[];
+      final urls = <NavigationRequest>[];
       host.events.listen(events.add);
       host.navigations.listen(urls.add);
       host.page({'e': 'ready'});
@@ -140,7 +143,9 @@ void main() {
       host.navigate('https://www.youtube.com/watch?v=abc');
       await Future<void>.delayed(Duration.zero);
       expect(events.single, isA<ReadyEvent>());
-      expect(urls.single.queryParameters['v'], 'abc');
+      expect(urls.single.uri!.queryParameters['v'], 'abc');
+      expect(urls.single.element, PlayerElement.unknown);
+      expect(urls.single.clickId, isNull);
 
       final pending = expectLater(
         host.query(PlayerMethod.getPlaylist),
@@ -151,6 +156,99 @@ void main() {
       await pending;
       expect(host.nativeDisposed, isTrue);
       expect(await host.query(PlayerMethod.getPlaylist), isNull);
+    });
+  });
+
+  group('element control', () {
+    test('click messages become navigation requests', () async {
+      final host = FakeBridgeHost();
+      final requests = <NavigationRequest>[];
+      host.navigations.listen(requests.add);
+      host.page({
+        'e': 'click',
+        'd': {'id': 0, 'n': 'youtubeLogo', 'u': 'https://www.youtube.com/'},
+      });
+      host.page({
+        'e': 'click',
+        'd': {'id': 1, 'n': 'shareButton', 'u': ''},
+      });
+      host.page({
+        'e': 'click',
+        'd': {'id': 2, 'n': '.my-thing', 'u': ''},
+      });
+      host.page({
+        'e': 'click',
+        'd': {'n': 'title', 'u': ''},
+      });
+      await Future<void>.delayed(Duration.zero);
+      expect(requests.map((r) => (r.uri, r.element.name, r.clickId)), [
+        (Uri.parse('https://www.youtube.com/'), 'youtubeLogo', null),
+        (null, 'shareButton', 1),
+        (null, '.my-thing', 2),
+      ]);
+      expect(requests[1].element, same(PlayerElement.shareButton));
+    });
+
+    test('hiding and resolving call the page', () {
+      final host = FakeBridgeHost();
+      host.setHiddenElements({
+        PlayerElement.shareButton,
+        const PlayerElement.custom('.x'),
+      });
+      host.resolveClick(3, allow: true);
+      expect(host.sent, [
+        {
+          'm': 'setHidden',
+          'a': [
+            ['.ytp-share-button', '.x'],
+          ],
+        },
+        {
+          'm': 'resolveClick',
+          'a': [3, true],
+        },
+      ]);
+    });
+
+    test('PlayerElement.byName round-trips', () {
+      for (final element in PlayerElement.values) {
+        expect(PlayerElement.byName(element.name), same(element));
+      }
+      expect(PlayerElement.byName('unknown'), PlayerElement.unknown);
+      expect(PlayerElement.byName('.a b').selector, '.a b');
+    });
+
+    test('frame script embeds config safely', () {
+      final script = buildFrameScript(
+        hidden: {PlayerElement.youtubeLogo},
+        customElements: {const PlayerElement.custom('</script><b>')},
+        interceptButtons: true,
+      );
+      expect(script, isNot(contains('__CONFIG__')));
+      expect(script, isNot(contains('</script><b>')));
+      expect(
+        script,
+        contains(
+          '"hidden":[".ytp-youtube-button, .ytp-watermark, '
+          '.ytp-small-redirect"]',
+        ),
+      );
+      expect(script, contains('"ib":true'));
+      expect(script, contains('"n":"shareButton"'));
+      expect(script, isNot(contains('"n":"unknown"')));
+    });
+
+    test('player page relays the frame and starts hidden', () {
+      final html = buildPlayerPage(
+        const YoutubeHostParams(
+          playerVars: {},
+          hiddenElements: {PlayerElement.title},
+        ),
+      );
+      expect(html, contains('"hidden":["${PlayerElement.title.selector}"]'));
+      expect(html, contains("post({e: 'click'"));
+      expect(html, contains('setHidden(s)'));
+      expect(html, contains('resolveClick(id, allow)'));
     });
   });
 

@@ -30,6 +30,7 @@ class NativeHostConfig {
     this.appId,
     this.userAgent,
     this.backgroundColor,
+    this.frameScript,
   });
 
   /// Client identity; defaults to the bundle identifier.
@@ -39,16 +40,26 @@ class NativeHostConfig {
 
   /// ARGB background color.
   int? backgroundColor;
+
+  /// Injected at document start into the YouTube player iframe, when set.
+  String? frameScript;
 }
 
 /// Result of [YoutubeHostApi.create].
 class NativeHostInfo {
-  NativeHostInfo({required this.handle, required this.origin});
+  NativeHostInfo({
+    required this.handle,
+    required this.origin,
+    required this.frameScripting,
+  });
 
   int handle;
 
   /// `https://<appId>`; the page is loaded under this origin.
   String origin;
+
+  /// Whether the frame script was injected.
+  bool frameScripting;
 }
 
 /// Main-frame load failure.

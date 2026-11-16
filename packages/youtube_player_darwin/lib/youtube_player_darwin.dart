@@ -47,10 +47,19 @@ final class DarwinYoutubePlayer({
         userAgent: params.userAgent,
         debuggable: params.debuggable,
         backgroundColor: params.backgroundColor?.toARGB32(),
+        frameScript: buildFrameScript(
+          hidden: params.hiddenElements,
+          customElements: params.customElements,
+          interceptButtons: params.interceptButtons,
+        ),
       ),
       buildPlayerPage(params),
     );
-    return _hosts[info.handle] = _DarwinHost(this, info.handle);
+    return _hosts[info.handle] = _DarwinHost(
+      this,
+      info.handle,
+      supportsElementControl: info.frameScripting,
+    );
   }
 }
 
@@ -90,8 +99,11 @@ final class _Receiver(final DarwinYoutubePlayer _platform)
       _host(handle)?.fullscreen(isFullscreen);
 }
 
-final class _DarwinHost(final DarwinYoutubePlayer _platform, final int _handle)
-    extends BridgeHost {
+final class _DarwinHost(
+  final DarwinYoutubePlayer _platform,
+  final int _handle, {
+  @override required final bool supportsElementControl,
+}) extends BridgeHost {
   YoutubeHostApiForNativeInterop get _api => _platform._api;
 
   void message(String json) => receiveFromPage(json);

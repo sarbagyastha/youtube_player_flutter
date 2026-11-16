@@ -12,7 +12,12 @@ final class FakeHost implements YoutubePlayerHost {
   final calls = <(PlayerMethod, List<Object?>)>[];
   final queryResults = <PlayerMethod, Object?>{};
   final eventController = StreamController<PlayerEvent>.broadcast(sync: true);
-  final navController = StreamController<Uri>.broadcast(sync: true);
+  final navController = StreamController<NavigationRequest>.broadcast(
+    sync: true,
+  );
+  final hiddenUpdates = <Set<PlayerElement>>[];
+  final resolved = <(int, bool)>[];
+  var elementControl = true;
   final fullscreenController = StreamController<bool>.broadcast(sync: true);
   var disposed = false;
   var exitedFullscreen = false;
@@ -23,7 +28,18 @@ final class FakeHost implements YoutubePlayerHost {
   Stream<PlayerEvent> get events => eventController.stream;
 
   @override
-  Stream<Uri> get navigations => navController.stream;
+  Stream<NavigationRequest> get navigations => navController.stream;
+
+  @override
+  bool get supportsElementControl => elementControl;
+
+  @override
+  void setHiddenElements(Set<PlayerElement> elements) =>
+      hiddenUpdates.add(elements);
+
+  @override
+  void resolveClick(int clickId, {required bool allow}) =>
+      resolved.add((clickId, allow));
 
   @override
   Stream<bool> get fullscreenChanges => fullscreenController.stream;
@@ -60,11 +76,14 @@ final class FakePlatform extends YoutubePlayerPlatform
     with MockPlatformInterfaceMixin {
   final hosts = <FakeHost>[];
   final params = <YoutubeHostParams>[];
+  var elementControl = true;
 
   @override
   Future<YoutubePlayerHost> createHost(YoutubeHostParams params) async {
     this.params.add(params);
-    return FakeHost()..let(hosts.add);
+    return FakeHost()
+      ..elementControl = elementControl
+      ..let(hosts.add);
   }
 }
 
@@ -214,32 +233,155 @@ void main() {
     expect(controller.value.isAutoplayBlocked, isFalse);
   });
 
-  test('related video links load in place; custom handler wins', () async {
-    final handled = <Uri>[];
-    final controller = YoutubePlayerController(
-      onLinkTap: (uri) {
-        if (uri.host != 'example.com') return false;
-        handled.add(uri);
-        return true;
-      },
-    );
+  test('related video links load in place by default', () async {
+    final controller = YoutubePlayerController();
     unawaited(controller.host);
     await pump();
     final host = platform.hosts.single..emit(const ReadyEvent());
+    expect(platform.params.single.interceptButtons, isFalse);
 
     host.navController.add(
-      Uri.parse(
-        'https://www.youtube.com/watch?v=dQw4w9WgXcQ&feature=emb_rel_end',
+      NavigationRequest(
+        uri: Uri.parse(
+          'https://www.youtube.com/watch?v=dQw4w9WgXcQ&feature=emb_rel_end',
+        ),
+        element: PlayerElement.relatedVideo,
       ),
     );
-    host.navController.add(Uri.parse('https://example.com/x'));
-    await pump();
     await pump();
     expect(host.calls.single.$1, PlayerMethod.loadVideoById);
     expect(host.calls.single.$2, [
       {'videoId': 'dQw4w9WgXcQ'},
     ]);
-    expect(handled.single.host, 'example.com');
+    controller.close();
+  });
+
+  test('onNavigationRequest decides links and held buttons', () async {
+    const custom = PlayerElement.custom('.my-thing');
+    final requests = <NavigationRequest>[];
+    final controller = YoutubePlayerController(
+      params: const YoutubePlayerParams(customElements: {custom}),
+      onNavigationRequest: (request) async {
+        requests.add(request);
+        return request.element == PlayerElement.shareButton
+            ? .navigate
+            : .prevent;
+      },
+    );
+    unawaited(controller.host);
+    await pump();
+    final host = platform.hosts.single..emit(const ReadyEvent());
+    expect(platform.params.single.interceptButtons, isTrue);
+    expect(platform.params.single.customElements, {custom});
+
+    host.navController
+      ..add(
+        NavigationRequest(
+          uri: Uri.parse(
+            'https://www.youtube.com/watch?v=dQw4w9WgXcQ&feature=emb_rel_end',
+          ),
+          element: PlayerElement.relatedVideo,
+        ),
+      )
+      ..add(
+        const NavigationRequest(
+          uri: null,
+          element: PlayerElement.shareButton,
+          clickId: 1,
+        ),
+      )
+      ..add(
+        NavigationRequest(
+          uri: null,
+          element: PlayerElement.byName('.my-thing'),
+          clickId: 2,
+        ),
+      );
+    await pump();
+    await pump();
+    // The related video was prevented, so nothing loads.
+    expect(host.calls, isEmpty);
+    expect(host.resolved, [(1, true), (2, false)]);
+    expect(requests.map((r) => r.element.name), [
+      'relatedVideo',
+      'shareButton',
+      '.my-thing',
+    ]);
+    // Custom elements come back as the app's own instance.
+    expect(requests.last.element, same(custom));
+    controller.close();
+  });
+
+  test('a throwing handler prevents the click', () async {
+    final errors = <FlutterErrorDetails>[];
+    final previous = FlutterError.onError;
+    FlutterError.onError = errors.add;
+    addTearDown(() => FlutterError.onError = previous);
+    final controller = YoutubePlayerController(
+      onNavigationRequest: (_) => throw StateError('boom'),
+    );
+    unawaited(controller.host);
+    await pump();
+    final host = platform.hosts.single;
+    host.navController.add(
+      const NavigationRequest(
+        uri: null,
+        element: PlayerElement.shareButton,
+        clickId: 7,
+      ),
+    );
+    await pump();
+    expect(host.resolved, [(7, false)]);
+    expect(errors.single.exception, isStateError);
+    controller.close();
+  });
+
+  test('elementVisibility and setElementVisible hide elements', () async {
+    const custom = PlayerElement.custom('.ytp-chrome-top');
+    final controller = YoutubePlayerController(
+      params: const YoutubePlayerParams(customElements: {custom}),
+      elementVisibility: (e) =>
+          e != PlayerElement.youtubeLogo && e.name != custom.name,
+    );
+    expect(controller.isElementVisible(PlayerElement.youtubeLogo), isFalse);
+    // Before the player exists, changes only affect creation.
+    controller.setElementVisible(PlayerElement.title, false);
+    unawaited(controller.host);
+    await pump();
+    final host = platform.hosts.single;
+    expect(platform.params.single.hiddenElements, {
+      PlayerElement.youtubeLogo,
+      custom,
+      PlayerElement.title,
+    });
+    expect(host.hiddenUpdates, isEmpty);
+
+    controller
+      ..setElementVisible(PlayerElement.youtubeLogo, true)
+      ..setElementVisible(PlayerElement.youtubeLogo, true)
+      ..setElementVisible(PlayerElement.shareButton, false);
+    expect(host.hiddenUpdates, [
+      {custom, PlayerElement.title},
+      {custom, PlayerElement.title, PlayerElement.shareButton},
+    ]);
+    expect(controller.isElementVisible(PlayerElement.youtubeLogo), isTrue);
+    expect(controller.isElementVisible(PlayerElement.shareButton), isFalse);
+    controller.close();
+  });
+
+  test('warns once when the platform cannot control elements', () async {
+    final logs = <String?>[];
+    final previous = debugPrint;
+    debugPrint = (message, {wrapWidth}) => logs.add(message);
+    addTearDown(() => debugPrint = previous);
+    platform.elementControl = false;
+    final controller = YoutubePlayerController(
+      elementVisibility: (e) => e != PlayerElement.youtubeLogo,
+    );
+    unawaited(controller.host);
+    await pump();
+    controller.setElementVisible(PlayerElement.title, false);
+    expect(logs.where((l) => l!.contains('not supported')), hasLength(1));
     controller.close();
   });
 

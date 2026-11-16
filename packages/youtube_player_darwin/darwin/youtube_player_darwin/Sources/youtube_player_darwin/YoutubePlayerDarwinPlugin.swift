@@ -56,7 +56,8 @@ public final class YoutubePlayerDarwinPlugin: NSObject, @preconcurrency FlutterP
     let host = PlayerHost(handle: handle, config: config, baseURL: baseURL, plugin: self)
     hosts[handle] = host
     host.load(html)
-    return NativeHostInfo(handle: handle, origin: "https://\(appId)")
+    return NativeHostInfo(
+      handle: handle, origin: "https://\(appId)", frameScripting: config.frameScript != nil)
   }
 
   func send(handle: Int64, json: String) throws { try host(handle).send(json) }

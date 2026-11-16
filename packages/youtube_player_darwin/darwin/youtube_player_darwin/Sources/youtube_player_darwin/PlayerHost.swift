@@ -37,6 +37,12 @@ final class PlayerHost: NSObject {
     if #available(iOS 15.4, macOS 12.3, *) {
       configuration.preferences.isElementFullscreenEnabled = true
     }
+    if let frameScript = config.frameScript {
+      // Runs in the cross-origin player iframe; the script itself bails out
+      // anywhere but YouTube's embed page.
+      configuration.userContentController.addUserScript(
+        WKUserScript(source: frameScript, injectionTime: .atDocumentStart, forMainFrameOnly: false))
+    }
     webView = WKWebView(frame: .zero, configuration: configuration)
     super.init()
 
@@ -103,6 +109,7 @@ final class PlayerHost: NSObject {
     destroyed = true
     fullscreenObservation = nil
     webView.configuration.userContentController.removeScriptMessageHandler(forName: "ypBridge")
+    webView.configuration.userContentController.removeAllUserScripts()
     webView.navigationDelegate = nil
     webView.uiDelegate = nil
     webView.stopLoading()

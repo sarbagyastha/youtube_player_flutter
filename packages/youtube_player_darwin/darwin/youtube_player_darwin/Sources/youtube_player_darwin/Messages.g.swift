@@ -384,6 +384,8 @@ struct NativeHostConfig: Hashable, CustomStringConvertible {
   var debuggable: Bool
   /// ARGB background color.
   var backgroundColor: Int64? = nil
+  /// Injected at document start into the YouTube player iframe, when set.
+  var frameScript: String? = nil
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
@@ -392,12 +394,14 @@ struct NativeHostConfig: Hashable, CustomStringConvertible {
     let userAgent: String? = nilOrValue(pigeonVar_list[1])
     let debuggable = pigeonVar_list[2] as! Bool
     let backgroundColor: Int64? = nilOrValue(pigeonVar_list[3])
+    let frameScript: String? = nilOrValue(pigeonVar_list[4])
 
     return NativeHostConfig(
       appId: appId,
       userAgent: userAgent,
       debuggable: debuggable,
-      backgroundColor: backgroundColor
+      backgroundColor: backgroundColor,
+      frameScript: frameScript
     )
   }
   func toList() -> [Any?] {
@@ -406,13 +410,14 @@ struct NativeHostConfig: Hashable, CustomStringConvertible {
       userAgent,
       debuggable,
       backgroundColor,
+      frameScript,
     ]
   }
   static func == (lhs: NativeHostConfig, rhs: NativeHostConfig) -> Bool {
     if Swift.type(of: lhs) != Swift.type(of: rhs) {
       return false
     }
-    return MessagesPigeonInternal.deepEquals(lhs.appId, rhs.appId) && MessagesPigeonInternal.deepEquals(lhs.userAgent, rhs.userAgent) && MessagesPigeonInternal.deepEquals(lhs.debuggable, rhs.debuggable) && MessagesPigeonInternal.deepEquals(lhs.backgroundColor, rhs.backgroundColor)
+    return MessagesPigeonInternal.deepEquals(lhs.appId, rhs.appId) && MessagesPigeonInternal.deepEquals(lhs.userAgent, rhs.userAgent) && MessagesPigeonInternal.deepEquals(lhs.debuggable, rhs.debuggable) && MessagesPigeonInternal.deepEquals(lhs.backgroundColor, rhs.backgroundColor) && MessagesPigeonInternal.deepEquals(lhs.frameScript, rhs.frameScript)
   }
 
   func hash(into hasher: inout Hasher) {
@@ -421,10 +426,11 @@ struct NativeHostConfig: Hashable, CustomStringConvertible {
     MessagesPigeonInternal.deepHash(value: userAgent, hasher: &hasher)
     MessagesPigeonInternal.deepHash(value: debuggable, hasher: &hasher)
     MessagesPigeonInternal.deepHash(value: backgroundColor, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: frameScript, hasher: &hasher)
   }
 
   public var description: String {
-    return "NativeHostConfig(appId: \(String(describing: appId)), userAgent: \(String(describing: userAgent)), debuggable: \(String(describing: debuggable)), backgroundColor: \(String(describing: backgroundColor)))"
+    return "NativeHostConfig(appId: \(String(describing: appId)), userAgent: \(String(describing: userAgent)), debuggable: \(String(describing: debuggable)), backgroundColor: \(String(describing: backgroundColor)), frameScript: \(String(describing: frameScript)))"
   }
 }
 
@@ -436,12 +442,14 @@ struct NativeHostConfig: Hashable, CustomStringConvertible {
     appId: NSString? = nil,
     userAgent: NSString? = nil,
     debuggable: Bool,
-    backgroundColor: NSNumber? = nil
+    backgroundColor: NSNumber? = nil,
+    frameScript: NSString? = nil
   ) {
     self.appId = appId
     self.userAgent = userAgent
     self.debuggable = debuggable
     self.backgroundColor = backgroundColor
+    self.frameScript = frameScript
   }
   /// Client identity; defaults to the bundle identifier.
   @objc var appId: NSString? = nil
@@ -449,6 +457,8 @@ struct NativeHostConfig: Hashable, CustomStringConvertible {
   @objc var debuggable: Bool
   /// ARGB background color.
   @objc var backgroundColor: NSNumber? = nil
+  /// Injected at document start into the YouTube player iframe, when set.
+  @objc var frameScript: NSString? = nil
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
   static func fromSwift(_ pigeonVar_Class: NativeHostConfig?) -> NativeHostConfigBridge? {
@@ -460,6 +470,7 @@ struct NativeHostConfig: Hashable, CustomStringConvertible {
       userAgent: pigeonVar_Class!.userAgent as NSString?,
       debuggable: pigeonVar_Class!.debuggable,
       backgroundColor: MessagesPigeonInternal.isNullish(pigeonVar_Class!.backgroundColor) ? nil : NSNumber(value: pigeonVar_Class!.backgroundColor!),
+      frameScript: pigeonVar_Class!.frameScript as NSString?,
     )
   }
   func toSwift() -> NativeHostConfig {
@@ -468,6 +479,7 @@ struct NativeHostConfig: Hashable, CustomStringConvertible {
       userAgent: userAgent as String?,
       debuggable: debuggable,
       backgroundColor: MessagesPigeonInternal.isNullish(backgroundColor) ? nil : backgroundColor!.int64Value,
+      frameScript: frameScript as String?,
     )
   }
 }
@@ -479,39 +491,45 @@ struct NativeHostInfo: Hashable, CustomStringConvertible {
   var handle: Int64
   /// `https://<appId>`; the page is loaded under this origin.
   var origin: String
+  /// Whether the frame script was injected.
+  var frameScripting: Bool
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
   static func fromList(_ pigeonVar_list: [Any?]) -> NativeHostInfo? {
     let handle = pigeonVar_list[0] as! Int64
     let origin = pigeonVar_list[1] as! String
+    let frameScripting = pigeonVar_list[2] as! Bool
 
     return NativeHostInfo(
       handle: handle,
-      origin: origin
+      origin: origin,
+      frameScripting: frameScripting
     )
   }
   func toList() -> [Any?] {
     return [
       handle,
       origin,
+      frameScripting,
     ]
   }
   static func == (lhs: NativeHostInfo, rhs: NativeHostInfo) -> Bool {
     if Swift.type(of: lhs) != Swift.type(of: rhs) {
       return false
     }
-    return MessagesPigeonInternal.deepEquals(lhs.handle, rhs.handle) && MessagesPigeonInternal.deepEquals(lhs.origin, rhs.origin)
+    return MessagesPigeonInternal.deepEquals(lhs.handle, rhs.handle) && MessagesPigeonInternal.deepEquals(lhs.origin, rhs.origin) && MessagesPigeonInternal.deepEquals(lhs.frameScripting, rhs.frameScripting)
   }
 
   func hash(into hasher: inout Hasher) {
     hasher.combine("NativeHostInfo")
     MessagesPigeonInternal.deepHash(value: handle, hasher: &hasher)
     MessagesPigeonInternal.deepHash(value: origin, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: frameScripting, hasher: &hasher)
   }
 
   public var description: String {
-    return "NativeHostInfo(handle: \(String(describing: handle)), origin: \(String(describing: origin)))"
+    return "NativeHostInfo(handle: \(String(describing: handle)), origin: \(String(describing: origin)), frameScripting: \(String(describing: frameScripting)))"
   }
 }
 
@@ -521,14 +539,18 @@ struct NativeHostInfo: Hashable, CustomStringConvertible {
 @objc class NativeHostInfoBridge: NSObject {
   @objc init(
     handle: Int64,
-    origin: NSString
+    origin: NSString,
+    frameScripting: Bool
   ) {
     self.handle = handle
     self.origin = origin
+    self.frameScripting = frameScripting
   }
   @objc var handle: Int64
   /// `https://<appId>`; the page is loaded under this origin.
   @objc var origin: NSString
+  /// Whether the frame script was injected.
+  @objc var frameScripting: Bool
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
   static func fromSwift(_ pigeonVar_Class: NativeHostInfo?) -> NativeHostInfoBridge? {
@@ -538,12 +560,14 @@ struct NativeHostInfo: Hashable, CustomStringConvertible {
     return NativeHostInfoBridge(
       handle: pigeonVar_Class!.handle,
       origin: pigeonVar_Class!.origin as NSString,
+      frameScripting: pigeonVar_Class!.frameScripting,
     )
   }
   func toSwift() -> NativeHostInfo {
     return NativeHostInfo (
       handle: handle,
       origin: origin as String,
+      frameScripting: frameScripting,
     )
   }
 }
@@ -1071,18 +1095,20 @@ private struct MessagesPigeonInteropWriter {
 
   mutating func writeNativeHostConfig(_ value: NativeHostConfig) {
     writeByte(MessagesPigeonInteropCodec.typeList)
-    writeSize(4)
+    writeSize(5)
     writeValue(value.appId)
     writeValue(value.userAgent)
     writeValue(value.debuggable)
     writeValue(value.backgroundColor)
+    writeValue(value.frameScript)
   }
 
   mutating func writeNativeHostInfo(_ value: NativeHostInfo) {
     writeByte(MessagesPigeonInteropCodec.typeList)
-    writeSize(2)
+    writeSize(3)
     writeValue(value.handle)
     writeValue(value.origin)
+    writeValue(value.frameScripting)
   }
 
   mutating func writeNativeLoadError(_ value: NativeLoadError) {
@@ -1356,7 +1382,8 @@ private struct MessagesPigeonInteropReader {
       appId: read(String?.self),
       userAgent: read(String?.self),
       debuggable: read(Bool.self),
-      backgroundColor: read(Int64?.self)
+      backgroundColor: read(Int64?.self),
+      frameScript: read(String?.self)
     )
   }
 
@@ -1364,7 +1391,8 @@ private struct MessagesPigeonInteropReader {
     readListHeader()
     return NativeHostInfo(
       handle: read(Int64.self),
-      origin: read(String.self)
+      origin: read(String.self),
+      frameScripting: read(Bool.self)
     )
   }
 

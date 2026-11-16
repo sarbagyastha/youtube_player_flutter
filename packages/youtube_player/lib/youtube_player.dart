@@ -8,13 +8,20 @@ library;
 export 'package:youtube_player_platform_interface/youtube_player_platform_interface.dart'
     show
         FullscreenOrientation,
+        NavigationRequest,
+        PlayerElement,
         PlayerState,
         SphericalProperties,
         VideoData,
         YoutubeError,
         YoutubeLoadError;
 
-export 'src/controller.dart' show LinkTapHandler, YoutubePlayerController;
+export 'src/controller.dart'
+    show
+        ElementVisibility,
+        NavigationDecision,
+        NavigationRequestHandler,
+        YoutubePlayerController;
 export 'src/iframe_api.dart';
 export 'src/params.dart';
 export 'src/value.dart';

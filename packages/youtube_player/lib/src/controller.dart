@@ -13,10 +13,25 @@ import 'iframe_api.dart';
 import 'params.dart';
 import 'value.dart';
 
-/// Decides what happens when the user taps a link that leaves the player
-/// (title, channel, logo, share, related video). Return `true` when handled;
-/// otherwise related videos load in-player and other links open externally.
-typedef LinkTapHandler = FutureOr<bool> Function(Uri uri);
+/// What happens to a click on the player UI. See
+/// [YoutubePlayerController.onNavigationRequest].
+enum NavigationDecision {
+  /// Let the click through: a related video loads in place, other links open
+  /// externally, and buttons (e.g. share) act as usual.
+  navigate,
+
+  /// Block the click. Return this after handling the click yourself.
+  prevent,
+}
+
+/// Decides what happens when the user clicks [NavigationRequest.element].
+typedef NavigationRequestHandler = FutureOr<NavigationDecision> Function(
+  NavigationRequest request,
+);
+
+/// Whether a player UI [element] is shown. See
+/// [YoutubePlayerController.elementVisibility].
+typedef ElementVisibility = bool Function(PlayerElement element);
 
 /// Controls one YouTube player.
 ///
@@ -31,8 +46,25 @@ class YoutubePlayerController({
   /// Called when the page or the IFrame API fails to load.
   final void Function(YoutubeLoadError error)? onLoadError,
 
-  /// Optional handler for links that leave the player.
-  final LinkTapHandler? onLinkTap,
+  /// Decides which of YouTube's own player UI elements are shown, e.g.
+  /// `(e) => e != PlayerElement.youtubeLogo`.
+  ///
+  /// Asked once for each of [PlayerElement.values] and
+  /// [YoutubePlayerParams.customElements] when the player is created; change
+  /// visibility later with [setElementVisible]. Android, iOS and macOS only.
+  ///
+  /// YouTube's terms restrict obscuring player branding; hiding elements is
+  /// at your own risk.
+  final ElementVisibility? elementVisibility,
+
+  /// Decides what happens when the user clicks the player UI: links that
+  /// leave the player (title, channel, logo, related videos) and, on Android,
+  /// iOS and macOS, buttons such as share or watch later.
+  ///
+  /// [NavigationRequest.element] says what was clicked. Without a handler,
+  /// related videos load in place and other links open externally. On the
+  /// web, links always open in a new tab and this is never called.
+  final NavigationRequestHandler? onNavigationRequest,
 
   /// An arbitrary key, e.g. for lists of players.
   final String? key,
@@ -49,12 +81,14 @@ class YoutubePlayerController({
     double? startSeconds,
     double? endSeconds,
     void Function(YoutubeLoadError error)? onLoadError,
-    LinkTapHandler? onLinkTap,
+    ElementVisibility? elementVisibility,
+    NavigationRequestHandler? onNavigationRequest,
   }) {
     final controller = YoutubePlayerController(
       params: params,
       onLoadError: onLoadError,
-      onLinkTap: onLinkTap,
+      elementVisibility: elementVisibility,
+      onNavigationRequest: onNavigationRequest,
       key: videoId,
     ).._initialVideoId = videoId;
     // Whole seconds go into the embed as `start` / `end`, so the video
@@ -97,6 +131,10 @@ class YoutubePlayerController({
   var _closed = false;
   var _autoPlayPending = false;
 
+  /// Hidden elements by name; `null` until [elementVisibility] is resolved.
+  Map<String, PlayerElement>? _hiddenByName;
+  var _warnedUnsupported = false;
+
   // Cached by events, so the common getters never round-trip.
   var _currentTime = 0.0;
   var _loadedFraction = 0.0;
@@ -117,6 +155,8 @@ class YoutubePlayerController({
     try {
       final host = await YoutubePlayerPlatform.instance.createHost(
         params.toHostParams(
+          hiddenElements: _hidden.values.toSet(),
+          interceptButtons: onNavigationRequest != null,
           videoId: initialVideoId,
           customControls: customControls,
           backgroundColor: backgroundColor,
@@ -129,6 +169,11 @@ class YoutubePlayerController({
         return;
       }
       _host = host;
+      if (elementVisibility != null ||
+          onNavigationRequest != null ||
+          _hidden.isNotEmpty) {
+        _warnIfUnsupported(host);
+      }
       _subscriptions
         ..add(host.events.listen(_onEvent))
         ..add(host.navigations.listen(_onNavigation))
@@ -279,13 +324,92 @@ class YoutubePlayerController({
     }
   }
 
-  Future<void> _onNavigation(Uri uri) async {
-    if (onLinkTap case final handler? when await handler(uri)) return;
+  Future<void> _onNavigation(NavigationRequest request) async {
+    // Hand back the app's own element instances (e.g. custom ones).
+    final element = request.element;
+    if (_known(element.name) case final known? when known != element) {
+      request = NavigationRequest(
+        uri: request.uri,
+        element: known,
+        clickId: request.clickId,
+      );
+    }
+    var decision = NavigationDecision.navigate;
+    if (onNavigationRequest case final handler?) {
+      try {
+        decision = await handler(request);
+      } catch (error, stack) {
+        decision = .prevent;
+        FlutterError.reportError(
+          FlutterErrorDetails(
+            exception: error,
+            stack: stack,
+            library: 'youtube_player',
+            context: ErrorDescription('while handling $request'),
+          ),
+        );
+      }
+    }
+    final allow = decision == .navigate;
+    if (request.clickId case final id?) {
+      // A held button click: replay or drop it in the player.
+      if (!_closed) _host?.resolveClick(id, allow: allow);
+      return;
+    }
+    final uri = request.uri;
+    if (!allow || uri == null || _closed) return;
     if (relatedVideoId(uri) case final videoId?) {
       loadVideoById(videoId: videoId);
       return;
     }
     await launchUrl(uri, mode: .externalApplication);
+  }
+
+  // MARK: Player UI elements
+
+  Map<String, PlayerElement> get _hidden => _hiddenByName ??= {
+    for (final e in [...PlayerElement.values, ...params.customElements])
+      if (elementVisibility?.call(e) == false) e.name: e,
+  };
+
+  PlayerElement? _known(String name) {
+    if (_hidden[name] case final hidden?) return hidden;
+    for (final e in params.customElements) {
+      if (e.name == name) return e;
+    }
+    return null;
+  }
+
+  /// Whether [element] is shown, per [elementVisibility] and
+  /// [setElementVisible]. Elements are matched by [PlayerElement.name].
+  bool isElementVisible(PlayerElement element) =>
+      !_hidden.containsKey(element.name);
+
+  /// Shows or hides one of YouTube's own player UI [element]s, e.g. the
+  /// logo. Overrides [elementVisibility]. Android, iOS and macOS only.
+  void setElementVisible(PlayerElement element, bool visible) {
+    if (_closed) return;
+    final hidden = _hidden;
+    if (visible) {
+      if (hidden.remove(element.name) == null) return;
+    } else {
+      if (identical(hidden[element.name], element)) return;
+      hidden[element.name] = element;
+    }
+    // Before the player exists, the next host picks it up at creation.
+    if (_host case final host?) {
+      _warnIfUnsupported(host);
+      host.setHiddenElements(hidden.values.toSet());
+    }
+  }
+
+  void _warnIfUnsupported(YoutubePlayerHost host) {
+    if (host.supportsElementControl || _warnedUnsupported) return;
+    _warnedUnsupported = true;
+    debugPrint(
+      'youtube_player: hiding or intercepting player UI elements is not '
+      'supported on this platform${kIsWeb ? ' (web)' : ''}; ignoring.',
+    );
   }
 
   void _onFullscreen(bool isFullScreen) {

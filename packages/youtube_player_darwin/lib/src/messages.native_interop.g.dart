@@ -323,6 +323,7 @@ extension PigeonInternalNativeHostConfigNativeInterop on NativeHostConfig {
       userAgent: _PigeonFfiCodec.writeValue<NSString?>(userAgent),
       debuggable: debuggable,
       backgroundColor: _PigeonFfiCodec.writeValue<NSNumber?>(backgroundColor),
+      frameScript: _PigeonFfiCodec.writeValue<NSString?>(frameScript),
     );
   }
 
@@ -332,6 +333,7 @@ extension PigeonInternalNativeHostConfigNativeInterop on NativeHostConfig {
       userAgent: ffiClass.userAgent?.toDartString(),
       debuggable: ffiClass.debuggable,
       backgroundColor: ffiClass.backgroundColor?.longValue,
+      frameScript: ffiClass.frameScript?.toDartString(),
     );
   }
 }
@@ -341,6 +343,7 @@ extension PigeonInternalNativeHostInfoNativeInterop on NativeHostInfo {
     return ffi_bridge.NativeHostInfoBridge.alloc().initWithHandle(
       handle,
       origin: _PigeonFfiCodec.writeValue<NSString>(origin),
+      frameScripting: frameScripting,
     );
   }
 
@@ -348,6 +351,7 @@ extension PigeonInternalNativeHostInfoNativeInterop on NativeHostInfo {
     return ffiClass == null ? null : NativeHostInfo(
       handle: ffiClass.handle,
       origin: ffiClass.origin.toDartString(),
+      frameScripting: ffiClass.frameScripting,
     );
   }
 }
