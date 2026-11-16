@@ -61,6 +61,9 @@ final class DarwinYoutubePlayer({
       supportsElementControl: info.frameScripting,
     );
   }
+
+  @override
+  bool openExternal(Uri uri) => _api.openExternal(uri.toString());
 }
 
 final class _Receiver(final DarwinYoutubePlayer _platform)

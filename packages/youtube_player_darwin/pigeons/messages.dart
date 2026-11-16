@@ -87,6 +87,10 @@ abstract class YoutubeHostApi {
 
   void dispose(int handle);
 
+  /// Opens [url] in the app that handles it, or the default browser.
+  /// Returns whether the request was accepted.
+  bool openExternal(String url);
+
   /// Destroys every player, e.g. those orphaned by a hot restart.
   void reset();
 }

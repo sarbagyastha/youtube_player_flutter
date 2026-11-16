@@ -5,8 +5,11 @@
 package np.com.sarbagyastha.youtube_player_android
 
 import android.app.Activity
+import android.content.ActivityNotFoundException
 import android.content.Context
+import android.content.Intent
 import android.content.MutableContextWrapper
+import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import io.flutter.embedding.engine.plugins.FlutterPlugin
@@ -105,6 +108,22 @@ class YoutubePlayerAndroidPlugin : FlutterPlugin, ActivityAware, YoutubeHostApi 
 
     override fun dispose(handle: Long) {
         hosts.remove(handle)?.destroy()
+    }
+
+    override fun openExternal(url: String): Boolean {
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        // Without an Activity (e.g. backgrounded) start a new task.
+        val context: Context = activity
+            ?: binding?.applicationContext?.also {
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            ?: return false
+        return try {
+            context.startActivity(intent)
+            true
+        } catch (_: ActivityNotFoundException) {
+            false
+        }
     }
 
     override fun reset() {

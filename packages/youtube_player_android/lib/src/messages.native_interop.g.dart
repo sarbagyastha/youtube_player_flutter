@@ -501,6 +501,24 @@ class _YoutubeHostApiForNativeInterop implements YoutubeHostApiForNativeInterop 
   }
 
   @override
+  bool openExternal(String url) {
+    try {
+      if (_jniApi != null) {
+        final JString pigeonVar_arg_url = url.toJString();
+        try {
+          return _jniApi.openExternal(pigeonVar_arg_url);
+        } finally {
+          pigeonVar_arg_url.release();
+        }
+      } else {
+        throw Exception('No JNI or FFI api available');
+      }
+    } on JThrowable catch (e) {
+      throw _wrapJniException(e);
+    }
+  }
+
+  @override
   void reset() {
     try {
       if (_jniApi != null) {

@@ -70,6 +70,18 @@ public final class YoutubePlayerDarwinPlugin: NSObject, @preconcurrency FlutterP
 
   func dispose(handle: Int64) throws { hosts.removeValue(forKey: handle)?.destroy() }
 
+  func openExternal(url: String) throws -> Bool {
+    guard let url = URL(string: url) else { return false }
+    #if os(iOS)
+      // Opens the handling app (e.g. YouTube) via universal links, or Safari.
+      // No `canOpenURL`: it needs schemes declared in Info.plist.
+      UIApplication.shared.open(url)
+      return true
+    #elseif os(macOS)
+      return NSWorkspace.shared.open(url)
+    #endif
+  }
+
   func reset() throws {
     let all = hosts.values
     hosts.removeAll()

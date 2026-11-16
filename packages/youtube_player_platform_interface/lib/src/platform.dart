@@ -34,4 +34,12 @@ abstract class YoutubePlayerPlatform() extends PlatformInterface {
 
   /// Creates a player host and starts loading the player.
   Future<YoutubePlayerHost> createHost(YoutubeHostParams params);
+
+  /// Opens [uri] outside the app: in the app that handles it (e.g. YouTube)
+  /// or the default browser.
+  ///
+  /// Used for player links the app lets through, such as the video title or
+  /// channel. Returns whether the platform accepted the request; the default
+  /// does nothing and returns false.
+  bool openExternal(Uri uri) => false;
 }

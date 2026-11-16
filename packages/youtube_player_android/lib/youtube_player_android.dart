@@ -69,6 +69,9 @@ final class AndroidYoutubePlayer({
     );
   }
 
+  @override
+  bool openExternal(Uri uri) => _api.openExternal(uri.toString());
+
   static Future<bool> _checkHcpp() async {
     try {
       return await HybridAndroidViewController.checkIfSupported();

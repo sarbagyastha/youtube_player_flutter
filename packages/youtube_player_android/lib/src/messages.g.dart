@@ -382,6 +382,8 @@ abstract class YoutubeHostApiForNativeInterop {
 
   void dispose(int handle);
 
+  bool openExternal(String url);
+
   void reset();
 }
 
@@ -539,6 +541,29 @@ class YoutubeHostApi {
         isNullValid: true,
     )
     ;
+  }
+
+  /// Opens [url] in the app that handles it, or the default browser.
+  /// Returns whether the request was accepted.
+  Future<bool> openExternal(String url) async {
+    if (_nativeInteropApi != null) {
+      return _nativeInteropApi.openExternal(url);
+    }
+    final pigeonVar_channelName = 'dev.flutter.pigeon.youtube_player_android.YoutubeHostApi.openExternal$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[url]);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: false,
+    )
+    ;
+    return pigeonVar_replyValue! as bool;
   }
 
   /// Destroys every player, e.g. those orphaned by a hot restart.

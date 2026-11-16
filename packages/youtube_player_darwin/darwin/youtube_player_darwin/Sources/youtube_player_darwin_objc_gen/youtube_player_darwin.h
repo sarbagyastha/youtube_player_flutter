@@ -497,6 +497,9 @@ SWIFT_CLASS("_TtC21youtube_player_darwin19YoutubeHostApiSetup")
 - (void)setBackgroundColorWithHandle:(int64_t)handleArg argb:(int64_t)argbArg wrappedError:(PigeonError * _Nonnull)wrappedError;
 - (void)exitFullscreenWithHandle:(int64_t)handleArg wrappedError:(PigeonError * _Nonnull)wrappedError;
 - (void)disposeWithHandle:(int64_t)handleArg wrappedError:(PigeonError * _Nonnull)wrappedError;
+/// Opens [url] in the app that handles it, or the default browser.
+/// Returns whether the request was accepted.
+- (NSNumber * _Nullable)openExternalWithUrl:(NSString * _Nonnull)urlArg wrappedError:(PigeonError * _Nonnull)wrappedError SWIFT_WARN_UNUSED_RESULT;
 /// Destroys every player, e.g. those orphaned by a hot restart.
 - (void)resetWithWrappedError:(PigeonError * _Nonnull)wrappedError;
 @end

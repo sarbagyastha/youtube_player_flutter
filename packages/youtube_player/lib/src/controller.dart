@@ -6,7 +6,6 @@ import 'dart:async';
 import 'dart:ui' show Color;
 
 import 'package:flutter/foundation.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:youtube_player_platform_interface/youtube_player_platform_interface.dart';
 
 import 'iframe_api.dart';
@@ -362,7 +361,7 @@ class YoutubePlayerController({
       loadVideoById(videoId: videoId);
       return;
     }
-    await launchUrl(uri, mode: .externalApplication);
+    YoutubePlayerPlatform.instance.openExternal(uri);
   }
 
   // MARK: Player UI elements

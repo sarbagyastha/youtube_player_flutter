@@ -906,6 +906,38 @@ extension YoutubeHostApiRegistrar$$Methods on YoutubeHostApiRegistrar {
     _dispose(_$$selfRef.pointer, _id_dispose.pointer, j).check();
   }
 
+  static final _id_openExternal = YoutubeHostApiRegistrar._class
+      .instanceMethodId(r'openExternal', r'(Ljava/lang/String;)Z');
+
+  static final _openExternal =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<(jni$_.Pointer<jni$_.Void>,)>,
+              )
+            >
+          >('globalEnv_CallBooleanMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              jni$_.Pointer<jni$_.Void>,
+            )
+          >();
+
+  /// from: `public fun openExternal(url: kotlin.String): kotlin.Boolean`
+  core$_.bool openExternal(jni$_.JString string) {
+    final _$$selfRef = reference;
+    final _$string = string.reference;
+    return _openExternal(
+      _$$selfRef.pointer,
+      _id_openExternal.pointer,
+      _$string.pointer,
+    ).boolean;
+  }
+
   static final _id_reset = YoutubeHostApiRegistrar._class.instanceMethodId(
     r'reset',
     r'()V',

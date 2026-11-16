@@ -474,6 +474,18 @@ class _YoutubeHostApiForNativeInterop implements YoutubeHostApiForNativeInterop 
   }
 
   @override
+  bool openExternal(String url) {
+ if (_ffiApi != null) {
+      final pigeonVar_error = ffi_bridge.PigeonError();
+      final NSNumber? pigeonVar_res = _ffiApi.openExternalWithUrl(NSString(url), wrappedError: pigeonVar_error);
+      _throwIfFfiError(pigeonVar_error);
+      return pigeonVar_res!.boolValue;
+    } else {
+      throw Exception('No JNI or FFI api available');
+    }
+  }
+
+  @override
   void reset() {
  if (_ffiApi != null) {
       final pigeonVar_error = ffi_bridge.PigeonError();

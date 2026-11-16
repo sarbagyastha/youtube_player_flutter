@@ -20,7 +20,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  url_launcher: ^6.3.3
   youtube_player_android: ^0.1.0-dev.1
   youtube_player_darwin: ^0.1.0-dev.1
   youtube_player_html: ^0.1.0-dev.1

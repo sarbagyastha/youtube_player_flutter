@@ -547,6 +547,11 @@ interface YoutubeHostApi {
   fun setBackgroundColor(handle: Long, argb: Long)
   fun exitFullscreen(handle: Long)
   fun dispose(handle: Long)
+  /**
+   * Opens [url] in the app that handles it, or the default browser.
+   * Returns whether the request was accepted.
+   */
+  fun openExternal(url: String): Boolean
   /** Destroys every player, e.g. those orphaned by a hot restart. */
   fun reset()
 }
@@ -730,6 +735,16 @@ class YoutubeHostApiRegistrar private constructor(private val engineKey: Long) {
     val pigeonVar_api = this.api ?: throw FlutterError("unregistered-instance", "YoutubeHostApi has not been registered.")
     try {
       pigeonVar_api.dispose(handle)
+    } catch (e: FlutterError) {
+      throw FlutterError(e.code, e.message, MessagesPigeonInteropCodec.encodeOrNull(e.details)).apply {
+        stackTrace = e.stackTrace
+      }
+    }
+  }
+  fun openExternal(url: String): Boolean {
+    val pigeonVar_api = this.api ?: throw FlutterError("unregistered-instance", "YoutubeHostApi has not been registered.")
+    try {
+      return pigeonVar_api.openExternal(url)
     } catch (e: FlutterError) {
       throw FlutterError(e.code, e.message, MessagesPigeonInteropCodec.encodeOrNull(e.details)).apply {
         stackTrace = e.stackTrace

@@ -2673,6 +2673,26 @@ extension YoutubeHostApiSetup$Methods on YoutubeHostApiSetup {
     return YoutubeHostApiSetup.fromPointer($ret, retain: false, release: true);
   }
 
+  /// Opens [url] in the app that handles it, or the default browser.
+  /// Returns whether the request was accepted.
+  objc.NSNumber? openExternalWithUrl(
+    objc.NSString urlArg, {
+    required PigeonError wrappedError,
+  }) {
+    final _$$ref = object$.ref;
+    final _$$ref$1 = urlArg.ref;
+    final _$$ref$2 = wrappedError.ref;
+    final $ret = _objc_msgSend_15qeuct(
+      _$$ref.pointer,
+      _sel_openExternalWithUrl_wrappedError_,
+      _$$ref$1.pointer,
+      _$$ref$2.pointer,
+    );
+    return $ret.address == 0
+        ? null
+        : objc.NSNumber.fromPointer($ret, retain: true, release: true);
+  }
+
   /// Destroys every player, e.g. those orphaned by a hot restart.
   void resetWithWrappedError(PigeonError wrappedError) {
     final _$$ref = object$.ref;
@@ -3046,6 +3066,25 @@ final _objc_msgSend_151sglz = objc.msgSendPointer
       ffi.Pointer<objc.ObjCObjectImpl> Function(
         ffi.Pointer<objc.ObjCObjectImpl>,
         ffi.Pointer<objc.ObjCSelector>,
+      )
+    >();
+final _objc_msgSend_15qeuct = objc.msgSendPointer
+    .cast<
+      ffi.NativeFunction<
+        ffi.Pointer<objc.ObjCObjectImpl> Function(
+          ffi.Pointer<objc.ObjCObjectImpl>,
+          ffi.Pointer<objc.ObjCSelector>,
+          ffi.Pointer<objc.ObjCObjectImpl>,
+          ffi.Pointer<objc.ObjCObjectImpl>,
+        )
+      >
+    >()
+    .asFunction<
+      ffi.Pointer<objc.ObjCObjectImpl> Function(
+        ffi.Pointer<objc.ObjCObjectImpl>,
+        ffi.Pointer<objc.ObjCSelector>,
+        ffi.Pointer<objc.ObjCObjectImpl>,
+        ffi.Pointer<objc.ObjCObjectImpl>,
       )
     >();
 final _objc_msgSend_17gvxvj = objc.msgSendPointer
@@ -3538,6 +3577,9 @@ late final _sel_onMessageWithHandle_json_error_ = objc.registerName(
 );
 late final _sel_onNavigationWithHandle_url_error_ = objc.registerName(
   "onNavigationWithHandle:url:error:",
+);
+late final _sel_openExternalWithUrl_wrappedError_ = objc.registerName(
+  "openExternalWithUrl:wrappedError:",
 );
 late final _sel_origin = objc.registerName("origin");
 late final _sel_pigeonEngineKeyOf_ = objc.registerName("pigeonEngineKeyOf:");

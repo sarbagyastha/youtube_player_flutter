@@ -77,6 +77,13 @@ final class FakePlatform extends YoutubePlayerPlatform
   final hosts = <FakeHost>[];
   final params = <YoutubeHostParams>[];
   var elementControl = true;
+  final opened = <Uri>[];
+
+  @override
+  bool openExternal(Uri uri) {
+    opened.add(uri);
+    return true;
+  }
 
   @override
   Future<YoutubePlayerHost> createHost(YoutubeHostParams params) async {
@@ -263,6 +270,21 @@ void main() {
     expect(host.calls.single.$2, [
       {'videoId': 'dQw4w9WgXcQ'},
     ]);
+    controller.close();
+  });
+
+  test('other links open externally through the platform', () async {
+    final controller = YoutubePlayerController();
+    unawaited(controller.host);
+    await pump();
+    final host = platform.hosts.single..emit(const ReadyEvent());
+    final channel = Uri.parse('https://www.youtube.com/@channel');
+    host.navController.add(
+      NavigationRequest(uri: channel, element: PlayerElement.channel),
+    );
+    await pump();
+    expect(platform.opened, [channel]);
+    expect(host.calls, isEmpty);
     controller.close();
   });
 

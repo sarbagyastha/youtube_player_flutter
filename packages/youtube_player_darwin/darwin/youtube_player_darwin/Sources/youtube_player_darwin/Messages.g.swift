@@ -1501,6 +1501,9 @@ protocol YoutubeHostApi: AnyObject {
   func setBackgroundColor(handle: Int64, argb: Int64) throws
   func exitFullscreen(handle: Int64) throws
   func dispose(handle: Int64) throws
+  /// Opens [url] in the app that handles it, or the default browser.
+  /// Returns whether the request was accepted.
+  func openExternal(url: String) throws -> Bool
   /// Destroys every player, e.g. those orphaned by a hot restart.
   func reset() throws
 }
@@ -1717,6 +1720,24 @@ protocol YoutubeHostApi: AnyObject {
       wrappedError.details = "Stacktrace: \(Thread.callStackSymbols)"
     }
     return
+  }
+  /// Opens [url] in the app that handles it, or the default browser.
+  /// Returns whether the request was accepted.
+  @objc func openExternal(url urlArg: NSString, wrappedError: PigeonError) -> NSNumber? {
+    do {
+      let activeApi = try resolveApi()
+      let res: Bool = try activeApi.openExternal(url: urlArg as String)
+      return NSNumber(value: res)
+    } catch let error as PigeonError {
+      wrappedError.code = error.code
+      wrappedError.message = error.message
+      wrappedError.details = error.details
+    } catch let error {
+      wrappedError.code = "\(error)"
+      wrappedError.message = "\(Swift.type(of: error))"
+      wrappedError.details = "Stacktrace: \(Thread.callStackSymbols)"
+    }
+    return nil
   }
   /// Destroys every player, e.g. those orphaned by a hot restart.
   @objc func reset(wrappedError: PigeonError) {
