@@ -49,16 +49,15 @@ final class const StateChangeEvent(
   final double? playbackRate,
 }) extends PlayerEvent {
   /// Decodes `{s, v?, du?, r?}`.
-  factory StateChangeEvent.fromWire(Map<Object?, Object?> d) =>
-      StateChangeEvent(
-        .fromCode((d['s'] as num?)?.toInt() ?? -2),
-        videoData: switch (d['v']) {
-          final Map<Object?, Object?> v => .fromWire(v),
-          _ => null,
-        },
-        duration: (d['du'] as num?)?.toDouble(),
-        playbackRate: (d['r'] as num?)?.toDouble(),
-      );
+  factory fromWire(Map<Object?, Object?> d) => .new(
+    .fromCode((d['s'] as num?)?.toInt() ?? -2),
+    videoData: switch (d['v']) {
+      final Map<Object?, Object?> v => .fromWire(v),
+      _ => null,
+    },
+    duration: (d['du'] as num?)?.toDouble(),
+    playbackRate: (d['r'] as num?)?.toDouble(),
+  );
 }
 
 /// `onPlaybackRateChange`.
@@ -110,7 +109,7 @@ final class const TickEvent({
   required final bool muted,
 }) extends PlayerEvent {
   /// Decodes `[currentTime, loadedFraction, duration, volume, muted]`.
-  factory TickEvent.fromWire(List<Object?> d) => TickEvent(
+  factory fromWire(List<Object?> d) => .new(
     currentTime: _num(d, 0),
     loadedFraction: _num(d, 1),
     duration: _num(d, 2),

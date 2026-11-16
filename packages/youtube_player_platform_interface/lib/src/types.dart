@@ -20,7 +20,7 @@ final class const VideoData({
   final String author = '',
 }) {
   /// Decodes the compact wire form `{id, t, a}`.
-  factory VideoData.fromWire(Map<Object?, Object?> wire) => VideoData(
+  factory fromWire(Map<Object?, Object?> wire) => .new(
     videoId: wire['id'] as String? ?? '',
     title: wire['t'] as String? ?? '',
     author: wire['a'] as String? ?? '',
@@ -62,13 +62,12 @@ final class const SphericalProperties({
   final bool? enableOrientationSensor,
 }) {
   /// Decodes the object returned by `getSphericalProperties()`.
-  factory SphericalProperties.fromJson(Map<Object?, Object?> json) =>
-      SphericalProperties(
-        yaw: (json['yaw'] as num?)?.toDouble(),
-        pitch: (json['pitch'] as num?)?.toDouble(),
-        roll: (json['roll'] as num?)?.toDouble(),
-        fov: (json['fov'] as num?)?.toDouble(),
-      );
+  factory fromJson(Map<Object?, Object?> json) => .new(
+    yaw: (json['yaw'] as num?)?.toDouble(),
+    pitch: (json['pitch'] as num?)?.toDouble(),
+    roll: (json['roll'] as num?)?.toDouble(),
+    fov: (json['fov'] as num?)?.toDouble(),
+  );
 
   /// Encodes the object passed to `setSphericalProperties()`.
   Map<String, Object> toJson() => {

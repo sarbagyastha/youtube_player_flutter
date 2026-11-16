@@ -25,14 +25,14 @@ final class const PlayerElement._(
 ) {
   /// An element of the embed page matched by a CSS [selector] list, e.g.
   /// `PlayerElement.custom('.ytp-chrome-top')`. Its [name] is the selector.
-  const PlayerElement.custom(String selector) : this._(selector, selector);
+  const new custom(String selector) : this._(selector, selector);
 
   /// Resolves [name] back to a built-in element, or a new custom one whose
   /// selector is [name].
   ///
   /// Elements compare by identity, so compare [name]s to match a custom
   /// element created elsewhere.
-  factory PlayerElement.byName(String name) {
+  factory byName(String name) {
     for (final element in values) {
       if (element.name == name) return element;
     }

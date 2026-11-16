@@ -26,10 +26,7 @@ extension type YTNamespace._(JSObject _) implements JSObject {
 @JS('YT.Player')
 extension type YTPlayer._(JSObject _) implements JSObject {
   /// Attaches a player to an existing `enablejsapi=1` iframe.
-  external factory YTPlayer(
-    web.HTMLIFrameElement iframe,
-    YTPlayerOptions options,
-  );
+  external factory(web.HTMLIFrameElement iframe, YTPlayerOptions options);
 
   external double getCurrentTime();
   external double getDuration();
@@ -44,13 +41,13 @@ extension type YTPlayer._(JSObject _) implements JSObject {
 /// Constructor options.
 extension type YTPlayerOptions._(JSObject _) implements JSObject {
   /// Creates options with [events].
-  external factory YTPlayerOptions({YTEvents events});
+  external factory({YTEvents events});
 }
 
 /// Event listeners.
 extension type YTEvents._(JSObject _) implements JSObject {
   /// Creates the listener map.
-  external factory YTEvents({
+  external factory({
     JSFunction onReady,
     JSFunction onStateChange,
     JSFunction onPlaybackRateChange,
