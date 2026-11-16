@@ -1,0 +1,21 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    - build/**
+    - android/**
+    # Pigeon / JNIgen / FFIgen output.
+    - lib/src/*.g.dart
+    - lib/src/*.g.jni.dart
+    - lib/src/*.g.ffi.dart
+  language:
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true
+
+linter:
+  rules:
+    - prefer_final_locals
+    - prefer_const_constructors
+    - unawaited_futures
+    - always_declare_return_types
