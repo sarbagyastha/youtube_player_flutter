@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
@@ -21,3 +21,21 @@ jobs:
       - run: flutter pub get
       - run: dart pub global activate pana
       - run: dart run melos run pana
+
+  wasm:
+    name: Wasm build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Build youtube_player_iframe example (Wasm)
+        working-directory: packages/youtube_player_iframe/example
+        run: flutter build web --wasm --no-deprecated-js-interop
+      - name: Build youtube_player_flutter example (Wasm)
+        working-directory: packages/youtube_player_flutter/example
+        run: flutter build web --wasm --no-deprecated-js-interop
