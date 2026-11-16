@@ -9,7 +9,7 @@ workspace:
   - packages/youtube_player_iframe_web/example
 
 environment:
-  sdk: ^3.10.0
+  sdk: ^3.11.0
   flutter: '>=3.38.0'
 
 dev_dependencies:

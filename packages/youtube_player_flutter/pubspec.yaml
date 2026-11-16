@@ -14,12 +14,13 @@ topics:
 resolution: workspace
 
 environment:
-  sdk: ^3.10.0
+  sdk: ^3.11.0
   flutter: '>=3.38.0'
 
 dependencies:
   flutter:
     sdk: flutter
+  material_ui: ^1.11.0
   youtube_player_iframe: ^6.0.2
 
 dev_dependencies:

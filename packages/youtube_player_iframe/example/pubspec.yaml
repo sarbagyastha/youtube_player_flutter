@@ -13,8 +13,9 @@ dependencies:
     sdk: flutter
   flutter_web_plugins:
       sdk: flutter
-  youtube_player_iframe:
   go_router: ^17.2.3
+  material_ui: ^1.11.0
+  youtube_player_iframe:
 
 dev_dependencies:
   flutter_test:

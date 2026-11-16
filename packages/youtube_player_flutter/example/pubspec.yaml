@@ -6,11 +6,12 @@ version: 1.0.0+1
 resolution: workspace
 
 environment:
-  sdk: '>=3.10.0 <4.0.0'
+  sdk: '>=3.11.0 <4.0.0'
 
 dependencies:
   flutter:
     sdk: flutter
+  material_ui: ^1.11.0
   youtube_player_flutter: 
 
 dev_dependencies:
