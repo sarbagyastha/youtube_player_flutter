@@ -86,6 +86,8 @@ class YoutubePlayerEventHandler {
         controller.videoData,
       ).wait;
 
+      // getVideoData() can return null before the video has loaded.
+      if (videoData.videoId.isEmpty) return;
       if (videoData.videoId == cachedId && cachedId.isNotEmpty) return;
 
       controller.update(
