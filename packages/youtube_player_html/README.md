@@ -1,3 +1,7 @@
+<p align="center">
+<img src="https://raw.githubusercontent.com/sarbagyastha/youtube_player_flutter/main/packages/youtube_player/misc/logo_512.png" width="120" alt="youtube_player_html" />
+</p>
+
 # youtube_player_html
 
 The web implementation of [`youtube_player`](https://pub.dev/packages/youtube_player). It drives `YT.Player` directly through `dart:js_interop`, compiles to Wasm, and supports `credentialless` iframes for cross-origin isolated pages.

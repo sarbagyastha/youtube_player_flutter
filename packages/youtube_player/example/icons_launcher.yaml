@@ -1,5 +1,5 @@
 # Regenerate with: dart run icons_launcher:create
-# Sources are rendered from packages/youtube_player/doc/logo/logo.svg.
+# Sources are rendered from packages/youtube_player/misc/logo.svg.
 icons_launcher:
   image_path: assets/icon/rounded.png
   platforms:

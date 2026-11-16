@@ -1,6 +1,7 @@
 <p align="center">
 <img src="https://raw.githubusercontent.com/sarbagyastha/youtube_player_flutter/main/packages/youtube_player_iframe/misc/ypi.webp" width="200" alt="Youtube Player iFrame" />
 <img src="https://raw.githubusercontent.com/sarbagyastha/youtube_player_flutter/main/packages/youtube_player_flutter/misc/ypf.webp" width="200" alt="Youtube Player Flutter" />
+<img src="https://raw.githubusercontent.com/sarbagyastha/youtube_player_flutter/main/packages/youtube_player/misc/logo_512.png" width="200" alt="youtube_player" />
 </p>
 
 <h2 align="center">Youtube Player for Flutter</h2>

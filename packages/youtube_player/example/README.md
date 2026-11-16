@@ -1,3 +1,7 @@
+<p align="center">
+<img src="https://raw.githubusercontent.com/sarbagyastha/youtube_player_flutter/main/packages/youtube_player/misc/logo_512.png" width="120" alt="youtube_player" />
+</p>
+
 # youtube_player_example
 
 A new Flutter project.

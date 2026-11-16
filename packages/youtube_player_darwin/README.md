@@ -1,3 +1,7 @@
+<p align="center">
+<img src="https://raw.githubusercontent.com/sarbagyastha/youtube_player_flutter/main/packages/youtube_player/misc/logo_512.png" width="120" alt="youtube_player_darwin" />
+</p>
+
 # youtube_player_darwin
 
 The iOS and macOS implementation of [`youtube_player`](https://pub.dev/packages/youtube_player). It hosts the YouTube IFrame Player API in a minimal `WKWebView`, driven through Pigeon Native Interop (FFI, no platform channels), and uses WebKit's element fullscreen.
