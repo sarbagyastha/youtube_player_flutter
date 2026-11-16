@@ -2,7 +2,9 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:youtube_player/youtube_player.dart';
-import 'package:youtube_player_example/main.dart';
+import 'package:youtube_player_example/app.dart';
+import 'package:youtube_player_example/pages/playback_page.dart';
+import 'package:youtube_player_example/widgets/seek_bar.dart';
 
 /// Pumps frames until [condition] holds or [timeout] elapses.
 Future<void> pumpUntil(
@@ -22,7 +24,7 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets('example controls follow the player', (tester) async {
-    await tester.pumpWidget(const ExampleApp());
+    await tester.pumpWidget(const ExampleApp(home: PlaybackPage()));
     final controller = YoutubePlayerControllerProvider.of(
       tester.element(find.byType(YoutubePlayer)),
     );
@@ -66,24 +68,25 @@ void main() {
       () => controller.value.playerState == .playing,
       reason: state,
     );
-    // Small windows (desktop tests) don't build the controls row yet.
-    await tester.scrollUntilVisible(
-      find.byIcon(Icons.speed),
-      100,
-      scrollable: find.byType(Scrollable).first,
-    );
+    // Controls sit in a scroll view; bring each into view before using it.
+    Future<Finder> visible(Finder finder) async {
+      await tester.ensureVisible(finder);
+      await tester.pump();
+      return finder;
+    }
+
     await pumpUntil(tester, () => shows(Icons.pause), reason: state);
     await pumpUntil(tester, () => shows(Icons.volume_off), reason: state);
 
     // Our mute button.
-    await tester.tap(find.byIcon(Icons.volume_off));
+    await tester.tap(await visible(find.byIcon(Icons.volume_off)));
     await pumpUntil(
       tester,
       () => !controller.value.isMuted && shows(Icons.volume_up),
       timeout: const Duration(seconds: 5),
       reason: state,
     );
-    await tester.tap(find.byIcon(Icons.volume_up));
+    await tester.tap(await visible(find.byIcon(Icons.volume_up)));
     await pumpUntil(
       tester,
       () => controller.value.isMuted && shows(Icons.volume_off),
@@ -92,7 +95,8 @@ void main() {
     );
 
     // Our seek bar while playing.
-    final slider = find.byType(Slider);
+    final slider = find.byKey(SeekBar.sliderKey);
+    await visible(slider);
     await tester.timedDrag(
       slider,
       Offset(tester.getSize(slider).width * 0.3, 0),
@@ -101,7 +105,7 @@ void main() {
     await expectButtonMatchesPlayer('seek while playing');
 
     // Pause from our button.
-    await tester.tap(find.byIcon(Icons.pause));
+    await tester.tap(await visible(find.byIcon(Icons.pause)));
     await pumpUntil(
       tester,
       () => controller.value.playerState == .paused && shows(Icons.play_arrow),
@@ -110,6 +114,7 @@ void main() {
     );
 
     // Our seek bar while paused.
+    await visible(slider);
     await tester.timedDrag(
       slider,
       Offset(-tester.getSize(slider).width * 0.2, 0),
