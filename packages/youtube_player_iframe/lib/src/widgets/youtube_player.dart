@@ -640,7 +640,8 @@ class _PlayerLoadingOverlay extends StatelessWidget {
                           quality: thumbnailQuality,
                           format: thumbnailFormat,
                         ),
-                        fit: BoxFit.cover,
+                        fit: .cover,
+                        webHtmlElementStrategy: .prefer,
                         frameBuilder:
                             (_, child, frame, wasSynchronouslyLoaded) {
                               if (wasSynchronouslyLoaded) return child;
