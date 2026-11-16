@@ -42,11 +42,11 @@ final controller = YoutubePlayerController.fromVideoId(
 YoutubePlayer(controller: controller);
 
 // Later:
-await controller.seekTo(seconds: 30, allowSeekAhead: true);
+controller.seekTo(seconds: 30, allowSeekAhead: true);
 controller.videoStateStream.listen((state) => print(state.position));
 
 // When done:
-await controller.close();
+controller.close();
 ```
 
 Read state with `YoutubeValueBuilder`, or provide the controller to a subtree
@@ -147,6 +147,8 @@ Most code only needs the import changed to `package:youtube_player/youtube_playe
 | `YoutubePlayerThumbnail` / player thumbnail placeholder | Removed; build one with `getThumbnail`. |
 | `showControls: false` + `pointerEvents: none` for custom controls | Pass `YoutubePlayer(controlsBuilder:)`; it sets both. |
 | Player created on the first controller call | Created when a `YoutubePlayer` first shows it; earlier calls are queued. |
+| Commands (`playVideo()`, `seekTo()`, `mute()`, …) and `close()` return `Future<void>` | They return `void`; drop the `await`. |
+| `await controller.currentTime`, `volume`, `isMuted`, `playbackRate`, `playerState`, `duration`, `videoLoadedFraction`, `videoData` | Synchronous getters. Queries such as `playlist` and `videoUrl` still return a `Future`. |
 
 New in this package: `setCaptionsFontSize`, `reloadCaptions`, `getOptions`,
 `sphericalProperties` / `setSphericalProperties`, `apiChangeStream`,

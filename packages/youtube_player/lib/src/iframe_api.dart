@@ -24,14 +24,14 @@ abstract interface class YoutubePlayerIFrameAPI {
 
   /// Loads the thumbnail of [videoId] and prepares the player; playback
   /// starts on `playVideo` or `seekTo`.
-  Future<void> cueVideoById({
+  void cueVideoById({
     required String videoId,
     double? startSeconds,
     double? endSeconds,
   });
 
   /// Loads and plays [videoId].
-  Future<void> loadVideoById({
+  void loadVideoById({
     required String videoId,
     double? startSeconds,
     double? endSeconds,
@@ -39,14 +39,14 @@ abstract interface class YoutubePlayerIFrameAPI {
 
   /// Cues a video by its fully qualified player URL
   /// (`https://www.youtube.com/v/VIDEO_ID?version=3`).
-  Future<void> cueVideoByUrl({
+  void cueVideoByUrl({
     required String mediaContentUrl,
     double? startSeconds,
     double? endSeconds,
   });
 
   /// Loads and plays a video by its fully qualified player URL.
-  Future<void> loadVideoByUrl({
+  void loadVideoByUrl({
     required String mediaContentUrl,
     double? startSeconds,
     double? endSeconds,
@@ -54,7 +54,7 @@ abstract interface class YoutubePlayerIFrameAPI {
 
   /// Cues a playlist: a list of video ids, or a single playlist / channel id
   /// with [listType].
-  Future<void> cuePlaylist({
+  void cuePlaylist({
     required List<String> list,
     ListType? listType,
     int? index,
@@ -62,7 +62,7 @@ abstract interface class YoutubePlayerIFrameAPI {
   });
 
   /// Loads and plays a playlist; see [cuePlaylist].
-  Future<void> loadPlaylist({
+  void loadPlaylist({
     required List<String> list,
     ListType? listType,
     int? index,
@@ -72,85 +72,85 @@ abstract interface class YoutubePlayerIFrameAPI {
   // Playback
 
   /// Plays the current video.
-  Future<void> playVideo();
+  void playVideo();
 
   /// Pauses the current video.
-  Future<void> pauseVideo();
+  void pauseVideo();
 
   /// Stops loading the current video. Prefer [pauseVideo] for pausing.
-  Future<void> stopVideo();
+  void stopVideo();
 
   /// Seeks to [seconds]. Use `allowSeekAhead: false` while scrubbing and
   /// `true` on release.
-  Future<void> seekTo({required double seconds, bool allowSeekAhead = false});
+  void seekTo({required double seconds, bool allowSeekAhead = false});
 
   /// Next video in the playlist.
-  Future<void> nextVideo();
+  void nextVideo();
 
   /// Previous video in the playlist.
-  Future<void> previousVideo();
+  void previousVideo();
 
   /// Plays the playlist video at [index] (zero-based).
-  Future<void> playVideoAt(int index);
+  void playVideoAt(int index);
 
   // Volume
 
   /// Mutes the player.
-  Future<void> mute();
+  void mute();
 
   /// Unmutes the player.
-  Future<void> unMute();
+  void unMute();
 
   /// Whether the player is muted.
-  Future<bool> get isMuted;
+  bool get isMuted;
 
   /// Sets the volume, `0..100`.
-  Future<void> setVolume(int volume);
+  void setVolume(int volume);
 
   /// Volume `0..100`, even while muted.
-  Future<int> get volume;
+  int get volume;
 
   // Size, rate and playlist behaviour
 
   /// Sets the iframe size in CSS pixels. Rarely needed: the player fills its
   /// widget.
-  Future<void> setSize(double width, double height);
+  void setSize(double width, double height);
 
   /// Current playback rate.
-  Future<double> get playbackRate;
+  double get playbackRate;
 
   /// Suggests a playback rate. Watch `value.playbackRate` for the result;
   /// unsupported rates round towards 1.
-  Future<void> setPlaybackRate(double suggestedRate);
+  void setPlaybackRate(double suggestedRate);
 
   /// Rates supported by the current video, slowest first.
   Future<List<double>> get availablePlaybackRates;
 
   /// Whether playlists loop. Persists across playlist loads.
-  Future<void> setLoop({required bool loopPlaylists});
+  void setLoop({required bool loopPlaylists});
 
   /// Whether playlists shuffle. Does not persist across playlist loads.
-  Future<void> setShuffle({required bool shufflePlaylists});
+  void setShuffle({required bool shufflePlaylists});
 
   // Status and information
 
   /// Playback state.
-  Future<PlayerState> get playerState;
+  PlayerState get playerState;
 
   /// Seconds elapsed.
-  Future<double> get currentTime;
+  double get currentTime;
 
   /// Buffered fraction, `0..1`.
-  Future<double> get videoLoadedFraction;
+  double get videoLoadedFraction;
 
   /// Duration in seconds (0 until metadata loads).
-  Future<double> get duration;
+  double get duration;
 
   /// youtube.com URL of the current video.
   Future<String> get videoUrl;
 
   /// Best-effort id / title / author of the current video.
-  Future<VideoData> get videoData;
+  VideoData get videoData;
 
   /// Embed code of the current video.
   Future<String> get videoEmbedCode;
@@ -164,10 +164,10 @@ abstract interface class YoutubePlayerIFrameAPI {
   // Modules and 360°
 
   /// Caption font size step, `-1..3` (`captions.fontSize`).
-  Future<void> setCaptionsFontSize(int size);
+  void setCaptionsFontSize(int size);
 
   /// Reloads caption data (`captions.reload`).
-  Future<void> reloadCaptions();
+  void reloadCaptions();
 
   /// Option names exposed by [module] (or module names when null).
   Future<List<String>> getOptions([String? module]);
@@ -176,5 +176,5 @@ abstract interface class YoutubePlayerIFrameAPI {
   Future<SphericalProperties> get sphericalProperties;
 
   /// Updates the view of a 360° video.
-  Future<void> setSphericalProperties(SphericalProperties properties);
+  void setSphericalProperties(SphericalProperties properties);
 }

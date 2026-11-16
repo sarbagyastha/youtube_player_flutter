@@ -44,8 +44,11 @@ final class const StateChangeEvent(
 
   /// Duration in seconds, when known.
   final double? duration,
+
+  /// The player's actual playback rate, when reported.
+  final double? playbackRate,
 }) extends PlayerEvent {
-  /// Decodes `{s, v?, du?}`.
+  /// Decodes `{s, v?, du?, r?}`.
   factory StateChangeEvent.fromWire(Map<Object?, Object?> d) =>
       StateChangeEvent(
         .fromCode((d['s'] as num?)?.toInt() ?? -2),
@@ -54,6 +57,7 @@ final class const StateChangeEvent(
           _ => null,
         },
         duration: (d['du'] as num?)?.toDouble(),
+        playbackRate: (d['r'] as num?)?.toDouble(),
       );
 }
 

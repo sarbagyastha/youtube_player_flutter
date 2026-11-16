@@ -235,13 +235,20 @@ final class _WebHost(final int _id, final YoutubeHostParams _params)
       }
       duration = player.getDuration();
     }
-    _emit(StateChangeEvent(state, videoData: videoData, duration: duration));
+    _emit(
+      StateChangeEvent(
+        state,
+        videoData: videoData,
+        duration: duration,
+        playbackRate: player.getPlaybackRate(),
+      ),
+    );
     if (state.isActive) {
       _ticker ??= Timer.periodic(_params.tickInterval, (_) => _tick());
-    } else {
-      _ticker?.cancel();
+    } else if (_ticker != null) {
+      _ticker!.cancel();
       _ticker = null;
-      _tick();
+      _settle(const [0, 250]);
     }
   }
 
@@ -265,6 +272,13 @@ final class _WebHost(final int _id, final YoutubeHostParams _params)
     }
     _lastTick = tick;
     _emit(tick);
+  }
+
+  /// Ticks after each of [delaysMs]; unchanged ticks are dropped.
+  void _settle(List<int> delaysMs) {
+    for (final ms in delaysMs) {
+      Timer(Duration(milliseconds: ms), _tick);
+    }
   }
 
   void _onFullscreenChange(web.Event _) {
@@ -306,10 +320,7 @@ final class _WebHost(final int _id, final YoutubeHostParams _params)
   }
 
   @override
-  Future<void> call(
-    PlayerMethod method, [
-    List<Object?> args = const [],
-  ]) async {
+  void call(PlayerMethod method, [List<Object?> args = const []]) {
     if (_disposed) return;
     if (method != .exitFullscreen &&
         method != .requestFullscreen &&
@@ -318,14 +329,15 @@ final class _WebHost(final int _id, final YoutubeHostParams _params)
     }
     switch (method) {
       case .exitFullscreen:
-        await exitFullscreen();
+        exitFullscreen();
       case .requestFullscreen:
-        await query(method);
+        unawaited(query(method));
       default:
         _invoke(method, args);
         if (method case .seekTo || .setVolume || .mute || .unMute
             when _ticker == null) {
-          Timer(const Duration(milliseconds: 50), _tick);
+          // The IFrame API getters update asynchronously.
+          _settle(const [50, 250, 1000]);
         }
     }
   }
@@ -353,14 +365,14 @@ final class _WebHost(final int _id, final YoutubeHostParams _params)
   }
 
   @override
-  Future<void> setBackgroundColor(Color color) async {
+  void setBackgroundColor(Color color) {
     _container.style.backgroundColor = _css(color);
   }
 
   @override
-  Future<void> exitFullscreen() async {
+  void exitFullscreen() {
     if (web.document.fullscreenElement != null) {
-      await web.document.exitFullscreen().toDart;
+      web.document.exitFullscreen().toDart.ignore();
     }
   }
 
@@ -370,7 +382,7 @@ final class _WebHost(final int _id, final YoutubeHostParams _params)
   }) => HtmlElementView(viewType: _viewType, creationParams: {'id': _id});
 
   @override
-  Future<void> dispose() async {
+  void dispose() {
     if (_disposed) return;
     _disposed = true;
     WebYoutubePlayer._hosts.remove(_id);
@@ -382,7 +394,7 @@ final class _WebHost(final int _id, final YoutubeHostParams _params)
     web.document.removeEventListener('fullscreenchange', _fullscreenListener);
     _player?.destroy();
     _container.remove();
-    await (_events.close(), _fullscreen.close()).wait;
+    unawaited((_events.close(), _fullscreen.close()).wait);
   }
 
   static double? _number(JSAny? value) => value != null && value.isA<JSNumber>()

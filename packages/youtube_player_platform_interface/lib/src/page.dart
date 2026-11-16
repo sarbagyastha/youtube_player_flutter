@@ -100,7 +100,7 @@ body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webki
     if (on === running) return;
     running = on;
     if (on) timer = setInterval(tick, C.tick);
-    else { clearInterval(timer); tick(); }
+    else { clearInterval(timer); tick(); setTimeout(tick, 250); }
   };
   const state = (s) => {
     const m = {s};
@@ -113,6 +113,9 @@ body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webki
       }
       m.du = p.getDuration();
     }
+    // The player keeps or resets the rate on its own (e.g. across playlist
+    // items); report what it actually is rather than guessing.
+    if (typeof p.getPlaybackRate === 'function') m.r = p.getPlaybackRate();
     post({e: 'state', d: m});
     clock(s === 1 || s === 3);
   };
@@ -148,7 +151,9 @@ body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webki
       if (i != null) post({r: i, x: String(x)});
       return;
     }
-    if (retick[m] && !running) setTimeout(tick, 50);
+    // The IFrame API getters update asynchronously, so settle with a few
+    // ticks; unchanged ones are dropped.
+    if (retick[m] && !running) for (const t of [50, 250, 1000]) setTimeout(tick, t);
     if (i == null) return;
     Promise.resolve(r).then(
       (v) => post({r: i, v: v === undefined ? null : v}),

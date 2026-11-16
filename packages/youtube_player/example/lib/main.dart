@@ -1,4 +1,3 @@
-import 'dart:async';
 
 import 'package:material_ui/material_ui.dart';
 import 'package:youtube_player/youtube_player.dart';
@@ -153,12 +152,13 @@ class const _Controls() extends StatelessWidget {
             icon: const Icon(Icons.skip_previous),
             onPressed: controller.previousVideo,
           ),
+          // Buffering counts as playing, so the button doesn't flicker.
           IconButton.filled(
-            tooltip: value.playerState == .playing ? 'Pause' : 'Play',
+            tooltip: value.playerState.isActive ? 'Pause' : 'Play',
             icon: Icon(
-              value.playerState == .playing ? Icons.pause : Icons.play_arrow,
+              value.playerState.isActive ? Icons.pause : Icons.play_arrow,
             ),
-            onPressed: value.playerState == .playing
+            onPressed: value.playerState.isActive
                 ? controller.pauseVideo
                 : controller.playVideo,
           ),
@@ -168,11 +168,9 @@ class const _Controls() extends StatelessWidget {
             onPressed: controller.nextVideo,
           ),
           IconButton(
-            tooltip: 'Toggle mute',
-            icon: const Icon(Icons.volume_up),
-            onPressed: () async => await controller.isMuted
-                ? controller.unMute()
-                : controller.mute(),
+            tooltip: value.isMuted ? 'Unmute' : 'Mute',
+            icon: Icon(value.isMuted ? Icons.volume_off : Icons.volume_up),
+            onPressed: value.isMuted ? controller.unMute : controller.mute,
           ),
           PopupMenuButton<double>(
             tooltip: 'Playback rate',
@@ -243,7 +241,7 @@ class _ListPageState extends State<ListPage> {
   @override
   void dispose() {
     for (final controller in _controllers) {
-      unawaited(controller.close());
+      controller.close();
     }
     super.dispose();
   }
@@ -273,7 +271,7 @@ class _CustomControlsPageState extends State<CustomControlsPage> {
 
   @override
   void dispose() {
-    unawaited(_controller.close());
+    _controller.close();
     super.dispose();
   }
 
@@ -296,7 +294,7 @@ class const _Overlay(final YoutubePlayerValue value) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = context.ytController;
-    final playing = value.playerState == .playing;
+    final playing = value.playerState.isActive;
     return GestureDetector(
       behavior: .opaque,
       onTap: playing ? controller.pauseVideo : controller.playVideo,

@@ -117,20 +117,20 @@ final class _AndroidHost(
   void fullscreen(bool value) => emitFullscreen(value);
 
   @override
-  Future<void> sendToPage(String json) async => _api.send(_handle, json);
+  void sendToPage(String json) => _api.send(_handle, json);
 
   @override
-  Future<void> disposeNative() async {
+  void disposeNative() {
     _platform._hosts.remove(_handle);
     _api.dispose(_handle);
   }
 
   @override
-  Future<void> setBackgroundColor(Color color) async =>
+  void setBackgroundColor(Color color) =>
       _api.setBackgroundColor(_handle, color.toARGB32());
 
   @override
-  Future<void> exitFullscreen() async => _api.exitFullscreen(_handle);
+  void exitFullscreen() => _api.exitFullscreen(_handle);
 
   @override
   Widget buildView({

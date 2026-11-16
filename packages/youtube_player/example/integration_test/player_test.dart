@@ -47,7 +47,7 @@ void main() {
       reason: 'no client identity error (153) expected',
     );
 
-    await controller.playVideo();
+    controller.playVideo();
     await pumpUntil(
       tester,
       () => controller.value.playerState == .playing,
@@ -58,14 +58,14 @@ void main() {
 
     await pumpUntil(tester, () => states.isNotEmpty, reason: 'ticks');
 
-    await controller.seekTo(seconds: 30, allowSeekAhead: true);
+    controller.seekTo(seconds: 30, allowSeekAhead: true);
     await pumpUntil(
       tester,
       () => states.isNotEmpty && states.last.position.inSeconds >= 30,
       reason: 'seek',
     );
 
-    await controller.setPlaybackRate(1.5);
+    controller.setPlaybackRate(1.5);
     await pumpUntil(
       tester,
       () => controller.value.playbackRate == 1.5,
@@ -75,15 +75,31 @@ void main() {
     expect(await controller.availablePlaybackRates, contains(1.5));
     expect(await controller.videoUrl, contains('M7lc1UVf-VE'));
 
-    await controller.pauseVideo();
+    controller.pauseVideo();
     await pumpUntil(
       tester,
       () => controller.value.playerState == .paused,
       reason: 'paused',
     );
 
+    // Volume changes while paused (no running clock) must still sync.
+    controller.unMute();
+    await pumpUntil(
+      tester,
+      () => !controller.value.isMuted,
+      timeout: const Duration(seconds: 5),
+      reason: 'unmuted while paused',
+    );
+    controller.mute();
+    await pumpUntil(
+      tester,
+      () => controller.value.isMuted,
+      timeout: const Duration(seconds: 5),
+      reason: 'muted while paused',
+    );
+
     await sub.cancel();
-    await controller.close();
+    controller.close();
     await tester.pumpWidget(const SizedBox());
   });
 }

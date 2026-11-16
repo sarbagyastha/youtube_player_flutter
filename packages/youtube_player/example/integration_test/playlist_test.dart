@@ -36,7 +36,7 @@ void main() {
     );
     await pumpUntil(tester, () => controller.value.isReady, reason: 'ready');
 
-    await controller.loadPlaylist(list: ids);
+    controller.loadPlaylist(list: ids);
     await pumpUntil(
       tester,
       () => controller.metadata.videoId == ids[0],
@@ -45,7 +45,7 @@ void main() {
     expect(await controller.playlist, ids);
     expect(await controller.playlistIndex, 0);
 
-    await controller.nextVideo();
+    controller.nextVideo();
     await pumpUntil(
       tester,
       () => controller.metadata.videoId == ids[1],
@@ -53,21 +53,21 @@ void main() {
     );
     expect(await controller.playlistIndex, 1);
 
-    await controller.previousVideo();
+    controller.previousVideo();
     await pumpUntil(
       tester,
       () => controller.metadata.videoId == ids[0],
       reason: 'previous video',
     );
 
-    await controller.playVideoAt(2);
+    controller.playVideoAt(2);
     await pumpUntil(
       tester,
       () => controller.metadata.videoId == ids[2],
       reason: 'playVideoAt',
     );
 
-    await controller.close();
+    controller.close();
     await tester.pumpWidget(const SizedBox());
   });
 }

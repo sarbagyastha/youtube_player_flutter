@@ -10,21 +10,21 @@ final class FakeBridgeHost({super.replyTimeout}) extends BridgeHost {
   var nativeDisposed = false;
 
   @override
-  Future<void> sendToPage(String json) async =>
+  void sendToPage(String json) =>
       sent.add(jsonDecode(json) as Map<String, Object?>);
 
   @override
-  Future<void> disposeNative() async => nativeDisposed = true;
+  void disposeNative() => nativeDisposed = true;
 
   void page(Object message) => receiveFromPage(jsonEncode(message));
 
   void navigate(String url) => emitNavigation(url);
 
   @override
-  Future<void> setBackgroundColor(Color color) async {}
+  void setBackgroundColor(Color color) {}
 
   @override
-  Future<void> exitFullscreen() async {}
+  void exitFullscreen() {}
 
   @override
   Widget buildView({gestureRecognizers = const {}}) => const SizedBox();
@@ -93,7 +93,7 @@ void main() {
   group('BridgeHost', () {
     test('fire-and-forget calls carry no id', () async {
       final host = FakeBridgeHost();
-      await host.call(PlayerMethod.seekTo, [10, true]);
+      host.call(PlayerMethod.seekTo, [10, true]);
       expect(host.sent.single, {
         'm': 'seekTo',
         'a': [10, true],
@@ -147,7 +147,7 @@ void main() {
         throwsStateError,
       );
       await Future<void>.delayed(Duration.zero);
-      await host.dispose();
+      host.dispose();
       await pending;
       expect(host.nativeDisposed, isTrue);
       expect(await host.query(PlayerMethod.getPlaylist), isNull);

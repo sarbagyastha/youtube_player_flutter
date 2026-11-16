@@ -95,6 +95,12 @@ final class const YoutubePlayerValue({
   /// Whether the player accepts API calls.
   final bool isReady = false,
 
+  /// Whether the player is muted.
+  final bool isMuted = false,
+
+  /// Volume `0..100`, kept while muted.
+  final int volume = 100,
+
   /// Metadata of the current video.
   final YoutubeMetaData metaData = const YoutubeMetaData(),
 }) {
@@ -111,6 +117,8 @@ final class const YoutubePlayerValue({
     YoutubeLoadError? loadError,
     bool? isAutoplayBlocked,
     bool? isReady,
+    bool? isMuted,
+    int? volume,
     YoutubeMetaData? metaData,
   }) => YoutubePlayerValue(
     isFullScreen: isFullScreen ?? this.isFullScreen,
@@ -121,6 +129,8 @@ final class const YoutubePlayerValue({
     loadError: loadError ?? this.loadError,
     isAutoplayBlocked: isAutoplayBlocked ?? this.isAutoplayBlocked,
     isReady: isReady ?? this.isReady,
+    isMuted: isMuted ?? this.isMuted,
+    volume: volume ?? this.volume,
     metaData: metaData ?? this.metaData,
   );
 
@@ -135,6 +145,8 @@ final class const YoutubePlayerValue({
       other.loadError == loadError &&
       other.isAutoplayBlocked == isAutoplayBlocked &&
       other.isReady == isReady &&
+      other.isMuted == isMuted &&
+      other.volume == volume &&
       other.metaData == metaData;
 
   @override
@@ -147,13 +159,16 @@ final class const YoutubePlayerValue({
     loadError,
     isAutoplayBlocked,
     isReady,
+    isMuted,
+    volume,
     metaData,
   );
 
   @override
   String toString() =>
       'YoutubePlayerValue($playerState, rate: $playbackRate, '
-      'fullscreen: $isFullScreen, error: $error, $metaData)';
+      'fullscreen: $isFullScreen, muted: $isMuted, volume: $volume, '
+      'error: $error, $metaData)';
 }
 
 /// Common playback rates. The player may support others; see

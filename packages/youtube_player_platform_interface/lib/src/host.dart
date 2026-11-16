@@ -30,16 +30,16 @@ abstract interface class YoutubePlayerHost {
   Stream<bool> get fullscreenChanges;
 
   /// Calls [method] without waiting for a result.
-  Future<void> call(PlayerMethod method, [List<Object?> args = const []]);
+  void call(PlayerMethod method, [List<Object?> args = const []]);
 
   /// Calls [method] and returns its JSON-compatible result.
   Future<Object?> query(PlayerMethod method, [List<Object?> args = const []]);
 
   /// Updates the color shown behind the player.
-  Future<void> setBackgroundColor(Color color);
+  void setBackgroundColor(Color color);
 
   /// Leaves system fullscreen if it is active.
-  Future<void> exitFullscreen();
+  void exitFullscreen();
 
   /// Builds the widget that displays this player.
   Widget buildView({
@@ -47,7 +47,7 @@ abstract interface class YoutubePlayerHost {
   });
 
   /// Releases the player and its native view.
-  Future<void> dispose();
+  void dispose();
 }
 
 /// Shared implementation for hosts that talk to the player page over a
@@ -82,16 +82,16 @@ abstract base class BridgeHost({
 
   /// Delivers [json] to `window.__yp.recv` in the page.
   @protected
-  Future<void> sendToPage(String json);
+  void sendToPage(String json);
 
   /// Releases native resources. Called once from [dispose].
   @protected
-  Future<void> disposeNative();
+  void disposeNative();
 
   @override
-  Future<void> call(PlayerMethod method, [List<Object?> args = const []]) {
-    if (_disposed) return Future.value();
-    return sendToPage(jsonEncode({'m': method.name, 'a': args}));
+  void call(PlayerMethod method, [List<Object?> args = const []]) {
+    if (_disposed) return;
+    sendToPage(jsonEncode({'m': method.name, 'a': args}));
   }
 
   @override
@@ -103,7 +103,7 @@ abstract base class BridgeHost({
     final id = _nextId++;
     final completer = _pending[id] = Completer<Object?>();
     try {
-      await sendToPage(jsonEncode({'i': id, 'm': method.name, 'a': args}));
+      sendToPage(jsonEncode({'i': id, 'm': method.name, 'a': args}));
       return await completer.future.timeout(replyTimeout);
     } finally {
       _pending.remove(id);
@@ -153,14 +153,16 @@ abstract base class BridgeHost({
 
   @override
   @mustCallSuper
-  Future<void> dispose() async {
+  void dispose() {
     if (_disposed) return;
     _disposed = true;
     for (final completer in _pending.values) {
       completer.completeError(StateError('Player disposed'));
     }
     _pending.clear();
-    await disposeNative();
-    await (_events.close(), _navigations.close(), _fullscreen.close()).wait;
+    disposeNative();
+    unawaited(
+      (_events.close(), _navigations.close(), _fullscreen.close()).wait,
+    );
   }
 }

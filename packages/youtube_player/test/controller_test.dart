@@ -29,10 +29,8 @@ final class FakeHost implements YoutubePlayerHost {
   Stream<bool> get fullscreenChanges => fullscreenController.stream;
 
   @override
-  Future<void> call(
-    PlayerMethod method, [
-    List<Object?> args = const [],
-  ]) async => calls.add((method, args));
+  void call(PlayerMethod method, [List<Object?> args = const []]) =>
+      calls.add((method, args));
 
   @override
   Future<Object?> query(
@@ -44,10 +42,10 @@ final class FakeHost implements YoutubePlayerHost {
   }
 
   @override
-  Future<void> setBackgroundColor(Color color) async {}
+  void setBackgroundColor(Color color) {}
 
   @override
-  Future<void> exitFullscreen() async => exitedFullscreen = true;
+  void exitFullscreen() => exitedFullscreen = true;
 
   @override
   Widget buildView({
@@ -55,7 +53,7 @@ final class FakeHost implements YoutubePlayerHost {
   }) => const SizedBox.expand();
 
   @override
-  Future<void> dispose() async => disposed = true;
+  void dispose() => disposed = true;
 }
 
 final class FakePlatform extends YoutubePlayerPlatform
@@ -83,9 +81,9 @@ void main() {
 
   test('queues calls until ready and keeps their order', () async {
     final controller = YoutubePlayerController();
-    unawaited(controller.playVideo());
-    unawaited(controller.seekTo(seconds: 10, allowSeekAhead: true));
-    unawaited(controller.setVolume(40));
+    controller.playVideo();
+    controller.seekTo(seconds: 10, allowSeekAhead: true);
+    controller.setVolume(40);
     await pump();
     expect(platform.hosts, isEmpty, reason: 'calls do not create the host');
     unawaited(controller.host);
@@ -149,11 +147,11 @@ void main() {
       ..emit(const PlaybackRateChangeEvent(1.5));
     await pump();
 
-    expect(await controller.currentTime, 12.5);
-    expect(await controller.volume, 70);
-    expect(await controller.isMuted, isTrue);
-    expect(await controller.playbackRate, 1.5);
-    expect(await controller.playerState, PlayerState.playing);
+    expect(controller.currentTime, 12.5);
+    expect(controller.volume, 70);
+    expect(controller.isMuted, isTrue);
+    expect(controller.playbackRate, 1.5);
+    expect(controller.playerState, PlayerState.playing);
     expect(controller.metadata.title, 'T');
     expect(controller.metadata.duration, const Duration(minutes: 1));
     expect(states.single.position, const Duration(milliseconds: 12500));
@@ -163,6 +161,42 @@ void main() {
     host.emit(const StateChangeEvent(.cued));
     await pump();
     expect(controller.value.playbackRate, 1, reason: 'cue resets the rate');
+  });
+
+  test('mute, volume and rate follow what the player reports', () async {
+    final controller = YoutubePlayerController(
+      params: const YoutubePlayerParams(mute: true),
+    );
+    expect(controller.value.isMuted, isTrue, reason: 'seeded from params');
+    unawaited(controller.host);
+    await pump();
+    final host = platform.hosts.single..emit(const ReadyEvent());
+    final values = <YoutubePlayerValue>[];
+    controller.listen(values.add);
+
+    const tick = TickEvent(
+      currentTime: 1,
+      loadedFraction: 0.1,
+      duration: 60,
+      volume: 40,
+      muted: false,
+    );
+    host
+      ..emit(tick)
+      ..emit(tick); // unchanged: no extra value
+    await pump();
+    expect(controller.value.isMuted, isFalse);
+    expect(controller.value.volume, 40);
+    expect(controller.isMuted, isFalse);
+    expect(values.where((v) => v.volume == 40), hasLength(1));
+
+    // A new playlist item keeps the reported rate instead of resetting to 1.
+    host.emit(const StateChangeEvent(.unStarted, playbackRate: 1.5));
+    await pump();
+    expect(controller.value.playbackRate, 1.5);
+    host.emit(const StateChangeEvent(.cued));
+    await pump();
+    expect(controller.value.playbackRate, 1, reason: 'fallback without r');
   });
 
   test('errors and autoplay blocking reset when playing', () async {
@@ -206,7 +240,7 @@ void main() {
       {'videoId': 'dQw4w9WgXcQ'},
     ]);
     expect(handled.single.host, 'example.com');
-    await controller.close();
+    controller.close();
   });
 
   test('fullscreen is driven by the platform', () async {
@@ -218,7 +252,7 @@ void main() {
     controller.setFullScreenListener(changes.add);
     host.fullscreenController.add(true);
     expect(controller.value.isFullScreen, isTrue);
-    await controller.toggleFullScreen();
+    controller.toggleFullScreen();
     expect(host.exitedFullscreen, isTrue);
     host.fullscreenController.add(false);
     expect(changes, [true, false]);
@@ -236,9 +270,9 @@ void main() {
       unawaited(controller.host);
       await pump();
       final host = platform.hosts.single..emit(const ReadyEvent());
-      await controller.cuePlaylist(list: ['a', 'b'], index: 1);
-      await controller.loadPlaylist(list: ['PL123'], listType: .playlist);
-      await controller.cueVideoById(videoId: 'x', startSeconds: 5);
+      controller.cuePlaylist(list: ['a', 'b'], index: 1);
+      controller.loadPlaylist(list: ['PL123'], listType: .playlist);
+      controller.cueVideoById(videoId: 'x', startSeconds: 5);
       expect(host.calls.map((c) => c.$2), [
         [
           ['a', 'b'],
@@ -257,13 +291,13 @@ void main() {
 
   test('close disposes the host and silences later calls', () async {
     final controller = YoutubePlayerController();
-    final pending = controller.playVideo();
+    controller.playVideo();
     unawaited(controller.host);
     await pump();
     final host = platform.hosts.single;
-    await controller.close();
-    await pending;
-    await controller.pauseVideo();
+    controller
+      ..close()
+      ..pauseVideo();
     expect(host.disposed, isTrue);
     expect(host.calls, isEmpty);
   });

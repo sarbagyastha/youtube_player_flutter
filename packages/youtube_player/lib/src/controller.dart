@@ -89,8 +89,9 @@ class YoutubePlayerController({
   final _ready = Completer<YoutubePlayerHost>();
   final _hostCompleter = Completer<YoutubePlayerHost>();
   final _subscriptions = <StreamSubscription<Object?>>[];
+  final _pendingCalls = <(PlayerMethod, List<Object?>)>[];
 
-  YoutubePlayerValue _value = const YoutubePlayerValue();
+  late YoutubePlayerValue _value = YoutubePlayerValue(isMuted: params.mute);
   ValueChanged<bool>? _fullScreenListener;
   YoutubePlayerHost? _host;
   var _closed = false;
@@ -100,8 +101,6 @@ class YoutubePlayerController({
   var _currentTime = 0.0;
   var _loadedFraction = 0.0;
   var _duration = 0.0;
-  var _volume = 100;
-  var _muted = false;
   VideoData _videoData = const VideoData();
 
   static YoutubePlayerController? _autoPlaying;
@@ -126,7 +125,7 @@ class YoutubePlayerController({
         ),
       );
       if (_closed) {
-        await host.dispose();
+        host.dispose();
         return;
       }
       _host = host;
@@ -202,8 +201,20 @@ class YoutubePlayerController({
     switch (event) {
       case ReadyEvent():
         _emit(_value.copyWith(isReady: true));
-        if (!_ready.isCompleted) _ready.complete(_host);
-      case StateChangeEvent(:final state, :final videoData, :final duration):
+        if (!_ready.isCompleted) {
+          final host = _host!;
+          for (final (method, args) in _pendingCalls) {
+            host.call(method, args);
+          }
+          _pendingCalls.clear();
+          _ready.complete(host);
+        }
+      case StateChangeEvent(
+        :final state,
+        :final videoData,
+        :final duration,
+        :final playbackRate,
+      ):
         var meta = _value.metaData;
         if (videoData case final data? when data.videoId.isNotEmpty) {
           _videoData = data;
@@ -222,7 +233,8 @@ class YoutubePlayerController({
           _value.copyWith(
             playerState: state,
             metaData: meta,
-            playbackRate: freshVideo ? 1 : null,
+            // Prefer the rate the player reports; older pages don't.
+            playbackRate: playbackRate ?? (freshVideo ? 1 : null),
             error: state == .playing ? .none : null,
             isAutoplayBlocked: state == .playing ? false : null,
           ),
@@ -243,8 +255,6 @@ class YoutubePlayerController({
       case TickEvent():
         _currentTime = event.currentTime;
         _loadedFraction = event.loadedFraction;
-        _volume = event.volume;
-        _muted = event.muted;
         if (_videoStateController.hasListener) {
           _videoStateController.add(
             YoutubeVideoState(
@@ -253,23 +263,27 @@ class YoutubePlayerController({
             ),
           );
         }
+        var meta = _value.metaData;
         if (event.duration > 0 && event.duration != _duration) {
           _duration = event.duration;
-          _emit(
-            _value.copyWith(
-              metaData: _value.metaData.copyWith(
-                duration: _toDuration(event.duration),
-              ),
-            ),
-          );
+          meta = meta.copyWith(duration: _toDuration(event.duration));
         }
+        // No-op (deduplicated) unless duration or volume actually changed.
+        _emit(
+          _value.copyWith(
+            metaData: meta,
+            isMuted: event.muted,
+            volume: event.volume,
+          ),
+        );
     }
   }
 
   Future<void> _onNavigation(Uri uri) async {
     if (onLinkTap case final handler? when await handler(uri)) return;
     if (relatedVideoId(uri) case final videoId?) {
-      return loadVideoById(videoId: videoId);
+      loadVideoById(videoId: videoId);
+      return;
     }
     await launchUrl(uri, mode: .externalApplication);
   }
@@ -281,17 +295,14 @@ class YoutubePlayerController({
 
   // MARK: Command plumbing
 
-  /// Runs [method] once the player is ready. Calls keep their order.
-  Future<void> _run(
-    PlayerMethod method, [
-    List<Object?> args = const [],
-  ]) async {
+  /// Runs [method] now if the player is ready, otherwise queues it until
+  /// [ReadyEvent]. Calls keep their order.
+  void _run(PlayerMethod method, [List<Object?> args = const []]) {
     if (_closed) return;
-    try {
-      final host = await _ready.future;
-      await host.call(method, args);
-    } on _Closed {
-      return;
+    if (_ready.isCompleted) {
+      _host?.call(method, args);
+    } else {
+      _pendingCalls.add((method, args));
     }
   }
 
@@ -328,10 +339,10 @@ class YoutubePlayerController({
     _autoPlayPending = false;
     final previous = _autoPlaying;
     if (previous != null && previous != this && !previous._closed) {
-      unawaited(previous.pauseVideo());
+      previous.pauseVideo();
     }
     _autoPlaying = this;
-    unawaited(playVideo());
+    playVideo();
   }
 
   /// Whether `fromVideoId(autoPlay: true)` playback is still waiting.
@@ -367,7 +378,7 @@ class YoutubePlayerController({
         ];
 
   @override
-  Future<void> cueVideoById({
+  void cueVideoById({
     required String videoId,
     double? startSeconds,
     double? endSeconds,
@@ -376,7 +387,7 @@ class YoutubePlayerController({
   ]);
 
   @override
-  Future<void> loadVideoById({
+  void loadVideoById({
     required String videoId,
     double? startSeconds,
     double? endSeconds,
@@ -385,7 +396,7 @@ class YoutubePlayerController({
   ]);
 
   @override
-  Future<void> cueVideoByUrl({
+  void cueVideoByUrl({
     required String mediaContentUrl,
     double? startSeconds,
     double? endSeconds,
@@ -394,7 +405,7 @@ class YoutubePlayerController({
   ]);
 
   @override
-  Future<void> loadVideoByUrl({
+  void loadVideoByUrl({
     required String mediaContentUrl,
     double? startSeconds,
     double? endSeconds,
@@ -403,7 +414,7 @@ class YoutubePlayerController({
   ]);
 
   @override
-  Future<void> cuePlaylist({
+  void cuePlaylist({
     required List<String> list,
     ListType? listType,
     int? index,
@@ -411,7 +422,7 @@ class YoutubePlayerController({
   }) => _run(.cuePlaylist, _list(list, listType, index, startSeconds));
 
   @override
-  Future<void> loadPlaylist({
+  void loadPlaylist({
     required List<String> list,
     ListType? listType,
     int? index,
@@ -420,67 +431,66 @@ class YoutubePlayerController({
 
   /// Loads the video in any common YouTube [url] form (watch, youtu.be,
   /// embed, shorts, live).
-  Future<void> loadVideo(String url) {
+  void loadVideo(String url) {
     final videoId = convertUrlToId(url);
     assert(videoId != null, 'No YouTube video id in $url');
-    return videoId == null ? Future.value() : loadVideoById(videoId: videoId);
+    if (videoId != null) loadVideoById(videoId: videoId);
   }
 
   // MARK: Playback
 
   @override
-  Future<void> playVideo() => _run(.playVideo);
+  void playVideo() => _run(.playVideo);
 
   @override
-  Future<void> pauseVideo() => _run(.pauseVideo);
+  void pauseVideo() => _run(.pauseVideo);
 
   @override
-  Future<void> stopVideo() => _run(.stopVideo);
+  void stopVideo() => _run(.stopVideo);
 
   @override
-  Future<void> seekTo({required double seconds, bool allowSeekAhead = false}) =>
+  void seekTo({required double seconds, bool allowSeekAhead = false}) =>
       _run(.seekTo, [seconds, allowSeekAhead]);
 
   @override
-  Future<void> nextVideo() => _run(.nextVideo);
+  void nextVideo() => _run(.nextVideo);
 
   @override
-  Future<void> previousVideo() => _run(.previousVideo);
+  void previousVideo() => _run(.previousVideo);
 
   @override
-  Future<void> playVideoAt(int index) => _run(.playVideoAt, [index]);
+  void playVideoAt(int index) => _run(.playVideoAt, [index]);
 
   // MARK: Volume
 
   @override
-  Future<void> mute() => _run(.mute);
+  void mute() => _run(.mute);
 
   @override
-  Future<void> unMute() => _run(.unMute);
+  void unMute() => _run(.unMute);
 
   @override
-  Future<bool> get isMuted async => _muted;
+  bool get isMuted => _value.isMuted;
 
   @override
-  Future<void> setVolume(int volume) {
+  void setVolume(int volume) {
     assert(volume >= 0 && volume <= 100, 'Volume must be within 0..100');
-    return _run(.setVolume, [volume.clamp(0, 100)]);
+    _run(.setVolume, [volume.clamp(0, 100)]);
   }
 
   @override
-  Future<int> get volume async => _volume;
+  int get volume => _value.volume;
 
   // MARK: Size, rate, playlist behaviour
 
   @override
-  Future<void> setSize(double width, double height) =>
-      _run(.setSize, [width, height]);
+  void setSize(double width, double height) => _run(.setSize, [width, height]);
 
   @override
-  Future<double> get playbackRate async => _value.playbackRate;
+  double get playbackRate => _value.playbackRate;
 
   @override
-  Future<void> setPlaybackRate(double suggestedRate) =>
+  void setPlaybackRate(double suggestedRate) =>
       _run(.setPlaybackRate, [suggestedRate]);
 
   @override
@@ -491,29 +501,29 @@ class YoutubePlayerController({
       };
 
   @override
-  Future<void> setLoop({required bool loopPlaylists}) =>
+  void setLoop({required bool loopPlaylists}) =>
       _run(.setLoop, [loopPlaylists]);
 
   @override
-  Future<void> setShuffle({required bool shufflePlaylists}) =>
+  void setShuffle({required bool shufflePlaylists}) =>
       _run(.setShuffle, [shufflePlaylists]);
 
   // MARK: Status and information
 
   @override
-  Future<PlayerState> get playerState async => _value.playerState;
+  PlayerState get playerState => _value.playerState;
 
   @override
-  Future<double> get currentTime async => _currentTime;
+  double get currentTime => _currentTime;
 
   @override
-  Future<double> get videoLoadedFraction async => _loadedFraction;
+  double get videoLoadedFraction => _loadedFraction;
 
   @override
-  Future<double> get duration async => _duration;
+  double get duration => _duration;
 
   @override
-  Future<VideoData> get videoData async => _videoData;
+  VideoData get videoData => _videoData;
 
   @override
   Future<String> get videoUrl async =>
@@ -537,12 +547,11 @@ class YoutubePlayerController({
   // MARK: Modules and 360°
 
   @override
-  Future<void> setCaptionsFontSize(int size) =>
+  void setCaptionsFontSize(int size) =>
       _run(.setOption, ['captions', 'fontSize', size]);
 
   @override
-  Future<void> reloadCaptions() =>
-      _run(.setOption, ['captions', 'reload', true]);
+  void reloadCaptions() => _run(.setOption, ['captions', 'reload', true]);
 
   @override
   Future<List<String>> getOptions([String? module]) async =>
@@ -559,7 +568,7 @@ class YoutubePlayerController({
       };
 
   @override
-  Future<void> setSphericalProperties(SphericalProperties properties) =>
+  void setSphericalProperties(SphericalProperties properties) =>
       _run(.setSphericalProperties, [properties.toJson()]);
 
   // MARK: Fullscreen (owned by the platform WebView)
@@ -573,14 +582,18 @@ class YoutubePlayerController({
       await _query(.requestFullscreen) == true;
 
   /// Leaves fullscreen if it is active.
-  Future<void> exitFullScreen() async {
-    final host = _host;
-    if (host != null && !_closed) await host.exitFullscreen();
+  void exitFullScreen() {
+    if (!_closed) _host?.exitFullscreen();
   }
 
   /// Toggles fullscreen; see [enterFullScreen].
-  Future<void> toggleFullScreen() =>
-      _value.isFullScreen ? exitFullScreen() : enterFullScreen();
+  void toggleFullScreen() {
+    if (_value.isFullScreen) {
+      exitFullScreen();
+    } else {
+      unawaited(enterFullScreen());
+    }
+  }
 
   /// Called on every fullscreen transition.
   void setFullScreenListener(ValueChanged<bool> callback) {
@@ -631,9 +644,10 @@ class YoutubePlayerController({
   // MARK: Lifecycle
 
   /// Releases the player. The controller cannot be used afterwards.
-  Future<void> close() async {
+  void close() {
     if (_closed) return;
     _closed = true;
+    _pendingCalls.clear();
     if (_autoPlaying == this) _autoPlaying = null;
     if (!_ready.isCompleted) {
       _ready.future.ignore();
@@ -643,13 +657,17 @@ class YoutubePlayerController({
       _hostCompleter.future.ignore();
       _hostCompleter.completeError(const _Closed());
     }
-    await [for (final s in _subscriptions) s.cancel()].wait;
-    await _host?.dispose();
-    await (
-      _valueController.close(),
-      _videoStateController.close(),
-      _apiChangeController.close(),
-    ).wait;
+    for (final s in _subscriptions) {
+      unawaited(s.cancel());
+    }
+    _host?.dispose();
+    unawaited(
+      (
+        _valueController.close(),
+        _videoStateController.close(),
+        _apiChangeController.close(),
+      ).wait,
+    );
   }
 }
 

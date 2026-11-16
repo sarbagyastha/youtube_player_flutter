@@ -34,6 +34,7 @@ extension type YTPlayer._(JSObject _) implements JSObject {
   external double getCurrentTime();
   external double getDuration();
   external double getVideoLoadedFraction();
+  external double getPlaybackRate();
   external int getVolume();
   external bool isMuted();
   external YTVideoData? getVideoData();
