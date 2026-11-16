@@ -1,3 +1,10 @@
+## 10.0.2
+**November 16, 2026**
+
+- Migrates to the `material_ui` package.
+- Updates minimum Dart SDK to `^3.11.0`.
+- Bumps `youtube_player_iframe` dependency to `^6.0.3`.
+
 ## 10.0.1
 **May 31, 2026**
 

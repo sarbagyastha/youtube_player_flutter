@@ -1,4 +1,12 @@
 # Changelog
+## 6.0.3
+**November 16, 2026**
+
+- Migrates to the `material_ui` package.
+- Updates minimum Dart SDK to `^3.11.0`.
+- Bumps dependencies (`webview_flutter`, `webview_flutter_android`, `webview_flutter_wkwebview`, `url_launcher`).
+- Bumps `youtube_player_iframe_web` dependency to `^3.1.4`.
+
 ## 6.0.2
 **May 31, 2026**
 
