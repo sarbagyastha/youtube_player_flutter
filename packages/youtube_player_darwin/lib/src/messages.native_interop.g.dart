@@ -9,12 +9,14 @@
 import 'dart:async';
 import 'dart:ffi';
 import 'dart:io' show Platform;
-import 'dart:typed_data' show Float32List, Float64List, Int32List, Int64List, TypedData;
+import 'dart:typed_data'
+    show Float32List, Float64List, Int32List, Int64List, TypedData;
 import 'dart:ui' show PlatformDispatcher;
 
 import 'package:ffi/ffi.dart';
 import 'package:flutter/services.dart';
 import 'package:objective_c/objective_c.dart';
+
 import './messages.g.dart';
 import './messages.g.ffi.dart' as ffi_bridge;
 
@@ -34,13 +36,14 @@ class _PigeonFfiCodec {
       } else if (type == bool) {
         return numValue.boolValue;
       }
-      
 
       return numValue.longValue;
     } else if (NSString.isA(value)) {
       return NSString.as(value).toDartString();
     } else if (ffi_bridge.MessagesPigeonTypedData.isA(value)) {
-      return _getValueFromPigeonTypedData(value as ffi_bridge.MessagesPigeonTypedData);
+      return _getValueFromPigeonTypedData(
+        value as ffi_bridge.MessagesPigeonTypedData,
+      );
     } else if (NSArray.isA(value)) {
       final NSArray array = NSArray.as(value);
       final List<Object?> res = <Object?>[];
@@ -54,20 +57,31 @@ class _PigeonFfiCodec {
       final Map<Object?, Object?> res = <Object?, Object?>{};
       for (int i = 0; i < keys.count; i++) {
         final ObjCObject key = keys.objectAtIndex(i);
-        res[readValue(key, type, type2)] = readValue(dict.objectForKey(key), type, type2);
+        res[readValue(key, type, type2)] = readValue(
+          dict.objectForKey(key),
+          type,
+          type2,
+        );
       }
       return res;
     } else if (ffi_bridge.MessagesNumberWrapper.isA(value)) {
-      return _convertNumberWrapperToDart(ffi_bridge.MessagesNumberWrapper.as(value));
-          } else if (ffi_bridge.NativeHostConfigBridge.isA(value)) {
-        return PigeonInternalNativeHostConfigNativeInterop.fromFfi(ffi_bridge.NativeHostConfigBridge.as(value));
-              } else if (ffi_bridge.NativeHostInfoBridge.isA(value)) {
-        return PigeonInternalNativeHostInfoNativeInterop.fromFfi(ffi_bridge.NativeHostInfoBridge.as(value));
-              } else if (ffi_bridge.NativeLoadErrorBridge.isA(value)) {
-        return PigeonInternalNativeLoadErrorNativeInterop.fromFfi(ffi_bridge.NativeLoadErrorBridge.as(value));
-        
+      return _convertNumberWrapperToDart(
+        ffi_bridge.MessagesNumberWrapper.as(value),
+      );
+    } else if (ffi_bridge.NativeHostConfigBridge.isA(value)) {
+      return PigeonInternalNativeHostConfigNativeInterop.fromFfi(
+        ffi_bridge.NativeHostConfigBridge.as(value),
+      );
+    } else if (ffi_bridge.NativeHostInfoBridge.isA(value)) {
+      return PigeonInternalNativeHostInfoNativeInterop.fromFfi(
+        ffi_bridge.NativeHostInfoBridge.as(value),
+      );
+    } else if (ffi_bridge.NativeLoadErrorBridge.isA(value)) {
+      return PigeonInternalNativeLoadErrorNativeInterop.fromFfi(
+        ffi_bridge.NativeLoadErrorBridge.as(value),
+      );
     } else {
-    throw ArgumentError.value(value);
+      throw ArgumentError.value(value);
     }
   }
 
@@ -76,57 +90,64 @@ class _PigeonFfiCodec {
     bool generic = false,
   }) {
     if (value == null) {
-      if (_isTypeOrNullableType<T>(ObjCObject) || _isTypeOrNullableType<T>(NSObject)) {
+      if (_isTypeOrNullableType<T>(ObjCObject) ||
+          _isTypeOrNullableType<T>(NSObject)) {
         return ffi_bridge.MessagesPigeonInternalNull() as T;
       }
       return null as T;
     }
     if (value is bool) {
       return (generic
-          ? _convertToFfiNumberWrapper(value)
-          : NSNumber.alloc().initWithLong(value ? 1 : 0)) as T;
+              ? _convertToFfiNumberWrapper(value)
+              : NSNumber.alloc().initWithLong(value ? 1 : 0))
+          as T;
     } else if (value is double) {
       return (generic
-          ? _convertToFfiNumberWrapper(value)
-          : NSNumber.alloc().initWithDouble(value)) as T;
+              ? _convertToFfiNumberWrapper(value)
+              : NSNumber.alloc().initWithDouble(value))
+          as T;
       // ignore: avoid_double_and_int_checks
     } else if (value is int) {
       return (generic
-          ? _convertToFfiNumberWrapper(value)
-          : NSNumber.alloc().initWithLong(value)) as T;
+              ? _convertToFfiNumberWrapper(value)
+              : NSNumber.alloc().initWithLong(value))
+          as T;
     } else if (value is Enum) {
       return (generic
-          ? _convertToFfiNumberWrapper(value)
-          : NSNumber.alloc().initWithLong(value.index)) as T;
+              ? _convertToFfiNumberWrapper(value)
+              : NSNumber.alloc().initWithLong(value.index))
+          as T;
     } else if (value is String) {
       return NSString(value) as T;
     } else if (value is TypedData) {
       return _toPigeonTypedData(value) as T;
-    
     } else if (value is List) {
       final NSMutableArray res = NSMutableArray();
       for (final Object? entry in value) {
-        res.addObject(entry == null
-            ? ffi_bridge.MessagesPigeonInternalNull()
-            : writeValue(entry, generic: true));
+        res.addObject(
+          entry == null
+              ? ffi_bridge.MessagesPigeonInternalNull()
+              : writeValue(entry, generic: true),
+        );
       }
       return res as T;
-    
     } else if (value is Map) {
       final NSMutableDictionary res = NSMutableDictionary();
       for (final MapEntry<Object?, Object?> entry in value.entries) {
-        res.setObject(writeValue(entry.value, generic: true), forKey: NSCopying.as(writeValue(entry.key, generic: true)));
+        res.setObject(
+          writeValue(entry.value, generic: true),
+          forKey: NSCopying.as(writeValue(entry.key, generic: true)),
+        );
       }
       return res as T;
-          } else if (value is NativeHostConfig) {
-        return value.toFfi() as T;
-              } else if (value is NativeHostInfo) {
-        return value.toFfi() as T;
-              } else if (value is NativeLoadError) {
-        return value.toFfi() as T;
-        
+    } else if (value is NativeHostConfig) {
+      return value.toFfi() as T;
+    } else if (value is NativeHostInfo) {
+      return value.toFfi() as T;
+    } else if (value is NativeLoadError) {
+      return value.toFfi() as T;
     } else {
-    throw ArgumentError.value(value);
+      throw ArgumentError.value(value);
     }
   }
 }
@@ -135,7 +156,9 @@ class _PigeonFfiCodec {
 NSData _typedDataToNSData(TypedData value) {
   final int lengthInBytes = value.lengthInBytes;
   // `malloc(0)` may return null, which `NSData` can't own.
-  final Pointer<Uint8> bytes = malloc<Uint8>(lengthInBytes == 0 ? 1 : lengthInBytes);
+  final Pointer<Uint8> bytes = malloc<Uint8>(
+    lengthInBytes == 0 ? 1 : lengthInBytes,
+  );
   bytes
       .asTypedList(lengthInBytes)
       .setAll(0, value.buffer.asUint8List(value.offsetInBytes, lengthInBytes));
@@ -160,8 +183,6 @@ ffi_bridge.MessagesPigeonTypedData _toPigeonTypedData(TypedData value) {
     type: type,
   );
 }
-
-
 
 Object? _getValueFromPigeonTypedData(ffi_bridge.MessagesPigeonTypedData value) {
   final NSData data = value.data;
@@ -199,7 +220,6 @@ Object? _getValueFromPigeonTypedData(ffi_bridge.MessagesPigeonTypedData value) {
     dataRef.release();
   }
 }
-    
 
 // ignore: unused_element
 class _PigeonFfiBuffers {
@@ -221,7 +241,9 @@ class _PigeonFfiBuffers {
 
   static NSData encode(Object? value) {
     final ByteData data = pigeon_MessagesmessageCodec.encodeMessage(value)!;
-    return _typedDataToNSData(data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes));
+    return _typedDataToNSData(
+      data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes),
+    );
   }
 
   static NSData? encodeOrNull(Object? value) {
@@ -230,10 +252,13 @@ class _PigeonFfiBuffers {
 
   static Object? decode(NSData? data) {
     final Uint8List? bytes = toUint8List(data);
-    return bytes == null ? null : pigeon_MessagesmessageCodec.decodeMessage(ByteData.sublistView(bytes));
+    return bytes == null
+        ? null
+        : pigeon_MessagesmessageCodec.decodeMessage(
+            ByteData.sublistView(bytes),
+          );
   }
 }
-
 
 Object? _convertNumberWrapperToDart(ffi_bridge.MessagesNumberWrapper value) {
   switch (value.type) {
@@ -247,18 +272,29 @@ Object? _convertNumberWrapperToDart(ffi_bridge.MessagesNumberWrapper value) {
       throw ArgumentError.value(value);
   }
 }
+
 ffi_bridge.MessagesNumberWrapper _convertToFfiNumberWrapper(Object value) {
   switch (value) {
     case int _:
-      return ffi_bridge.MessagesNumberWrapper.alloc().initWithNumber(NSNumber.alloc().initWithLong(value), type: 1);
+      return ffi_bridge.MessagesNumberWrapper.alloc().initWithNumber(
+        NSNumber.alloc().initWithLong(value),
+        type: 1,
+      );
     case double _:
-      return ffi_bridge.MessagesNumberWrapper.alloc().initWithNumber(NSNumber.alloc().initWithDouble(value), type: 2);
+      return ffi_bridge.MessagesNumberWrapper.alloc().initWithNumber(
+        NSNumber.alloc().initWithDouble(value),
+        type: 2,
+      );
     case bool _:
-      return ffi_bridge.MessagesNumberWrapper.alloc().initWithNumber(NSNumber.alloc().initWithLong(value ? 1 : 0), type: 3);
+      return ffi_bridge.MessagesNumberWrapper.alloc().initWithNumber(
+        NSNumber.alloc().initWithLong(value ? 1 : 0),
+        type: 3,
+      );
     default:
       throw ArgumentError.value(value);
   }
 }
+
 bool _isType<T>(Type t) => T == t;
 bool _isTypeOrNullableType<T>(Type t) => _isType<T>(t) || _isType<T?>(t);
 
@@ -287,6 +323,7 @@ int? _pigeonEngineAffinity;
 void _pigeonUpdateFlutterApiEngineAffinity() {
   _YoutubeFlutterApiRegistrar.pigeonVar_updateEngineAffinity();
 }
+
 void _throwIfFfiError(ffi_bridge.PigeonError error) {
   if (error.code != null) {
     throw _wrapFfiError(error);
@@ -314,8 +351,6 @@ void _reportFfiError(ffi_bridge.PigeonError errorOut, Object e) {
   }
 }
 
-
-
 extension PigeonInternalNativeHostConfigNativeInterop on NativeHostConfig {
   ffi_bridge.NativeHostConfigBridge toFfi() {
     return ffi_bridge.NativeHostConfigBridge.alloc().initWithAppId(
@@ -327,14 +362,18 @@ extension PigeonInternalNativeHostConfigNativeInterop on NativeHostConfig {
     );
   }
 
-  static NativeHostConfig? fromFfi(ffi_bridge.NativeHostConfigBridge? ffiClass) {
-    return ffiClass == null ? null : NativeHostConfig(
-      appId: ffiClass.appId?.toDartString(),
-      userAgent: ffiClass.userAgent?.toDartString(),
-      debuggable: ffiClass.debuggable,
-      backgroundColor: ffiClass.backgroundColor?.longValue,
-      frameScript: ffiClass.frameScript?.toDartString(),
-    );
+  static NativeHostConfig? fromFfi(
+    ffi_bridge.NativeHostConfigBridge? ffiClass,
+  ) {
+    return ffiClass == null
+        ? null
+        : NativeHostConfig(
+            appId: ffiClass.appId?.toDartString(),
+            userAgent: ffiClass.userAgent?.toDartString(),
+            debuggable: ffiClass.debuggable,
+            backgroundColor: ffiClass.backgroundColor?.longValue,
+            frameScript: ffiClass.frameScript?.toDartString(),
+          );
   }
 }
 
@@ -348,11 +387,13 @@ extension PigeonInternalNativeHostInfoNativeInterop on NativeHostInfo {
   }
 
   static NativeHostInfo? fromFfi(ffi_bridge.NativeHostInfoBridge? ffiClass) {
-    return ffiClass == null ? null : NativeHostInfo(
-      handle: ffiClass.handle,
-      origin: ffiClass.origin.toDartString(),
-      frameScripting: ffiClass.frameScripting,
-    );
+    return ffiClass == null
+        ? null
+        : NativeHostInfo(
+            handle: ffiClass.handle,
+            origin: ffiClass.origin.toDartString(),
+            frameScripting: ffiClass.frameScripting,
+          );
   }
 }
 
@@ -366,11 +407,13 @@ extension PigeonInternalNativeLoadErrorNativeInterop on NativeLoadError {
   }
 
   static NativeLoadError? fromFfi(ffi_bridge.NativeLoadErrorBridge? ffiClass) {
-    return ffiClass == null ? null : NativeLoadError(
-      code: ffiClass.code,
-      message: ffiClass.message.toDartString(),
-      url: ffiClass.url?.toDartString(),
-    );
+    return ffiClass == null
+        ? null
+        : NativeLoadError(
+            code: ffiClass.code,
+            message: ffiClass.message.toDartString(),
+            url: ffiClass.url?.toDartString(),
+          );
   }
 }
 
@@ -378,35 +421,44 @@ YoutubeHostApiForNativeInterop? pigeon_getInstance_YoutubeHostApi({
   String channelName = defaultInstanceName,
 }) => _YoutubeHostApiForNativeInterop.getInstance(channelName: channelName);
 
-
-class _YoutubeHostApiForNativeInterop implements YoutubeHostApiForNativeInterop {
-  _YoutubeHostApiForNativeInterop._withRegistrar({ffi_bridge.YoutubeHostApiSetup? ffiApi}) : _ffiApi = ffiApi;
+class _YoutubeHostApiForNativeInterop
+    implements YoutubeHostApiForNativeInterop {
+  _YoutubeHostApiForNativeInterop._withRegistrar({
+    ffi_bridge.YoutubeHostApiSetup? ffiApi,
+  }) : _ffiApi = ffiApi;
 
   /// Returns instance of YoutubeHostApiForNativeInterop with specified [channelName] if one has been registered.
   ///
   /// Returns the instance registered by this isolate's engine when it is known,
   /// and otherwise the most recent registration.
-  static YoutubeHostApiForNativeInterop? getInstance({String channelName = defaultInstanceName}) {
- if (Platform.isIOS || Platform.isMacOS) {
+  static YoutubeHostApiForNativeInterop? getInstance({
+    String channelName = defaultInstanceName,
+  }) {
+    if (Platform.isIOS || Platform.isMacOS) {
       final int? engineId = PlatformDispatcher.instance.engineId;
-      final ffi_bridge.YoutubeHostApiSetup? link = ffi_bridge.YoutubeHostApiSetup.pigeonResolveInstanceWithEngineId(
-        engineId ?? _pigeonNoEngineKey,
-        affinityKey: _pigeonEngineAffinity ?? _pigeonNoEngineKey,
-        name: NSString(channelName),
-      );
+      final ffi_bridge.YoutubeHostApiSetup? link =
+          ffi_bridge.YoutubeHostApiSetup.pigeonResolveInstanceWithEngineId(
+            engineId ?? _pigeonNoEngineKey,
+            affinityKey: _pigeonEngineAffinity ?? _pigeonNoEngineKey,
+            name: NSString(channelName),
+          );
       if (link == null) {
         _throwNoInstanceError(channelName);
       }
       if (link != null && _pigeonEngineAffinity == null) {
-        final int linkEngineKey = ffi_bridge.YoutubeHostApiSetup.pigeonEngineKeyOf(link);
-        if (linkEngineKey != _pigeonNoEngineKey && (engineId == null || linkEngineKey < 0)) {
+        final int linkEngineKey =
+            ffi_bridge.YoutubeHostApiSetup.pigeonEngineKeyOf(link);
+        if (linkEngineKey != _pigeonNoEngineKey &&
+            (engineId == null || linkEngineKey < 0)) {
           _pigeonEngineAffinity = linkEngineKey;
           _pigeonUpdateFlutterApiEngineAffinity();
         }
       }
       return _YoutubeHostApiForNativeInterop._withRegistrar(ffiApi: link);
     } else {
-      throw UnsupportedError('Native Interop is not supported on this platform. Use YoutubeHostApi instead.');
+      throw UnsupportedError(
+        'Native Interop is not supported on this platform. Use YoutubeHostApi instead.',
+      );
     }
   }
 
@@ -414,10 +466,14 @@ class _YoutubeHostApiForNativeInterop implements YoutubeHostApiForNativeInterop 
 
   @override
   NativeHostInfo create(NativeHostConfig config, String html) {
- if (_ffiApi != null) {
+    if (_ffiApi != null) {
       final pigeonVar_error = ffi_bridge.PigeonError();
       final NSData pigeonVar_args = _PigeonFfiBuffers.encode(<Object?>[config]);
-      final NSData? pigeonVar_res = _ffiApi.createWithHtml(NSString(html), pigeonVar_args: pigeonVar_args, wrappedError: pigeonVar_error);
+      final NSData? pigeonVar_res = _ffiApi.createWithHtml(
+        NSString(html),
+        pigeonVar_args: pigeonVar_args,
+        wrappedError: pigeonVar_error,
+      );
       _throwIfFfiError(pigeonVar_error);
       return _PigeonFfiBuffers.decode(pigeonVar_res)! as NativeHostInfo;
     } else {
@@ -427,9 +483,13 @@ class _YoutubeHostApiForNativeInterop implements YoutubeHostApiForNativeInterop 
 
   @override
   void send(int handle, String json) {
- if (_ffiApi != null) {
+    if (_ffiApi != null) {
       final pigeonVar_error = ffi_bridge.PigeonError();
-      _ffiApi.sendWithHandle(handle, json: NSString(json), wrappedError: pigeonVar_error);
+      _ffiApi.sendWithHandle(
+        handle,
+        json: NSString(json),
+        wrappedError: pigeonVar_error,
+      );
       _throwIfFfiError(pigeonVar_error);
       return;
     } else {
@@ -439,9 +499,13 @@ class _YoutubeHostApiForNativeInterop implements YoutubeHostApiForNativeInterop 
 
   @override
   void setBackgroundColor(int handle, int argb) {
- if (_ffiApi != null) {
+    if (_ffiApi != null) {
       final pigeonVar_error = ffi_bridge.PigeonError();
-      _ffiApi.setBackgroundColorWithHandle(handle, argb: argb, wrappedError: pigeonVar_error);
+      _ffiApi.setBackgroundColorWithHandle(
+        handle,
+        argb: argb,
+        wrappedError: pigeonVar_error,
+      );
       _throwIfFfiError(pigeonVar_error);
       return;
     } else {
@@ -451,7 +515,7 @@ class _YoutubeHostApiForNativeInterop implements YoutubeHostApiForNativeInterop 
 
   @override
   void exitFullscreen(int handle) {
- if (_ffiApi != null) {
+    if (_ffiApi != null) {
       final pigeonVar_error = ffi_bridge.PigeonError();
       _ffiApi.exitFullscreenWithHandle(handle, wrappedError: pigeonVar_error);
       _throwIfFfiError(pigeonVar_error);
@@ -463,7 +527,7 @@ class _YoutubeHostApiForNativeInterop implements YoutubeHostApiForNativeInterop 
 
   @override
   void dispose(int handle) {
- if (_ffiApi != null) {
+    if (_ffiApi != null) {
       final pigeonVar_error = ffi_bridge.PigeonError();
       _ffiApi.disposeWithHandle(handle, wrappedError: pigeonVar_error);
       _throwIfFfiError(pigeonVar_error);
@@ -475,9 +539,12 @@ class _YoutubeHostApiForNativeInterop implements YoutubeHostApiForNativeInterop 
 
   @override
   bool openExternal(String url) {
- if (_ffiApi != null) {
+    if (_ffiApi != null) {
       final pigeonVar_error = ffi_bridge.PigeonError();
-      final NSNumber? pigeonVar_res = _ffiApi.openExternalWithUrl(NSString(url), wrappedError: pigeonVar_error);
+      final NSNumber? pigeonVar_res = _ffiApi.openExternalWithUrl(
+        NSString(url),
+        wrappedError: pigeonVar_error,
+      );
       _throwIfFfiError(pigeonVar_error);
       return pigeonVar_res!.boolValue;
     } else {
@@ -487,7 +554,7 @@ class _YoutubeHostApiForNativeInterop implements YoutubeHostApiForNativeInterop 
 
   @override
   void reset() {
- if (_ffiApi != null) {
+    if (_ffiApi != null) {
       final pigeonVar_error = ffi_bridge.PigeonError();
       _ffiApi.resetWithWrappedError(pigeonVar_error);
       _throwIfFfiError(pigeonVar_error);
@@ -496,18 +563,22 @@ class _YoutubeHostApiForNativeInterop implements YoutubeHostApiForNativeInterop 
       throw Exception('No JNI or FFI api available');
     }
   }
-
 }
 
 final class _YoutubeFlutterApiRegistrar {
   _YoutubeFlutterApiRegistrar(this.pigeonVar_dartApi);
 
-  static final Map<String, List<(YoutubeFlutterApi, Object)>> pigeonVar_registeredHandles = <String, List<(YoutubeFlutterApi, Object)>>{};
-  static final Map<String, YoutubeFlutterApi> pigeonVar_setUpInstances = <String, YoutubeFlutterApi>{};
+  static final Map<String, List<(YoutubeFlutterApi, Object)>>
+  pigeonVar_registeredHandles = <String, List<(YoutubeFlutterApi, Object)>>{};
+  static final Map<String, YoutubeFlutterApi> pigeonVar_setUpInstances =
+      <String, YoutubeFlutterApi>{};
 
   final YoutubeFlutterApi pigeonVar_dartApi;
 
-  static void pigeonVar_setUp(YoutubeFlutterApi? api, {String name = defaultInstanceName}) {
+  static void pigeonVar_setUp(
+    YoutubeFlutterApi? api, {
+    String name = defaultInstanceName,
+  }) {
     final YoutubeFlutterApi? previous = pigeonVar_setUpInstances.remove(name);
     if (previous != null && !identical(previous, api)) {
       pigeonVar_unregister(previous, name: name);
@@ -518,15 +589,22 @@ final class _YoutubeFlutterApiRegistrar {
     }
   }
 
-  static void pigeonVar_unregister(YoutubeFlutterApi api, {String name = defaultInstanceName}) {
+  static void pigeonVar_unregister(
+    YoutubeFlutterApi api, {
+    String name = defaultInstanceName,
+  }) {
     if (identical(pigeonVar_setUpInstances[name], api)) {
       pigeonVar_setUpInstances.remove(name);
     }
     pigeonVar_removeHandle(api, name: name);
   }
 
-  static void pigeonVar_removeHandle(YoutubeFlutterApi api, {String name = defaultInstanceName}) {
-    final List<(YoutubeFlutterApi, Object)>? handles = pigeonVar_registeredHandles[name];
+  static void pigeonVar_removeHandle(
+    YoutubeFlutterApi api, {
+    String name = defaultInstanceName,
+  }) {
+    final List<(YoutubeFlutterApi, Object)>? handles =
+        pigeonVar_registeredHandles[name];
     if (handles == null || handles.isEmpty) {
       return;
     }
@@ -557,57 +635,97 @@ final class _YoutubeFlutterApiRegistrar {
 
   YoutubeFlutterApi pigeonVar_register({String name = defaultInstanceName}) {
     pigeonVar_removeHandle(pigeonVar_dartApi, name: name);
-    final int engineId = PlatformDispatcher.instance.engineId ?? _pigeonNoEngineKey;
+    final int engineId =
+        PlatformDispatcher.instance.engineId ?? _pigeonNoEngineKey;
     final int affinityKey = _pigeonEngineAffinity ?? _pigeonNoEngineKey;
     if (Platform.isIOS || Platform.isMacOS) {
-
-      final ObjCProtocolBuilder builder = ObjCProtocolBuilder(debugName: 'YoutubeFlutterApiBridge');
-      ffi_bridge.YoutubeFlutterApiBridge$Builder.onMessageWithHandle_json_error_.implement(builder, (int arg_handle, NSString arg_json, ffi_bridge.PigeonError errorOut) {
-        try {
-          pigeonVar_dartApi.onMessage(arg_handle, arg_json.toDartString());
-          return;
-        } catch (e) {
-          _reportFfiError(errorOut, e);
-          return;
-        }
-      });
-      ffi_bridge.YoutubeFlutterApiBridge$Builder.onNavigationWithHandle_url_error_.implement(builder, (int arg_handle, NSString arg_url, ffi_bridge.PigeonError errorOut) {
-        try {
-          pigeonVar_dartApi.onNavigation(arg_handle, arg_url.toDartString());
-          return;
-        } catch (e) {
-          _reportFfiError(errorOut, e);
-          return;
-        }
-      });
-      ffi_bridge.YoutubeFlutterApiBridge$Builder.onLoadErrorWithHandle_pigeonVar_args_error_.implement(builder, (int arg_handle, NSData pigeonVar_args, ffi_bridge.PigeonError errorOut) {
-        try {
-          final List<Object?> pigeonVar_decodedArgs = _PigeonFfiBuffers.decode(pigeonVar_args)! as List<Object?>;
-          pigeonVar_dartApi.onLoadError(arg_handle, pigeonVar_decodedArgs[0]! as NativeLoadError);
-          return;
-        } catch (e) {
-          _reportFfiError(errorOut, e);
-          return;
-        }
-      });
-      ffi_bridge.YoutubeFlutterApiBridge$Builder.onFullscreenChangedWithHandle_isFullscreen_error_.implement(builder, (int arg_handle, bool arg_isFullscreen, ffi_bridge.PigeonError errorOut) {
-        try {
-          pigeonVar_dartApi.onFullscreenChanged(arg_handle, arg_isFullscreen);
-          return;
-        } catch (e) {
-          _reportFfiError(errorOut, e);
-          return;
-        }
-      });
+      final ObjCProtocolBuilder builder = ObjCProtocolBuilder(
+        debugName: 'YoutubeFlutterApiBridge',
+      );
+      ffi_bridge.YoutubeFlutterApiBridge$Builder.onMessageWithHandle_json_error_
+          .implement(builder, (
+            int arg_handle,
+            NSString arg_json,
+            ffi_bridge.PigeonError errorOut,
+          ) {
+            try {
+              pigeonVar_dartApi.onMessage(arg_handle, arg_json.toDartString());
+              return;
+            } catch (e) {
+              _reportFfiError(errorOut, e);
+              return;
+            }
+          });
+      ffi_bridge
+          .YoutubeFlutterApiBridge$Builder
+          .onNavigationWithHandle_url_error_
+          .implement(builder, (
+            int arg_handle,
+            NSString arg_url,
+            ffi_bridge.PigeonError errorOut,
+          ) {
+            try {
+              pigeonVar_dartApi.onNavigation(
+                arg_handle,
+                arg_url.toDartString(),
+              );
+              return;
+            } catch (e) {
+              _reportFfiError(errorOut, e);
+              return;
+            }
+          });
+      ffi_bridge
+          .YoutubeFlutterApiBridge$Builder
+          .onLoadErrorWithHandle_pigeonVar_args_error_
+          .implement(builder, (
+            int arg_handle,
+            NSData pigeonVar_args,
+            ffi_bridge.PigeonError errorOut,
+          ) {
+            try {
+              final List<Object?> pigeonVar_decodedArgs =
+                  _PigeonFfiBuffers.decode(pigeonVar_args)! as List<Object?>;
+              pigeonVar_dartApi.onLoadError(
+                arg_handle,
+                pigeonVar_decodedArgs[0]! as NativeLoadError,
+              );
+              return;
+            } catch (e) {
+              _reportFfiError(errorOut, e);
+              return;
+            }
+          });
+      ffi_bridge
+          .YoutubeFlutterApiBridge$Builder
+          .onFullscreenChangedWithHandle_isFullscreen_error_
+          .implement(builder, (
+            int arg_handle,
+            bool arg_isFullscreen,
+            ffi_bridge.PigeonError errorOut,
+          ) {
+            try {
+              pigeonVar_dartApi.onFullscreenChanged(
+                arg_handle,
+                arg_isFullscreen,
+              );
+              return;
+            } catch (e) {
+              _reportFfiError(errorOut, e);
+              return;
+            }
+          });
       builder.addProtocol(ffi_bridge.YoutubeFlutterApiBridge$Builder.$protocol);
-      final ffi_bridge.YoutubeFlutterApiBridge impl = ffi_bridge.YoutubeFlutterApiBridge.as(builder.build());
+      final ffi_bridge.YoutubeFlutterApiBridge impl =
+          ffi_bridge.YoutubeFlutterApiBridge.as(builder.build());
       ffi_bridge.YoutubeFlutterApiRegistrar.registerInstanceWithApi(
         impl,
         engineId: engineId,
         affinityKey: affinityKey,
         name: NSString(name),
       );
-      (pigeonVar_registeredHandles[name] ??= <(YoutubeFlutterApi, Object)>[]).add((pigeonVar_dartApi, impl));
+      (pigeonVar_registeredHandles[name] ??= <(YoutubeFlutterApi, Object)>[])
+          .add((pigeonVar_dartApi, impl));
     }
     return pigeonVar_dartApi;
   }
@@ -617,9 +735,11 @@ final class _YoutubeFlutterApiRegistrar {
   ///
   /// Native code updates existing registrations in place.
   static void pigeonVar_updateEngineAffinity() {
-    final int engineId = PlatformDispatcher.instance.engineId ?? _pigeonNoEngineKey;
+    final int engineId =
+        PlatformDispatcher.instance.engineId ?? _pigeonNoEngineKey;
     final int affinityKey = _pigeonEngineAffinity ?? _pigeonNoEngineKey;
-    for (final MapEntry<String, List<(YoutubeFlutterApi, Object)>> entry in pigeonVar_registeredHandles.entries) {
+    for (final MapEntry<String, List<(YoutubeFlutterApi, Object)>> entry
+        in pigeonVar_registeredHandles.entries) {
       for (final (YoutubeFlutterApi _, Object handle) in entry.value) {
         if (Platform.isIOS || Platform.isMacOS) {
           ffi_bridge.YoutubeFlutterApiRegistrar.registerInstanceWithApi(
@@ -648,4 +768,3 @@ void pigeon_set_up_YoutubeFlutterApi(
   YoutubeFlutterApi? api, {
   String name = defaultInstanceName,
 }) => _YoutubeFlutterApiRegistrar.pigeonVar_setUp(api, name: name);
-

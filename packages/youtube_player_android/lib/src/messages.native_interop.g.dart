@@ -8,11 +8,13 @@
 
 import 'dart:async';
 import 'dart:io' show Platform;
-import 'dart:typed_data' show Float32List, Float64List, Int32List, Int64List, Int8List, TypedData;
+import 'dart:typed_data'
+    show Float32List, Float64List, Int32List, Int64List, Int8List, TypedData;
 import 'dart:ui' show PlatformDispatcher;
 
 import 'package:flutter/services.dart';
 import 'package:jni/jni.dart';
+
 import './messages.g.dart';
 import './messages.g.jni.dart' as jni_bridge;
 
@@ -22,7 +24,9 @@ Uint8List? _jByteArrayToDart(JByteArray? array, {bool release = false}) {
   }
   try {
     final Int8List range = array.getRange(0, array.length);
-    return Uint8List.fromList(range.buffer.asUint8List(range.offsetInBytes, range.length));
+    return Uint8List.fromList(
+      range.buffer.asUint8List(range.offsetInBytes, range.length),
+    );
   } finally {
     if (release) {
       array.release();
@@ -71,7 +75,11 @@ Float64List? _jDoubleArrayToDart(JDoubleArray? array, {bool release = false}) {
 
 JByteArray _uint8ListToJni(Uint8List value) {
   final JByteArray array = JByteArray(value.length);
-  array.setRange(0, value.length, Int8List.view(value.buffer, value.offsetInBytes, value.length));
+  array.setRange(
+    0,
+    value.length,
+    Int8List.view(value.buffer, value.offsetInBytes, value.length),
+  );
   return array;
 }
 
@@ -117,10 +125,14 @@ class _PigeonJniCodec {
   static final JClass _listClass = JList.type.jClass;
   static final JClass _mapClass = JMap.type.jClass;
 
-  static final JClass _classNativeHostConfig = jni_bridge.NativeHostConfig.type.jClass;
-  static final JClass _classNativeHostInfo = jni_bridge.NativeHostInfo.type.jClass;
-  static final JClass _classNativeLoadError = jni_bridge.NativeLoadError.type.jClass;
-  static final JClass _classNativeFullscreenOrientation = jni_bridge.NativeFullscreenOrientation.type.jClass;
+  static final JClass _classNativeHostConfig =
+      jni_bridge.NativeHostConfig.type.jClass;
+  static final JClass _classNativeHostInfo =
+      jni_bridge.NativeHostInfo.type.jClass;
+  static final JClass _classNativeLoadError =
+      jni_bridge.NativeLoadError.type.jClass;
+  static final JClass _classNativeFullscreenOrientation =
+      jni_bridge.NativeFullscreenOrientation.type.jClass;
   static Object? readValue(JObject? value) {
     if (value == null) {
       return null;
@@ -153,7 +165,8 @@ class _PigeonJniCodec {
       }
       return res;
     } else if (value.isInstanceOf(_mapClass)) {
-      final Map<JObject?, JObject?> map = (value as JMap<JObject?, JObject?>).asDart();
+      final Map<JObject?, JObject?> map = (value as JMap<JObject?, JObject?>)
+          .asDart();
       final res = <Object?, Object?>{};
       for (final MapEntry<JObject?, JObject?> entry in map.entries) {
         final JObject? key = entry.key;
@@ -163,18 +176,24 @@ class _PigeonJniCodec {
         entryValue?.release();
       }
       return res;
-          } else if (value.isInstanceOf(_classNativeHostConfig)) {
-      return PigeonInternalNativeHostConfigNativeInterop.fromJni(value as jni_bridge.NativeHostConfig);
-              } else if (value.isInstanceOf(_classNativeHostInfo)) {
-      return PigeonInternalNativeHostInfoNativeInterop.fromJni(value as jni_bridge.NativeHostInfo);
-              } else if (value.isInstanceOf(_classNativeLoadError)) {
-      return PigeonInternalNativeLoadErrorNativeInterop.fromJni(value as jni_bridge.NativeLoadError);
-        
-          } else if (value.isInstanceOf(_classNativeFullscreenOrientation)) {
-      return PigeonInternalNativeFullscreenOrientationNativeInterop.fromJni(value as jni_bridge.NativeFullscreenOrientation);
-        
+    } else if (value.isInstanceOf(_classNativeHostConfig)) {
+      return PigeonInternalNativeHostConfigNativeInterop.fromJni(
+        value as jni_bridge.NativeHostConfig,
+      );
+    } else if (value.isInstanceOf(_classNativeHostInfo)) {
+      return PigeonInternalNativeHostInfoNativeInterop.fromJni(
+        value as jni_bridge.NativeHostInfo,
+      );
+    } else if (value.isInstanceOf(_classNativeLoadError)) {
+      return PigeonInternalNativeLoadErrorNativeInterop.fromJni(
+        value as jni_bridge.NativeLoadError,
+      );
+    } else if (value.isInstanceOf(_classNativeFullscreenOrientation)) {
+      return PigeonInternalNativeFullscreenOrientationNativeInterop.fromJni(
+        value as jni_bridge.NativeFullscreenOrientation,
+      );
     } else {
-    throw ArgumentError.value(value);
+      throw ArgumentError.value(value);
     }
   }
 
@@ -199,42 +218,46 @@ class _PigeonJniCodec {
       return _int64ListToJni(value) as T;
     } else if (value is Float64List) {
       return _float64ListToJni(value) as T;
-    
     } else if (value is List<Object>) {
       return value.map<JObject>((e) => writeValue<JObject>(e)).toJList() as T;
     } else if (value is List) {
       return value.map<JObject?>((e) => writeValue<JObject?>(e)).toJList() as T;
-    
     } else if (value is Map<Object, Object>) {
       return value
-          .map<JObject, JObject>((k, v) =>
-              MapEntry(writeValue<JObject>(k), writeValue<JObject>(v)))
-          .toJMap() as T;
+              .map<JObject, JObject>(
+                (k, v) =>
+                    MapEntry(writeValue<JObject>(k), writeValue<JObject>(v)),
+              )
+              .toJMap()
+          as T;
     } else if (value is Map<Object, Object?>) {
       return value
-          .map<JObject, JObject?>((k, v) =>
-              MapEntry(writeValue<JObject>(k), writeValue<JObject?>(v)))
-          .toJMap() as T;
+              .map<JObject, JObject?>(
+                (k, v) =>
+                    MapEntry(writeValue<JObject>(k), writeValue<JObject?>(v)),
+              )
+              .toJMap()
+          as T;
     } else if (value is Map) {
       return value
-          .map<JObject?, JObject?>((k, v) =>
-              MapEntry(writeValue<JObject?>(k), writeValue<JObject?>(v)))
-          .toJMap() as T;
-          } else if (value is NativeHostConfig) {
-        return value.toJni() as T;
-              } else if (value is NativeHostInfo) {
-        return value.toJni() as T;
-              } else if (value is NativeLoadError) {
-        return value.toJni() as T;
-        
-          } else if (value is NativeFullscreenOrientation) {
-        return value.toJni() as T;
-        
+              .map<JObject?, JObject?>(
+                (k, v) =>
+                    MapEntry(writeValue<JObject?>(k), writeValue<JObject?>(v)),
+              )
+              .toJMap()
+          as T;
+    } else if (value is NativeHostConfig) {
+      return value.toJni() as T;
+    } else if (value is NativeHostInfo) {
+      return value.toJni() as T;
+    } else if (value is NativeLoadError) {
+      return value.toJni() as T;
+    } else if (value is NativeFullscreenOrientation) {
+      return value.toJni() as T;
     } else {
-    throw ArgumentError.value(value);
+      throw ArgumentError.value(value);
     }
   }
-    
 }
 
 // ignore: unused_element
@@ -242,7 +265,11 @@ class _PigeonJniBuffers {
   static JByteArray encode(Object? value) {
     final ByteData data = pigeon_MessagesmessageCodec.encodeMessage(value)!;
     final JByteArray array = JByteArray(data.lengthInBytes);
-    array.setRange(0, data.lengthInBytes, data.buffer.asInt8List(data.offsetInBytes, data.lengthInBytes));
+    array.setRange(
+      0,
+      data.lengthInBytes,
+      data.buffer.asInt8List(data.offsetInBytes, data.lengthInBytes),
+    );
     return array;
   }
 
@@ -252,7 +279,11 @@ class _PigeonJniBuffers {
 
   static Object? decode(JByteArray? array) {
     final Uint8List? bytes = _jByteArrayToDart(array, release: true);
-    return bytes == null ? null : pigeon_MessagesmessageCodec.decodeMessage(ByteData.sublistView(bytes));
+    return bytes == null
+        ? null
+        : pigeon_MessagesmessageCodec.decodeMessage(
+            ByteData.sublistView(bytes),
+          );
   }
 }
 
@@ -284,9 +315,12 @@ int? _pigeonEngineAffinity;
 void _pigeonUpdateFlutterApiEngineAffinity() {
   _YoutubeFlutterApiRegistrar.pigeonVar_updateEngineAffinity();
 }
+
 PlatformException _wrapJniException(JThrowable e) {
   if (e.isA<jni_bridge.FlutterError>(jni_bridge.FlutterError.type)) {
-    final jni_bridge.FlutterError pigeonError = e.as(jni_bridge.FlutterError.type);
+    final jni_bridge.FlutterError pigeonError = e.as(
+      jni_bridge.FlutterError.type,
+    );
     return PlatformException(
       code: pigeonError.code.toDartString(),
       message: pigeonError.message?.toDartString(),
@@ -302,21 +336,24 @@ PlatformException _wrapJniException(JThrowable e) {
   );
 }
 
-
-
-extension PigeonInternalNativeFullscreenOrientationNativeInterop on NativeFullscreenOrientation {
+extension PigeonInternalNativeFullscreenOrientationNativeInterop
+    on NativeFullscreenOrientation {
   jni_bridge.NativeFullscreenOrientation toJni() {
     return jni_bridge.NativeFullscreenOrientation.Companion.ofRaw(index)!;
   }
 
-  static NativeFullscreenOrientation? fromJni(jni_bridge.NativeFullscreenOrientation? jniEnum) {
-    return jniEnum == null ? null : NativeFullscreenOrientation.values[jniEnum.raw];
+  static NativeFullscreenOrientation? fromJni(
+    jni_bridge.NativeFullscreenOrientation? jniEnum,
+  ) {
+    return jniEnum == null
+        ? null
+        : NativeFullscreenOrientation.values[jniEnum.raw];
   }
 }
 
 extension PigeonInternalNativeHostConfigNativeInterop on NativeHostConfig {
   jni_bridge.NativeHostConfig toJni() {
-    return jni_bridge.NativeHostConfig (
+    return jni_bridge.NativeHostConfig(
       _PigeonJniCodec.writeValue<JString?>(appId),
       _PigeonJniCodec.writeValue<JString?>(userAgent),
       debuggable,
@@ -327,20 +364,29 @@ extension PigeonInternalNativeHostConfigNativeInterop on NativeHostConfig {
   }
 
   static NativeHostConfig? fromJni(jni_bridge.NativeHostConfig? jniClass) {
-    return jniClass == null ? null : NativeHostConfig(
-      appId: jniClass.appId?.toDartString(releaseOriginal: true),
-      userAgent: jniClass.userAgent?.toDartString(releaseOriginal: true),
-      debuggable: jniClass.debuggable,
-      backgroundColor: jniClass.backgroundColor?.toDartInt(releaseOriginal: true),
-      fullscreenOrientation: PigeonInternalNativeFullscreenOrientationNativeInterop.fromJni(jniClass.fullscreenOrientation)!,
-      frameScript: jniClass.frameScript?.toDartString(releaseOriginal: true),
-    );
+    return jniClass == null
+        ? null
+        : NativeHostConfig(
+            appId: jniClass.appId?.toDartString(releaseOriginal: true),
+            userAgent: jniClass.userAgent?.toDartString(releaseOriginal: true),
+            debuggable: jniClass.debuggable,
+            backgroundColor: jniClass.backgroundColor?.toDartInt(
+              releaseOriginal: true,
+            ),
+            fullscreenOrientation:
+                PigeonInternalNativeFullscreenOrientationNativeInterop.fromJni(
+                  jniClass.fullscreenOrientation,
+                )!,
+            frameScript: jniClass.frameScript?.toDartString(
+              releaseOriginal: true,
+            ),
+          );
   }
 }
 
 extension PigeonInternalNativeHostInfoNativeInterop on NativeHostInfo {
   jni_bridge.NativeHostInfo toJni() {
-    return jni_bridge.NativeHostInfo (
+    return jni_bridge.NativeHostInfo(
       handle,
       _PigeonJniCodec.writeValue<JString>(origin),
       frameScripting,
@@ -348,17 +394,19 @@ extension PigeonInternalNativeHostInfoNativeInterop on NativeHostInfo {
   }
 
   static NativeHostInfo? fromJni(jni_bridge.NativeHostInfo? jniClass) {
-    return jniClass == null ? null : NativeHostInfo(
-      handle: jniClass.handle,
-      origin: jniClass.origin.toDartString(releaseOriginal: true),
-      frameScripting: jniClass.frameScripting,
-    );
+    return jniClass == null
+        ? null
+        : NativeHostInfo(
+            handle: jniClass.handle,
+            origin: jniClass.origin.toDartString(releaseOriginal: true),
+            frameScripting: jniClass.frameScripting,
+          );
   }
 }
 
 extension PigeonInternalNativeLoadErrorNativeInterop on NativeLoadError {
   jni_bridge.NativeLoadError toJni() {
-    return jni_bridge.NativeLoadError (
+    return jni_bridge.NativeLoadError(
       code,
       _PigeonJniCodec.writeValue<JString>(message),
       _PigeonJniCodec.writeValue<JString?>(url),
@@ -366,11 +414,13 @@ extension PigeonInternalNativeLoadErrorNativeInterop on NativeLoadError {
   }
 
   static NativeLoadError? fromJni(jni_bridge.NativeLoadError? jniClass) {
-    return jniClass == null ? null : NativeLoadError(
-      code: jniClass.code,
-      message: jniClass.message.toDartString(releaseOriginal: true),
-      url: jniClass.url?.toDartString(releaseOriginal: true),
-    );
+    return jniClass == null
+        ? null
+        : NativeLoadError(
+            code: jniClass.code,
+            message: jniClass.message.toDartString(releaseOriginal: true),
+            url: jniClass.url?.toDartString(releaseOriginal: true),
+          );
   }
 }
 
@@ -378,15 +428,19 @@ YoutubeHostApiForNativeInterop? pigeon_getInstance_YoutubeHostApi({
   String channelName = defaultInstanceName,
 }) => _YoutubeHostApiForNativeInterop.getInstance(channelName: channelName);
 
-
-class _YoutubeHostApiForNativeInterop implements YoutubeHostApiForNativeInterop {
-  _YoutubeHostApiForNativeInterop._withRegistrar({jni_bridge.YoutubeHostApiRegistrar? jniApi}) : _jniApi = jniApi;
+class _YoutubeHostApiForNativeInterop
+    implements YoutubeHostApiForNativeInterop {
+  _YoutubeHostApiForNativeInterop._withRegistrar({
+    jni_bridge.YoutubeHostApiRegistrar? jniApi,
+  }) : _jniApi = jniApi;
 
   /// Returns instance of YoutubeHostApiForNativeInterop with specified [channelName] if one has been registered.
   ///
   /// Returns the instance registered by this isolate's engine when it is known,
   /// and otherwise the most recent registration.
-  static YoutubeHostApiForNativeInterop? getInstance({String channelName = defaultInstanceName}) {
+  static YoutubeHostApiForNativeInterop? getInstance({
+    String channelName = defaultInstanceName,
+  }) {
     if (Platform.isAndroid) {
       final int? engineId = PlatformDispatcher.instance.engineId;
       final JString jName = channelName.toJString();
@@ -404,15 +458,19 @@ class _YoutubeHostApiForNativeInterop implements YoutubeHostApiForNativeInterop 
         _throwNoInstanceError(channelName);
       }
       if (link != null && _pigeonEngineAffinity == null) {
-        final int linkEngineKey = jni_bridge.YoutubeHostApiRegistrar.pigeonEngineKeyOf(link);
-        if (linkEngineKey != _pigeonNoEngineKey && (engineId == null || linkEngineKey < 0)) {
+        final int linkEngineKey =
+            jni_bridge.YoutubeHostApiRegistrar.pigeonEngineKeyOf(link);
+        if (linkEngineKey != _pigeonNoEngineKey &&
+            (engineId == null || linkEngineKey < 0)) {
           _pigeonEngineAffinity = linkEngineKey;
           _pigeonUpdateFlutterApiEngineAffinity();
         }
       }
       return _YoutubeHostApiForNativeInterop._withRegistrar(jniApi: link);
     } else {
-      throw UnsupportedError('Native Interop is not supported on this platform. Use YoutubeHostApi instead.');
+      throw UnsupportedError(
+        'Native Interop is not supported on this platform. Use YoutubeHostApi instead.',
+      );
     }
   }
 
@@ -422,10 +480,15 @@ class _YoutubeHostApiForNativeInterop implements YoutubeHostApiForNativeInterop 
   NativeHostInfo create(NativeHostConfig config, String html) {
     try {
       if (_jniApi != null) {
-        final JByteArray pigeonVar_args = _PigeonJniBuffers.encode(<Object?>[config]);
+        final JByteArray pigeonVar_args = _PigeonJniBuffers.encode(<Object?>[
+          config,
+        ]);
         final JString pigeonVar_arg_html = html.toJString();
         try {
-          final JByteArray? pigeonVar_res = _jniApi.create(pigeonVar_arg_html, pigeonVar_args);
+          final JByteArray? pigeonVar_res = _jniApi.create(
+            pigeonVar_arg_html,
+            pigeonVar_args,
+          );
           return _PigeonJniBuffers.decode(pigeonVar_res)! as NativeHostInfo;
         } finally {
           pigeonVar_args.release();
@@ -531,18 +594,23 @@ class _YoutubeHostApiForNativeInterop implements YoutubeHostApiForNativeInterop 
       throw _wrapJniException(e);
     }
   }
-
 }
 
-final class _YoutubeFlutterApiRegistrar with jni_bridge.$YoutubeFlutterApiBridge {
+final class _YoutubeFlutterApiRegistrar
+    with jni_bridge.$YoutubeFlutterApiBridge {
   _YoutubeFlutterApiRegistrar(this.pigeonVar_dartApi);
 
-  static final Map<String, List<(YoutubeFlutterApi, Object)>> pigeonVar_registeredHandles = <String, List<(YoutubeFlutterApi, Object)>>{};
-  static final Map<String, YoutubeFlutterApi> pigeonVar_setUpInstances = <String, YoutubeFlutterApi>{};
+  static final Map<String, List<(YoutubeFlutterApi, Object)>>
+  pigeonVar_registeredHandles = <String, List<(YoutubeFlutterApi, Object)>>{};
+  static final Map<String, YoutubeFlutterApi> pigeonVar_setUpInstances =
+      <String, YoutubeFlutterApi>{};
 
   final YoutubeFlutterApi pigeonVar_dartApi;
 
-  static void pigeonVar_setUp(YoutubeFlutterApi? api, {String name = defaultInstanceName}) {
+  static void pigeonVar_setUp(
+    YoutubeFlutterApi? api, {
+    String name = defaultInstanceName,
+  }) {
     final YoutubeFlutterApi? previous = pigeonVar_setUpInstances.remove(name);
     if (previous != null && !identical(previous, api)) {
       pigeonVar_unregister(previous, name: name);
@@ -553,15 +621,22 @@ final class _YoutubeFlutterApiRegistrar with jni_bridge.$YoutubeFlutterApiBridge
     }
   }
 
-  static void pigeonVar_unregister(YoutubeFlutterApi api, {String name = defaultInstanceName}) {
+  static void pigeonVar_unregister(
+    YoutubeFlutterApi api, {
+    String name = defaultInstanceName,
+  }) {
     if (identical(pigeonVar_setUpInstances[name], api)) {
       pigeonVar_setUpInstances.remove(name);
     }
     pigeonVar_removeHandle(api, name: name);
   }
 
-  static void pigeonVar_removeHandle(YoutubeFlutterApi api, {String name = defaultInstanceName}) {
-    final List<(YoutubeFlutterApi, Object)>? handles = pigeonVar_registeredHandles[name];
+  static void pigeonVar_removeHandle(
+    YoutubeFlutterApi api, {
+    String name = defaultInstanceName,
+  }) {
+    final List<(YoutubeFlutterApi, Object)>? handles =
+        pigeonVar_registeredHandles[name];
     if (handles == null || handles.isEmpty) {
       return;
     }
@@ -580,7 +655,8 @@ final class _YoutubeFlutterApiRegistrar with jni_bridge.$YoutubeFlutterApiBridge
     }
     if (Platform.isAndroid) {
       final JString jName = name.toJString();
-      final jni_bridge.YoutubeFlutterApiRegistrar registrar = jni_bridge.YoutubeFlutterApiRegistrar();
+      final jni_bridge.YoutubeFlutterApiRegistrar registrar =
+          jni_bridge.YoutubeFlutterApiRegistrar();
       try {
         registrar.unregisterInstance(
           removedHandle as jni_bridge.YoutubeFlutterApiBridge,
@@ -596,12 +672,15 @@ final class _YoutubeFlutterApiRegistrar with jni_bridge.$YoutubeFlutterApiBridge
 
   YoutubeFlutterApi pigeonVar_register({String name = defaultInstanceName}) {
     pigeonVar_removeHandle(pigeonVar_dartApi, name: name);
-    final int engineId = PlatformDispatcher.instance.engineId ?? _pigeonNoEngineKey;
+    final int engineId =
+        PlatformDispatcher.instance.engineId ?? _pigeonNoEngineKey;
     final int affinityKey = _pigeonEngineAffinity ?? _pigeonNoEngineKey;
     if (Platform.isAndroid) {
-      final jni_bridge.YoutubeFlutterApiBridge impl = jni_bridge.YoutubeFlutterApiBridge.implement(this);
+      final jni_bridge.YoutubeFlutterApiBridge impl =
+          jni_bridge.YoutubeFlutterApiBridge.implement(this);
       final JString jName = name.toJString();
-      final jni_bridge.YoutubeFlutterApiRegistrar registrar = jni_bridge.YoutubeFlutterApiRegistrar();
+      final jni_bridge.YoutubeFlutterApiRegistrar registrar =
+          jni_bridge.YoutubeFlutterApiRegistrar();
       try {
         registrar.registerInstance(impl, engineId, affinityKey, jName);
       } catch (_) {
@@ -611,7 +690,8 @@ final class _YoutubeFlutterApiRegistrar with jni_bridge.$YoutubeFlutterApiBridge
         registrar.release();
         jName.release();
       }
-      (pigeonVar_registeredHandles[name] ??= <(YoutubeFlutterApi, Object)>[]).add((pigeonVar_dartApi, impl));
+      (pigeonVar_registeredHandles[name] ??= <(YoutubeFlutterApi, Object)>[])
+          .add((pigeonVar_dartApi, impl));
     }
     return pigeonVar_dartApi;
   }
@@ -621,15 +701,23 @@ final class _YoutubeFlutterApiRegistrar with jni_bridge.$YoutubeFlutterApiBridge
   ///
   /// Native code updates existing registrations in place.
   static void pigeonVar_updateEngineAffinity() {
-    final int engineId = PlatformDispatcher.instance.engineId ?? _pigeonNoEngineKey;
+    final int engineId =
+        PlatformDispatcher.instance.engineId ?? _pigeonNoEngineKey;
     final int affinityKey = _pigeonEngineAffinity ?? _pigeonNoEngineKey;
-    for (final MapEntry<String, List<(YoutubeFlutterApi, Object)>> entry in pigeonVar_registeredHandles.entries) {
+    for (final MapEntry<String, List<(YoutubeFlutterApi, Object)>> entry
+        in pigeonVar_registeredHandles.entries) {
       for (final (YoutubeFlutterApi _, Object handle) in entry.value) {
         if (Platform.isAndroid) {
           final JString jName = entry.key.toJString();
-          final jni_bridge.YoutubeFlutterApiRegistrar registrar = jni_bridge.YoutubeFlutterApiRegistrar();
+          final jni_bridge.YoutubeFlutterApiRegistrar registrar =
+              jni_bridge.YoutubeFlutterApiRegistrar();
           try {
-            registrar.registerInstance(handle as jni_bridge.YoutubeFlutterApiBridge, engineId, affinityKey, jName);
+            registrar.registerInstance(
+              handle as jni_bridge.YoutubeFlutterApiBridge,
+              engineId,
+              affinityKey,
+              jName,
+            );
           } finally {
             registrar.release();
             jName.release();
@@ -641,18 +729,28 @@ final class _YoutubeFlutterApiRegistrar with jni_bridge.$YoutubeFlutterApiBridge
 
   @override
   void onMessage(int arg_handle, JString arg_json) {
-    pigeonVar_dartApi.onMessage(arg_handle, arg_json.toDartString(releaseOriginal: true));
+    pigeonVar_dartApi.onMessage(
+      arg_handle,
+      arg_json.toDartString(releaseOriginal: true),
+    );
   }
 
   @override
   void onNavigation(int arg_handle, JString arg_url) {
-    pigeonVar_dartApi.onNavigation(arg_handle, arg_url.toDartString(releaseOriginal: true));
+    pigeonVar_dartApi.onNavigation(
+      arg_handle,
+      arg_url.toDartString(releaseOriginal: true),
+    );
   }
 
   @override
   void onLoadError(int arg_handle, JByteArray pigeonVar_args) {
-    final List<Object?> pigeonVar_decodedArgs = _PigeonJniBuffers.decode(pigeonVar_args)! as List<Object?>;
-    pigeonVar_dartApi.onLoadError(arg_handle, pigeonVar_decodedArgs[0]! as NativeLoadError);
+    final List<Object?> pigeonVar_decodedArgs =
+        _PigeonJniBuffers.decode(pigeonVar_args)! as List<Object?>;
+    pigeonVar_dartApi.onLoadError(
+      arg_handle,
+      pigeonVar_decodedArgs[0]! as NativeLoadError,
+    );
   }
 
   @override
@@ -675,4 +773,3 @@ void pigeon_set_up_YoutubeFlutterApi(
   YoutubeFlutterApi? api, {
   String name = defaultInstanceName,
 }) => _YoutubeFlutterApiRegistrar.pigeonVar_setUp(api, name: name);
-
