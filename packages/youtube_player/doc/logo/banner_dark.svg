@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 400" width="1280" height="400">
+  <title>youtube_player</title>
+  <rect width="1280" height="400" fill="#0F0F12"/>
+  <svg x="120" y="72" width="256" height="256" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FF4B4B"/>
+      <stop offset="1" stop-color="#D9001E"/>
+    </linearGradient>
+    <radialGradient id="sheen" cx="0.28" cy="0.12" r="0.85">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#6B0010" flood-opacity="0.45"/>
+    </filter>
+    <linearGradient id="fTop" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#F6F6F8"/>
+    </linearGradient>
+    <linearGradient id="fLeft" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F1F1F4"/>
+      <stop offset="1" stop-color="#E2E2E8"/>
+    </linearGradient>
+    <linearGradient id="fBottom" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#DCDCE3"/>
+      <stop offset="1" stop-color="#C4C4CE"/>
+    </linearGradient>
+    <mask id="tri" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512">
+      <polygon points="186,126 186,314 349,220" fill="#fff" stroke="#fff" stroke-width="40" stroke-linejoin="round"/>
+    </mask>
+    <clipPath id="tile"><rect width="512" height="512" rx="116"/></clipPath>
+  </defs>
+
+  <g clip-path="url(#tile)">
+    <rect width="512" height="512" fill="url(#bg)"/>
+    <rect width="512" height="512" fill="url(#sheen)"/>
+
+    <!-- Faceted play mark -->
+    <g filter="url(#shadow)">
+      <g mask="url(#tri)">
+        <polygon points="240,220 153,70 410,220" fill="url(#fTop)"/>
+        <polygon points="240,220 153,370 153,70" fill="url(#fLeft)"/>
+        <polygon points="240,220 410,220 153,370" fill="url(#fBottom)"/>
+      </g>
+    </g>
+
+    <!-- Progress bar -->
+    <rect x="120" y="386" width="272" height="12" rx="6" fill="#FFFFFF" fill-opacity="0.32"/>
+    <rect x="120" y="386" width="170" height="12" rx="6" fill="#FFFFFF"/>
+    <circle cx="290" cy="392" r="17" fill="#FFFFFF"/>
+    <circle cx="290" cy="392" r="7" fill="#E5102C"/>
+  </g>
+
+</svg>
+  <text x="430" y="232" font-family="'SF Pro Display','Inter','Segoe UI',Helvetica,Arial,sans-serif" font-size="104" font-weight="700" letter-spacing="-2.5" fill="#F5F5F7">youtube<tspan fill="#F0142F">_</tspan>player</text>
+</svg>
