@@ -12,7 +12,7 @@
 
 ## Conventions
 - Each package has its own `CHANGELOG.md`: `## <version>`, then `**Month D, YYYY**`, then `- ` bullets (newest first).
-- Release tags are `<package>-v<version>` (e.g. `youtube_player_iframe-v6.0.4`).
+- Release tags are `<prefix>-v<version>` (e.g. `yp_iframe-v6.0.4`). Prefixes: `yp_flutter` = youtube_player_flutter, `yp_iframe` = youtube_player_iframe, `yp_iframe_web` = youtube_player_iframe_web. Older tags used full package names.
 - Publishing happens only in CI (`.github/workflows/publish.yml`) when a tag is pushed. Never run `pub publish` locally.
 
 ## Gotchas
