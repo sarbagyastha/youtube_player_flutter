@@ -11,7 +11,7 @@ environment:
 
 dependencies:
   flutter:
-    sdk: 
+    sdk: flutter
   go_router: ^17.2.3
   webview_flutter: ^4.13.0
   youtube_player_iframe:
