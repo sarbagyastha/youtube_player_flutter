@@ -1,3 +1,9 @@
+## 0.1.2
+
+**November 17, 2026**
+
+- Improve pub score.
+
 ## 0.1.1
 
 **November 16, 2026**
