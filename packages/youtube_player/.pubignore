@@ -32,5 +32,6 @@ migrate_working_dir/
 /build/
 /coverage/
 
-# Example build output (the example itself is published)
+# Example build output and icons_launcher sources (the example itself is published)
 /example/build/
+/example/assets/icon/
