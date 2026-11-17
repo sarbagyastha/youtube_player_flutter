@@ -9,8 +9,9 @@ import 'package:youtube_player/youtube_player.dart';
 
 /// Fullscreen state of a `YoutubePlayer` from this package.
 ///
-/// Fullscreen is presented by Flutter, so the player's controls stay visible
-/// and it works the same on every platform. Get it with
+/// On Android, iOS and macOS fullscreen is presented by Flutter, so the
+/// player's controls stay visible. On the web it is the browser's fullscreen,
+/// which must be started from a user gesture. Get it with
 /// [YoutubeFullScreen.of]. Its value is `true` while fullscreen.
 abstract interface class YoutubeFullScreenController
     implements ValueListenable<bool> {

@@ -19,10 +19,10 @@ A batteries-included YouTube player for Flutter. Drop it in and get a fully work
 
 ## Features
 
-- YouTube-styled controls drawn in Flutter: play/pause, seek bar, time, playback speed, playlist next/previous, fullscreen
-- Drag left/right on the player to seek
-- Swipe up/down, or rotate the device, to enter and leave fullscreen
-- Fullscreen keeps your controls on screen, and works the same on every platform
+- YouTube-styled controls drawn in Flutter: play/pause, seek bar, time, playback speed, playlist next/previous, fullscreen (YouTube's own controls on the web)
+- Drag left/right on the player to seek (Android, iOS, macOS)
+- Swipe up/down, or rotate the device, to enter and leave fullscreen (Android, iOS, macOS)
+- Fullscreen keeps your controls on screen (Android, iOS, macOS)
 - Themeable via `YoutubePlayerTheme`, or replace the controls entirely with `builder`
 - No YouTube API key required
 - Supports Android, iOS, macOS, and Web
@@ -146,7 +146,7 @@ Control fullscreen from anywhere below the player with `YoutubeFullScreen.of(con
 - **Android:** API 24+. Nothing else to do.
 - **iOS / macOS:** iOS 15+ and macOS 12+. Requires Swift Package Manager (Flutter's default); CocoaPods is not supported.
 - **macOS:** enable `com.apple.security.network.client` in your entitlements.
-- **Web:** works in any modern browser, including `--wasm` builds.
+- **Web:** works in any modern browser, including `--wasm` builds. The player uses YouTube's own controls and the browser's fullscreen there, since the browser routes pointer input and fullscreen to the YouTube iframe.
 
 See the [youtube_player setup notes](https://pub.dev/packages/youtube_player#-1-pack-your-bags) for optional settings such as Hybrid Composition++ and the client identity (`YoutubePlayerParams.appId`).
 

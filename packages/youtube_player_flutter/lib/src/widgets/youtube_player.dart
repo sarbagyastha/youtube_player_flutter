@@ -20,7 +20,12 @@ import 'typedefs.dart';
 /// A YouTube player widget with YouTube-styled custom controls.
 ///
 /// Plays through `youtube_player` with YouTube's own controls turned off, and
-/// draws a themed controls overlay in Flutter instead, on every platform.
+/// draws a themed controls overlay in Flutter instead.
+///
+/// On the web the player keeps YouTube's own controls and fullscreen button,
+/// and fullscreen is the browser's: the iframe receives pointer input there,
+/// and browser fullscreen shows only the iframe, so Flutter controls could
+/// not be used in it.
 ///
 /// ### Minimal usage
 /// ```dart
@@ -50,7 +55,7 @@ import 'typedefs.dart';
 /// ### Fullscreen
 /// Fullscreen is presented by Flutter, so the controls stay visible. Control
 /// it from below the player with [YoutubeFullScreen.of], or use the default
-/// [FullscreenButton].
+/// [FullscreenButton]. On the web both use the browser's fullscreen.
 ///
 /// ### Theming
 /// Apply [YoutubePlayerTheme] via [ThemeData.extensions] to override defaults:
@@ -63,8 +68,8 @@ class const YoutubePlayer({
   super.key,
 
   /// Controls the player. Create via [YoutubePlayerController.fromVideoId]
-  /// or [YoutubePlayerController]. YouTube's native controls are always
-  /// hidden, regardless of [YoutubePlayerParams.showControls].
+  /// or [YoutubePlayerController]. YouTube's native controls are hidden,
+  /// regardless of [YoutubePlayerParams.showControls], except on the web.
   required final YoutubePlayerController controller,
 
   /// Aspect ratio of the video surface. Defaults to 16/9.
@@ -76,6 +81,9 @@ class const YoutubePlayer({
   /// It is built inline and again in fullscreen, where `player` fills the
   /// screen, so lay controls over it with a [Stack].
   /// [YoutubeFullScreen.of] works inside it.
+  ///
+  /// On the web, `player` shows YouTube's own controls and takes pointer
+  /// input itself, so place your controls beside it rather than over it.
   final YoutubePlayerBuilder? builder,
 
   /// How long controls stay visible after the last interaction before
@@ -197,6 +205,13 @@ class _YoutubePlayerState extends State<YoutubePlayer>
   }
 
   void _onPlayerValue(YoutubePlayerValue value) {
+    if (kIsWeb && value.isFullScreen != _fullScreen.value) {
+      // The browser owns fullscreen on the web; mirror it.
+      _fullScreen
+        ..isLocked = value.isFullScreen
+        ..value = value.isFullScreen;
+      widget.onFullScreenChanged?.call(value.isFullScreen);
+    }
     final state = value.playerState;
     switch (state) {
       case .playing:
@@ -214,6 +229,11 @@ class _YoutubePlayerState extends State<YoutubePlayer>
   // MARK: Fullscreen
 
   void _enterFullScreen({required bool lock}) {
+    if (kIsWeb) {
+      // Needs a user gesture; state follows through _onPlayerValue.
+      unawaited(widget.controller.enterFullScreen());
+      return;
+    }
     final route = _route = FullScreenRoute(builder: _buildFullScreenPage);
     _fullScreen.value = true;
     applyFullScreenSystemUi(
@@ -229,6 +249,7 @@ class _YoutubePlayerState extends State<YoutubePlayer>
   }
 
   void _exitFullScreen() {
+    if (kIsWeb) return widget.controller.exitFullScreen();
     final route = _route;
     _onFullScreenExited();
     if (route != null && route.isActive) route.navigator?.removeRoute(route);
@@ -284,7 +305,8 @@ class _YoutubePlayerState extends State<YoutubePlayer>
           widget.backgroundColor ?? Theme.of(context).colorScheme.surface,
       keepAlive: widget.keepAlive,
       autoPlayWhenVisible: widget.autoPlayWhenVisible,
-      controlsBuilder: _buildControls,
+      // On the web, YouTube's own controls and fullscreen button.
+      controlsBuilder: kIsWeb ? null : _buildControls,
     );
     return YoutubeFullScreen(
       notifier: _fullScreen,
@@ -305,7 +327,8 @@ class _YoutubePlayerState extends State<YoutubePlayer>
     super.build(context);
     return ValueListenableBuilder<bool>(
       valueListenable: _fullScreen,
-      builder: (context, isFullScreen, _) => isFullScreen
+      // On the web the player stays in place; the browser presents it.
+      builder: (context, isFullScreen, _) => isFullScreen && !kIsWeb
           // Keeps the page layout; hidden under the opaque route.
           ? AspectRatio(
               aspectRatio: widget.aspectRatio,

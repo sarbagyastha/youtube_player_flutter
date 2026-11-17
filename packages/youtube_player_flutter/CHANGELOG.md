@@ -8,8 +8,8 @@
 - `FullscreenButton` no longer takes a `controller`; it finds the enclosing player.
 
 **Improvements**
-- Fullscreen is a lightweight opaque route: the player moves into it without recreating its native view or reloading, and the page underneath stops rendering.
-- The custom controls now also work on the web.
+- On Android, iOS and macOS, fullscreen is a lightweight opaque route: the player moves into it without recreating its native view or reloading, and the page underneath stops rendering.
+- On the web the player uses YouTube's own controls and the browser's fullscreen; `YoutubeFullScreen` and `FullscreenButton` drive browser fullscreen there.
 - Adds `YoutubePlayer.autoPlayWhenVisible`.
 - Swiping vertically no longer steals scrolling when the player is inside a scroll view.
 
