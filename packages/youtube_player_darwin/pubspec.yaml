@@ -1,6 +1,6 @@
 name: youtube_player_darwin
 description: iOS and macOS implementation of the youtube_player plugin, hosting the YouTube IFrame Player API in a minimal WKWebView driven through Pigeon Native Interop (FFI).
-version: 0.1.1
+version: 0.1.2
 repository: https://github.com/sarbagyastha/youtube_player_flutter
 homepage: https://github.com/sarbagyastha/youtube_player_flutter/tree/main/packages/youtube_player_darwin
 
@@ -21,7 +21,7 @@ dependencies:
     sdk: flutter
   meta: ^1.19.0
   objective_c: ^9.6.4
-  youtube_player_platform_interface: ^0.1.0
+  youtube_player_platform_interface: ^0.1.2
 
 dev_dependencies:
   flutter_test:
