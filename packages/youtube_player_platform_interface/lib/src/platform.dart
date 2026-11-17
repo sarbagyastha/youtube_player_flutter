@@ -12,6 +12,7 @@ import 'types.dart';
 /// Implementations register themselves through `registerWith` by assigning
 /// [instance].
 abstract class YoutubePlayerPlatform() extends PlatformInterface {
+  /// Constructs a [YoutubePlayerPlatform].
   this : super(token: _token);
 
   static final Object _token = Object();

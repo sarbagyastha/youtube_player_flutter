@@ -62,6 +62,9 @@ class const YoutubePlayer({
   final Widget Function(BuildContext context, YoutubePlayerValue value)?
   controlsBuilder,
 }) extends StatefulWidget {
+  /// Creates a player view driven by [controller].
+  this;
+
   @override
   State<YoutubePlayer> createState() => _YoutubePlayerState();
 }

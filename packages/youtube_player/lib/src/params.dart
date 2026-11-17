@@ -119,6 +119,9 @@ final class const YoutubePlayerParams({
   /// Android, iOS and macOS only.
   final Set<PlayerElement> customElements = const {},
 }) {
+  /// Creates player parameters; defaults match the IFrame API's.
+  this;
+
   /// The embed host for [privacyEnhancedMode].
   String get host => privacyEnhancedMode
       ? 'https://www.youtube-nocookie.com'

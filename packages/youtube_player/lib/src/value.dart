@@ -20,6 +20,9 @@ final class const YoutubeMetaData({
   /// Duration (grows for live streams).
   final Duration duration = .zero,
 }) {
+  /// Creates a [YoutubeMetaData].
+  this;
+
   /// Returns a copy with the given fields replaced.
   YoutubeMetaData copyWith({
     String? videoId,
@@ -58,6 +61,9 @@ final class const YoutubeVideoState({
   /// Buffered fraction, `0..1`.
   final double loadedFraction = 0,
 }) {
+  /// Creates a [YoutubeVideoState].
+  this;
+
   @override
   bool operator ==(Object other) =>
       other is YoutubeVideoState &&
@@ -104,6 +110,9 @@ final class const YoutubePlayerValue({
   /// Metadata of the current video.
   final YoutubeMetaData metaData = const YoutubeMetaData(),
 }) {
+  /// Creates a [YoutubePlayerValue].
+  this;
+
   /// Whether [error] is set.
   bool get hasError => error != .none;
 

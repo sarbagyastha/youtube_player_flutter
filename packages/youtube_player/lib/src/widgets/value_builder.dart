@@ -17,6 +17,9 @@ class const YoutubePlayerControllerProvider({
   required final YoutubePlayerController controller,
   required super.child,
 }) extends InheritedWidget {
+  /// Provides [controller] to [child] and its descendants.
+  this;
+
   /// The nearest provided controller.
   static YoutubePlayerController of(BuildContext context) {
     final controller = maybeOf(context);
@@ -60,6 +63,9 @@ class const YoutubeValueBuilder({
   /// The controller to listen to.
   final YoutubePlayerController? controller,
 }) extends StatefulWidget {
+  /// Creates a [YoutubeValueBuilder].
+  this;
+
   @override
   State<YoutubeValueBuilder> createState() => _YoutubeValueBuilderState();
 }

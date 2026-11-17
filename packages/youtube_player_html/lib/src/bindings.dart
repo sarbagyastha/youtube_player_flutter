@@ -28,13 +28,28 @@ extension type YTPlayer._(JSObject _) implements JSObject {
   /// Attaches a player to an existing `enablejsapi=1` iframe.
   external factory(web.HTMLIFrameElement iframe, YTPlayerOptions options);
 
+  /// `getCurrentTime()`: elapsed seconds.
   external double getCurrentTime();
+
+  /// `getDuration()`: video length in seconds, `0` until metadata loads.
   external double getDuration();
+
+  /// `getVideoLoadedFraction()`: buffered share of the video, `0..1`.
   external double getVideoLoadedFraction();
+
+  /// `getPlaybackRate()`: current playback rate.
   external double getPlaybackRate();
+
+  /// `getVolume()`: volume `0..100`.
   external int getVolume();
+
+  /// `isMuted()`: whether the player is muted.
   external bool isMuted();
+
+  /// `getVideoData()`: id, title and author of the current video.
   external YTVideoData? getVideoData();
+
+  /// `destroy()`: removes the player and its listeners.
   external void destroy();
 }
 
@@ -66,9 +81,14 @@ extension type YTEvent._(JSObject _) implements JSObject {
 
 /// Undocumented `getVideoData()` result.
 extension type YTVideoData._(JSObject _) implements JSObject {
+  /// The video id (`video_id`).
   @JS('video_id')
   external String? get videoId;
+
+  /// The video title.
   external String? get title;
+
+  /// The channel name.
   external String? get author;
 }
 

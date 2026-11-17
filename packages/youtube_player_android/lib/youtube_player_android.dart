@@ -51,6 +51,9 @@ final class AndroidYoutubePlayer({
   /// Host API override for tests.
   @visibleForTesting YoutubeHostApiForNativeInterop? api,
 }) extends YoutubePlayerPlatform {
+  /// Creates the Android implementation.
+  this;
+
   /// Registers this implementation. Called by the plugin registrant.
   static void registerWith() {
     YoutubePlayerPlatform.instance = AndroidYoutubePlayer();

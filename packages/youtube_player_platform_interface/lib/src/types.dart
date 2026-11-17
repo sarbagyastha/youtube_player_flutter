@@ -15,10 +15,18 @@ import 'enums.dart';
 /// player does not expose them.
 @immutable
 final class const VideoData({
+  /// The video id.
   final String videoId = '',
+
+  /// The video title.
   final String title = '',
+
+  /// The channel name.
   final String author = '',
 }) {
+  /// Creates a [VideoData]; omitted fields are empty.
+  this;
+
   /// Decodes the compact wire form `{id, t, a}`.
   factory fromWire(Map<Object?, Object?> wire) => .new(
     videoId: wire['id'] as String? ?? '',
@@ -61,6 +69,9 @@ final class const SphericalProperties({
   /// Only meaningful when setting properties.
   final bool? enableOrientationSensor,
 }) {
+  /// Creates a [SphericalProperties].
+  this;
+
   /// Decodes the object returned by `getSphericalProperties()`.
   factory fromJson(Map<Object?, Object?> json) => .new(
     yaw: (json['yaw'] as num?)?.toDouble(),
@@ -109,6 +120,9 @@ final class const YoutubeLoadError({
   /// The URL that failed, if known.
   final String? url,
 }) {
+  /// Creates a [YoutubeLoadError].
+  this;
+
   @override
   String toString() => 'YoutubeLoadError($code, $description, $url)';
 }
@@ -181,6 +195,9 @@ final class const NavigationRequest({
   /// `null` for links, which the host has already blocked.
   final int? clickId,
 }) {
+  /// Creates a [NavigationRequest].
+  this;
+
   /// Decodes the `click` wire message `{id, n, u}`.
   static NavigationRequest? fromWire(Object? wire) {
     if (wire is! Map) return null;

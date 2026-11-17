@@ -68,6 +68,10 @@ class YoutubePlayerController({
   /// An arbitrary key, e.g. for lists of players.
   final String? key,
 }) implements YoutubePlayerIFrameAPI {
+  /// Creates a controller. The native player is created lazily, when a
+  /// `YoutubePlayer` first shows it.
+  this;
+
   /// Creates a controller with [videoId] cued, or playing when [autoPlay].
   ///
   /// With `YoutubePlayer.autoPlayWhenVisible` (the default) autoplay waits

@@ -75,6 +75,9 @@ abstract base class BridgeHost({
   /// How long [query] waits for a reply before failing.
   final Duration replyTimeout = const Duration(seconds: 10),
 }) implements YoutubePlayerHost {
+  /// Creates a bridge host; subclasses wire the page transport.
+  this;
+
   final _events = StreamController<PlayerEvent>.broadcast();
   final _navigations = StreamController<NavigationRequest>.broadcast();
   final _fullscreen = StreamController<bool>.broadcast();

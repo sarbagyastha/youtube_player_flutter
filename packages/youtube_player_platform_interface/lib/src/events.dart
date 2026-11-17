@@ -48,6 +48,9 @@ final class const StateChangeEvent(
   /// The player's actual playback rate, when reported.
   final double? playbackRate,
 }) extends PlayerEvent {
+  /// Creates a [StateChangeEvent].
+  this;
+
   /// Decodes `{s, v?, du?, r?}`.
   factory fromWire(Map<Object?, Object?> d) => .new(
     .fromCode((d['s'] as num?)?.toInt() ?? -2),
@@ -108,6 +111,9 @@ final class const TickEvent({
   /// Whether the player is muted.
   required final bool muted,
 }) extends PlayerEvent {
+  /// Creates a [TickEvent].
+  this;
+
   /// Decodes `[currentTime, loadedFraction, duration, volume, muted]`.
   factory fromWire(List<Object?> d) => .new(
     currentTime: _num(d, 0),

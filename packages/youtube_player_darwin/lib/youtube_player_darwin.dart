@@ -41,6 +41,9 @@ final class DarwinYoutubePlayer({
   /// Host API override for tests.
   @visibleForTesting YoutubeHostApiForNativeInterop? api,
 }) extends YoutubePlayerPlatform {
+  /// Creates the iOS and macOS implementation.
+  this;
+
   /// Registers this implementation. Called by the plugin registrant.
   static void registerWith() {
     YoutubePlayerPlatform.instance = DarwinYoutubePlayer();
