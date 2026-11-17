@@ -1,6 +1,6 @@
 name: youtube_player_html
 description: Web implementation of the youtube_player plugin. Drives the YouTube IFrame Player API directly through dart:js_interop; Wasm compatible.
-version: 0.1.1
+version: 0.1.2
 repository: https://github.com/sarbagyastha/youtube_player_flutter
 homepage: https://github.com/sarbagyastha/youtube_player_flutter/tree/main/packages/youtube_player_html
 
@@ -22,7 +22,7 @@ dependencies:
   flutter_web_plugins:
     sdk: flutter
   web: ^1.1.2
-  youtube_player_platform_interface: ^0.1.0
+  youtube_player_platform_interface: ^0.1.2
 
 dev_dependencies:
   flutter_test:
