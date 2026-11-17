@@ -33,6 +33,3 @@ migrate_working_dir/
 /coverage/
 .build/
 .swiftpm/
-
-# Not published to pub.dev
-/example/

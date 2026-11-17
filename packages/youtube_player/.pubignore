@@ -32,5 +32,5 @@ migrate_working_dir/
 /build/
 /coverage/
 
-# Not published to pub.dev
-/example/
+# Example build output (the example itself is published)
+/example/build/
