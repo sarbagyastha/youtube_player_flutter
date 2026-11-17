@@ -12,11 +12,11 @@ Packages, tag prefixes and release order (earlier rows are depended on by later 
 | Chain | Package | Tag prefix | Constraint keys to bump in dependents |
 |---|---|---|---|
 | old | `youtube_player_iframe_web` | `yp_iframe_web` | `youtube_player_iframe_web` in `youtube_player_iframe` |
-| old | `youtube_player_iframe` | `yp_iframe` | `youtube_player_iframe` in `youtube_player_flutter` |
-| old | `youtube_player_flutter` | `yp_flutter` | none |
+| old | `youtube_player_iframe` | `yp_iframe` | none |
 | new | `youtube_player_platform_interface` | `yp_pi` | `youtube_player_platform_interface` in android, darwin, html, `youtube_player` |
 | new | `youtube_player_android` / `youtube_player_darwin` / `youtube_player_html` | `yp_android` / `yp_darwin` / `yp_html` | same-named key in `youtube_player` |
-| new | `youtube_player` | `yp` | none |
+| new | `youtube_player` | `yp` | `youtube_player` in `youtube_player_flutter` |
+| new | `youtube_player_flutter` | `yp_flutter` | none |
 
 `youtube_player_windows` (`yp_windows`) and `youtube_player_linux` (`yp_linux`) are not created yet; when added, put them in the android/darwin/html tier and add them to the root `pubspec.yaml` `workspace:` and `melos.categories.publishable` lists.
 

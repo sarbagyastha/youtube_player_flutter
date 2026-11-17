@@ -1,3 +1,18 @@
+## 11.0.0
+**November 17, 2026**
+
+**Breaking Changes**
+- Now powered by `youtube_player` instead of `youtube_player_iframe`: a minimal native WebView per platform, with no `webview_flutter` dependency. Its API is re-exported in place of `youtube_player_iframe`'s.
+- Requires Dart `^3.14.0` and Flutter `>=3.50.0`, Android API 24+, iOS 15+ and macOS 12+. iOS and macOS apps must use Swift Package Manager.
+- Fullscreen is now owned by this package: `value.fullScreenOption` and `controller.toggleFullScreen()` are replaced by `YoutubeFullScreen.of(context)` (`enter`, `exit`, `toggle`, `isFullScreen`) and `YoutubePlayer.onFullScreenChanged`.
+- `FullscreenButton` no longer takes a `controller`; it finds the enclosing player.
+
+**Improvements**
+- Fullscreen is a lightweight opaque route: the player moves into it without recreating its native view or reloading, and the page underneath stops rendering.
+- The custom controls now also work on the web.
+- Adds `YoutubePlayer.autoPlayWhenVisible`.
+- Swiping vertically no longer steals scrolling when the player is inside a scroll view.
+
 ## 10.0.2
 **November 16, 2026**
 

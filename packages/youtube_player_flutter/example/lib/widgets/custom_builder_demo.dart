@@ -301,19 +301,19 @@ class _BottomControls extends StatelessWidget {
                     onPressed: onMuteToggle,
                   ),
                   const Spacer(),
-                  YoutubeValueBuilder(
-                    controller: controller,
-                    buildWhen: (o, n) =>
-                        o.fullScreenOption != n.fullScreenOption,
-                    builder: (context, value) => IconButton(
-                      icon: Icon(
-                        value.fullScreenOption.enabled
-                            ? Icons.fullscreen_exit_rounded
-                            : Icons.fullscreen_rounded,
-                        color: theme.progressBarActiveColor,
-                      ),
-                      onPressed: controller.toggleFullScreen,
-                    ),
+                  Builder(
+                    builder: (context) {
+                      final fullScreen = YoutubeFullScreen.of(context);
+                      return IconButton(
+                        icon: Icon(
+                          fullScreen.isFullScreen
+                              ? Icons.fullscreen_exit_rounded
+                              : Icons.fullscreen_rounded,
+                          color: theme.progressBarActiveColor,
+                        ),
+                        onPressed: fullScreen.toggle,
+                      );
+                    },
                   ),
                 ],
               ),

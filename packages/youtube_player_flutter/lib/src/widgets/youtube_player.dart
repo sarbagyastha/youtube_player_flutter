@@ -6,19 +6,21 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:youtube_player_iframe/youtube_player_iframe.dart';
-import 'package:youtube_player_iframe/youtube_player_iframe.dart' as yp_iframe;
+import 'package:youtube_player/youtube_player.dart' hide YoutubePlayer;
+import 'package:youtube_player/youtube_player.dart' as yp show YoutubePlayer;
 
 import '../controller/overlay_controller.dart';
 import '../controller/overlay_controller_scope.dart';
+import '../fullscreen/fullscreen.dart';
 import 'controls/controls_overlay.dart';
 import 'typedefs.dart';
 
 /// A YouTube player widget with YouTube-styled custom controls.
 ///
-/// Wraps [YoutubePlayerController] from `youtube_player_iframe` and renders
-/// a fully themed controls overlay instead of YouTube's native controls.
+/// Plays through `youtube_player` with YouTube's own controls turned off, and
+/// draws a themed controls overlay in Flutter instead, on every platform.
 ///
 /// ### Minimal usage
 /// ```dart
@@ -32,7 +34,7 @@ import 'typedefs.dart';
 ///
 /// ### Custom controls
 /// Use [Stack] to overlay controls on top of the player surface. The
-/// [player] widget occupies the video area; place controls with [Positioned].
+/// `player` widget occupies the video area; place controls with [Positioned].
 /// ```dart
 /// YoutubePlayer(
 ///   controller: controller,
@@ -45,6 +47,11 @@ import 'typedefs.dart';
 /// )
 /// ```
 ///
+/// ### Fullscreen
+/// Fullscreen is presented by Flutter, so the controls stay visible. Control
+/// it from below the player with [YoutubeFullScreen.of], or use the default
+/// [FullscreenButton].
+///
 /// ### Theming
 /// Apply [YoutubePlayerTheme] via [ThemeData.extensions] to override defaults:
 /// ```dart
@@ -52,53 +59,61 @@ import 'typedefs.dart';
 ///   extensions: const [YoutubePlayerTheme(progressBarActiveColor: Colors.red)],
 /// )
 /// ```
-class YoutubePlayer extends StatefulWidget {
-  const YoutubePlayer({
-    super.key,
-    required this.controller,
-    this.aspectRatio = 16 / 9,
-    this.builder,
-    this.autoHideDuration = const Duration(seconds: 3),
-    this.backgroundColor,
-    this.gestureRecognizers = const <Factory<OneSequenceGestureRecognizer>>{},
-    this.keepAlive = false,
-    this.autoFullScreen = true,
-    this.enableFullScreenOnVerticalDrag = true,
-  });
+class const YoutubePlayer({
+  super.key,
 
   /// Controls the player. Create via [YoutubePlayerController.fromVideoId]
-  /// or [YoutubePlayerController]. YouTube's native controls are always hidden
-  /// regardless of [YoutubePlayerParams.showControls].
-  final YoutubePlayerController controller;
+  /// or [YoutubePlayerController]. YouTube's native controls are always
+  /// hidden, regardless of [YoutubePlayerParams.showControls].
+  required final YoutubePlayerController controller,
 
   /// Aspect ratio of the video surface. Defaults to 16/9.
-  final double aspectRatio;
+  final double aspectRatio = 16 / 9,
 
   /// Provide this to fully replace the default controls overlay.
   ///
-  /// Receives the raw video surface [Widget] and the [YoutubePlayerController].
-  /// The [YoutubePlayerBuilder] typedef is re-exported from this package.
-  final YoutubePlayerBuilder? builder;
+  /// Receives the video surface [Widget] and the [YoutubePlayerController].
+  /// It is built inline and again in fullscreen, where `player` fills the
+  /// screen, so lay controls over it with a [Stack].
+  /// [YoutubeFullScreen.of] works inside it.
+  final YoutubePlayerBuilder? builder,
 
   /// How long controls stay visible after the last interaction before
   /// auto-hiding. Ignored when the player is paused or buffering.
-  final Duration autoHideDuration;
+  final Duration autoHideDuration = const Duration(seconds: 3),
 
   /// Background color shown while the player is initialising.
   /// Defaults to [ColorScheme.surface].
-  final Color? backgroundColor;
+  final Color? backgroundColor,
 
-  /// Gesture recognizers passed to the underlying [WebViewWidget].
-  final Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers;
+  /// Gestures the player should win over its ancestors.
+  final Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers =
+      const {},
 
   /// Whether to keep the player alive when scrolled off-screen.
-  final bool keepAlive;
+  final bool keepAlive = false,
 
-  /// Automatically enter fullscreen when the device rotates to landscape.
-  final bool autoFullScreen;
+  /// Defers `fromVideoId(autoPlay: true)` until at least half of the player
+  /// is visible, and lets only one player autoplay at a time, as required by
+  /// YouTube's Required Minimum Functionality.
+  final bool autoPlayWhenVisible = true,
 
-  /// Enable swiping up/down on the player to toggle fullscreen.
-  final bool enableFullScreenOnVerticalDrag;
+  /// On Android and iOS, enter fullscreen when the device rotates to
+  /// landscape and leave it when rotated back. Only the most recently played
+  /// player reacts.
+  final bool autoFullScreen = true,
+
+  /// Swipe up on the player to enter fullscreen and down to leave it.
+  ///
+  /// Inline, this is off while the player is inside a [Scrollable] so that
+  /// vertical drags keep scrolling it.
+  final bool enableFullScreenOnVerticalDrag = true,
+
+  /// Called when the player enters (`true`) or leaves (`false`) fullscreen.
+  final ValueChanged<bool>? onFullScreenChanged,
+}) extends StatefulWidget {
+  /// Creates a player with YouTube-styled Flutter controls.
+  this;
 
   @override
   State<YoutubePlayer> createState() => _YoutubePlayerState();
@@ -106,156 +121,263 @@ class YoutubePlayer extends StatefulWidget {
 
 class _YoutubePlayerState extends State<YoutubePlayer>
     with AutomaticKeepAliveClientMixin {
-  late final OverlayController _overlayCtrl;
-  StreamSubscription<YoutubePlayerValue>? _playerStateSub;
+  /// The player that most recently started playing; the only one that
+  /// reacts to rotation when several are on screen.
+  static _YoutubePlayerState? _active;
 
-  bool get _isMobile =>
-      !kIsWeb &&
-      (defaultTargetPlatform == .android || defaultTargetPlatform == .iOS);
+  late final _overlayCtrl = OverlayController(
+    autoHideDuration: widget.autoHideDuration,
+  );
+  late final _fullScreen = FullScreenNotifier(
+    onEnter: _enterFullScreen,
+    onExit: _exitFullScreen,
+  );
+
+  /// Moves the one `yp.YoutubePlayer` element between the inline slot and
+  /// the fullscreen route, so its platform view keeps its id: no native view
+  /// is created and nothing reloads.
+  final _playerKey = GlobalKey();
+
+  FullScreenRoute? _route;
+  StreamSubscription<YoutubePlayerValue>? _valueSub;
+  PlayerState _lastPlayerState = .unknown;
+  Orientation? _orientation;
+
+  /// The controls widget, cached so the per-value rebuilds of
+  /// `controlsBuilder` short-circuit on an identical widget.
+  Widget? _controls;
+
+  @override
+  bool get wantKeepAlive => widget.keepAlive;
 
   @override
   void initState() {
     super.initState();
-    _overlayCtrl = OverlayController(autoHideDuration: widget.autoHideDuration);
-    _playerStateSub = widget.controller.stream.listen(_onPlayerStateChanged);
+    _valueSub = widget.controller.stream.listen(_onPlayerValue);
   }
 
   @override
-  void dispose() {
-    _playerStateSub?.cancel();
-    _overlayCtrl.dispose();
-    super.dispose();
+  void didUpdateWidget(YoutubePlayer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.controller != widget.controller) {
+      _valueSub?.cancel();
+      _valueSub = widget.controller.stream.listen(_onPlayerValue);
+      _lastPlayerState = .unknown;
+    }
+    if (oldWidget.controller != widget.controller ||
+        (oldWidget.builder == null) != (widget.builder == null) ||
+        oldWidget.enableFullScreenOnVerticalDrag !=
+            widget.enableFullScreenOnVerticalDrag) {
+      _controls = null;
+    }
+    if (oldWidget.keepAlive != widget.keepAlive) updateKeepAlive();
   }
 
-  void _onPlayerStateChanged(YoutubePlayerValue value) {
-    switch (value.playerState) {
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final orientation = MediaQuery.orientationOf(context);
+    final previous = _orientation;
+    _orientation = orientation;
+    if (previous == null ||
+        previous == orientation ||
+        !widget.autoFullScreen ||
+        !isMobilePlatform) {
+      return;
+    }
+    // Route changes are not allowed mid-build.
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _orientation != orientation) return;
+      if (orientation == .landscape) {
+        if (_active == null || _active == this) _fullScreen.enter(lock: false);
+      } else if (!_fullScreen.isLocked) {
+        _fullScreen.exit();
+      }
+    });
+  }
+
+  void _onPlayerValue(YoutubePlayerValue value) {
+    final state = value.playerState;
+    switch (state) {
       case .playing:
+        if (_lastPlayerState != .playing) _active = this;
         _overlayCtrl.resetTimer();
-      case .paused:
-      case .buffering:
-      case .ended:
+      case .paused || .buffering || .ended:
         _overlayCtrl.cancelTimer();
         _overlayCtrl.isVisible.value = true;
       default:
         break;
     }
+    _lastPlayerState = state;
+  }
+
+  // MARK: Fullscreen
+
+  void _enterFullScreen({required bool lock}) {
+    final route = _route = FullScreenRoute(builder: _buildFullScreenPage);
+    _fullScreen.value = true;
+    applyFullScreenSystemUi(
+      lock: lock,
+      orientation: widget.controller.params.fullscreenOrientation,
+    );
+    // Covers the system back button / gesture as well as exit().
+    route.popped.whenComplete(() {
+      if (identical(_route, route)) _onFullScreenExited();
+    });
+    Navigator.of(context, rootNavigator: true).push(route);
+    widget.onFullScreenChanged?.call(true);
+  }
+
+  void _exitFullScreen() {
+    final route = _route;
+    _onFullScreenExited();
+    if (route != null && route.isActive) route.navigator?.removeRoute(route);
+  }
+
+  void _onFullScreenExited() {
+    if (_route == null) return;
+    _route = null;
+    // Flipping the notifier moves the player back inline in the same frame
+    // the route is removed; the route shows black meanwhile.
+    _fullScreen
+      ..isLocked = false
+      ..value = false;
+    restoreSystemUi();
+    if (mounted) widget.onFullScreenChanged?.call(false);
+  }
+
+  Widget _buildFullScreenPage(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
+    final screenRatio = size.isEmpty
+        ? widget.aspectRatio
+        : size.width / size.height;
+    return ColoredBox(
+      color: Colors.black,
+      child: ValueListenableBuilder<bool>(
+        valueListenable: _fullScreen,
+        builder: (context, isFullScreen, _) => isFullScreen
+            // The player box fills the screen so the controls cover it all;
+            // the iframe letterboxes the video itself.
+            ? _buildSlot(context, aspectRatio: screenRatio)
+            : const SizedBox.expand(),
+      ),
+    );
+  }
+
+  // MARK: Build
+
+  Widget _buildControls(BuildContext context, YoutubePlayerValue value) =>
+      _controls ??= _ControlsLayer(
+        controller: widget.controller,
+        overlayController: _overlayCtrl,
+        showDefaultControls: widget.builder == null,
+        enableVerticalDrag: widget.enableFullScreenOnVerticalDrag,
+      );
+
+  Widget _buildSlot(BuildContext context, {required double aspectRatio}) {
+    final player = yp.YoutubePlayer(
+      key: _playerKey,
+      controller: widget.controller,
+      aspectRatio: aspectRatio,
+      gestureRecognizers: widget.gestureRecognizers,
+      backgroundColor:
+          widget.backgroundColor ?? Theme.of(context).colorScheme.surface,
+      keepAlive: widget.keepAlive,
+      autoPlayWhenVisible: widget.autoPlayWhenVisible,
+      controlsBuilder: _buildControls,
+    );
+    return YoutubeFullScreen(
+      notifier: _fullScreen,
+      child: OverlayControllerScope(
+        overlayController: _overlayCtrl,
+        child: switch (widget.builder) {
+          final builder? => Builder(
+            builder: (context) => builder(context, player, widget.controller),
+          ),
+          null => player,
+        },
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
-
-    // On non-web platforms, hide YouTube's native controls so the custom
-    // overlay is the only UI. On web, gesture events don't reach Flutter
-    // overlays through the iframe element, so keep native controls and show
-    // the native fullscreen button.
-    final initParams = kIsWeb
-        ? widget.controller.params.copyWith(showFullscreenButton: true)
-        : widget.controller.params.copyWith(
-            showControls: false,
-            showFullscreenButton: false,
-          );
-
-    // On mobile, the player WebView lives inside an OverlayPortal managed by
-    // iframe's YoutubePlayer. Controls must also be in that overlay so they
-    // render above the WebView. On desktop and web, a simple Stack suffices.
-    Widget Function(BuildContext, bool)? controlsBuilder;
-    if (!kIsWeb) {
-      if (_isMobile && widget.builder != null) {
-        controlsBuilder = (ctx, _) => OverlayControllerScope(
-          overlayController: _overlayCtrl,
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: _overlayCtrl.toggle,
-            child: widget.builder!(
-              ctx,
-              const SizedBox.expand(),
-              widget.controller,
-            ),
-          ),
-        );
-      } else if (widget.builder == null) {
-        controlsBuilder = (ctx, _) => _DefaultControlsLayer(
-          controller: widget.controller,
-          overlayController: _overlayCtrl,
-        );
-      }
-      // Non-mobile with builder: controlsBuilder stays null; builder wraps
-      // the iframe player directly (see return below).
-    }
-
-    final iframePlayer = yp_iframe.YoutubePlayer(
-      controller: widget.controller,
-      aspectRatio: widget.aspectRatio,
-      gestureRecognizers: widget.gestureRecognizers,
-      backgroundColor: widget.backgroundColor,
-      enableFullScreenOnVerticalDrag: widget.enableFullScreenOnVerticalDrag,
-      keepAlive: _isMobile || widget.keepAlive,
-      autoFullScreen: widget.autoFullScreen,
-      initParams: initParams,
-      controlsBuilder: controlsBuilder,
+    return ValueListenableBuilder<bool>(
+      valueListenable: _fullScreen,
+      builder: (context, isFullScreen, _) => isFullScreen
+          // Keeps the page layout; hidden under the opaque route.
+          ? AspectRatio(
+              aspectRatio: widget.aspectRatio,
+              child: const SizedBox.expand(),
+            )
+          : _buildSlot(context, aspectRatio: widget.aspectRatio),
     );
-
-    // On non-mobile with a custom builder, hand the bare iframe player to
-    // the builder so the user controls the entire layout.
-    if (!_isMobile && widget.builder != null) {
-      return widget.builder!(context, iframePlayer, widget.controller);
-    }
-
-    return iframePlayer;
   }
 
   @override
-  bool get wantKeepAlive => _isMobile || widget.keepAlive;
+  void dispose() {
+    _valueSub?.cancel();
+    if (_active == this) _active = null;
+    final route = _route;
+    if (route == null) {
+      _fullScreen.dispose();
+      _overlayCtrl.dispose();
+    } else {
+      // The route still hosts the player; the navigator cannot change during
+      // finalization, so remove it once this frame is done.
+      _route = null;
+      restoreSystemUi();
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        if (route.isActive) route.navigator?.removeRoute(route);
+        SchedulerBinding.instance.addPostFrameCallback((_) {
+          _fullScreen.dispose();
+          _overlayCtrl.dispose();
+        });
+      });
+    }
+    super.dispose();
+  }
 }
 
 // ---------------------------------------------------------------------------
-// Default controls layer — auto-hide overlay with horizontal seek gesture.
+// Controls layer: receives all input over the player (the iframe ignores
+// pointer events while controlsBuilder is set). Shows the default controls,
+// or stays transparent under a custom builder.
 // ---------------------------------------------------------------------------
 
-class _DefaultControlsLayer extends StatefulWidget {
-  const _DefaultControlsLayer({
-    required this.controller,
-    required this.overlayController,
-  });
-
-  final YoutubePlayerController controller;
-  final OverlayController overlayController;
-
+class const _ControlsLayer({
+  required final YoutubePlayerController controller,
+  required final OverlayController overlayController,
+  required final bool showDefaultControls,
+  required final bool enableVerticalDrag,
+}) extends StatefulWidget {
   @override
-  State<_DefaultControlsLayer> createState() => _DefaultControlsLayerState();
+  State<_ControlsLayer> createState() => _ControlsLayerState();
 }
 
-class _DefaultControlsLayerState extends State<_DefaultControlsLayer> {
-  late StreamSubscription<YoutubeVideoState> _subscription;
-  YoutubeVideoState _videoState = const YoutubeVideoState();
+class _ControlsLayerState extends State<_ControlsLayer> {
   bool _isSeeking = false;
+  double _seekStartSeconds = 0;
   double _seekDeltaSeconds = 0;
   double _dragStartX = 0;
 
   // Full player-width drag = 120 s of seek (VLC-like fixed physical feel).
   static const double _seekWidthRatio = 120.0;
 
-  @override
-  void initState() {
-    super.initState();
-    _subscription = widget.controller.videoStateStream.listen((state) {
-      if (mounted && !_isSeeking) setState(() => _videoState = state);
-    });
-  }
+  double get _durationSeconds =>
+      widget.controller.metadata.duration.inMilliseconds / 1000;
 
-  @override
-  void dispose() {
-    _subscription.cancel();
-    super.dispose();
-  }
+  double get _seekTargetSeconds =>
+      (_seekStartSeconds + _seekDeltaSeconds).clamp(0.0, _durationSeconds);
 
   void _onHorizontalDragStart(DragStartDetails details) {
-    if (widget.controller.metadata.duration == Duration.zero) return;
+    if (_durationSeconds == 0) return;
     _dragStartX = details.localPosition.dx;
     widget.overlayController.cancelTimer();
     setState(() {
       _isSeeking = true;
+      _seekStartSeconds = widget.controller.currentTime;
       _seekDeltaSeconds = 0;
     });
   }
@@ -269,18 +391,11 @@ class _DefaultControlsLayerState extends State<_DefaultControlsLayer> {
 
   void _onHorizontalDragEnd(DragEndDetails _) {
     if (!_isSeeking) return;
-    final duration = widget.controller.metadata.duration.inSeconds.toDouble();
-    final currentPos = _videoState.position.inSeconds.toDouble();
-    final newPos = (currentPos + _seekDeltaSeconds).clamp(0.0, duration);
-    widget.controller.seekTo(seconds: newPos, allowSeekAhead: true);
-    widget.overlayController.resetTimer();
-    setState(() {
-      _isSeeking = false;
-      _seekDeltaSeconds = 0;
-    });
+    widget.controller.seekTo(seconds: _seekTargetSeconds, allowSeekAhead: true);
+    _endSeek();
   }
 
-  void _onHorizontalDragCancel() {
+  void _endSeek() {
     if (!_isSeeking) return;
     widget.overlayController.resetTimer();
     setState(() {
@@ -289,58 +404,64 @@ class _DefaultControlsLayerState extends State<_DefaultControlsLayer> {
     });
   }
 
+  void _onVerticalDragEnd(DragEndDetails details) {
+    final velocity = details.primaryVelocity ?? 0;
+    final fullScreen = YoutubeFullScreen.of(context, listen: false);
+    if (velocity < 0) {
+      fullScreen.enter();
+    } else if (velocity > 0) {
+      fullScreen.exit();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return OverlayControllerScope(
-      overlayController: widget.overlayController,
-      child: GestureDetector(
-        behavior: HitTestBehavior.translucent,
-        onTap: widget.overlayController.toggle,
-        onHorizontalDragStart: _onHorizontalDragStart,
-        onHorizontalDragUpdate: _onHorizontalDragUpdate,
-        onHorizontalDragEnd: _onHorizontalDragEnd,
-        onHorizontalDragCancel: _onHorizontalDragCancel,
-        child: Stack(
-          children: [
-            ValueListenableBuilder<bool>(
-              valueListenable: widget.overlayController.isVisible,
-              builder: (context, visible, child) => AnimatedOpacity(
-                duration: const Duration(milliseconds: 300),
-                opacity: visible ? 1.0 : 0.0,
-                child: child,
-              ),
-              child: ControlsOverlay(controller: widget.controller),
-            ),
-            if (_isSeeking)
-              Center(
-                child: _SeekIndicator(
-                  deltaSeconds: _seekDeltaSeconds,
-                  targetSeconds:
-                      (_videoState.position.inSeconds.toDouble() +
-                              _seekDeltaSeconds)
-                          .clamp(
-                            0.0,
-                            widget.controller.metadata.duration.inSeconds
-                                .toDouble(),
-                          ),
+    final isFullScreen = YoutubeFullScreen.of(context).isFullScreen;
+    // Inline inside a scroll view, vertical drags belong to the scroll view.
+    final verticalDrag =
+        widget.enableVerticalDrag &&
+        (isFullScreen || Scrollable.maybeOf(context) == null);
+    final seekable = widget.showDefaultControls;
+
+    return GestureDetector(
+      behavior: .translucent,
+      onTap: widget.overlayController.toggle,
+      onHorizontalDragStart: seekable ? _onHorizontalDragStart : null,
+      onHorizontalDragUpdate: seekable ? _onHorizontalDragUpdate : null,
+      onHorizontalDragEnd: seekable ? _onHorizontalDragEnd : null,
+      onHorizontalDragCancel: seekable ? _endSeek : null,
+      onVerticalDragEnd: verticalDrag ? _onVerticalDragEnd : null,
+      child: !widget.showDefaultControls
+          ? const SizedBox.expand()
+          : Stack(
+              fit: .expand,
+              children: [
+                ValueListenableBuilder<bool>(
+                  valueListenable: widget.overlayController.isVisible,
+                  builder: (context, visible, child) => AnimatedOpacity(
+                    duration: const Duration(milliseconds: 300),
+                    opacity: visible ? 1.0 : 0.0,
+                    child: IgnorePointer(ignoring: !visible, child: child),
+                  ),
+                  child: ControlsOverlay(controller: widget.controller),
                 ),
-              ),
-          ],
-        ),
-      ),
+                if (_isSeeking)
+                  Center(
+                    child: _SeekIndicator(
+                      deltaSeconds: _seekDeltaSeconds,
+                      targetSeconds: _seekTargetSeconds,
+                    ),
+                  ),
+              ],
+            ),
     );
   }
 }
 
-class _SeekIndicator extends StatelessWidget {
-  const _SeekIndicator({
-    required this.deltaSeconds,
-    required this.targetSeconds,
-  });
-
-  final double deltaSeconds;
-  final double targetSeconds;
-
+class const _SeekIndicator({
+  required final double deltaSeconds,
+  required final double targetSeconds,
+}) extends StatelessWidget {
   String _formatDelta() {
     final abs = deltaSeconds.abs().round();
     final sign = deltaSeconds >= 0 ? '+' : '-';
@@ -369,7 +490,7 @@ class _SeekIndicator extends StatelessWidget {
         borderRadius: BorderRadius.all(Radius.circular(8)),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisSize: .min,
         children: [
           Icon(
             deltaSeconds >= 0 ? Icons.fast_forward : Icons.fast_rewind,

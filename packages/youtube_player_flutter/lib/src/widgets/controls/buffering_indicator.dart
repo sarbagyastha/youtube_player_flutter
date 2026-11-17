@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import 'package:material_ui/material_ui.dart';
-import 'package:youtube_player_iframe/youtube_player_iframe.dart';
+import 'package:youtube_player/youtube_player.dart';
 
 /// Shows a [CircularProgressIndicator] only while the player is buffering.
 class BufferingIndicator extends StatelessWidget {

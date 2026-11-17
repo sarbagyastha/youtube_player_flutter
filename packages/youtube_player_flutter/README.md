@@ -19,15 +19,15 @@ A batteries-included YouTube player for Flutter. Drop it in and get a fully work
 
 ## Features
 
-- Built-in playback controls (play/pause, seek bar, duration, fullscreen)
-- Drag left/right to fast-forward or rewind
-- Pinch gesture to enter fullscreen
-- Live stream UI with a red indicator
-- Customisable top and bottom action bars
+- YouTube-styled controls drawn in Flutter: play/pause, seek bar, time, playback speed, playlist next/previous, fullscreen
+- Drag left/right on the player to seek
+- Swipe up/down, or rotate the device, to enter and leave fullscreen
+- Fullscreen keeps your controls on screen, and works the same on every platform
+- Themeable via `YoutubePlayerTheme`, or replace the controls entirely with `builder`
 - No YouTube API key required
 - Supports Android, iOS, macOS, and Web
 
-> Built on top of [youtube_player_iframe](https://pub.dev/packages/youtube_player_iframe). If you need direct access to the iFrame API or want to build a fully custom UI, use that package instead.
+> Built on top of [youtube_player](https://pub.dev/packages/youtube_player), which plays YouTube in a minimal native WebView through the official IFrame Player API. Its full API (`YoutubePlayerController`, `YoutubePlayerParams`, `YoutubeValueBuilder`, ...) is re-exported from this package. If you only need YouTube's own controls, use `youtube_player` directly.
 
 ---
 
@@ -37,6 +37,8 @@ A batteries-included YouTube player for Flutter. Drop it in and get a fully work
 flutter pub add youtube_player_flutter
 ```
 
+**Requirements:** Dart 3.14+ and Flutter 3.50+.
+
 ---
 
 ## Quick Start
@@ -44,19 +46,17 @@ flutter pub add youtube_player_flutter
 ### 1. Create a controller
 
 ```dart
-final controller = YoutubePlayerController(
-  initialVideoId: '<video-id>',
-  flags: const YoutubePlayerFlags(
-    autoPlay: true,
-    mute: false,
-  ),
+final controller = YoutubePlayerController.fromVideoId(
+  videoId: '<video-id>',
+  autoPlay: true,
+  params: const YoutubePlayerParams(mute: true),
 );
 ```
 
 Have a YouTube URL instead of a video ID? Use the helper:
 
 ```dart
-final videoId = YoutubePlayer.convertUrlToId(
+final videoId = YoutubePlayerController.convertUrlToId(
   'https://www.youtube.com/watch?v=BBAyRBTfsOU',
 ); // → 'BBAyRBTfsOU'
 ```
@@ -64,58 +64,35 @@ final videoId = YoutubePlayer.convertUrlToId(
 ### 2. Add the player widget
 
 ```dart
-YoutubePlayer(
-  controller: controller,
-  showVideoProgressIndicator: true,
-  progressIndicatorColor: Colors.red,
-)
+YoutubePlayer(controller: controller)
 ```
 
-### 3. Add fullscreen support
+Fullscreen needs no extra setup: the built-in button, a vertical swipe, or rotating the device to landscape (Android and iOS) takes the player fullscreen, and the back button returns.
 
-Wrap with `YoutubePlayerBuilder` to enable fullscreen:
-
-```dart
-YoutubePlayerBuilder(
-  player: YoutubePlayer(controller: controller),
-  builder: (context, player) {
-    return Scaffold(
-      body: Column(
-        children: [
-          player,
-          // rest of your screen
-        ],
-      ),
-    );
-  },
-)
-```
-
-### 4. Dispose when done
+### 3. Close when done
 
 ```dart
 @override
 void dispose() {
-  controller.dispose();
+  controller.close();
   super.dispose();
 }
 ```
 
 ---
 
-## Live Stream Videos
+## Theming
 
-Set `isLive: true` to switch the player to a live stream UI (red indicator, no seek bar):
+Add a `YoutubePlayerTheme` to your `ThemeData`:
 
 ```dart
-final controller = YoutubePlayerController(
-  initialVideoId: '<live-stream-id>',
-  flags: const YoutubePlayerFlags(isLive: true),
-);
-
-YoutubePlayer(
-  controller: controller,
-  liveUIColor: Colors.red,
+ThemeData(
+  extensions: const [
+    YoutubePlayerTheme(
+      progressBarActiveColor: Colors.red,
+      controlsColor: Colors.white,
+    ),
+  ],
 )
 ```
 
@@ -123,41 +100,55 @@ YoutubePlayer(
 
 ## Custom Controls
 
-Use `topActions` and `bottomActions` to swap in your own controls. Several pre-built widgets are included:
-
-| Widget | What it shows |
-|---|---|
-| `PlayPauseButton` | Play / pause toggle |
-| `CurrentPosition` | Current timestamp |
-| `RemainingDuration` | Time left |
-| `ProgressBar` | Seek bar |
-| `FullScreenButton` | Fullscreen toggle |
-| `PlaybackSpeedButton` | Speed picker |
+Pass `builder` to replace the default controls. Lay your controls over `player` with a `Stack`; the same layout is used in fullscreen, where `player` fills the screen.
 
 ```dart
 YoutubePlayer(
   controller: controller,
-  bottomActions: [
-    CurrentPosition(),
-    ProgressBar(isExpanded: true),
-    RemainingDuration(),
-    FullScreenButton(),
-  ],
+  builder: (context, player, controller) => Stack(
+    children: [
+      player,
+      Positioned(
+        left: 0,
+        right: 0,
+        bottom: 0,
+        child: Row(
+          children: [
+            YoutubeValueBuilder(
+              controller: controller,
+              builder: (context, value) => IconButton(
+                icon: Icon(
+                  value.playerState == PlayerState.playing
+                      ? Icons.pause
+                      : Icons.play_arrow,
+                ),
+                onPressed: value.playerState == PlayerState.playing
+                    ? controller.pauseVideo
+                    : controller.playVideo,
+              ),
+            ),
+            const Spacer(),
+            const FullscreenButton(),
+          ],
+        ),
+      ),
+    ],
+  ),
 )
 ```
 
+Control fullscreen from anywhere below the player with `YoutubeFullScreen.of(context)` (`enter()`, `exit()`, `toggle()`, `isFullScreen`), or listen with `YoutubePlayer.onFullScreenChanged`.
+
 ---
 
-## Platform Requirements
+## Platform Setup
 
-| Platform | Minimum |
-|---|---|
-| Android | API level 20 (`minSdkVersion 20`) |
-| iOS | iOS 11, Swift, Xcode ≥ 11 |
-| macOS | macOS 10.14 |
-| Web | Any modern browser |
+- **Android:** API 24+. Nothing else to do.
+- **iOS / macOS:** iOS 15+ and macOS 12+. Requires Swift Package Manager (Flutter's default); CocoaPods is not supported.
+- **macOS:** enable `com.apple.security.network.client` in your entitlements.
+- **Web:** works in any modern browser, including `--wasm` builds.
 
-For Android and iOS setup details, see the [webview_flutter docs](https://pub.dev/packages/webview_flutter).
+See the [youtube_player setup notes](https://pub.dev/packages/youtube_player#-1-pack-your-bags) for optional settings such as Hybrid Composition++ and the client identity (`YoutubePlayerParams.appId`).
 
 ---
 

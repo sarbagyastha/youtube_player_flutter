@@ -28,23 +28,27 @@ extension type YTPlayer._(JSObject _) implements JSObject {
   /// Attaches a player to an existing `enablejsapi=1` iframe.
   external factory(web.HTMLIFrameElement iframe, YTPlayerOptions options);
 
+  // The getters below return `undefined` while the player is not connected
+  // to its iframe (before the embed initializes, or while it reloads), so
+  // they are nullable.
+
   /// `getCurrentTime()`: elapsed seconds.
-  external double getCurrentTime();
+  external double? getCurrentTime();
 
   /// `getDuration()`: video length in seconds, `0` until metadata loads.
-  external double getDuration();
+  external double? getDuration();
 
   /// `getVideoLoadedFraction()`: buffered share of the video, `0..1`.
-  external double getVideoLoadedFraction();
+  external double? getVideoLoadedFraction();
 
   /// `getPlaybackRate()`: current playback rate.
-  external double getPlaybackRate();
+  external double? getPlaybackRate();
 
   /// `getVolume()`: volume `0..100`.
-  external int getVolume();
+  external int? getVolume();
 
   /// `isMuted()`: whether the player is muted.
-  external bool isMuted();
+  external bool? isMuted();
 
   /// `getVideoData()`: id, title and author of the current video.
   external YTVideoData? getVideoData();

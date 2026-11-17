@@ -284,19 +284,24 @@ final class _WebHost(final int _id, final YoutubeHostParams _params)
   void _tick() {
     final player = _player;
     if (player == null || !_ready) return;
+    // `undefined` while the player is not connected to its iframe; the next
+    // tick or state change reports again.
+    final currentTime = player.getCurrentTime();
+    if (currentTime == null) return;
+    final last = _lastTick;
     final tick = TickEvent(
-      currentTime: player.getCurrentTime(),
-      loadedFraction: player.getVideoLoadedFraction(),
-      duration: player.getDuration(),
-      volume: player.getVolume(),
-      muted: player.isMuted(),
+      currentTime: currentTime,
+      loadedFraction: player.getVideoLoadedFraction() ?? 0,
+      duration: player.getDuration() ?? last?.duration ?? 0,
+      volume: player.getVolume() ?? last?.volume ?? 100,
+      muted: player.isMuted() ?? last?.muted ?? false,
     );
-    if (_lastTick case final last?
-        when last.currentTime == tick.currentTime &&
-            last.loadedFraction == tick.loadedFraction &&
-            last.duration == tick.duration &&
-            last.volume == tick.volume &&
-            last.muted == tick.muted) {
+    if (last != null &&
+        last.currentTime == tick.currentTime &&
+        last.loadedFraction == tick.loadedFraction &&
+        last.duration == tick.duration &&
+        last.volume == tick.volume &&
+        last.muted == tick.muted) {
       return;
     }
     _lastTick = tick;

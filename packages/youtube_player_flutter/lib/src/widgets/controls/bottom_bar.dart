@@ -5,32 +5,31 @@
 import 'dart:math' as math;
 
 import 'package:material_ui/material_ui.dart';
-import 'package:youtube_player_iframe/youtube_player_iframe.dart';
+import 'package:youtube_player/youtube_player.dart';
 
+import '../../fullscreen/fullscreen.dart';
 import '../../theme/youtube_player_theme.dart';
 import '../../utils/duration_formatter.dart';
 import 'fullscreen_button.dart';
 import 'progress_bar.dart';
 
 /// Bottom gradient bar: time pill + fullscreen button, then a thin seek slider.
-class BottomBar extends StatelessWidget {
-  const BottomBar({super.key, required this.controller});
-
-  final YoutubePlayerController controller;
-
+class const BottomBar({
+  super.key,
+  required final YoutubePlayerController controller,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = YoutubePlayerThemeResolver(context);
 
-    return YoutubeValueBuilder(
-      controller: controller,
-      buildWhen: (o, n) => o.fullScreenOption != n.fullScreenOption,
-      builder: (context, value) {
+    return ValueListenableBuilder<bool>(
+      valueListenable: YoutubeFullScreen.of(context, listen: false),
+      builder: (context, isFullScreen, _) {
         // In fullscreen, use safe-area insets as a floor for horizontal padding
         // (max rather than add) so controls clear the notch without doubling
         // the existing spacing. Bottom inset is added for the home indicator.
         final EdgeInsets insets;
-        if (value.fullScreenOption.enabled) {
+        if (isFullScreen) {
           final p = MediaQuery.paddingOf(context);
           insets = EdgeInsets.fromLTRB(
             math.max(12.0, p.left),
@@ -53,7 +52,7 @@ class BottomBar extends StatelessWidget {
                   children: [
                     _TimePill(controller: controller, theme: theme),
                     const Spacer(),
-                    FullscreenButton(controller: controller),
+                    const FullscreenButton(),
                   ],
                 ),
               ),

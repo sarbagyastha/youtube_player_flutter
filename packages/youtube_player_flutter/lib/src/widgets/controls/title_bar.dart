@@ -5,28 +5,27 @@
 import 'dart:math' as math;
 
 import 'package:material_ui/material_ui.dart';
-import 'package:youtube_player_iframe/youtube_player_iframe.dart';
+import 'package:youtube_player/youtube_player.dart';
 
+import '../../fullscreen/fullscreen.dart';
 import '../../theme/youtube_player_theme.dart';
 import 'speed_control.dart';
 
 /// Top action bar with speed control aligned to the right.
-class TitleBar extends StatelessWidget {
-  const TitleBar({super.key, required this.controller});
-
-  final YoutubePlayerController controller;
-
+class const TitleBar({
+  super.key,
+  required final YoutubePlayerController controller,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = YoutubePlayerThemeResolver(context);
 
-    return YoutubeValueBuilder(
-      controller: controller,
-      buildWhen: (o, n) => o.fullScreenOption != n.fullScreenOption,
-      builder: (context, value) {
+    return ValueListenableBuilder<bool>(
+      valueListenable: YoutubeFullScreen.of(context, listen: false),
+      builder: (context, isFullScreen, _) {
         final double left;
         final double right;
-        if (value.fullScreenOption.enabled) {
+        if (isFullScreen) {
           final p = MediaQuery.paddingOf(context);
           left = math.max(4.0, p.left);
           right = math.max(4.0, p.right);
