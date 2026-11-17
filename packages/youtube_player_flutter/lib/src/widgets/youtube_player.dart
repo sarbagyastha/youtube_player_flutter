@@ -272,7 +272,10 @@ class _YoutubePlayerState extends State<YoutubePlayer>
     final screenRatio = size.isEmpty
         ? widget.aspectRatio
         : size.width / size.height;
-    return ColoredBox(
+    // A Material (not a bare ColoredBox), so Material widgets in custom
+    // builders/controls (Slider, InkWell, ...) and text styling keep working
+    // once the player moves into this route, which has no Scaffold.
+    return Material(
       color: Colors.black,
       child: ValueListenableBuilder<bool>(
         valueListenable: _fullScreen,
