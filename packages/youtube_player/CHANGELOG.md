@@ -1,3 +1,10 @@
+## 4.0.2
+
+**November 17, 2026**
+
+- Improve pub score.
+- Require the latest platform packages (`^0.1.2`).
+
 ## 4.0.1
 
 **November 16, 2026**
