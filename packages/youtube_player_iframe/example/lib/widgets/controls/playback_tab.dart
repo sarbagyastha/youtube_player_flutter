@@ -158,9 +158,8 @@ class _PlaybackTabState extends State<PlaybackTab> {
             children: [
               Text(
                 'Speed',
-                style: Theme.of(
-                  context,
-                ).textTheme.labelLarge!.copyWith(color: cs.onSurfaceVariant),
+                style: Theme.of(context).textTheme.labelLarge!
+                    .copyWith(color: cs.onSurfaceVariant),
               ),
               const SizedBox(width: 12),
               Expanded(

@@ -220,19 +220,16 @@ class _DeepLinkHint extends StatelessWidget {
               const SizedBox(width: 6),
               Text(
                 'Deep link',
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  color: cs.primary,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: Theme.of(context).textTheme.labelMedium
+                    ?.copyWith(color: cs.primary, fontWeight: FontWeight.w600),
               ),
             ],
           ),
           const SizedBox(height: 6),
           Text(
             'Open a specific video by navigating to:',
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+            style: Theme.of(context).textTheme.bodySmall
+                ?.copyWith(color: cs.onSurfaceVariant),
           ),
           const SizedBox(height: 4),
           Row(
@@ -240,10 +237,8 @@ class _DeepLinkHint extends StatelessWidget {
               Expanded(
                 child: Text(
                   r'/?v=<videoId>  or  /watch?v=<videoId>',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    fontFamily: 'monospace',
-                    color: cs.onSurface,
-                  ),
+                  style: Theme.of(context).textTheme.bodySmall
+                      ?.copyWith(fontFamily: 'monospace', color: cs.onSurface),
                 ),
               ),
               if (videoIdController.text.length == 11)

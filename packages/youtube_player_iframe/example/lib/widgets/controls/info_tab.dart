@@ -27,10 +27,8 @@ class InfoTab extends StatelessWidget {
               // Title
               Text(
                 meta.title.isEmpty ? 'No video loaded' : meta.title,
-                style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                  fontWeight: FontWeight.w700,
-                  height: 1.3,
-                ),
+                style: Theme.of(context).textTheme.titleMedium!
+                    .copyWith(fontWeight: .w700, height: 1.3),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),

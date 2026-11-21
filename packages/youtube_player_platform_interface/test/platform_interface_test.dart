@@ -163,7 +163,10 @@ void main() {
       final events = <PlayerEvent>[];
       host.events.listen(events.add);
       host.page({'e': 'ready'});
-      host.page({'e': 'state', 'd': {'s': 2}});
+      host.page({
+        'e': 'state',
+        'd': {'s': 2},
+      });
       // Not synchronously, and not from microtasks alone: Native Interop
       // callbacks run outside the isolate's message loop.
       await Future<void>.microtask(() {});
