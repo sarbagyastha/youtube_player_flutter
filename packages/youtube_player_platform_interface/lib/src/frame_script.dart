@@ -9,6 +9,8 @@ import 'script_json.dart';
 /// (at document start, in every frame of the YouTube hosts).
 ///
 /// The script:
+/// * keeps the video filling its frame (letterboxed by the browser), since
+///   YouTube's own sizing can go stale after a resize;
 /// * hides the [hidden] elements with a style sheet, so they never flash;
 /// * reports every link click with the matching element instead of letting
 ///   it navigate, so the app decides what happens;
@@ -49,9 +51,12 @@ const _template = r'''
   const send = (m) => w.parent.postMessage(m, '*');
 
   const style = d.createElement('style');
+  const base = '.html5-video-container{width:100%!important;height:100%!important}' +
+    'video.html5-main-video{left:0!important;top:0!important;' +
+    'width:100%!important;height:100%!important;object-fit:contain!important}';
   const css = (s) => {
     // One rule per element, so an invalid selector drops only its own.
-    style.textContent = s.map((x) => x + '{display:none!important}').join('\n');
+    style.textContent = [base, ...s.map((x) => x + '{display:none!important}')].join('\n');
   };
   const attach = () => {
     const root = d.head || d.documentElement;

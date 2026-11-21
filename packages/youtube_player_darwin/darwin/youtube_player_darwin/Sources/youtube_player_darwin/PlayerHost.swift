@@ -43,7 +43,11 @@ final class PlayerHost: NSObject {
       configuration.userContentController.addUserScript(
         WKUserScript(source: frameScript, injectionTime: .atDocumentStart, forMainFrameOnly: false))
     }
-    webView = WKWebView(frame: .zero, configuration: configuration)
+    #if os(iOS)
+      webView = PlayerWebView(frame: .zero, configuration: configuration)
+    #elseif os(macOS)
+      webView = WKWebView(frame: .zero, configuration: configuration)
+    #endif
     super.init()
 
     configuration.userContentController.add(WeakMessageHandler(self), name: "ypBridge")
@@ -137,6 +141,16 @@ final class PlayerHost: NSObject {
     plugin?.onMessage(handle, json)
   }
 }
+
+#if os(iOS)
+  /// Flutter owns the layout, safe areas included, so the page lays out edge
+  /// to edge in whatever frame it gets. Otherwise WebKit offsets the content
+  /// by the notch inset (e.g. landscape fullscreen: extra gap on one side, the
+  /// other side cropped).
+  private final class PlayerWebView: WKWebView {
+    override var safeAreaInsets: UIEdgeInsets { .zero }
+  }
+#endif
 
 // MARK: - Navigation
 

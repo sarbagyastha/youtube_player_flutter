@@ -1,3 +1,9 @@
+## 0.1.3
+
+**November 21, 2026**
+
+- Fix the video being off-center and cropped in landscape fullscreen on notched iPhones; the WebView no longer applies safe-area insets (Flutter owns the layout).
+
 ## 0.1.2
 
 **November 17, 2026**
