@@ -81,7 +81,10 @@ class _TimePill extends StatelessWidget {
     return StreamBuilder<YoutubeVideoState>(
       stream: controller.videoStateStream,
       builder: (context, snapshot) {
-        final position = snapshot.data?.position ?? Duration.zero;
+        // Ticks only arrive while playing; fall back to the last known time.
+        final position =
+            snapshot.data?.position ??
+            Duration(milliseconds: (controller.currentTime * 1000).round());
         final duration = controller.metadata.duration;
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),

@@ -146,6 +146,10 @@ class _YoutubePlayerState extends State<YoutubePlayer>
   /// is created and nothing reloads.
   final _playerKey = GlobalKey();
 
+  /// Moves the whole slot, including a custom [YoutubePlayer.builder]'s
+  /// controls, with the player, so their state survives fullscreen changes.
+  final _slotKey = GlobalKey();
+
   FullScreenRoute? _route;
   StreamSubscription<YoutubePlayerValue>? _valueSub;
   PlayerState _lastPlayerState = .unknown;
@@ -311,16 +315,19 @@ class _YoutubePlayerState extends State<YoutubePlayer>
       // On the web, YouTube's own controls and fullscreen button.
       controlsBuilder: kIsWeb ? null : _buildControls,
     );
-    return YoutubeFullScreen(
-      notifier: _fullScreen,
-      child: OverlayControllerScope(
-        overlayController: _overlayCtrl,
-        child: switch (widget.builder) {
-          final builder? => Builder(
-            builder: (context) => builder(context, player, widget.controller),
-          ),
-          null => player,
-        },
+    return KeyedSubtree(
+      key: _slotKey,
+      child: YoutubeFullScreen(
+        notifier: _fullScreen,
+        child: OverlayControllerScope(
+          overlayController: _overlayCtrl,
+          child: switch (widget.builder) {
+            final builder? => Builder(
+              builder: (context) => builder(context, player, widget.controller),
+            ),
+            null => player,
+          },
+        ),
       ),
     );
   }

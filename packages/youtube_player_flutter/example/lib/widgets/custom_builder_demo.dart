@@ -237,7 +237,15 @@ class _BottomControls extends StatelessWidget {
     return StreamBuilder<YoutubeVideoState>(
       stream: controller.videoStateStream,
       builder: (context, snapshot) {
-        final state = snapshot.data ?? const YoutubeVideoState();
+        // Ticks only arrive while playing; start from the last known position.
+        final state =
+            snapshot.data ??
+            YoutubeVideoState(
+              position: Duration(
+                milliseconds: (controller.currentTime * 1000).round(),
+              ),
+              loadedFraction: controller.videoLoadedFraction,
+            );
         final duration = controller.metadata.duration;
         final totalSeconds = duration.inSeconds.toDouble();
         final position = isSeeking

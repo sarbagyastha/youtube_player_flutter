@@ -30,13 +30,20 @@ class ProgressBar extends StatefulWidget {
 class _ProgressBarState extends State<ProgressBar> {
   late StreamSubscription<YoutubeVideoState> _subscription;
   Timer? _seekClearTimer;
-  YoutubeVideoState _videoState = const YoutubeVideoState();
+  late YoutubeVideoState _videoState;
   bool _isSeeking = false;
   double _seekValue = 0;
 
   @override
   void initState() {
     super.initState();
+    // Ticks only arrive while playing; start from the last known position.
+    _videoState = YoutubeVideoState(
+      position: Duration(
+        milliseconds: (widget.controller.currentTime * 1000).round(),
+      ),
+      loadedFraction: widget.controller.videoLoadedFraction,
+    );
     _subscription = widget.controller.videoStateStream.listen((state) {
       if (!mounted) return;
       if (_isSeeking) {
