@@ -17,6 +17,19 @@ Embed YouTube videos in your Flutter app with full control over playback. Powere
 
 ---
 
+> [!WARNING]
+> **`youtube_player_iframe` is no longer maintained.**
+> It has been superseded by [`youtube_player`](https://pub.dev/packages/youtube_player), a modern rewrite
+> that drives native WebViews directly through Pigeon Native Interop (JNI on Android, FFI on iOS/macOS,
+> `js_interop` on the web): synchronous APIs, no platform channels, no `webview_flutter`, and Wasm support.
+> New projects should use `youtube_player`, and existing apps should migrate:
+> see the [migration guide](https://pub.dev/packages/youtube_player#-8-coming-from-youtube_player_iframe).
+>
+> [`youtube_player_flutter`](https://pub.dev/packages/youtube_player_flutter) has also moved to the new
+> family: from v11 it is built on `youtube_player` instead of this package.
+
+---
+
 ## Features
 
 - **Inline playback**: videos play inside your app, no pop-outs
@@ -31,7 +44,7 @@ Embed YouTube videos in your Flutter app with full control over playback. Powere
 - **Privacy-enhanced mode**: uses `youtube-nocookie.com` by default
 - **Multi-platform**: Android, iOS, macOS, and Web
 
-> Built on [webview_flutter](https://pub.dev/packages/webview_flutter). For a ready-made player with built-in controls, see [youtube_player_flutter](https://pub.dev/packages/youtube_player_flutter).
+> Built on [webview_flutter](https://pub.dev/packages/webview_flutter).
 
 ---
 

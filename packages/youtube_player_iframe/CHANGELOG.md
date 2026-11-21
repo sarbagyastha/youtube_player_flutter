@@ -1,4 +1,11 @@
 # Changelog
+## 6.0.4
+**November 21, 2026**
+
+- **No longer maintained.** Superseded by [`youtube_player`](https://pub.dev/packages/youtube_player), a native rewrite (Pigeon Native Interop, synchronous APIs, no `webview_flutter`, Wasm). See the [migration guide](https://pub.dev/packages/youtube_player#-8-coming-from-youtube_player_iframe).
+- [`youtube_player_flutter`](https://pub.dev/packages/youtube_player_flutter) v11+ is now built on `youtube_player` instead of this package.
+- Bumps `youtube_player_iframe_web` dependency to `^3.1.5`.
+
 ## 6.0.3
 **November 16, 2026**
 
