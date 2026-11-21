@@ -1,3 +1,9 @@
+## 0.1.3
+
+**November 21, 2026**
+
+- Keep the video filling its frame (letterboxed) after a resize; YouTube's own sizing could go stale and leave it off-center or cropped.
+
 ## 0.1.2
 
 **November 17, 2026**
