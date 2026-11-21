@@ -20,7 +20,7 @@ A Flutter monorepo for seamless YouTube video playback, powered by the official 
 
 | Package | Version | Demo | Description | Platforms |
 |---|---|---|---|---|
-| [youtube_player](packages/youtube_player) | [![pub](https://img.shields.io/pub/v/youtube_player.svg)](https://pub.dev/packages/youtube_player) | | New plain IFrame player on native WebViews (Pigeon Native Interop, no `webview_flutter`). Custom UI via `controlsBuilder`. | Android, iOS, macOS, Web |
+| [youtube_player](packages/youtube_player) | [![pub](https://img.shields.io/pub/v/youtube_player.svg)](https://pub.dev/packages/youtube_player) | [![demo](https://img.shields.io/badge/Web-Demo-deeppink.svg)](https://youtube.sarbagyastha.com.np) | New plain IFrame player on native WebViews (Pigeon Native Interop, no `webview_flutter`). Custom UI via `controlsBuilder`. | Android, iOS, macOS, Web |
 | [youtube_player_platform_interface](packages/youtube_player_platform_interface) | [![pub](https://img.shields.io/pub/v/youtube_player_platform_interface.svg)](https://pub.dev/packages/youtube_player_platform_interface) | | Platform interface for `youtube_player` (added automatically) | All |
 | [youtube_player_android](packages/youtube_player_android) | [![pub](https://img.shields.io/pub/v/youtube_player_android.svg)](https://pub.dev/packages/youtube_player_android) | | Android implementation for `youtube_player` (added automatically) | Android |
 | [youtube_player_darwin](packages/youtube_player_darwin) | [![pub](https://img.shields.io/pub/v/youtube_player_darwin.svg)](https://pub.dev/packages/youtube_player_darwin) | | iOS and macOS implementation for `youtube_player` (added automatically) | iOS, macOS |

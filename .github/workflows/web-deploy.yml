@@ -1,27 +1,62 @@
 name: Deploy to Web
 
+# Builds the example apps (Wasm) and pushes them to the branches the demos are served from:
+#   youtube_player         -> ypi -> https://youtube.sarbagyastha.com.np (GitHub Pages)
+#   youtube_player_flutter -> ypf -> https://yt.sarbagyastha.com.np
+# Custom domains come from each example's web/CNAME.
 on:
   push:
-    branches: [ main ]
+    branches: [main]
+    paths:
+      - 'packages/youtube_player/**'
+      - 'packages/youtube_player_html/**'
+      - 'packages/youtube_player_platform_interface/**'
+      - 'packages/youtube_player_flutter/**'
+      - 'pubspec.yaml'
+      - '.github/workflows/web-deploy.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: web-deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write # Required to push the build to the deploy branches
 
 jobs:
-  web-deploy:
-    name: Web Deploy
-    runs-on: macos-latest
+  deploy:
+    name: Deploy ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: youtube_player
+            dir: packages/youtube_player/example
+            branch: ypi
+          - name: youtube_player_flutter
+            dir: packages/youtube_player_flutter/example
+            branch: ypf
 
     steps:
-      - uses: actions/checkout@v6
-      - uses: subosito/flutter-action@v2
-      - uses: sarbagyastha/flutter-gh-pages@main
-        with:
-          workingDir: packages/youtube_player_iframe/example
-          baseHref: /
-          customArgs: --wasm
-          targetBranch: ypi
+      - uses: actions/checkout@v7
 
-      - uses: sarbagyastha/flutter-gh-pages@main
+      - uses: subosito/flutter-action@v2
         with:
-          workingDir: packages/youtube_player_flutter/example
-          baseHref: /
-          customArgs: --wasm
-          targetBranch: ypf
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+
+      - name: Build (Wasm)
+        working-directory: ${{ matrix.dir }}
+        run: flutter build web --release --wasm --base-href /
+
+      - name: Deploy to ${{ matrix.branch }}
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ${{ matrix.dir }}/build/web
+          publish_branch: ${{ matrix.branch }}
+          force_orphan: true
+          commit_message: Deploy ${{ matrix.name }} @ ${{ github.sha }}
