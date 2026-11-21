@@ -8,7 +8,7 @@ import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import '../data.dart';
 import '../widgets/color_picker_sheet.dart';
 import '../widgets/player_page_widgets.dart';
-import '../widgets/thumbnail_card.dart';
+import '../widgets/playlist_tile.dart';
 import 'custom_controls_page.dart';
 
 class PlayerPage extends StatefulWidget {
@@ -112,40 +112,41 @@ class _PlayerPageState extends State<PlayerPage> {
         children: [
           YoutubePlayer(controller: _controller),
           Expanded(
-            child: ListView(
-              children: [
-                NowPlaying(controller: _controller),
-                const SizedBox(height: 20),
-                SectionHeader(
-                  icon: Icons.queue_music_rounded,
-                  title: 'Playlist',
-                  trailing: Text(
-                    '${videoIds.length} videos',
-                    style: tt.labelSmall?.copyWith(color: cs.onSurfaceVariant),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                SizedBox(
-                  height: 100,
-                  child: ValueListenableBuilder<int>(
-                    valueListenable: _currentIndex,
-                    builder: (context, currentIndex, _) => CarouselView(
-                      itemExtent: 190,
-                      shrinkExtent: 110,
-                      itemSnapping: false,
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      onTap: _loadVideo,
-                      children: [
-                        for (var i = 0; i < videoIds.length; i++)
-                          ThumbnailCard(
-                            videoId: videoIds[i],
-                            selected: i == currentIndex,
-                          ),
-                      ],
+            child: CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(child: NowPlaying(controller: _controller)),
+                const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                SliverToBoxAdapter(
+                  child: SectionHeader(
+                    icon: Icons.queue_music_rounded,
+                    title: 'Up next',
+                    trailing: Text(
+                      '${videoIds.length} videos',
+                      style: tt.labelSmall?.copyWith(
+                        color: cs.onSurfaceVariant,
+                      ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 32),
+                const SliverToBoxAdapter(child: SizedBox(height: 8)),
+                // Built lazily; selecting a video rebuilds only the list.
+                ValueListenableBuilder<int>(
+                  valueListenable: _currentIndex,
+                  builder: (context, currentIndex, _) => SliverList.builder(
+                    itemCount: videoIds.length,
+                    itemBuilder: (context, i) => PlaylistTile(
+                      index: i,
+                      videoId: videoIds[i],
+                      selected: i == currentIndex,
+                      onTap: () => _loadVideo(i),
+                    ),
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: SizedBox(
+                    height: 16 + MediaQuery.paddingOf(context).bottom,
+                  ),
+                ),
               ],
             ),
           ),
