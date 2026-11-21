@@ -1,6 +1,6 @@
 name: youtube_player
 description: Play YouTube videos with the official IFrame Player API, in a minimal native WebView on Android, iOS, macOS, Windows and Linux, and in the page on the web.
-version: 4.0.2
+version: 4.0.3
 repository: https://github.com/sarbagyastha/youtube_player_flutter
 homepage: https://github.com/sarbagyastha/youtube_player_flutter/tree/main/packages/youtube_player
 
