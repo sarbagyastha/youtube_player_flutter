@@ -23,6 +23,8 @@
 /// See the `youtube_player` package for the player API.
 library;
 
+import 'dart:ffi';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
@@ -88,8 +90,20 @@ final class DarwinYoutubePlayer({
 }
 
 final class _Receiver(final DarwinYoutubePlayer _platform)
-    implements YoutubeFlutterApi {
+    implements YoutubeFlutterApi, Finalizable {
   var _listening = false;
+
+  /// Tells the native side when this isolate shuts down (hot restart), so it
+  /// stops calling the callbacks registered here, which would then abort the
+  /// process. Native finalizers run when the isolate group shuts down.
+  static final NativeFinalizer? _shutdownFinalizer = () {
+    // Hot restart is debug-only.
+    if (!kDebugMode) return null;
+    const symbol = 'youtube_player_darwin_isolate_shutdown';
+    final process = DynamicLibrary.process();
+    if (!process.providesSymbol(symbol)) return null;
+    return NativeFinalizer(process.lookup<NativeFinalizerFunction>(symbol));
+  }();
 
   void listen() {
     if (_listening) return;
@@ -98,6 +112,9 @@ final class _Receiver(final DarwinYoutubePlayer _platform)
     // playing with nobody listening.
     _platform._api.reset();
     YoutubeFlutterApiRegistrar().register(this);
+    if (PlatformDispatcher.instance.engineId case final engineId?) {
+      _shutdownFinalizer?.attach(this, Pointer.fromAddress(engineId));
+    }
   }
 
   _DarwinHost? _host(int handle) => _platform._hosts[handle];

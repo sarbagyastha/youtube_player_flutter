@@ -22,8 +22,22 @@ public final class YoutubePlayerDarwinPlugin: NSObject, @preconcurrency FlutterP
   private(set) var hosts: [Int64: PlayerHost] = [:]
   private var nextHandle: Int64 = 0
 
+  /// Identifies this engine to `youtube_player_darwin_isolate_shutdown`.
+  private let engineId: Int64
+  private var isolateObserver: NSObjectProtocol?
+
   init(registrar: FlutterPluginRegistrar) {
     self.registrar = registrar
+    engineId = registrar.engineIdentifier
+    super.init()
+    let engineId = engineId
+    isolateObserver = NotificationCenter.default.addObserver(
+      forName: DartIsolates.didShutDown, object: nil, queue: .main
+    ) { [weak self] note in
+      guard (note.userInfo?["engine"] as? Int64) == engineId else { return }
+      // The old isolate's players would keep playing with nobody listening.
+      MainActor.assumeIsolated { self?.destroyHosts() }
+    }
   }
 
   // Flutter registers plugins on the main thread.
@@ -41,7 +55,8 @@ public final class YoutubePlayerDarwinPlugin: NSObject, @preconcurrency FlutterP
 
   public func detachFromEngine(for registrar: FlutterPluginRegistrar) {
     YoutubeHostApiSetup.unregister(api: self, registrar: registrar)
-    try? reset()
+    if let isolateObserver { NotificationCenter.default.removeObserver(isolateObserver) }
+    destroyHosts()
   }
 
   // MARK: YoutubeHostApi (main thread, synchronous)
@@ -82,7 +97,14 @@ public final class YoutubePlayerDarwinPlugin: NSObject, @preconcurrency FlutterP
     #endif
   }
 
+  /// Called by each new Dart isolate before it registers its
+  /// `YoutubeFlutterApi`, so callbacks are delivered again.
   func reset() throws {
+    DartIsolates.markAttached(engineId)
+    destroyHosts()
+  }
+
+  private func destroyHosts() {
     let all = hosts.values
     hosts.removeAll()
     all.forEach { $0.destroy() }
@@ -101,9 +123,13 @@ public final class YoutubePlayerDarwinPlugin: NSObject, @preconcurrency FlutterP
   /// re-enters Dart in the middle of a synchronous host call.
   private func toDart(_ call: @escaping @MainActor (YoutubeFlutterApi) throws -> Void) {
     let registrar = registrar
+    let engineId = engineId
     nonisolated(unsafe) let unsafeRegistrar = registrar
     DispatchQueue.main.async {
       MainActor.assumeIsolated {
+        // After a hot restart the registered api still points into the dead
+        // isolate, and calling it aborts the process.
+        guard !DartIsolates.isDetached(engineId) else { return }
         guard let api = YoutubeFlutterApiRegistrar.getInstance(registrar: unsafeRegistrar) else { return }
         // Dart side gone (e.g. during hot restart); drop.
         try? call(api)

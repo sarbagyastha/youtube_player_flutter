@@ -2,6 +2,7 @@
 
 **November 21, 2026**
 
+- Fix a crash on hot restart while a video is playing; players from the previous isolate are now torn down instead of calling back into it.
 - Fix the video being off-center and cropped in landscape fullscreen on notched iPhones; the WebView no longer applies safe-area insets (Flutter owns the layout).
 
 ## 0.1.2
