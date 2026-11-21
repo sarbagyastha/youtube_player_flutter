@@ -8,6 +8,8 @@
 - `FullscreenButton` no longer takes a `controller`; it finds the enclosing player.
 
 **Improvements**
+- Fewer frames from the default controls: the buffering spinner no longer animates while hidden, the seek bar repaints instead of rebuilding on position updates and moves smoothly, the time label rebuilds once a second, and hidden controls ignore position updates.
+- Drag-to-seek on the player rebuilds only the seek indicator, and the auto-hide timer restarts only when playback starts.
 - On Android, iOS and macOS, fullscreen is a lightweight opaque route: the player moves into it without recreating its native view or reloading, and the page underneath stops rendering.
 - On the web the player uses YouTube's own controls and the browser's fullscreen; `YoutubeFullScreen` and `FullscreenButton` drive browser fullscreen there.
 - Adds `YoutubePlayer.autoPlayWhenVisible`.

@@ -32,6 +32,8 @@ class ThumbnailCard extends StatelessWidget {
               quality: .high,
             ),
             fit: BoxFit.fitWidth,
+            // Decode at the card's size, not the full thumbnail resolution.
+            cacheWidth: (190 * MediaQuery.devicePixelRatioOf(context)).round(),
             webHtmlElementStrategy: .fallback,
             errorBuilder: (_, _, _) => const ColoredBox(
               color: Colors.black12,

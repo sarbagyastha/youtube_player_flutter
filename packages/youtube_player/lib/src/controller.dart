@@ -311,12 +311,19 @@ class YoutubePlayerController({
             ),
           );
         }
+        final durationChanged =
+            event.duration > 0 && event.duration != _duration;
+        // Most ticks only move the position: skip building a value.
+        if (!durationChanged &&
+            event.muted == _value.isMuted &&
+            event.volume == _value.volume) {
+          return;
+        }
         var meta = _value.metaData;
-        if (event.duration > 0 && event.duration != _duration) {
+        if (durationChanged) {
           _duration = event.duration;
           meta = meta.copyWith(duration: _toDuration(event.duration));
         }
-        // No-op (deduplicated) unless duration or volume actually changed.
         _emit(
           _value.copyWith(
             metaData: meta,

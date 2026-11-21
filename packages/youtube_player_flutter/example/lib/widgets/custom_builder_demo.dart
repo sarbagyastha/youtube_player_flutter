@@ -45,26 +45,10 @@ class _CustomBuilderDemoState extends State<CustomBuilderDemo> {
   }
 }
 
-class _CustomControls extends StatefulWidget {
+class _CustomControls extends StatelessWidget {
   const _CustomControls({required this.controller});
 
   final YoutubePlayerController controller;
-
-  @override
-  State<_CustomControls> createState() => _CustomControlsState();
-}
-
-class _CustomControlsState extends State<_CustomControls> {
-  bool _isMuted = false;
-  bool _isSeeking = false;
-  double _seekValue = 0;
-
-  String _fmt(Duration d) {
-    final h = d.inHours;
-    final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
-    final s = d.inSeconds.remainder(60).toString().padLeft(2, '0');
-    return h > 0 ? '$h:$m:$s' : '$m:$s';
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -92,45 +76,31 @@ class _CustomControlsState extends State<_CustomControls> {
       child: Stack(
         children: [
           Center(
-            child: _PlayPauseCenter(
-              controller: widget.controller,
-              theme: theme,
-            ),
+            child: _PlayPauseCenter(controller: controller, theme: theme),
           ),
           Positioned(
             top: 0,
             left: 0,
             right: 0,
-            child: _TitleBar(controller: widget.controller, theme: theme),
+            child: _TitleBar(controller: controller, theme: theme),
           ),
           Positioned(
             bottom: 0,
             left: 0,
             right: 0,
-            child: _BottomControls(
-              controller: widget.controller,
-              theme: theme,
-              isMuted: _isMuted,
-              isSeeking: _isSeeking,
-              seekValue: _seekValue,
-              fmt: _fmt,
-              onMuteToggle: () {
-                if (_isMuted) {
-                  widget.controller.unMute();
-                } else {
-                  widget.controller.mute();
-                }
-                setState(() => _isMuted = !_isMuted);
-              },
-              onSeekStart: () => setState(() => _isSeeking = true),
-              onSeekChanged: (v) => setState(() => _seekValue = v),
-              onSeekEnd: () => setState(() => _isSeeking = false),
-            ),
+            child: _BottomControls(controller: controller, theme: theme),
           ),
         ],
       ),
     );
   }
+}
+
+String _fmt(Duration d) {
+  final h = d.inHours;
+  final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
+  final s = d.inSeconds.remainder(60).toString().padLeft(2, '0');
+  return h > 0 ? '$h:$m:$s' : '$m:$s';
 }
 
 class _TitleBar extends StatelessWidget {
@@ -208,52 +178,97 @@ class _PlayPauseCenter extends StatelessWidget {
 }
 
 class _BottomControls extends StatelessWidget {
-  const _BottomControls({
-    required this.controller,
-    required this.theme,
-    required this.isMuted,
-    required this.isSeeking,
-    required this.seekValue,
-    required this.fmt,
-    required this.onMuteToggle,
-    required this.onSeekStart,
-    required this.onSeekChanged,
-    required this.onSeekEnd,
-  });
+  const _BottomControls({required this.controller, required this.theme});
 
   final YoutubePlayerController controller;
   final YoutubePlayerThemeResolver theme;
-  final bool isMuted;
-  final bool isSeeking;
-  final double seekValue;
-  final String Function(Duration) fmt;
-  final VoidCallback onMuteToggle;
-  final VoidCallback onSeekStart;
-  final ValueChanged<double> onSeekChanged;
-  final VoidCallback onSeekEnd;
 
   @override
   Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Only the seek row follows position ticks.
+        _SeekRow(controller: controller, theme: theme),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(4, 0, 4, 8),
+          child: Row(
+            children: [
+              YoutubeValueBuilder(
+                controller: controller,
+                buildWhen: (o, n) => o.isMuted != n.isMuted,
+                builder: (context, value) => IconButton(
+                  icon: Icon(
+                    value.isMuted
+                        ? Icons.volume_off_rounded
+                        : Icons.volume_up_rounded,
+                    color: theme.progressBarActiveColor,
+                    size: 22,
+                  ),
+                  onPressed: value.isMuted
+                      ? controller.unMute
+                      : controller.mute,
+                ),
+              ),
+              const Spacer(),
+              Builder(
+                builder: (context) {
+                  final fullScreen = YoutubeFullScreen.of(context);
+                  return IconButton(
+                    icon: Icon(
+                      fullScreen.isFullScreen
+                          ? Icons.fullscreen_exit_rounded
+                          : Icons.fullscreen_rounded,
+                      color: theme.progressBarActiveColor,
+                    ),
+                    onPressed: fullScreen.toggle,
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Time labels and seek slider.
+///
+/// While dragging, only the local value changes; the player seeks once on
+/// release instead of on every pointer move.
+class _SeekRow extends StatefulWidget {
+  const _SeekRow({required this.controller, required this.theme});
+
+  final YoutubePlayerController controller;
+  final YoutubePlayerThemeResolver theme;
+
+  @override
+  State<_SeekRow> createState() => _SeekRowState();
+}
+
+class _SeekRowState extends State<_SeekRow> {
+  /// The slider position while dragging, in seconds; `null` otherwise.
+  double? _dragSeconds;
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = widget.controller;
+    final theme = widget.theme;
+
     return StreamBuilder<YoutubeVideoState>(
       stream: controller.videoStateStream,
       builder: (context, snapshot) {
         // Ticks only arrive while playing; start from the last known position.
-        final state =
-            snapshot.data ??
-            YoutubeVideoState(
-              position: Duration(
-                milliseconds: (controller.currentTime * 1000).round(),
-              ),
-              loadedFraction: controller.videoLoadedFraction,
-            );
+        final played =
+            snapshot.data?.position ??
+            Duration(microseconds: (controller.currentTime * 1e6).round());
         final duration = controller.metadata.duration;
-        final totalSeconds = duration.inSeconds.toDouble();
-        final position = isSeeking
-            ? Duration(seconds: seekValue.toInt())
-            : state.position;
-        final sliderValue = totalSeconds > 0
-            ? position.inSeconds.toDouble().clamp(0.0, totalSeconds)
-            : 0.0;
+        final totalSeconds = duration.inMicroseconds / 1e6;
+        final seconds = (_dragSeconds ?? played.inMicroseconds / 1e6).clamp(
+          0.0,
+          totalSeconds > 0 ? totalSeconds : 0.0,
+        );
 
         return Column(
           mainAxisSize: MainAxisSize.min,
@@ -262,9 +277,12 @@ class _BottomControls extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 children: [
-                  Text(fmt(position), style: theme.timerStyle),
+                  Text(
+                    _fmt(Duration(seconds: seconds.floor())),
+                    style: theme.timerStyle,
+                  ),
                   const Spacer(),
-                  Text(fmt(duration), style: theme.timerStyle),
+                  Text(_fmt(duration), style: theme.timerStyle),
                 ],
               ),
             ),
@@ -281,49 +299,13 @@ class _BottomControls extends StatelessWidget {
                 thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 5),
               ),
               child: Slider(
-                value: sliderValue,
+                value: seconds,
                 max: totalSeconds > 0 ? totalSeconds : 1,
-                onChangeStart: (_) => onSeekStart(),
-                onChanged: (v) {
-                  onSeekChanged(v);
-                  controller.seekTo(seconds: v, allowSeekAhead: false);
-                },
+                onChanged: (v) => setState(() => _dragSeconds = v),
                 onChangeEnd: (v) {
                   controller.seekTo(seconds: v, allowSeekAhead: true);
-                  onSeekEnd();
+                  setState(() => _dragSeconds = null);
                 },
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(4, 0, 4, 8),
-              child: Row(
-                children: [
-                  IconButton(
-                    icon: Icon(
-                      isMuted
-                          ? Icons.volume_off_rounded
-                          : Icons.volume_up_rounded,
-                      color: theme.progressBarActiveColor,
-                      size: 22,
-                    ),
-                    onPressed: onMuteToggle,
-                  ),
-                  const Spacer(),
-                  Builder(
-                    builder: (context) {
-                      final fullScreen = YoutubeFullScreen.of(context);
-                      return IconButton(
-                        icon: Icon(
-                          fullScreen.isFullScreen
-                              ? Icons.fullscreen_exit_rounded
-                              : Icons.fullscreen_rounded,
-                          color: theme.progressBarActiveColor,
-                        ),
-                        onPressed: fullScreen.toggle,
-                      );
-                    },
-                  ),
-                ],
               ),
             ),
           ],

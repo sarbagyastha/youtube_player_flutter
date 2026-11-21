@@ -23,10 +23,15 @@ class BufferingIndicator extends StatelessWidget {
           child: AnimatedOpacity(
             duration: const Duration(milliseconds: 200),
             opacity: isBuffering ? 1.0 : 0.0,
-            child: const Center(
-              child: CircularProgressIndicator(
-                strokeWidth: 1,
-                color: Colors.white,
+            // An indeterminate indicator ticks every vsync while mounted,
+            // even when invisible; stop its ticker when not buffering.
+            child: TickerMode(
+              enabled: isBuffering,
+              child: const Center(
+                child: CircularProgressIndicator(
+                  strokeWidth: 1,
+                  color: Colors.white,
+                ),
               ),
             ),
           ),

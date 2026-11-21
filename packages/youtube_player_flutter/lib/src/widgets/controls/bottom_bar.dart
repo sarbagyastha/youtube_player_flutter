@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-3-Clause license that can be
 // found in the LICENSE file.
 
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:material_ui/material_ui.dart';
 import 'package:youtube_player/youtube_player.dart';
 
+import '../../controller/overlay_controller.dart';
+import '../../controller/overlay_controller_scope.dart';
 import '../../fullscreen/fullscreen.dart';
 import '../../theme/youtube_player_theme.dart';
 import '../../utils/duration_formatter.dart';
@@ -70,34 +73,75 @@ class const BottomBar({
   }
 }
 
-class _TimePill extends StatelessWidget {
+/// Elapsed / total time. Rebuilds only when the displayed second changes,
+/// and not at all while the controls overlay is hidden.
+class _TimePill extends StatefulWidget {
   const _TimePill({required this.controller, required this.theme});
 
   final YoutubePlayerController controller;
   final YoutubePlayerThemeResolver theme;
 
   @override
+  State<_TimePill> createState() => _TimePillState();
+}
+
+class _TimePillState extends State<_TimePill> {
+  late final StreamSubscription<YoutubeVideoState> _subscription;
+  OverlayController? _overlay;
+
+  // Ticks only arrive while playing; start from the last known time.
+  late int _seconds = widget.controller.currentTime.floor();
+  late Duration _duration = widget.controller.metadata.duration;
+
+  @override
+  void initState() {
+    super.initState();
+    _subscription = widget.controller.videoStateStream.listen(
+      (state) => _update(state.position.inSeconds),
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final overlay = OverlayControllerScope.maybeOf(context);
+    if (overlay == _overlay) return;
+    _overlay?.isVisible.removeListener(_onOverlayVisibility);
+    _overlay = overlay?..isVisible.addListener(_onOverlayVisibility);
+  }
+
+  @override
+  void dispose() {
+    _overlay?.isVisible.removeListener(_onOverlayVisibility);
+    _subscription.cancel();
+    super.dispose();
+  }
+
+  void _onOverlayVisibility() => _update(widget.controller.currentTime.floor());
+
+  void _update(int seconds) {
+    if (!mounted || !(_overlay?.isVisible.value ?? true)) return;
+    final duration = widget.controller.metadata.duration;
+    if (seconds == _seconds && duration == _duration) return;
+    setState(() {
+      _seconds = seconds;
+      _duration = duration;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return StreamBuilder<YoutubeVideoState>(
-      stream: controller.videoStateStream,
-      builder: (context, snapshot) {
-        // Ticks only arrive while playing; fall back to the last known time.
-        final position =
-            snapshot.data?.position ??
-            Duration(milliseconds: (controller.currentTime * 1000).round());
-        final duration = controller.metadata.duration;
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-          decoration: const BoxDecoration(
-            color: Colors.black54,
-            borderRadius: BorderRadius.all(Radius.circular(20)),
-          ),
-          child: Text(
-            '${position.toHhMmSs()} / ${duration.toHhMmSs()}',
-            style: theme.timerStyle,
-          ),
-        );
-      },
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: const BoxDecoration(
+        color: Colors.black54,
+        borderRadius: BorderRadius.all(Radius.circular(20)),
+      ),
+      child: Text(
+        '${Duration(seconds: _seconds).toHhMmSs()} / '
+        '${_duration.toHhMmSs()}',
+        style: widget.theme.timerStyle,
+      ),
     );
   }
 }

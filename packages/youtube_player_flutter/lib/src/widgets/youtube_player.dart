@@ -219,8 +219,12 @@ class _YoutubePlayerState extends State<YoutubePlayer>
     final state = value.playerState;
     switch (state) {
       case .playing:
-        if (_lastPlayerState != .playing) _active = this;
-        _overlayCtrl.resetTimer();
+        // Only on entering playback, so other value changes while playing
+        // (quality, volume, ...) don't keep postponing the auto-hide.
+        if (_lastPlayerState != .playing) {
+          _active = this;
+          _overlayCtrl.resetTimer();
+        }
       case .paused || .buffering || .ended:
         _overlayCtrl.cancelTimer();
         _overlayCtrl.isVisible.value = true;
@@ -390,51 +394,63 @@ class const _ControlsLayer({
 }
 
 class _ControlsLayerState extends State<_ControlsLayer> {
-  bool _isSeeking = false;
+  /// Seek offset in seconds while dragging horizontally, else `null`. Drag
+  /// updates rebuild only the seek indicator, not the controls.
+  final _seekDelta = ValueNotifier<double?>(null);
   double _seekStartSeconds = 0;
-  double _seekDeltaSeconds = 0;
   double _dragStartX = 0;
 
   // Full player-width drag = 120 s of seek (VLC-like fixed physical feel).
   static const double _seekWidthRatio = 120.0;
 
+  /// Cached: the controls update themselves from the controller, so
+  /// rebuilding this layer never needs to rebuild them.
+  Widget? _cachedControls;
+  Widget get _controls => _cachedControls ??= ValueListenableBuilder<bool>(
+    valueListenable: widget.overlayController.isVisible,
+    builder: (context, visible, child) => AnimatedOpacity(
+      duration: const Duration(milliseconds: 300),
+      opacity: visible ? 1.0 : 0.0,
+      child: IgnorePointer(ignoring: !visible, child: child),
+    ),
+    child: ControlsOverlay(controller: widget.controller),
+  );
+
   double get _durationSeconds =>
       widget.controller.metadata.duration.inMilliseconds / 1000;
 
-  double get _seekTargetSeconds =>
-      (_seekStartSeconds + _seekDeltaSeconds).clamp(0.0, _durationSeconds);
+  double _targetSeconds(double delta) =>
+      (_seekStartSeconds + delta).clamp(0.0, _durationSeconds);
 
   void _onHorizontalDragStart(DragStartDetails details) {
     if (_durationSeconds == 0) return;
     _dragStartX = details.localPosition.dx;
+    _seekStartSeconds = widget.controller.currentTime;
     widget.overlayController.cancelTimer();
-    setState(() {
-      _isSeeking = true;
-      _seekStartSeconds = widget.controller.currentTime;
-      _seekDeltaSeconds = 0;
-    });
+    _seekDelta.value = 0;
   }
 
   void _onHorizontalDragUpdate(DragUpdateDetails details) {
-    if (!_isSeeking) return;
+    if (_seekDelta.value == null) return;
     final playerWidth = context.size?.width ?? 1;
     final dx = details.localPosition.dx - _dragStartX;
-    setState(() => _seekDeltaSeconds = (dx / playerWidth) * _seekWidthRatio);
+    _seekDelta.value = (dx / playerWidth) * _seekWidthRatio;
   }
 
   void _onHorizontalDragEnd(DragEndDetails _) {
-    if (!_isSeeking) return;
-    widget.controller.seekTo(seconds: _seekTargetSeconds, allowSeekAhead: true);
+    final delta = _seekDelta.value;
+    if (delta == null) return;
+    widget.controller.seekTo(
+      seconds: _targetSeconds(delta),
+      allowSeekAhead: true,
+    );
     _endSeek();
   }
 
   void _endSeek() {
-    if (!_isSeeking) return;
+    if (_seekDelta.value == null) return;
     widget.overlayController.resetTimer();
-    setState(() {
-      _isSeeking = false;
-      _seekDeltaSeconds = 0;
-    });
+    _seekDelta.value = null;
   }
 
   void _onVerticalDragEnd(DragEndDetails details) {
@@ -445,6 +461,21 @@ class _ControlsLayerState extends State<_ControlsLayer> {
     } else if (velocity > 0) {
       fullScreen.exit();
     }
+  }
+
+  @override
+  void didUpdateWidget(_ControlsLayer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.controller != widget.controller ||
+        oldWidget.overlayController != widget.overlayController) {
+      _cachedControls = null;
+    }
+  }
+
+  @override
+  void dispose() {
+    _seekDelta.dispose();
+    super.dispose();
   }
 
   @override
@@ -469,22 +500,18 @@ class _ControlsLayerState extends State<_ControlsLayer> {
           : Stack(
               fit: .expand,
               children: [
-                ValueListenableBuilder<bool>(
-                  valueListenable: widget.overlayController.isVisible,
-                  builder: (context, visible, child) => AnimatedOpacity(
-                    duration: const Duration(milliseconds: 300),
-                    opacity: visible ? 1.0 : 0.0,
-                    child: IgnorePointer(ignoring: !visible, child: child),
-                  ),
-                  child: ControlsOverlay(controller: widget.controller),
+                _controls,
+                ValueListenableBuilder<double?>(
+                  valueListenable: _seekDelta,
+                  builder: (context, delta, _) => delta == null
+                      ? const SizedBox.shrink()
+                      : Center(
+                          child: _SeekIndicator(
+                            deltaSeconds: delta,
+                            targetSeconds: _targetSeconds(delta),
+                          ),
+                        ),
                 ),
-                if (_isSeeking)
-                  Center(
-                    child: _SeekIndicator(
-                      deltaSeconds: _seekDeltaSeconds,
-                      targetSeconds: _seekTargetSeconds,
-                    ),
-                  ),
               ],
             ),
     );

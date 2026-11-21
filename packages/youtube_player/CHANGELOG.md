@@ -1,3 +1,9 @@
+## 4.0.3
+
+**November 21, 2026**
+
+- Position ticks no longer allocate a player value unless the duration, volume or mute state changed.
+
 ## 4.0.2
 
 **November 17, 2026**
