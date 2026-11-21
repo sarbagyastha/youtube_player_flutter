@@ -1,3 +1,9 @@
+## 0.1.3
+
+**November 21, 2026**
+
+- Fix a type error while the player loads or reloads; IFrame API getters that return `undefined` before the iframe connects are now handled.
+
 ## 0.1.2
 
 **November 17, 2026**
