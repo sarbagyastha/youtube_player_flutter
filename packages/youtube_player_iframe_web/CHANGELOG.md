@@ -1,3 +1,8 @@
+## 3.1.5
+**November 21, 2026**
+
+- **No longer maintained.** Superseded by [`youtube_player`](https://pub.dev/packages/youtube_player) (web support via [`youtube_player_html`](https://pub.dev/packages/youtube_player_html)). Please switch to `youtube_player`; [`youtube_player_flutter`](https://pub.dev/packages/youtube_player_flutter) v11+ is also built on it.
+
 ## 3.1.4
 - Fixes `TypeError` and spurious handling caused by unrelated `window` messages; only messages posted by the player's iframe are now processed. Thanks to [@mtallenca](https://github.com/mtallenca) for the fix ([#1185](https://github.com/sarbagyastha/youtube_player_flutter/pull/1185)).
 - Bumps dependencies.

@@ -2,6 +2,13 @@
 
 The web platform implementation of [`youtube_player_iframe`](https://pub.dev/packages/youtube_player_iframe).
 
+> [!WARNING]
+> **No longer maintained.** `youtube_player_iframe` and this web implementation have been superseded by
+> [`youtube_player`](https://pub.dev/packages/youtube_player), whose web support lives in
+> [`youtube_player_html`](https://pub.dev/packages/youtube_player_html) (`dart:js_interop`, Wasm-ready).
+> Please switch to `youtube_player`. [`youtube_player_flutter`](https://pub.dev/packages/youtube_player_flutter)
+> v11+ is also built on the new family.
+
 ---
 
 ## You probably don't need to add this directly
